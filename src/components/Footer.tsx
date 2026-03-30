@@ -3,7 +3,7 @@ const Footer = () => {
     <footer className="border-t border-border bg-background px-6 py-12">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
         <div className="flex flex-col items-center md:items-start gap-1">
-          <span className="font-display font-bold text-foreground">ZM</span>
+          <span className="font-display font-bold text-foreground">ZS</span>
           <span>Valencia, Spain</span>
         </div>
 

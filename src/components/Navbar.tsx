@@ -29,7 +29,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto flex items-center justify-between h-16 px-6">
         <a href="#hero" className="font-display text-lg font-bold tracking-tight text-foreground">
-          ZM
+          ZS
         </a>
 
         {/* Desktop */}
