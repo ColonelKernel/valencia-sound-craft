@@ -1,4 +1,4 @@
-import heroImage from "@/assets/hero-studio.jpg";
+import heroImage from "@/assets/hero-photo.jpg";
 import { ArrowRight, Headphones } from "lucide-react";
 
 const Hero = () => {
