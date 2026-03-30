@@ -1,5 +1,5 @@
 import { useFadeIn } from "@/hooks/useFadeIn";
-import { ExternalLink, Music, Briefcase } from "lucide-react";
+import { ExternalLink, Music, Briefcase, Youtube } from "lucide-react";
 
 const externalLinks = [
   {
@@ -13,6 +13,12 @@ const externalLinks = [
     description: "Stream released music on Spotify",
     url: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L",
     icon: Music,
+  },
+  {
+    title: "YouTube",
+    description: "Watch live performances and videos",
+    url: "https://youtu.be/3aFWd74ffGE?list=RD3aFWd74ffGE",
+    icon: Youtube,
   },
   {
     title: "LinkedIn",
