@@ -15,20 +15,28 @@ const About = () => {
 
             <div className="space-y-5 text-muted-foreground leading-relaxed">
               <p>
-                I'm a music producer, guitarist, and creative technologist working at the
-                intersection of live performance and modern production.
+                I'm a music producer, guitarist, and creative technologist with a background
+                spanning policy analysis and music production. I hold a Master of Public
+                Policy from UCLA and a Master of Music in Music Production, Technology, and
+                Innovation from Berklee College of Music (Valencia).
               </p>
               <p>
-                My background spans rock, jazz, electronic, and Latin music, shaped by years
-                of playing, recording, and studying across different musical environments.
+                My musical background spans rock, R&amp;B, electronic, jazz, and Latin music,
+                shaped by years of playing, recording, and studying across different
+                environments — from field research in Peru to studio sessions in Spain.
               </p>
               <p>
-                At Berklee College of Music in Valencia, I focused on production, technology,
-                and innovative workflows — combining live instruments with digital tools.
+                At Berklee, I completed{" "}
+                <span className="text-foreground font-semibold">Global Pulse</span> — a
+                multi-genre debut EP weaving Neo Soul/R&amp;B, experimental electronic, rock,
+                and 1970s influences into a unified statement. The project integrates field
+                recordings, modular synthesis, creative vocal processing, and modern amp
+                emulations to forge distinctive sonic landscapes.
               </p>
               <p>
                 I work with artists to take ideas from early sketches to fully realized,
-                release-ready tracks.
+                release-ready tracks, combining live instruments with digital tools and
+                data-driven production workflows.
               </p>
               <p className="text-foreground font-medium">
                 I'm especially interested in projects that sit between genres — where
@@ -49,7 +57,11 @@ const About = () => {
               <div>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Education</p>
                 <p className="font-display font-semibold">Berklee College of Music</p>
-                <p className="text-sm text-muted-foreground">Valencia, Spain</p>
+                <p className="text-sm text-muted-foreground">M.M. Music Production, Technology &amp; Innovation · Valencia, Spain</p>
+              </div>
+              <div className="border-t border-border pt-6">
+                <p className="font-display font-semibold">UCLA Luskin School of Public Affairs</p>
+                <p className="text-sm text-muted-foreground">Master of Public Policy</p>
               </div>
               <div className="border-t border-border pt-6">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Genres</p>
