@@ -5,10 +5,10 @@ import { Linkedin, Music, Instagram, Youtube, MessageCircle } from "lucide-react
 const links = [
   { label: "Home", href: "#hero" },
   { label: "Services", href: "#services" },
+  { label: "Contact", href: "#contact" },
   { label: "Work", href: "#portfolio" },
   { label: "About", href: "#about" },
   { label: "Policy & Data", href: "#data-analysis" },
-  { label: "Contact", href: "#contact" },
 ];
 
 const socialLinks = [
