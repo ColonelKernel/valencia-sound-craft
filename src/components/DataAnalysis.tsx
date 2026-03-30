@@ -1,33 +1,41 @@
 import { useFadeIn } from "@/hooks/useFadeIn";
-import { BarChart3, FileText, TrendingUp, Database } from "lucide-react";
+import { Globe, BarChart3, MapPin, Database } from "lucide-react";
 
 const projects = [
   {
-    title: "Public Health Policy Impact Assessment",
+    title: "Results-Based Financing for Hospitals",
+    org: "World Bank Group / UCLA",
+    period: "2018",
     description:
-      "Analyzed the effectiveness of regional public health interventions using longitudinal datasets, identifying key policy levers that correlated with improved outcomes across demographics.",
-    tags: ["Health Policy", "Regression Analysis", "Python"],
-    icon: TrendingUp,
+      "Master's thesis prepared for the World Bank evaluating results-based financing mechanisms in Kyrgyz Republic hospitals. Applied semiparametric regression to analyze relationships between cortisol levels and subjective well-being during field missions in Peru.",
+    tags: ["Health Policy", "Regression Analysis", "R", "Field Research"],
+    icon: Globe,
   },
   {
-    title: "Urban Housing Policy & Affordability Modeling",
+    title: "USAID Education & Infrastructure Analysis",
+    org: "NORC at the University of Chicago",
+    period: "2020–2022",
     description:
-      "Built predictive models to evaluate how zoning reform and rent regulation policies affect housing affordability, using census and municipal data.",
-    tags: ["Housing Policy", "Predictive Modeling", "R"],
+      "Provided large-scale data analysis across USAID projects spanning education, infrastructure, child protection, and COVID-19 vaccination rates. Built automated web scraping pipelines to collect Tanzania national education datasets.",
+    tags: ["Education Policy", "NLP", "Web Scraping", "Python & R"],
     icon: BarChart3,
   },
   {
-    title: "Education Funding Equity Analysis",
+    title: "Food Desert Accessibility Modeling",
+    org: "NORC at the University of Chicago",
+    period: "2022",
     description:
-      "Conducted a comparative analysis of education funding distribution across school districts, quantifying disparities and modeling the impact of proposed legislative changes.",
-    tags: ["Education Policy", "Data Visualization", "Tableau"],
-    icon: FileText,
+      "Developed alternative definitions of food deserts incorporating chronic medical conditions to create 'real feel distance' accessibility metrics. Applied regression modeling integrating physiological and geographic variables.",
+    tags: ["Urban Policy", "GIS", "Regression Modeling", "R"],
+    icon: MapPin,
   },
   {
-    title: "Environmental Regulation Compliance Dashboard",
+    title: "CMS Data Strategy & Inventory",
+    org: "Rios Partners",
+    period: "2022–2023",
     description:
-      "Designed an interactive dashboard tracking industrial compliance with environmental regulations, surfacing trends in violations and enforcement effectiveness.",
-    tags: ["Environmental Policy", "Dashboard", "SQL"],
+      "Spearheaded a data strategy team to identify and resolve data management challenges for CMS. Built a new internal data inventory and coordinated cross-functional teams to deliver evidence-based, implementable solutions.",
+    tags: ["Data Strategy", "Health Policy", "CMS", "Consulting"],
     icon: Database,
   },
 ];
@@ -46,9 +54,10 @@ const DataAnalysis = () => {
             Policy Analysis &amp; Data Projects
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Beyond music, I apply data analysis skills to policy research —
-            exploring how evidence-based approaches can inform better public
-            decision-making.
+            With a Master of Public Policy from UCLA and experience at the World
+            Bank, NORC, and Rios Partners, I bring rigorous analytical methods to
+            public policy challenges — from health financing to education systems
+            and urban accessibility.
           </p>
         </div>
 
@@ -59,9 +68,16 @@ const DataAnalysis = () => {
               className="fade-up border border-border bg-card rounded-sm p-8 space-y-4 hover:border-foreground/20 transition-colors"
               style={{ transitionDelay: `${i * 100}ms` }}
             >
-              <div className="flex items-center gap-3">
-                <project.icon className="h-5 w-5 text-muted-foreground" />
-                <h3 className="font-display font-semibold text-lg">{project.title}</h3>
+              <div className="flex items-start gap-3">
+                <project.icon className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                <div>
+                  <h3 className="font-display font-semibold text-lg leading-tight">
+                    {project.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {project.org} · {project.period}
+                  </p>
+                </div>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {project.description}
