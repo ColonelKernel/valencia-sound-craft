@@ -22,6 +22,11 @@ const embeds = [
     height: 315,
   },
   {
+    title: "YouTube",
+    src: "https://www.youtube.com/embed/KtgLL1YZW4c",
+    height: 315,
+  },
+  {
     title: "SoundCloud",
     src: "https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/streetcarscandal&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true",
     height: 300,
