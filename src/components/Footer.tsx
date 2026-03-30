@@ -40,6 +40,14 @@ const Footer = () => {
           >
             YouTube
           </a>
+          <a
+            href="https://wa.me/15104356431"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            WhatsApp
+          </a>
         </div>
 
         <p>© {new Date().getFullYear()} All rights reserved.</p>
