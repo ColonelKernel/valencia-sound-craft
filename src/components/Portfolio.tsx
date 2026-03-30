@@ -58,24 +58,6 @@ const Portfolio = () => {
             </div>
           ))}
         </div>
-
-        <div className="fade-up mt-6">
-          <a
-            href="https://www.linkedin.com/in/zscheff/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-4 border border-border rounded-sm p-5 hover:border-foreground/20 transition-colors bg-card"
-          >
-            <div className="bg-foreground/5 rounded-sm p-3 group-hover:bg-foreground/10 transition-colors">
-              <Briefcase size={20} className="text-foreground/60" />
-            </div>
-            <div>
-              <p className="font-display font-semibold text-sm">LinkedIn</p>
-              <p className="text-xs text-muted-foreground">Professional background and connections</p>
-            </div>
-            <ExternalLink size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-          </a>
-        </div>
       </div>
     </section>
   );
