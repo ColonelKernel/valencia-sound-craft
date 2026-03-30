@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { Linkedin, Music, Instagram, Youtube, MessageCircle } from "lucide-react";
 
 const links = [
   { label: "Home", href: "#hero" },
@@ -8,6 +9,14 @@ const links = [
   { label: "About", href: "#about" },
   { label: "Policy & Data", href: "#data-analysis" },
   { label: "Contact", href: "#contact" },
+];
+
+const socialLinks = [
+  { icon: Linkedin, href: "https://www.linkedin.com/in/zscheff/", label: "LinkedIn" },
+  { icon: Music, href: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L?si=65RGI1x2TsSZK57Ip69JOQ", label: "Spotify" },
+  { icon: Instagram, href: "https://www.instagram.com/streetcarscandal/", label: "Instagram" },
+  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
+  { icon: MessageCircle, href: "https://wa.me/15104356431", label: "WhatsApp" },
 ];
 
 const Navbar = () => {
