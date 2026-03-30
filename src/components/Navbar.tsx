@@ -92,7 +92,20 @@ const Navbar = () => {
               {l.label}
             </a>
           ))}
-        </div>
+          <div className="flex items-center gap-4 pt-2 border-t border-border">
+            {socialLinks.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={s.label}
+              >
+                <s.icon size={18} />
+              </a>
+            ))}
+          </div>
       )}
     </nav>
   );
