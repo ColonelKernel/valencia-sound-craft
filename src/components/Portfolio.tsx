@@ -4,33 +4,33 @@ import { Play, ExternalLink } from "lucide-react";
 const projects = [
   {
     title: "Midnight Sessions EP",
-    category: "Music Production",
-    description: "Full production and mixing for a 5-track indie rock EP.",
+    category: "Production & Mixing",
+    description: "Indie rock — full production, arrangement, and mix for a 5-track EP.",
   },
   {
     title: "Acoustic Live Session",
     category: "Video / Live Sessions",
-    description: "Multi-camera live recording for an acoustic duo.",
+    description: "Singer-songwriter — multi-camera live recording with studio-quality audio.",
   },
   {
     title: "Neon Pulse",
-    category: "Mixing Work",
-    description: "Mix and master for an electronic pop single release.",
+    category: "Mixing",
+    description: "Electronic pop — mix and master bringing clarity and punch to a synth-driven single.",
   },
   {
     title: "Flamenco Fusion",
-    category: "Performance",
-    description: "Guitar arrangement and live performance recording.",
+    category: "Performance & Production",
+    description: "Latin-jazz fusion — guitar arrangement, live performance, and final mix.",
   },
   {
     title: "Debut Album — Alma",
-    category: "Music Production",
-    description: "Produced and mixed a full-length debut album across genres.",
+    category: "Production & Mixing",
+    description: "Cross-genre debut — produced and mixed 10 tracks blending rock, electronic, and Latin influences.",
   },
   {
     title: "Studio Sessions Vol. 1",
     category: "Video / Live Sessions",
-    description: "Studio live session series for emerging Latin artists.",
+    description: "Latin pop — live session series produced for emerging artists, optimized for social media.",
   },
 ];
 
