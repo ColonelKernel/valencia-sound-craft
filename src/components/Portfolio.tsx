@@ -15,6 +15,12 @@ const externalLinks = [
     icon: Music,
   },
   {
+    title: "YouTube",
+    description: "Watch live performances and videos",
+    url: "https://youtu.be/3aFWd74ffGE?list=RD3aFWd74ffGE",
+    icon: Youtube,
+  },
+  {
     title: "LinkedIn",
     description: "Professional background and connections",
     url: "https://www.linkedin.com/in/zscheff/",
