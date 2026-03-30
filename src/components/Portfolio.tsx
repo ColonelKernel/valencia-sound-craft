@@ -1,5 +1,4 @@
 import { useFadeIn } from "@/hooks/useFadeIn";
-import { ExternalLink, Briefcase } from "lucide-react";
 
 const embeds = [
   {
