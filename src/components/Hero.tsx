@@ -28,11 +28,11 @@ const Hero = () => {
           </h1>
 
           <p className="text-lg md:text-xl text-primary-foreground/70 font-body leading-relaxed max-w-lg">
-            I help artists record, produce, and release high-quality music — from first idea to finished track.
+            I help artists turn ideas into finished records — blending live instruments, modern production, and global influences.
           </p>
 
           <p className="text-sm text-primary-foreground/50 font-body">
-            Working with artists locally and worldwide.
+            Based in Valencia, working with artists locally and worldwide.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
