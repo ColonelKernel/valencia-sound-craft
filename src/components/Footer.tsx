@@ -17,7 +17,7 @@ const Footer = () => {
             Spotify
           </a>
           <a
-            href="https://instagram.com"
+            href="https://www.instagram.com/streetcarscandal/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors"
