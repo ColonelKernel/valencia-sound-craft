@@ -9,7 +9,7 @@ const Footer = () => {
 
         <div className="flex items-center gap-6">
           <a
-            href="https://open.spotify.com"
+            href="https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L?si=65RGI1x2TsSZK57Ip69JOQ"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors"
