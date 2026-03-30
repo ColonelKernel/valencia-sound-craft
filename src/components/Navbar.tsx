@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { Linkedin, Music, Instagram, Youtube, MessageCircle } from "lucide-react";
 
 const links = [
   { label: "Home", href: "#hero" },
@@ -8,6 +9,14 @@ const links = [
   { label: "About", href: "#about" },
   { label: "Policy & Data", href: "#data-analysis" },
   { label: "Contact", href: "#contact" },
+];
+
+const socialLinks = [
+  { icon: Linkedin, href: "https://www.linkedin.com/in/zscheff/", label: "LinkedIn" },
+  { icon: Music, href: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L?si=65RGI1x2TsSZK57Ip69JOQ", label: "Spotify" },
+  { icon: Instagram, href: "https://www.instagram.com/streetcarscandal/", label: "Instagram" },
+  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
+  { icon: MessageCircle, href: "https://wa.me/15104356431", label: "WhatsApp" },
 ];
 
 const Navbar = () => {
@@ -44,6 +53,20 @@ const Navbar = () => {
               {l.label}
             </a>
           ))}
+          <div className="flex items-center gap-3 ml-4 border-l border-border pl-4">
+            {socialLinks.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={s.label}
+              >
+                <s.icon size={16} />
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* Mobile toggle */}
@@ -69,6 +92,20 @@ const Navbar = () => {
               {l.label}
             </a>
           ))}
+          <div className="flex items-center gap-4 pt-2 border-t border-border">
+            {socialLinks.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={s.label}
+              >
+                <s.icon size={18} />
+              </a>
+            ))}
+          </div>
         </div>
       )}
     </nav>
