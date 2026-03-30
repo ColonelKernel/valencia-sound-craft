@@ -57,7 +57,11 @@ const About = () => {
               <div>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Education</p>
                 <p className="font-display font-semibold">Berklee College of Music</p>
-                <p className="text-sm text-muted-foreground">Valencia, Spain</p>
+                <p className="text-sm text-muted-foreground">M.M. Music Production, Technology &amp; Innovation · Valencia, Spain</p>
+              </div>
+              <div className="border-t border-border pt-6">
+                <p className="font-display font-semibold">UCLA Luskin School of Public Affairs</p>
+                <p className="text-sm text-muted-foreground">Master of Public Policy</p>
               </div>
               <div className="border-t border-border pt-6">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Genres</p>
