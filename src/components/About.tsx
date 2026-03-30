@@ -57,11 +57,23 @@ const About = () => {
               <div>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Education</p>
                 <p className="font-display font-semibold">Berklee College of Music</p>
-                <p className="text-sm text-muted-foreground">M.M. Music Production, Technology &amp; Innovation · Valencia, Spain</p>
+                <p className="text-sm text-muted-foreground">M.A. Music Technology · Valencia, Spain · 2024–2025</p>
+                <p className="text-xs text-muted-foreground mt-1">Focus: music production workflows, audio technology integration, and studio systems. Mentor: Pablo Munguía.</p>
               </div>
               <div className="border-t border-border pt-6">
                 <p className="font-display font-semibold">UCLA Luskin School of Public Affairs</p>
-                <p className="text-sm text-muted-foreground">Master of Public Policy</p>
+                <p className="text-sm text-muted-foreground">Master of Public Policy (Transportation &amp; Urban Development) · Los Angeles, CA · 2016–2018</p>
+                <p className="text-xs text-muted-foreground mt-1">Thesis: Results-Based Financing for Hospitals — The Case of the Kyrgyz Republic (prepared for the World Bank).</p>
+              </div>
+              <div className="border-t border-border pt-6">
+                <p className="font-display font-semibold">MIT Professional Education</p>
+                <p className="text-sm text-muted-foreground">Applied Data Science Program Certificate · 2022</p>
+                <p className="text-xs text-muted-foreground mt-1">Practical applied data science training.</p>
+              </div>
+              <div className="border-t border-border pt-6">
+                <p className="font-display font-semibold">Grinnell College</p>
+                <p className="text-sm text-muted-foreground">Bachelor of Arts · Grinnell, IA · 2009–2013</p>
+                <p className="text-xs text-muted-foreground mt-1">Interdisciplinary coursework in economics, mathematics, and political science. Composed and performed original music.</p>
               </div>
               <div className="border-t border-border pt-6">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Genres</p>
