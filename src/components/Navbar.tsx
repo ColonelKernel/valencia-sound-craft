@@ -53,6 +53,20 @@ const Navbar = () => {
               {l.label}
             </a>
           ))}
+          <div className="flex items-center gap-3 ml-4 border-l border-border pl-4">
+            {socialLinks.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={s.label}
+              >
+                <s.icon size={16} />
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* Mobile toggle */}
