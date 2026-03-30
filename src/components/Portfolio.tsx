@@ -1,5 +1,5 @@
 import { useFadeIn } from "@/hooks/useFadeIn";
-import { Play, ExternalLink } from "lucide-react";
+import { Play, ExternalLink, Music, Briefcase } from "lucide-react";
 
 const projects = [
   {
@@ -34,6 +34,27 @@ const projects = [
   },
 ];
 
+const externalLinks = [
+  {
+    title: "SoundCloud",
+    description: "Listen to tracks, demos, and productions",
+    url: "https://soundcloud.com/streetcarscandal",
+    icon: Music,
+  },
+  {
+    title: "Spotify",
+    description: "Stream released music on Spotify",
+    url: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L",
+    icon: Music,
+  },
+  {
+    title: "LinkedIn",
+    description: "Professional background and connections",
+    url: "https://www.linkedin.com/in/zscheff/",
+    icon: Briefcase,
+  },
+];
+
 const Portfolio = () => {
   const ref = useFadeIn();
 
@@ -45,6 +66,28 @@ const Portfolio = () => {
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Portfolio</h2>
         </div>
 
+        {/* External platforms */}
+        <div className="fade-up grid sm:grid-cols-3 gap-4 mb-12">
+          {externalLinks.map((link) => (
+            <a
+              key={link.title}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 border border-border rounded-sm p-5 hover:border-foreground/20 transition-colors bg-card"
+            >
+              <div className="bg-foreground/5 rounded-sm p-3 group-hover:bg-foreground/10 transition-colors">
+                <link.icon size={20} className="text-foreground/60" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display font-semibold text-sm">{link.title}</p>
+                <p className="text-xs text-muted-foreground">{link.description}</p>
+              </div>
+              <ExternalLink size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            </a>
+          ))}
+        </div>
+
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((p, i) => (
             <div
@@ -52,7 +95,6 @@ const Portfolio = () => {
               className="fade-up group relative bg-card border border-border rounded-sm overflow-hidden hover:border-foreground/20 transition-colors cursor-pointer"
               style={{ transitionDelay: `${i * 80}ms` }}
             >
-              {/* Placeholder visual */}
               <div className="aspect-video bg-foreground/5 flex items-center justify-center relative overflow-hidden">
                 <div className="flex items-end gap-[2px] h-12">
                   {Array.from({ length: 24 }).map((_, j) => (
