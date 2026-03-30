@@ -34,6 +34,13 @@ const About = () => {
                 I'm especially interested in projects that sit between genres — where
                 traditional instruments meet modern production.
               </p>
+              <p>
+                Outside of client work, I write and produce original music under the name{" "}
+                <span className="text-foreground font-semibold">Streetcar Scandal</span> — a
+                personal project blending indie rock, electronic textures, and raw songwriting.
+                It's where I experiment freely and push ideas that don't fit neatly into any
+                single genre.
+              </p>
             </div>
           </div>
 
