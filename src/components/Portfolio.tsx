@@ -1,5 +1,5 @@
 import { useFadeIn } from "@/hooks/useFadeIn";
-import { ExternalLink, Music, Briefcase } from "lucide-react";
+import { ExternalLink, Music, Briefcase, Youtube } from "lucide-react";
 
 const externalLinks = [
   {
