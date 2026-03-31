@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import spiralArt from "@/assets/SpiralofDoubt.png";
 
 interface Track {
   title: string;
@@ -78,15 +79,19 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
   };
 
   return (
-    <div className="rounded-sm overflow-hidden border border-border bg-card">
-      <p className="px-4 py-3 text-sm font-display font-semibold border-b border-border flex items-center gap-2">
+    <div className="rounded-sm overflow-hidden border border-border bg-card relative">
+      <div
+        className="absolute inset-0 opacity-20 bg-cover bg-center pointer-events-none"
+        style={{ backgroundImage: `url(${spiralArt})` }}
+      />
+      <p className="relative px-4 py-3 text-sm font-display font-semibold border-b border-border flex items-center gap-2">
         <Volume2 className="w-4 h-4 text-primary" />
         {title}
       </p>
       <audio ref={audioRef} src={current.src} preload="metadata" />
 
       {/* Now playing + controls */}
-      <div className="px-4 py-3 border-b border-border">
+      <div className="relative px-4 py-3 border-b border-border">
         <p className="text-xs text-muted-foreground mb-1">Now Playing</p>
         <p className="text-sm font-medium text-foreground mb-3">{current.title}</p>
 
@@ -127,7 +132,7 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
       </div>
 
       {/* Track list */}
-      <div className="divide-y divide-border">
+      <div className="relative divide-y divide-border">
         {tracks.map((track, i) => (
           <button
             key={track.src}
