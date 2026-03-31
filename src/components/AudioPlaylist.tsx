@@ -132,7 +132,7 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
       </div>
 
       {/* Track list */}
-      <div className="divide-y divide-border">
+      <div className="relative divide-y divide-border">
         {tracks.map((track, i) => (
           <button
             key={track.src}
