@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import spiralArt from "@/assets/SpiralofDoubt.png";
 
 interface Track {
   title: string;
