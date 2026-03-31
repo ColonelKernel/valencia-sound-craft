@@ -79,7 +79,11 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
   };
 
   return (
-    <div className="rounded-sm overflow-hidden border border-border bg-card">
+    <div className="rounded-sm overflow-hidden border border-border bg-card relative">
+      <div
+        className="absolute inset-0 opacity-20 bg-cover bg-center pointer-events-none"
+        style={{ backgroundImage: `url(${spiralArt})` }}
+      />
       <p className="px-4 py-3 text-sm font-display font-semibold border-b border-border flex items-center gap-2">
         <Volume2 className="w-4 h-4 text-primary" />
         {title}
