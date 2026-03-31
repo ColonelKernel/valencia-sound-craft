@@ -84,7 +84,7 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
         className="absolute inset-0 opacity-20 bg-cover bg-center pointer-events-none"
         style={{ backgroundImage: `url(${spiralArt})` }}
       />
-      <p className="px-4 py-3 text-sm font-display font-semibold border-b border-border flex items-center gap-2">
+      <p className="relative px-4 py-3 text-sm font-display font-semibold border-b border-border flex items-center gap-2">
         <Volume2 className="w-4 h-4 text-primary" />
         {title}
       </p>
