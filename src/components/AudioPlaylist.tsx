@@ -91,7 +91,7 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
       <audio ref={audioRef} src={current.src} preload="metadata" />
 
       {/* Now playing + controls */}
-      <div className="px-4 py-3 border-b border-border">
+      <div className="relative px-4 py-3 border-b border-border">
         <p className="text-xs text-muted-foreground mb-1">Now Playing</p>
         <p className="text-sm font-medium text-foreground mb-3">{current.title}</p>
 
