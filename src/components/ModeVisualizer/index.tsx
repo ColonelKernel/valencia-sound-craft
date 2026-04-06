@@ -23,7 +23,7 @@ import Metronome from "./Metronome";
 import ChordProgressionBuilder from "./ChordProgressionBuilder";
 import KeyboardVisualizer from "./KeyboardVisualizer";
 import MasterScaleReference from "./MasterScaleReference";
-import PolyrhythmTool from "./PolyrhythmTool";
+import DrumMachine from "../DrumMachine";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -113,7 +113,7 @@ const ModeVisualizer = () => {
             { id: 'progression' as const, label: 'Chord Progressions', icon: <ListMusic className="w-4 h-4" /> },
             { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
             { id: 'reference' as const, label: 'Scale Reference', icon: <BookOpen className="w-4 h-4" /> },
-            { id: 'polyrhythm' as const, label: 'Drum Machine', icon: <Drum className="w-4 h-4" /> },
+            { id: 'polyrhythm' as const, label: 'Rhythm Engine', icon: <Drum className="w-4 h-4" /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -137,7 +137,7 @@ const ModeVisualizer = () => {
 
         {activeTab === 'polyrhythm' && (
           <div>
-            <PolyrhythmTool />
+            <DrumMachine />
           </div>
         )}
 
