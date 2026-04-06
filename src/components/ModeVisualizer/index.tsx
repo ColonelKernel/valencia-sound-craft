@@ -45,6 +45,7 @@ const ModeVisualizer = () => {
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
   const [otherInstrument, setOtherInstrument] = useState(FRETTED_INSTRUMENTS[0].key);
+  const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
