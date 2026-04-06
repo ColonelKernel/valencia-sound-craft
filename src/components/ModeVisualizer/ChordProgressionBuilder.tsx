@@ -742,7 +742,7 @@ const ChordProgressionBuilder = ({
         <button
           onClick={() => {
             if (progression.length > 0) {
-              playChordTones(progression[0].chord.notes);
+              playChordTones(progression[0].chord.notes, 0.8, timbre);
             }
           }}
           className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
