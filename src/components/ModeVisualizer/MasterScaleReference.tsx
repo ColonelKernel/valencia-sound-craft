@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { getScaleNotes, MODE_INTERVALS } from "./scaleData";
+import { playScale, InstrumentTimbre } from "./audioSynth";
+import { Play, Square } from "lucide-react";
 
 // ─── Scale Families ──────────────────────────────────────────
 // "modal" families derive modes from a parent scale (each mode starts on a different degree).
