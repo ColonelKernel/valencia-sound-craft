@@ -136,7 +136,7 @@ const ModeVisualizer = () => {
         {activeTab === 'visualizer' && (
         <>
         {/* Control Panel */}
-        <div className="fade-up flex flex-wrap items-center gap-3 mb-8 p-4 rounded-lg border border-border bg-card">
+        <div className="flex flex-wrap items-center gap-3 mb-8 p-4 rounded-lg border border-border bg-card">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Root</label>
             <select
@@ -223,7 +223,7 @@ const ModeVisualizer = () => {
 
         {/* Custom Tuning Editor */}
         {isCustomTuning && (
-          <div className="fade-up flex flex-wrap items-start gap-6 mb-8 p-4 rounded-lg border border-border bg-card">
+          <div className="flex flex-wrap items-start gap-6 mb-8 p-4 rounded-lg border border-border bg-card">
             <div>
               <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
                 <Settings2 className="w-3.5 h-3.5" /> Guitar Strings (low → high)
@@ -298,7 +298,7 @@ const ModeVisualizer = () => {
         )}
 
 
-        <div className="fade-up mb-8">
+        <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <h3 className="text-lg font-semibold">
               {root} {mode}
@@ -426,7 +426,7 @@ const ModeVisualizer = () => {
         </div>
 
         {/* Sheet Music */}
-        <div className="fade-up mb-8">
+        <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <Music className="w-5 h-5" /> Staff Notation
@@ -436,7 +436,7 @@ const ModeVisualizer = () => {
         </div>
 
         {/* Instrument Selector */}
-        <div className="fade-up mb-4">
+        <div className="mb-4">
           <div className="flex items-center gap-2">
             {([
               { key: 'guitar' as const, label: 'Guitar', icon: <Guitar className="w-4 h-4" /> },
@@ -460,7 +460,7 @@ const ModeVisualizer = () => {
 
         {/* Guitar Fretboard */}
         {instrument === 'guitar' && (
-          <div className="fade-up mb-8">
+          <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <Guitar className="w-5 h-5" /> Guitar ({tuningLabel(tuning.guitar)})
               {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
@@ -484,7 +484,7 @@ const ModeVisualizer = () => {
 
         {/* Bass Fretboard */}
         {instrument === 'bass' && (
-          <div className="fade-up mb-8">
+          <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <Guitar className="w-5 h-5" /> Bass ({tuningLabel(tuning.bass)})
               {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
@@ -508,7 +508,7 @@ const ModeVisualizer = () => {
 
         {/* Keyboard */}
         {instrument === 'keyboard' && (
-          <div className="fade-up mb-8">
+          <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <Piano className="w-5 h-5" /> Keyboard
               {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
@@ -527,7 +527,7 @@ const ModeVisualizer = () => {
         )}
 
         {/* Mode Reference Table */}
-        <div className="fade-up mt-10">
+        <div className="mt-10">
           <ModeReference rootNote={root} />
         </div>
         </>
