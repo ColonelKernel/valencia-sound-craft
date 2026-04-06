@@ -196,7 +196,19 @@ const MasterScaleReference = () => {
             ))}
           </select>
         </div>
-      </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-muted-foreground">Sound</label>
+          <select
+            value={timbre}
+            onChange={e => setTimbre(e.target.value as InstrumentTimbre)}
+            className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {INSTRUMENT_TIMBRES.map(t => (
+              <option key={t.id} value={t.id}>{t.label}</option>
+            ))}
+          </select>
+        </div>
 
       {/* Mode Table */}
       <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
