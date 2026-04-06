@@ -271,6 +271,16 @@ const ChordProgressionBuilder = ({
               {vm === 'standard' ? 'Name' : vm === 'roman' ? 'ⅣⅤ' : '#'}
             </button>
           ))}
+          <button onClick={() => setShowNoteSpelling(!showNoteSpelling)}
+            className={`text-[9px] px-1.5 py-0.5 rounded border transition-colors ${showNoteSpelling ? 'border-primary bg-primary/15 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}
+            title="Show chord note spelling">
+            Notes
+          </button>
+          <button onClick={() => setShowStaff(!showStaff)}
+            className={`text-[9px] px-1.5 py-0.5 rounded border transition-colors ${showStaff ? 'border-primary bg-primary/15 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}
+            title="Show chord on staff notation">
+            Staff
+          </button>
         </div>
 
         {/* Settings gear */}
