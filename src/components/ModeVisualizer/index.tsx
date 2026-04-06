@@ -206,7 +206,7 @@ const ModeVisualizer = () => {
             {activeTab === 'visualizer' && (
             <>
         {/* Control Panel */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg border border-border bg-card">
+        <div className="flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg border border-border bg-card">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Root</label>
             <select
@@ -430,7 +430,7 @@ const ModeVisualizer = () => {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <p className="text-xs text-muted-foreground uppercase tracking-widest">Associated Chords</p>
-                <span className="text-[10px] text-muted-foreground">(click to isolate on fretboard)</span>
+                <span className="text-[10px] text-muted-foreground hidden sm:inline">(click to isolate on fretboard)</span>
                 <button
                   onClick={() => setChordDisplay(chordDisplay === 'notes' ? 'intervals' : 'notes')}
                   className="text-[10px] px-2 py-0.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
