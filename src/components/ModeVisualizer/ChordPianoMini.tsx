@@ -12,12 +12,13 @@ function norm(n: string) { return ENHARMONIC[n] || n; }
 
 interface ChordPianoMiniProps {
   chordNotes: string[];
+  chordIntervals?: string[];
   rootNote: string;
   symbol: string;
   timbre?: InstrumentTimbre;
 }
 
-const ChordPianoMini = ({ chordNotes, rootNote, symbol, timbre = 'piano' }: ChordPianoMiniProps) => {
+const ChordPianoMini = ({ chordNotes, chordIntervals, rootNote, symbol, timbre = 'piano' }: ChordPianoMiniProps) => {
   const normRoot = norm(rootNote);
   const normChord = new Set(chordNotes.map(norm));
 
@@ -41,10 +42,12 @@ const ChordPianoMini = ({ chordNotes, rootNote, symbol, timbre = 'piano' }: Chor
   const isChordTone = (n: string) => normChord.has(norm(n));
   const isRoot = (n: string) => norm(n) === normRoot;
 
-  // Find display name from original chord notes
-  const displayName = (n: string): string => {
-    const found = chordNotes.find(cn => norm(cn) === norm(n));
-    return found || n;
+  // Find display name + interval from original chord notes
+  const getLabel = (n: string): { name: string; interval: string } => {
+    const idx = chordNotes.findIndex(cn => norm(cn) === norm(n));
+    const name = idx >= 0 ? chordNotes[idx] : n;
+    const interval = idx >= 0 && chordIntervals?.[idx] ? chordIntervals[idx] : '';
+    return { name, interval };
   };
 
   return (
@@ -72,12 +75,16 @@ const ChordPianoMini = ({ chordNotes, rootNote, symbol, timbre = 'piano' }: Chor
                   }`}
                 onClick={() => active && playNote(k.note, 0, 0.35, timbre)}
               >
-                {active && (
-                  <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 text-[7px] font-bold
-                    ${root ? 'text-primary-foreground' : 'text-foreground'}`}>
-                    {displayName(k.note)}
-                  </span>
-                )}
+                {active && (() => {
+                  const { name, interval } = getLabel(k.note);
+                  return (
+                    <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 text-center leading-tight
+                      ${root ? 'text-primary-foreground' : 'text-foreground'}`}>
+                      <span className="block text-[7px] font-bold">{name}</span>
+                      {interval && <span className="block text-[5px] opacity-70">{interval}</span>}
+                    </span>
+                  );
+                })()}
               </div>
             );
           })}
@@ -103,12 +110,16 @@ const ChordPianoMini = ({ chordNotes, rootNote, symbol, timbre = 'piano' }: Chor
               }}
               onClick={() => active && playNote(bp.note, 0, 0.35, timbre)}
             >
-              {active && (
-                <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[6px] font-bold
-                  ${root ? 'text-primary-foreground' : 'text-white'}`}>
-                  {displayName(bp.note)}
-                </span>
-              )}
+              {active && (() => {
+                const { name, interval } = getLabel(bp.note);
+                return (
+                  <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 text-center leading-tight
+                    ${root ? 'text-primary-foreground' : 'text-white'}`}>
+                    <span className="block text-[6px] font-bold">{name}</span>
+                    {interval && <span className="block text-[5px] opacity-70">{interval}</span>}
+                  </span>
+                );
+              })()}
             </div>
           );
         })}
