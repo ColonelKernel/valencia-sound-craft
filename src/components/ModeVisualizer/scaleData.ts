@@ -359,7 +359,19 @@ export function getFingerForFret(fret: number, lowestFretInPosition: number): nu
 }
 
 // ─── ABC notation ───────────────────────────────────────────
-export function scaleToAbc(scaleNotes: string[]): string {
+export type ClefType = 'treble' | 'bass' | 'alto' | 'tenor';
+
+export function scaleToAbc(
+  scaleNotes: string[],
+  options?: { clef?: ClefType; timeSignature?: string; transposeSemitones?: number }
+): string {
+  const clef = options?.clef || 'treble';
+  const timeSig = options?.timeSignature || '4/4';
+  const transpose = options?.transposeSemitones || 0;
+
+  const CHROMATIC_SHARP = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const CHROMATIC_FLAT = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
   const abcMap: Record<string, string> = {
     'C':'C','C#':'^C','Db':'_D','D':'D','D#':'^D','Eb':'_E',
     'E':'E','F':'F','F#':'^F','Gb':'_G','G':'G','G#':'^G','Ab':'_A',
@@ -370,29 +382,45 @@ export function scaleToAbc(scaleNotes: string[]): string {
     'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11,
   };
 
+  // Transpose notes if needed
+  const transposedNotes = transpose === 0 ? scaleNotes : scaleNotes.map(n => {
+    const idx = chromaticIndex[n] ?? 0;
+    const newIdx = ((idx + transpose) % 12 + 12) % 12;
+    const useFlats = n.includes('b') || ['F','Bb','Eb','Ab','Db','Gb'].includes(n);
+    return useFlats ? CHROMATIC_FLAT[newIdx] : CHROMATIC_SHARP[newIdx];
+  });
+
   let octave = 0;
   let prevPitch = -1;
   const abcNotes: string[] = [];
 
-  for (const n of scaleNotes) {
+  // For bass clef, shift down an octave by using uppercase + commas
+  const bassOffset = clef === 'bass' ? -2 : clef === 'alto' || clef === 'tenor' ? -1 : 0;
+
+  for (const n of transposedNotes) {
     const base = abcMap[n] || n;
     const pitch = chromaticIndex[n] ?? 0;
     if (prevPitch >= 0 && pitch <= prevPitch) octave++;
     prevPitch = pitch;
 
-    if (octave === 0) abcNotes.push(base);
-    else if (octave === 1) abcNotes.push(base.toLowerCase());
-    else abcNotes.push(base.toLowerCase() + "'".repeat(octave - 1));
+    const effectiveOctave = octave + bassOffset;
+    if (effectiveOctave <= -2) abcNotes.push(base + ','.repeat(Math.abs(effectiveOctave) - 1));
+    else if (effectiveOctave === -1) abcNotes.push(base + ',');
+    else if (effectiveOctave === 0) abcNotes.push(base);
+    else if (effectiveOctave === 1) abcNotes.push(base.toLowerCase());
+    else abcNotes.push(base.toLowerCase() + "'".repeat(effectiveOctave - 1));
   }
 
-  // High root — always one octave above the last note
-  const rootBase = abcMap[scaleNotes[0]] || scaleNotes[0];
-  const finalOctave = octave + 1;
-  if (finalOctave === 1) abcNotes.push(rootBase.toLowerCase());
+  // High root
+  const rootBase = abcMap[transposedNotes[0]] || transposedNotes[0];
+  const finalOctave = octave + 1 + bassOffset;
+  if (finalOctave <= -2) abcNotes.push(rootBase + ','.repeat(Math.abs(finalOctave) - 1));
+  else if (finalOctave === -1) abcNotes.push(rootBase + ',');
+  else if (finalOctave === 0) abcNotes.push(rootBase);
+  else if (finalOctave === 1) abcNotes.push(rootBase.toLowerCase());
   else abcNotes.push(rootBase.toLowerCase() + "'".repeat(finalOctave - 1));
 
-  const noteCount = abcNotes.length;
-  return `X:1\nT:\nM:${noteCount}/8\nL:1/8\nK:C clef=treble\n${abcNotes.join(' ')} |]\n`;
+  return `X:1\nT:\nM:${timeSig}\nL:1/8\nK:C clef=${clef}\n${abcNotes.join(' ')} |]\n`;
 }
 
 // ─── Chord Spelling ─────────────────────────────────────────
