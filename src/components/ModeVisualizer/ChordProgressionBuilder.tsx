@@ -42,6 +42,88 @@ interface ChordProgressionBuilderProps {
   mode: string;
 }
 
+// ─── MIDI Export ────────────────────────────────────────────
+const NOTE_MIDI: Record<string, number> = {
+  'C': 60, 'C#': 61, 'Db': 61, 'D': 62, 'D#': 63, 'Eb': 63,
+  'E': 64, 'F': 65, 'F#': 66, 'Gb': 66, 'G': 67, 'G#': 68, 'Ab': 68,
+  'A': 69, 'A#': 70, 'Bb': 70, 'B': 71,
+};
+
+function writeVarLen(value: number): number[] {
+  const bytes: number[] = [];
+  let v = value;
+  bytes.unshift(v & 0x7f);
+  while ((v >>= 7) > 0) {
+    bytes.unshift((v & 0x7f) | 0x80);
+  }
+  return bytes;
+}
+
+function buildMidiFile(chords: ProgressionChord[], bpm: number, beatsPerChord: number): Uint8Array {
+  const ticksPerBeat = 480;
+  const chordTicks = ticksPerBeat * beatsPerChord;
+  const velocity = 100;
+
+  // Build track data
+  const trackEvents: number[] = [];
+
+  // Tempo meta event: FF 51 03 tt tt tt (microseconds per beat)
+  const usPerBeat = Math.round(60_000_000 / bpm);
+  trackEvents.push(0x00, 0xff, 0x51, 0x03,
+    (usPerBeat >> 16) & 0xff, (usPerBeat >> 8) & 0xff, usPerBeat & 0xff);
+
+  chords.forEach((pc) => {
+    const midiNotes = pc.chord.notes
+      .map(n => NOTE_MIDI[n])
+      .filter((n): n is number => n !== undefined);
+
+    // Note-on events (delta=0 for all notes in chord)
+    midiNotes.forEach((note, i) => {
+      trackEvents.push(...writeVarLen(i === 0 ? 0 : 0));
+      trackEvents.push(0x90, note, velocity);
+    });
+
+    // Note-off events after chord duration
+    midiNotes.forEach((note, i) => {
+      trackEvents.push(...writeVarLen(i === 0 ? chordTicks : 0));
+      trackEvents.push(0x80, note, 0);
+    });
+  });
+
+  // End of track
+  trackEvents.push(0x00, 0xff, 0x2f, 0x00);
+
+  // Build MIDI file
+  const header = [
+    0x4d, 0x54, 0x68, 0x64, // "MThd"
+    0x00, 0x00, 0x00, 0x06, // header length
+    0x00, 0x00,             // format 0
+    0x00, 0x01,             // 1 track
+    (ticksPerBeat >> 8) & 0xff, ticksPerBeat & 0xff,
+  ];
+
+  const trackHeader = [
+    0x4d, 0x54, 0x72, 0x6b, // "MTrk"
+    (trackEvents.length >> 24) & 0xff,
+    (trackEvents.length >> 16) & 0xff,
+    (trackEvents.length >> 8) & 0xff,
+    trackEvents.length & 0xff,
+  ];
+
+  return new Uint8Array([...header, ...trackHeader, ...trackEvents]);
+}
+
+function downloadMidi(chords: ProgressionChord[], bpm: number, beatsPerChord: number, root: string, mode: string) {
+  const data = buildMidiFile(chords, bpm, beatsPerChord);
+  const blob = new Blob([data], { type: 'audio/midi' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${root}_${mode}_progression.mid`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ─── Audio ──────────────────────────────────────────────────
 function playChordTones(notes: string[], duration = 0.8) {
   const ctx = new AudioContext();
