@@ -556,7 +556,7 @@ const ModeVisualizer = () => {
         {/* Guitar Fretboard */}
         {instrument === 'guitar' && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 flex flex-wrap items-center gap-2">
               <Guitar className="w-5 h-5" /> Guitar ({tuningLabel(activeGuitarTuning)})
               <div className="flex items-center gap-1 ml-2">
                 {([6, 7, 8] as const).map((n) => (
@@ -596,7 +596,7 @@ const ModeVisualizer = () => {
         {/* Bass Fretboard */}
         {instrument === 'bass' && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 flex flex-wrap items-center gap-2">
               <Guitar className="w-5 h-5" /> Bass ({tuningLabel(activeBassTuning)})
               <div className="flex items-center gap-1 ml-2">
                 {([4, 5, 6] as const).map((n) => (
