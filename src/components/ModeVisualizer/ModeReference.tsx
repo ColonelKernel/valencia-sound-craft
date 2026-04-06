@@ -111,6 +111,32 @@ const ModeReference = ({ rootNote = 'C', timbre = 'piano' }: ModeReferenceProps)
     });
   };
 
+  const handlePlayScale = (modeName: string) => {
+    // Stop any currently playing
+    playTimeouts.current.forEach(clearTimeout);
+    playTimeouts.current = [];
+    
+    if (playingMode === modeName) {
+      setPlayingMode(null);
+      return;
+    }
+    
+    const notes = getScaleNotes(selectedRoot, modeName);
+    // Ascending + descending + final root
+    const ascending = [...notes, notes[0]];
+    const descending = [...notes].reverse();
+    const fullScale = [...ascending, ...descending.slice(1)];
+    
+    setPlayingMode(modeName);
+    playScale(fullScale, 180, timbre);
+    
+    const totalDuration = fullScale.length * 180;
+    const endTimeout = window.setTimeout(() => {
+      setPlayingMode(null);
+    }, totalDuration);
+    playTimeouts.current.push(endTimeout);
+  };
+
   const getNoteStyle = (note: string, isRoot: boolean) => {
     if (isRoot) return "bg-amber-500 text-black";
     if (isSharp(note)) return "bg-blue-600 text-white";
