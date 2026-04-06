@@ -25,10 +25,12 @@ const ModeVisualizer = () => {
   const [showFingers, setShowFingers] = useState(false);
   const [tuningIdx, setTuningIdx] = useState(0);
   const [hoveredNote, setHoveredNote] = useState<string | null>(null);
+  const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
+  const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
-  const chords = MODE_CHORDS[mode] || [];
+  const chordSpellings = getChordSpellings(scaleNotes, mode);
   const tuning = TUNING_PRESETS[tuningIdx];
 
   const getNoteStyle = (note: string, isRoot: boolean) => {
