@@ -356,7 +356,7 @@ const ModeVisualizer = () => {
                 }`}
                 onMouseEnter={() => setHoveredNote(note)}
                 onMouseLeave={() => setHoveredNote(null)}
-                onClick={() => playNote(note)}
+                onClick={() => playNote(note, 0, 0.4, timbre)}
               >
                 {showIntervals ? intervals[i] : note}
               </div>
