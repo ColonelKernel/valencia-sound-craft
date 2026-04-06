@@ -15,6 +15,7 @@ import {
 } from "./scaleData";
 import Fretboard from "./Fretboard";
 import SheetMusic from "./SheetMusic";
+import ModeReference from "./ModeReference";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -274,6 +275,11 @@ const ModeVisualizer = () => {
             hoveredNote={hoveredNote}
             onNoteHover={setHoveredNote}
           />
+        </div>
+
+        {/* Mode Reference Table */}
+        <div className="fade-up mt-10">
+          <ModeReference rootNote={root} />
         </div>
       </div>
     </section>
