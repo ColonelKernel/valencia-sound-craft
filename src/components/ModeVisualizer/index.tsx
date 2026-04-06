@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2 } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
@@ -18,6 +18,8 @@ import { playNote, playChord, playScale } from "./audioSynth";
 import Fretboard from "./Fretboard";
 import SheetMusic from "./SheetMusic";
 import ModeReference from "./ModeReference";
+import Metronome from "./Metronome";
+import ChordProgressionBuilder from "./ChordProgressionBuilder";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
