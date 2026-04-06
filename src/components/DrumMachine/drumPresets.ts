@@ -17,6 +17,15 @@ export interface TrackPreset {
 
 export type TimeFeel = 'straight' | 'swing' | 'compound' | 'asymmetric' | 'polyrhythmic';
 export type Complexity = 'beginner' | 'intermediate' | 'advanced';
+export type RhythmType = 'groove' | 'odd-meter' | 'tala' | 'trance';
+
+export interface TalaStructure {
+  name: string;
+  beats: number;
+  vibhags: number[];
+  sam: number;
+  khali: number;
+}
 
 export interface PatternPreset {
   name: string;
@@ -47,6 +56,9 @@ export interface PatternPreset {
   complexity: Complexity;
   subdivisionType?: string;
   regional?: boolean; // inherited from broader region
+  rhythmType?: RhythmType;
+  konnakol?: boolean;
+  talaStructure?: TalaStructure;
 }
 
 // ─── Velocity shorthands ────────────────────────────────────────────────────
@@ -3951,6 +3963,656 @@ export const DRUM_PRESETS: PatternPreset[] = [
       { instrumentId: 'clap', steps: [_,_,_,_,_,_,_,_,X,_,_,_,_,_,_,_], subdivisions: 16 },
     ],
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MIDDLE EAST — LEVANT
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    name: 'Maqsum',
+    category: 'Middle Eastern',
+    region: 'Middle East',
+    country: 'Egypt',
+    countryCode: 'EG',
+    description: 'The backbone of Arabic music — DUM-tak-DUM-tak. Used in pop, classical, and belly dance.',
+    bpm: 110,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 2],
+    tempoRange: [80, 140] as [number, number],
+    instrumentRoles: { pulse: 'Darbuka (DUM)', groove: 'Darbuka (tek/ka)', ornament: 'Riq' },
+    artists: ['Hossam Ramzy', 'Mohamed Abdel Wahab'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,_,_,x,_,X,_,_,_,_,_,_,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,_,_,X,_,_,_,_,_,_,_,X,_,_,_], subdivisions: 16 },
+      { instrumentId: 'hh-closed', steps: [x,_,x,_,x,_,x,_,x,_,x,_,x,_,x,_], subdivisions: 16 },
+      { instrumentId: 'shaker', steps: [g,g,g,g,g,g,g,g,g,g,g,g,g,g,g,g], subdivisions: 16 },
+    ],
+  },
+  {
+    name: 'Baladi',
+    category: 'Middle Eastern',
+    region: 'Middle East',
+    country: 'Egypt',
+    countryCode: 'EG',
+    description: 'Earthy, double-DUM pattern. Foundation of Egyptian folk and belly dance music.',
+    bpm: 100,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 2],
+    tempoRange: [80, 130] as [number, number],
+    instrumentRoles: { pulse: 'Tabla Baladi', groove: 'Darbuka', ornament: 'Sagat' },
+    artists: ['Hossam Ramzy', 'Said El Artist'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,X,_,_,_,_,_,x,_,X,_,_,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,_,_,_,_,_,_,X,_,_,_,_,_,X,_], subdivisions: 16 },
+      { instrumentId: 'hh-closed', steps: [x,_,x,_,x,_,x,_,x,_,x,_,x,_,x,_], subdivisions: 16 },
+    ],
+  },
+  {
+    name: 'Dabke',
+    category: 'Levantine',
+    region: 'Middle East',
+    country: 'Lebanon',
+    countryCode: 'LB',
+    description: 'Stomp-driven line dance of the Levant. Strong downbeat with syncopated kicks.',
+    bpm: 150,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 2],
+    tempoRange: [120, 180] as [number, number],
+    instrumentRoles: { pulse: 'Tablah (bass)', groove: 'Tablah (tek)', ornament: 'Mijwiz drone' },
+    artists: ['Fairuz', 'ASi El Hallani', 'Wadih El Safi'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,X,_,x,_,X,_,_,_,x,_,X,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,_,_,_,X,_,_,X,_,_,_,_,X], subdivisions: 16 },
+      { instrumentId: 'clap', steps: [X,_,_,_,_,_,_,_,X,_,_,_,_,_,_,_], subdivisions: 16 },
+      { instrumentId: 'shaker', steps: [x,_,x,_,x,_,x,_,x,_,x,_,x,_,x,_], subdivisions: 16 },
+    ],
+  },
+  {
+    name: 'Saidi',
+    category: 'Middle Eastern',
+    region: 'Middle East',
+    country: 'Egypt',
+    countryCode: 'EG',
+    description: 'Upper Egyptian folk rhythm. Heavy, earthy DUM pattern with cane dance tradition.',
+    bpm: 120,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 2],
+    tempoRange: [100, 150] as [number, number],
+    instrumentRoles: { pulse: 'Tabla Baladi', groove: 'Darbuka', ornament: 'Mizmar' },
+    artists: ['Metqal Qenawi', 'Les Musiciens du Nil'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,X,_,_,_,X,_,_,_,_,_,x,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,_,_,_,_,X,_,_,_,_,_,X,_,_,_], subdivisions: 16 },
+      { instrumentId: 'hh-closed', steps: [x,_,x,_,x,_,x,_,x,_,x,_,x,_,x,_], subdivisions: 16 },
+    ],
+  },
+  {
+    name: 'Malfuf',
+    category: 'Middle Eastern',
+    region: 'Middle East',
+    country: 'Egypt',
+    countryCode: 'EG',
+    description: 'Fast 2/4 rhythm. Drives Egyptian pop music and entrance music for belly dancers.',
+    bpm: 160,
+    swing: 0,
+    timeSignature: [2, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2],
+    tempoRange: [130, 200] as [number, number],
+    instrumentRoles: { pulse: 'Darbuka (DUM)', groove: 'Darbuka (tek)' },
+    artists: ['Amr Diab', 'Hossam Ramzy'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,_,_,_,_], subdivisions: 8 },
+      { instrumentId: 'rimshot', steps: [_,_,_,X,_,X,_,X], subdivisions: 8 },
+      { instrumentId: 'hh-closed', steps: [x,x,x,x,x,x,x,x], subdivisions: 8 },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TURKEY
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    name: 'Aksak',
+    category: 'Turkish',
+    region: 'Middle East',
+    country: 'Turkey',
+    countryCode: 'TR',
+    description: 'Classic 9/8 "limping" rhythm (2+2+2+3). Fundamental to Turkish classical and folk music.',
+    bpm: 130,
+    swing: 0,
+    timeSignature: [9, 8] as [number, number],
+    timeFeel: 'asymmetric' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 3],
+    tempoRange: [100, 160] as [number, number],
+    instrumentRoles: { pulse: 'Davul (bass)', groove: 'Darbuka', ornament: 'Zills' },
+    artists: ['Burhan Öçal', 'Okay Temiz'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'odd-meter' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,X,_,_,X,_], subdivisions: 9 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,_,_,X,_,_], subdivisions: 9 },
+      { instrumentId: 'hh-closed', steps: [x,_,x,_,x,_,x,_,x], subdivisions: 9 },
+    ],
+  },
+  {
+    name: 'Karşılama',
+    category: 'Turkish',
+    region: 'Middle East',
+    country: 'Turkey',
+    countryCode: 'TR',
+    description: 'Face-to-face dance in 9/8 (2+2+2+3). Lively folk dance from Thrace and Anatolia.',
+    bpm: 150,
+    swing: 0,
+    timeSignature: [9, 8] as [number, number],
+    timeFeel: 'asymmetric' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 3],
+    tempoRange: [120, 180] as [number, number],
+    instrumentRoles: { pulse: 'Davul', groove: 'Darbuka', ornament: 'Zurna accents' },
+    artists: ['Hüsnü Şenlendirici', 'Brenna MacCrimmon'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'odd-meter' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,x,_,X,_,x,_,_], subdivisions: 9 },
+      { instrumentId: 'rimshot', steps: [_,X,_,X,_,X,_,_,X], subdivisions: 9 },
+      { instrumentId: 'hh-closed', steps: [x,x,x,x,x,x,x,x,x], subdivisions: 9 },
+      { instrumentId: 'clap', steps: [X,_,_,_,X,_,_,_,_], subdivisions: 9 },
+    ],
+  },
+  {
+    name: 'Devr-i Hindi',
+    category: 'Turkish',
+    region: 'Middle East',
+    country: 'Turkey',
+    countryCode: 'TR',
+    description: 'Ottoman classical 7/8 rhythm (3+2+2). Used in Turkish art music and Sufi ceremonies.',
+    bpm: 110,
+    swing: 0,
+    timeSignature: [7, 8] as [number, number],
+    timeFeel: 'asymmetric' as TimeFeel,
+    pulseGrouping: [3, 2, 2],
+    tempoRange: [80, 130] as [number, number],
+    instrumentRoles: { pulse: 'Kudüm', groove: 'Bendir', ornament: 'Def' },
+    artists: ['Kudsi Erguner', 'Mercan Dede'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'odd-meter' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,x,_,x,_], subdivisions: 7 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,X,_,X], subdivisions: 7 },
+      { instrumentId: 'hh-closed', steps: [x,_,x,x,_,x,_], subdivisions: 7 },
+    ],
+  },
+  {
+    name: 'Çiftetelli',
+    category: 'Turkish',
+    region: 'Middle East',
+    country: 'Turkey',
+    countryCode: 'TR',
+    description: 'Sensuous 8/4 belly dance rhythm. Turkish variant of the pan-Middle Eastern tsifteteli.',
+    bpm: 100,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 2],
+    tempoRange: [80, 120] as [number, number],
+    instrumentRoles: { pulse: 'Darbuka (DUM)', groove: 'Darbuka (tek)', ornament: 'Finger cymbals' },
+    artists: ['Mustafa Kandıralı', 'Hüsnü Şenlendirici'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,_,_,X,_,_,_,X,_,_,_,_,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,_,_,X,_,_,_,_,_,_,_,X,_,X,_], subdivisions: 16 },
+      { instrumentId: 'hh-closed', steps: [x,_,x,_,x,_,x,_,x,_,x,_,x,_,x,_], subdivisions: 16 },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PERSIA (IRAN)
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    name: 'Persian 6/8',
+    category: 'Persian',
+    region: 'Middle East',
+    country: 'Iran',
+    countryCode: 'IR',
+    description: 'Standard Persian 6/8 groove. Foundation of much Iranian classical and folk music.',
+    bpm: 120,
+    swing: 0,
+    timeSignature: [6, 8] as [number, number],
+    timeFeel: 'compound' as TimeFeel,
+    pulseGrouping: [3, 3],
+    tempoRange: [90, 150] as [number, number],
+    instrumentRoles: { pulse: 'Tombak (tom)', groove: 'Tombak (riz/bak)', ornament: 'Daf' },
+    artists: ['Hossein Tehrani', 'Pejman Hadadi'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,x,_,_,X,_,_,x,_,_], subdivisions: 12 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,X,_,_,_,X,_,X,_], subdivisions: 12 },
+      { instrumentId: 'shaker', steps: [x,x,x,x,x,x,x,x,x,x,x,x], subdivisions: 12 },
+    ],
+  },
+  {
+    name: 'Tombak Solo',
+    category: 'Persian',
+    region: 'Middle East',
+    country: 'Iran',
+    countryCode: 'IR',
+    description: 'Articulated tombak pattern with TOM-BAK-KE strokes. Persian classical percussion.',
+    bpm: 90,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 2],
+    tempoRange: [60, 120] as [number, number],
+    instrumentRoles: { pulse: 'Tombak (tom)', groove: 'Tombak (bak)', ornament: 'Tombak (riz/finger rolls)' },
+    artists: ['Hossein Tehrani', 'Mohammad Esmaili'],
+    complexity: 'advanced' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,_,_,X,_,_,_,_,_,x,_,_,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,x,_,X,_,_,_,x,_,X,_,_,x,X,_], subdivisions: 16 },
+      { instrumentId: 'hh-closed', steps: [_,_,_,g,_,g,_,_,_,g,_,g,_,_,_,g], subdivisions: 16 },
+    ],
+  },
+  {
+    name: 'Bandari',
+    category: 'Persian',
+    region: 'Middle East',
+    country: 'Iran',
+    countryCode: 'IR',
+    description: 'Southern Iranian port-city dance rhythm. High energy, Gulf-influenced 6/8 groove.',
+    bpm: 140,
+    swing: 0,
+    timeSignature: [6, 8] as [number, number],
+    timeFeel: 'compound' as TimeFeel,
+    pulseGrouping: [3, 3],
+    tempoRange: [120, 170] as [number, number],
+    instrumentRoles: { pulse: 'Dohol (bass)', groove: 'Dohol (stick)', ornament: 'Ney-Anban' },
+    artists: ['Bandari folk tradition'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,X,_,_,X,_,_,x,_,_], subdivisions: 12 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,_,X,_,_,X,_,_,X], subdivisions: 12 },
+      { instrumentId: 'clap', steps: [_,_,_,X,_,_,_,_,_,X,_,_], subdivisions: 12 },
+      { instrumentId: 'shaker', steps: [x,x,x,x,x,x,x,x,x,x,x,x], subdivisions: 12 },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GULF STATES
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    name: 'Khaleeji',
+    category: 'Gulf',
+    region: 'Middle East',
+    country: 'Saudi Arabia',
+    countryCode: 'SA',
+    description: 'Gulf swing feel in 2/4. Distinctive shuffled groove for Khaleeji pop and hair-dance.',
+    bpm: 115,
+    swing: 20,
+    timeSignature: [2, 4] as [number, number],
+    timeFeel: 'swing' as TimeFeel,
+    pulseGrouping: [2, 2],
+    tempoRange: [90, 140] as [number, number],
+    instrumentRoles: { pulse: 'Tabl (bass)', groove: 'Mirwas', ornament: 'Clapping' },
+    artists: ['Mohammed Abdo', 'Rashed Al Majed'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,_,_,x,_], subdivisions: 8 },
+      { instrumentId: 'bongo', steps: [_,_,X,_,X,_,_,X], subdivisions: 8 },
+      { instrumentId: 'clap', steps: [_,_,_,_,X,_,_,_], subdivisions: 8 },
+      { instrumentId: 'shaker', steps: [x,x,x,x,x,x,x,x], subdivisions: 8 },
+    ],
+  },
+  {
+    name: 'Samri',
+    category: 'Gulf',
+    region: 'Middle East',
+    country: 'Saudi Arabia',
+    countryCode: 'SA',
+    description: 'Hypnotic 6/8 trance groove. Performed with poetry recitation and swaying movement.',
+    bpm: 100,
+    swing: 0,
+    timeSignature: [6, 8] as [number, number],
+    timeFeel: 'compound' as TimeFeel,
+    pulseGrouping: [3, 3],
+    tempoRange: [80, 120] as [number, number],
+    instrumentRoles: { pulse: 'Tabl', groove: 'Mirwas', ornament: 'Handclaps/Voice' },
+    artists: ['Saudi Samri tradition'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'trance' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,_,_,X,_,_,_,_,_], subdivisions: 12 },
+      { instrumentId: 'bongo', steps: [_,_,X,_,_,X,_,_,X,_,_,X], subdivisions: 12 },
+      { instrumentId: 'clap', steps: [X,_,_,_,_,_,X,_,_,_,_,_], subdivisions: 12 },
+    ],
+  },
+  {
+    name: 'Ardah',
+    category: 'Gulf',
+    region: 'Middle East',
+    country: 'Saudi Arabia',
+    countryCode: 'SA',
+    description: 'Ceremonial sword dance. Powerful unison drumming with call-and-response vocals.',
+    bpm: 90,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 2],
+    tempoRange: [70, 110] as [number, number],
+    instrumentRoles: { pulse: 'Tabl (bass)', groove: 'Tabl (stick)', ornament: 'Sword/Voice' },
+    artists: ['Saudi national tradition'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,X,_,_,_,X,_,_,_,X,_,_,_], subdivisions: 16 },
+      { instrumentId: 'snare', steps: [_,_,_,_,_,_,X,_,_,_,_,_,_,_,X,_], subdivisions: 16 },
+      { instrumentId: 'clap', steps: [X,_,_,_,_,_,_,_,X,_,_,_,_,_,_,_], subdivisions: 16 },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // IRAQ
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    name: 'Jūrjīnā',
+    category: 'Iraqi',
+    region: 'Middle East',
+    country: 'Iraq',
+    countryCode: 'IQ',
+    description: 'Classic 10/8 Iraqi maqam rhythm. Asymmetric cycle (3+2+2+3) drives formal maqam performances.',
+    bpm: 85,
+    swing: 0,
+    timeSignature: [10, 8] as [number, number],
+    timeFeel: 'asymmetric' as TimeFeel,
+    pulseGrouping: [3, 2, 2, 3],
+    tempoRange: [70, 110] as [number, number],
+    instrumentRoles: { pulse: 'Tabla/Dumbek (DUM)', groove: 'Tabla (tek/ka)', ornament: 'Riq' },
+    artists: ['Munir Bashir', 'Naseer Shamma'],
+    complexity: 'advanced' as Complexity,
+    rhythmType: 'odd-meter' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,x,_,x,_,X,_,_], subdivisions: 10 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,X,_,X,_,_,X], subdivisions: 10 },
+      { instrumentId: 'hh-closed', steps: [x,_,x,x,_,x,_,x,_,x], subdivisions: 10 },
+    ],
+  },
+  {
+    name: 'Chobi',
+    category: 'Iraqi',
+    region: 'Middle East',
+    country: 'Iraq',
+    countryCode: 'IQ',
+    description: 'Fast Iraqi folk dance in 6/8. Similar to dabke with heavy downbeat stomping.',
+    bpm: 140,
+    swing: 0,
+    timeSignature: [6, 8] as [number, number],
+    timeFeel: 'compound' as TimeFeel,
+    pulseGrouping: [3, 3],
+    tempoRange: [120, 170] as [number, number],
+    instrumentRoles: { pulse: 'Zorna/Davul bass', groove: 'Davul stick', ornament: 'Clapping' },
+    artists: ['Ilham Al Madfai', 'Kadim Al Sahir'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,X,_,_,X,_,_,x,_,_], subdivisions: 12 },
+      { instrumentId: 'snare', steps: [_,_,X,_,_,X,_,_,X,_,_,X], subdivisions: 12 },
+      { instrumentId: 'clap', steps: [X,_,_,_,_,_,X,_,_,_,_,_], subdivisions: 12 },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // AFGHANISTAN
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    name: 'Attan',
+    category: 'Afghan',
+    region: 'South Asia',
+    country: 'Afghanistan',
+    countryCode: 'AF',
+    description: 'National dance of Afghanistan in 7/8 (3+2+2). Spiraling circle dance that accelerates.',
+    bpm: 140,
+    swing: 0,
+    timeSignature: [7, 8] as [number, number],
+    timeFeel: 'asymmetric' as TimeFeel,
+    pulseGrouping: [3, 2, 2],
+    tempoRange: [110, 200] as [number, number],
+    instrumentRoles: { pulse: 'Dhol (bass)', groove: 'Dhol (stick)', ornament: 'Zerbaghali' },
+    artists: ['Afghan folk tradition', 'Ustad Mahwash'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'odd-meter' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,x,_,x,_], subdivisions: 7 },
+      { instrumentId: 'snare', steps: [_,_,X,_,X,_,X], subdivisions: 7 },
+      { instrumentId: 'hh-closed', steps: [x,_,x,x,_,x,_], subdivisions: 7 },
+      { instrumentId: 'clap', steps: [X,_,_,_,_,_,_], subdivisions: 7 },
+    ],
+  },
+  {
+    name: 'Logari',
+    category: 'Afghan',
+    region: 'South Asia',
+    country: 'Afghanistan',
+    countryCode: 'AF',
+    description: 'Folk dance rhythm in 6/8 from Logar province. Lively and celebratory.',
+    bpm: 130,
+    swing: 0,
+    timeSignature: [6, 8] as [number, number],
+    timeFeel: 'compound' as TimeFeel,
+    pulseGrouping: [3, 3],
+    tempoRange: [110, 160] as [number, number],
+    instrumentRoles: { pulse: 'Dhol', groove: 'Zerbaghali', ornament: 'Tabla' },
+    artists: ['Ahmad Zahir', 'Afghan folk tradition'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,x,_,_,X,_,_,x,_,_], subdivisions: 12 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,_,X,_,_,X,_,_,X], subdivisions: 12 },
+      { instrumentId: 'shaker', steps: [x,x,x,x,x,x,x,x,x,x,x,x], subdivisions: 12 },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // INDIA — TALA SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    name: 'Teentaal',
+    category: 'Indian Classical',
+    region: 'South Asia',
+    country: 'India',
+    countryCode: 'IN',
+    description: '16-beat tala cycle (4+4+4+4). The most common tala in Hindustani classical music.',
+    bpm: 80,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [4, 4, 4, 4],
+    tempoRange: [40, 160] as [number, number],
+    instrumentRoles: { pulse: 'Tabla (bayan/bass)', groove: 'Tabla (dayan/treble)', ornament: 'Lehara melody' },
+    artists: ['Zakir Hussain', 'Alla Rakha', 'Pandit Kishan Maharaj'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'tala' as const,
+    konnakol: true,
+    talaStructure: { name: 'Teentaal', beats: 16, vibhags: [4, 4, 4, 4], sam: 1, khali: 9 },
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,x,_,_,_,_,_,_,_,x,_,_,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,_,_,X,_,_,_,X,_,_,_,X,_], subdivisions: 16 },
+      { instrumentId: 'bongo', steps: [X,_,x,x,X,_,x,x,X,_,x,x,X,_,x,x], subdivisions: 16 },
+      { instrumentId: 'hh-closed', steps: [x,_,_,x,x,_,_,x,x,_,_,x,x,_,_,x], subdivisions: 16 },
+    ],
+  },
+  {
+    name: 'Jhaptaal',
+    category: 'Indian Classical',
+    region: 'South Asia',
+    country: 'India',
+    countryCode: 'IN',
+    description: '10-beat tala cycle (2+3+2+3). Elegant asymmetric cycle used in khayal and instrumental music.',
+    bpm: 70,
+    swing: 0,
+    timeSignature: [10, 8] as [number, number],
+    timeFeel: 'asymmetric' as TimeFeel,
+    pulseGrouping: [2, 3, 2, 3],
+    tempoRange: [40, 120] as [number, number],
+    instrumentRoles: { pulse: 'Tabla bayan', groove: 'Tabla dayan', ornament: 'Lehara' },
+    artists: ['Zakir Hussain', 'Swapan Chaudhuri'],
+    complexity: 'advanced' as Complexity,
+    rhythmType: 'tala' as const,
+    konnakol: true,
+    talaStructure: { name: 'Jhaptaal', beats: 10, vibhags: [2, 3, 2, 3], sam: 1, khali: 6 },
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,_,_,_,_,x,_], subdivisions: 10 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,_,X,_,X,_,_], subdivisions: 10 },
+      { instrumentId: 'bongo', steps: [X,x,X,x,x,X,x,X,x,x], subdivisions: 10 },
+    ],
+  },
+  {
+    name: 'Rupak',
+    category: 'Indian Classical',
+    region: 'South Asia',
+    country: 'India',
+    countryCode: 'IN',
+    description: '7-beat tala cycle (3+2+2). Starts on khali (wave). Meditative, flowing quality.',
+    bpm: 75,
+    swing: 0,
+    timeSignature: [7, 8] as [number, number],
+    timeFeel: 'asymmetric' as TimeFeel,
+    pulseGrouping: [3, 2, 2],
+    tempoRange: [40, 130] as [number, number],
+    instrumentRoles: { pulse: 'Tabla bayan', groove: 'Tabla dayan' },
+    artists: ['Zakir Hussain', 'Anindo Chatterjee'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'tala' as const,
+    konnakol: true,
+    talaStructure: { name: 'Rupak', beats: 7, vibhags: [3, 2, 2], sam: 1, khali: 1 },
+    tracks: [
+      { instrumentId: 'kick', steps: [_,_,_,X,_,X,_], subdivisions: 7 },
+      { instrumentId: 'rimshot', steps: [X,_,X,_,X,_,X], subdivisions: 7 },
+      { instrumentId: 'bongo', steps: [x,x,x,X,x,X,x], subdivisions: 7 },
+    ],
+  },
+  {
+    name: 'Adi Tala',
+    category: 'Indian Classical',
+    region: 'South Asia',
+    country: 'India',
+    countryCode: 'IN',
+    description: '8-beat Carnatic tala cycle (4+2+2). Most common tala in South Indian classical music.',
+    bpm: 80,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [4, 2, 2],
+    tempoRange: [40, 160] as [number, number],
+    instrumentRoles: { pulse: 'Mridangam (bass)', groove: 'Mridangam (treble)', ornament: 'Kanjira/Ghatam' },
+    artists: ['Palghat Mani Iyer', 'Umayalpuram K. Sivaraman', 'Vikku Vinayakram'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'tala' as const,
+    konnakol: true,
+    talaStructure: { name: 'Adi Tala', beats: 8, vibhags: [4, 2, 2], sam: 1, khali: 0 },
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,x,_,x,_,X,_,_,_,x,_,x,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,_,X,_,X,_,_,X,_,_,X,_,X], subdivisions: 16 },
+      { instrumentId: 'bongo', steps: [X,x,x,x,X,x,X,x,X,x,x,x,X,x,X,x], subdivisions: 16 },
+    ],
+  },
+  {
+    name: 'Keherwa',
+    category: 'Indian Classical',
+    region: 'South Asia',
+    country: 'India',
+    countryCode: 'IN',
+    description: '8-beat light tala (4+4). Foundation of Bollywood music, qawwali, and bhajan.',
+    bpm: 130,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [4, 4],
+    tempoRange: [80, 200] as [number, number],
+    instrumentRoles: { pulse: 'Dholak (bass)', groove: 'Dholak (treble)', ornament: 'Chimta/Manjira' },
+    artists: ['Nusrat Fateh Ali Khan', 'Bollywood tradition'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'tala' as const,
+    konnakol: true,
+    talaStructure: { name: 'Keherwa', beats: 8, vibhags: [4, 4], sam: 1, khali: 5 },
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,x,_,_,_,_,_,_,_,x,_,_,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,_,_,_,_,X,_,_,_,_,_,_,_,X,_], subdivisions: 16 },
+      { instrumentId: 'clap', steps: [X,_,_,_,_,_,_,_,X,_,_,_,_,_,_,_], subdivisions: 16 },
+      { instrumentId: 'shaker', steps: [x,_,x,_,x,_,x,_,x,_,x,_,x,_,x,_], subdivisions: 16 },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PAKISTAN
+  // ═══════════════════════════════════════════════════════════════════════════
+  {
+    name: 'Qawwali Groove',
+    category: 'Pakistani',
+    region: 'South Asia',
+    country: 'Pakistan',
+    countryCode: 'PK',
+    description: 'Driving dholak pattern for Sufi devotional music. Builds intensity through repetition.',
+    bpm: 140,
+    swing: 5,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [4, 4],
+    tempoRange: [100, 200] as [number, number],
+    instrumentRoles: { pulse: 'Dholak (bass)', groove: 'Dholak (treble)', ornament: 'Clapping/Harmonium' },
+    artists: ['Nusrat Fateh Ali Khan', 'Sabri Brothers', 'Rahat Fateh Ali Khan'],
+    complexity: 'intermediate' as Complexity,
+    rhythmType: 'trance' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,x,_,_,X,_,_,x,_,_,X,_,x,_], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,X,_,_,_,X,_,X,_,_,X,_,X], subdivisions: 16 },
+      { instrumentId: 'clap', steps: [X,_,_,_,_,_,_,_,X,_,_,_,_,_,_,_], subdivisions: 16 },
+      { instrumentId: 'shaker', steps: [x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x], subdivisions: 16 },
+    ],
+  },
+  {
+    name: 'Bhangra',
+    category: 'Pakistani',
+    region: 'South Asia',
+    country: 'Pakistan',
+    countryCode: 'PK',
+    description: 'Punjabi dance groove with heavy dhol. Chaal pattern drives this celebratory rhythm.',
+    bpm: 160,
+    swing: 0,
+    timeSignature: [4, 4] as [number, number],
+    timeFeel: 'straight' as TimeFeel,
+    pulseGrouping: [2, 2, 2, 2],
+    tempoRange: [130, 190] as [number, number],
+    instrumentRoles: { pulse: 'Dhol (bass/dagga)', groove: 'Dhol (treble/tihli)', ornament: 'Chimta/Tumbi' },
+    artists: ['Pappu Sain', 'Alaap', 'Malkit Singh'],
+    complexity: 'beginner' as Complexity,
+    rhythmType: 'groove' as const,
+    tracks: [
+      { instrumentId: 'kick', steps: [X,_,_,_,X,_,x,_,X,_,_,_,X,_,x,_], subdivisions: 16 },
+      { instrumentId: 'snare', steps: [_,_,_,_,_,_,_,X,_,_,_,_,_,_,_,X], subdivisions: 16 },
+      { instrumentId: 'rimshot', steps: [_,_,X,_,_,_,_,_,_,_,X,_,_,_,_,_], subdivisions: 16 },
+      { instrumentId: 'clap', steps: [_,_,_,_,X,_,_,_,_,_,_,_,X,_,_,_], subdivisions: 16 },
+    ],
+  },
 ];
 
 
@@ -3993,6 +4655,9 @@ export function getCountryMapData(): CountryMapData[] {
     // Central America
     'GT': [15.8, -90.2], 'BZ': [17.2, -88.5], 'HN': [15.2, -86.2], 'SV': [13.8, -88.9],
     'NI': [12.9, -85.2], 'CR': [9.7, -83.8], 'PA': [8.5, -80.8],
+    // Middle East & South Asia additions
+    'IR': [32.4, 53.7], 'IQ': [33.2, 43.7], 'SA': [23.9, 45.1], 'LB': [33.9, 35.5],
+    'AF': [33.9, 67.7], 'PK': [30.4, 69.3],
   };
 
   const result: CountryMapData[] = [];
@@ -4063,18 +4728,26 @@ export function getAllCategories(): string[] {
   return [...new Set(DRUM_PRESETS.map(p => p.category))];
 }
 
+export function getAllRhythmTypes(): RhythmType[] {
+  return [...new Set(DRUM_PRESETS.map(p => p.rhythmType).filter(Boolean))] as RhythmType[];
+}
+
 export function filterPresets(opts: {
   category?: string | null;
+  region?: string | null;
   timeFeel?: TimeFeel | null;
   complexity?: Complexity | null;
+  rhythmType?: RhythmType | null;
   bpmRange?: [number, number] | null;
   country?: string | null;
   search?: string;
 }): PatternPreset[] {
   return DRUM_PRESETS.filter(p => {
     if (opts.category && p.category !== opts.category) return false;
+    if (opts.region && p.region !== opts.region) return false;
     if (opts.timeFeel && p.timeFeel !== opts.timeFeel) return false;
     if (opts.complexity && p.complexity !== opts.complexity) return false;
+    if (opts.rhythmType && p.rhythmType !== opts.rhythmType) return false;
     if (opts.country && p.country !== opts.country) return false;
     if (opts.bpmRange) {
       if (p.bpm < opts.bpmRange[0] || p.bpm > opts.bpmRange[1]) return false;
@@ -4085,6 +4758,7 @@ export function filterPresets(opts: {
         p.name.toLowerCase().includes(s) ||
         p.country.toLowerCase().includes(s) ||
         p.category.toLowerCase().includes(s) ||
+        p.region.toLowerCase().includes(s) ||
         p.description.toLowerCase().includes(s) ||
         (p.artists || []).some(a => a.toLowerCase().includes(s))
       );

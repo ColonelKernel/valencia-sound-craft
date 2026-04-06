@@ -5,9 +5,9 @@ import {
 } from "lucide-react";
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
 import {
-  DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories,
+  DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories, getAllRegions, getAllRhythmTypes,
   formatPulseGrouping,
-  type PatternPreset, type TimeFeel, type Complexity,
+  type PatternPreset, type TimeFeel, type Complexity, type RhythmType,
 } from "./drumPresets";
 import { generateMidiFile, downloadMidiFile, MIDI_MAPPINGS, type MidiMapping } from "./midiExport";
 
@@ -75,9 +75,13 @@ const DrumMachine = () => {
   const [groove, setGroove] = useState(50);
 
   // Filters
+  const [filterRegion, setFilterRegion] = useState<string | null>(null);
   const [filterFeel, setFilterFeel] = useState<TimeFeel | null>(null);
   const [filterComplexity, setFilterComplexity] = useState<Complexity | null>(null);
+  const [filterRhythmType, setFilterRhythmType] = useState<RhythmType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showKonnakol, setShowKonnakol] = useState(false);
+  const [complexityLevel, setComplexityLevel] = useState<number>(2); // 1=beginner, 2=intermediate, 3=advanced
 
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -96,16 +100,20 @@ const DrumMachine = () => {
 
   // Computed
   const categories = useMemo(() => getAllCategories(), []);
+  const regions = useMemo(() => getAllRegions(), []);
+  const rhythmTypes = useMemo(() => getAllRhythmTypes(), []);
   const presetsByCategory = useMemo(() => getPresetsByRegion(), []);
 
   const filteredPresets = useMemo(() => {
     return filterPresets({
       category: selectedCategory,
+      region: filterRegion,
       timeFeel: filterFeel,
       complexity: filterComplexity,
+      rhythmType: filterRhythmType,
       search: searchQuery || undefined,
     });
-  }, [selectedCategory, filterFeel, filterComplexity, searchQuery]);
+  }, [selectedCategory, filterRegion, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
 
   const hasSolo = tracks.some(t => t.solo);
 
@@ -655,6 +663,16 @@ const DrumMachine = () => {
             />
           </div>
           <select
+            value={filterRegion || ''}
+            onChange={e => setFilterRegion(e.target.value || null)}
+            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+          >
+            <option value="">All Regions</option>
+            {regions.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          <select
             value={filterFeel || ''}
             onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
             className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
@@ -667,6 +685,17 @@ const DrumMachine = () => {
             <option value="polyrhythmic">Polyrhythmic</option>
           </select>
           <select
+            value={filterRhythmType || ''}
+            onChange={e => setFilterRhythmType((e.target.value || null) as RhythmType | null)}
+            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+          >
+            <option value="">All Types</option>
+            <option value="groove">Groove</option>
+            <option value="odd-meter">Odd Meter</option>
+            <option value="tala">Tala</option>
+            <option value="trance">Trance</option>
+          </select>
+          <select
             value={filterComplexity || ''}
             onChange={e => setFilterComplexity((e.target.value || null) as Complexity | null)}
             className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
@@ -677,6 +706,27 @@ const DrumMachine = () => {
             <option value="advanced">Advanced</option>
           </select>
           <span className="text-[9px] text-muted-foreground ml-auto">{filteredPresets.length} patterns</span>
+        </div>
+
+        {/* Konnakol + Complexity controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          {currentPreset?.konnakol && (
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" checked={showKonnakol}
+                onChange={e => setShowKonnakol(e.target.checked)}
+                className="accent-primary" />
+              <span className="text-[10px] text-muted-foreground">Konnakol</span>
+            </label>
+          )}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-muted-foreground">Complexity</span>
+            <input type="range" min={1} max={3} value={complexityLevel}
+              onChange={e => setComplexityLevel(Number(e.target.value))}
+              className="w-14 accent-primary" />
+            <span className="text-[9px] text-muted-foreground w-16">
+              {complexityLevel === 1 ? 'Simple' : complexityLevel === 2 ? 'Medium' : 'Full'}
+            </span>
+          </div>
         </div>
 
         {/* Category chips */}
@@ -718,13 +768,62 @@ const DrumMachine = () => {
 
         {/* Active preset info */}
         {currentPreset && (
-          <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
-            <span className="font-medium text-foreground">{currentPreset.name}</span>
-            <span>{currentPreset.country} · {formatPulseGrouping(currentPreset.pulseGrouping)}</span>
-            {currentPreset.artists && currentPreset.artists.length > 0 && (
-              <span className="truncate max-w-[200px]">♪ {currentPreset.artists.join(', ')}</span>
+          <div className="space-y-1.5 pt-1 border-t border-border/50">
+            <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+              <span className="font-medium text-foreground">{currentPreset.name}</span>
+              <span>{currentPreset.country} · {formatPulseGrouping(currentPreset.pulseGrouping)}</span>
+              {currentPreset.rhythmType && (
+                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px]">{currentPreset.rhythmType}</span>
+              )}
+              {currentPreset.artists && currentPreset.artists.length > 0 && (
+                <span className="truncate max-w-[200px]">♪ {currentPreset.artists.join(', ')}</span>
+              )}
+              <span className="italic truncate max-w-xs">{currentPreset.description}</span>
+            </div>
+
+            {/* Tala cycle visualization */}
+            {currentPreset.talaStructure && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] text-muted-foreground font-medium">{currentPreset.talaStructure.name}:</span>
+                <div className="flex gap-0.5">
+                  {currentPreset.talaStructure.vibhags.map((v, vi) => (
+                    <div key={vi} className="flex gap-0.5">
+                      {Array.from({ length: v }).map((_, bi) => {
+                        const beatNum = currentPreset.talaStructure!.vibhags.slice(0, vi).reduce((a, b) => a + b, 0) + bi + 1;
+                        const isSam = beatNum === currentPreset.talaStructure!.sam;
+                        const isKhali = beatNum === currentPreset.talaStructure!.khali;
+                        return (
+                          <span key={bi} className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold ${
+                            isSam ? 'bg-primary text-primary-foreground' :
+                            isKhali ? 'bg-destructive/20 text-destructive' :
+                            'bg-secondary text-muted-foreground'
+                          }`}>
+                            {isSam ? 'X' : isKhali ? '0' : beatNum}
+                          </span>
+                        );
+                      })}
+                      {vi < currentPreset.talaStructure!.vibhags.length - 1 && (
+                        <span className="text-muted-foreground/30 mx-0.5">|</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-            <span className="italic truncate max-w-xs">{currentPreset.description}</span>
+
+            {/* Konnakol display */}
+            {showKonnakol && currentPreset.konnakol && (
+              <div className="flex flex-wrap gap-1 text-[9px] font-mono">
+                {currentPreset.pulseGrouping.map((g, i) => {
+                  const syllables = g === 1 ? 'TA' : g === 2 ? 'TA-KA' : g === 3 ? 'TA-KI-TA' : g === 4 ? 'TA-KA-DI-MI' : `(${g})`;
+                  return (
+                    <span key={i} className="px-1.5 py-0.5 rounded bg-accent text-accent-foreground">
+                      {syllables}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>}
