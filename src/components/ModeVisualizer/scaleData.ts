@@ -132,21 +132,45 @@ function useFlats(root: string): boolean {
 export function getScaleNotes(root: string, mode: string): string[] {
   const intervals = MODE_INTERVALS[mode];
   if (!intervals) return [];
-  const flats = useFlats(root);
-  const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
-  let actualRootIndex = chromatic.indexOf(root);
-  let actualChromatic = chromatic;
-  if (actualRootIndex === -1) {
-    const alt = flats ? NOTES_SHARP : NOTES_FLAT;
-    actualRootIndex = alt.indexOf(root);
-    actualChromatic = alt;
-    if (actualRootIndex === -1) {
-      const enh = ENHARMONIC[root];
-      if (enh) { actualRootIndex = chromatic.indexOf(enh); actualChromatic = chromatic; }
+
+  // Try both sharp and flat spellings, pick the one with fewer accidentals
+  // (or use flat-preference for flat keys)
+  const trySpelling = (chromatic: string[]): string[] | null => {
+    let idx = chromatic.indexOf(root);
+    if (idx === -1) return null;
+    return intervals.map(i => chromatic[(idx + i) % 12]);
+  };
+
+  const sharpResult = trySpelling(NOTES_SHARP);
+  const flatResult = trySpelling(NOTES_FLAT);
+
+  if (sharpResult && !flatResult) return sharpResult;
+  if (flatResult && !sharpResult) return flatResult;
+  if (!sharpResult && !flatResult) {
+    // Try enharmonic
+    const enh = ENHARMONIC[root];
+    if (enh) {
+      const enhSharp = NOTES_SHARP.indexOf(enh) >= 0 ? intervals.map(i => NOTES_SHARP[(NOTES_SHARP.indexOf(enh) + i) % 12]) : null;
+      const enhFlat = NOTES_FLAT.indexOf(enh) >= 0 ? intervals.map(i => NOTES_FLAT[(NOTES_FLAT.indexOf(enh) + i) % 12]) : null;
+      return enhFlat || enhSharp || [];
     }
+    return [];
   }
-  if (actualRootIndex === -1) return [];
-  return intervals.map(i => actualChromatic[(actualRootIndex + i) % 12]);
+
+  // Both exist — prefer flats for flat keys, otherwise count accidentals
+  if (useFlats(root)) return flatResult!;
+
+  const countAccidentals = (notes: string[]) => notes.filter(n => n.includes('#') || n.includes('b')).length;
+  const sharpCount = countAccidentals(sharpResult!);
+  const flatCount = countAccidentals(flatResult!);
+
+  if (flatCount < sharpCount) return flatResult!;
+  if (sharpCount < flatCount) return sharpResult!;
+
+  // Tie — sharp keys (A, B, D, E, G, C#, F#, G#) prefer sharps; C and F prefer flats for minor modes
+  const sharpRoots = ['A', 'B', 'D', 'E', 'G', 'C#', 'F#', 'G#', 'D#', 'A#'];
+  if (sharpRoots.includes(root)) return sharpResult!;
+  return flatResult!;
 }
 
 export function isSharp(note: string): boolean { return note.includes('#'); }
@@ -311,15 +335,26 @@ const CHORD_FORMULAS: Record<string, { semitones: number[]; intervals: string[] 
   'dim':      { semitones: [0,3,6],      intervals: ['1','b3','b5'] },
 };
 
-function parseRomanChord(symbol: string): { degreeIndex: number; quality: string } | null {
+// Map roman numeral to semitones from root (diatonic reference)
+const ROMAN_SEMITONES: Record<string, number> = {
+  'I': 0, 'II': 2, 'III': 4, 'IV': 5, 'V': 7, 'VI': 9, 'VII': 11,
+};
+
+function parseRomanChord(symbol: string): { semitonesFromRoot: number; quality: string } | null {
   const match = symbol.match(/^([b#]*)([IViv]+)(.*)/);
   if (!match) return null;
+  const accidentals = match[1];
   const roman = match[2].toUpperCase();
   const quality = match[3];
-  const romanMap: Record<string, number> = { 'I':0,'II':1,'III':2,'IV':3,'V':4,'VI':5,'VII':6 };
-  const base = romanMap[roman];
-  if (base === undefined) return null;
-  return { degreeIndex: base, quality };
+  let semitones = ROMAN_SEMITONES[roman];
+  if (semitones === undefined) return null;
+  // Apply accidentals
+  for (const ch of accidentals) {
+    if (ch === 'b') semitones--;
+    if (ch === '#') semitones++;
+  }
+  semitones = ((semitones % 12) + 12) % 12;
+  return { semitonesFromRoot: semitones, quality };
 }
 
 export interface ChordSpelling {
@@ -339,20 +374,26 @@ export function getChordSpellings(scaleNotes: string[], mode: string): ChordSpel
   return chordSymbols.map((symbol) => {
     const parsed = parseRomanChord(symbol);
     if (!parsed) return { symbol, rootNote: '?', name: symbol, notes: [], intervals: [] };
-    const { degreeIndex, quality } = parsed;
-    const chordRoot = degreeIndex < scaleNotes.length ? scaleNotes[degreeIndex] : scaleNotes[0];
-    const formula = CHORD_FORMULAS[quality] || CHORD_FORMULAS[''];
-    const rootIdx = chromatic.indexOf(chordRoot);
-    let actualIdx = rootIdx;
+    const { semitonesFromRoot, quality } = parsed;
+
+    // Find chord root by applying semitone offset from scale root
+    const scaleRoot = scaleNotes[0];
+    const rootIdx = chromatic.indexOf(scaleRoot);
+    let actualRootIdx = rootIdx;
     let actualChromatic = chromatic;
     if (rootIdx === -1) {
       const alt = flats ? NOTES_SHARP : NOTES_FLAT;
-      actualIdx = alt.indexOf(chordRoot);
+      actualRootIdx = alt.indexOf(scaleRoot);
       actualChromatic = alt;
     }
-    if (actualIdx === -1) return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes: [chordRoot], intervals: ['1'] };
-    const notes = formula.semitones.map(s => actualChromatic[(actualIdx + s) % 12]);
-    return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes, intervals: formula.intervals };
+    if (actualRootIdx === -1) return { symbol, rootNote: '?', name: symbol, notes: [], intervals: [] };
+
+    const chordRootIdx = (actualRootIdx + semitonesFromRoot) % 12;
+    const chordRoot = actualChromatic[chordRootIdx];
+
+    const formula = CHORD_FORMULAS[quality] || CHORD_FORMULAS[''];
+    const chordNotes = formula.semitones.map(s => actualChromatic[(chordRootIdx + s) % 12]);
+    return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes: chordNotes, intervals: formula.intervals };
   });
 }
 
