@@ -200,8 +200,8 @@ const MasterScaleReference = () => {
       </div>
 
       {/* Mode Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+        <table className="w-full text-xs sm:text-sm min-w-[500px]">
           <thead>
             <tr className="border-b border-border">
               <th className="text-center text-xs text-muted-foreground font-medium px-1 py-2 w-10">▶</th>
