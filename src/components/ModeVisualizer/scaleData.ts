@@ -164,13 +164,11 @@ export function getScaleNotes(root: string, mode: string): string[] {
   const sharpCount = countAccidentals(sharpResult!);
   const flatCount = countAccidentals(flatResult!);
 
-  // Prefer fewer accidentals; if tied, prefer flats for minor-ish modes
   if (flatCount < sharpCount) return flatResult!;
   if (sharpCount < flatCount) return sharpResult!;
 
-  // Tie — prefer flats for modes that naturally have flats
-  const hasFlattedIntervals = intervals.some(i => [1, 3, 6, 8, 10].includes(i));
-  return hasFlattedIntervals ? flatResult! : sharpResult!;
+  // Tie — for natural roots that are traditionally sharp keys (A, B, D, E, G), prefer sharps
+  return sharpResult!;
 }
 
 export function isSharp(note: string): boolean { return note.includes('#'); }
