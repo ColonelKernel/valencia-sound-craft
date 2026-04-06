@@ -3,20 +3,21 @@ import {
   Play, Pause, X, RotateCcw, Sparkles, ArrowRightLeft,
   Music2, ChevronDown, ChevronUp, Download, ArrowLeft, ArrowRight,
   Lock, Unlock, Wand2, Globe2, Lightbulb, GripVertical,
-  Undo2, Music, Settings2, ChevronRight,
+  Undo2, Music, Settings2, ChevronRight, Sliders,
 } from "lucide-react";
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
 import { type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 import {
   type ProgressionChord, type ChordSource, type RhythmicFeel, type HarmonicStyle,
-  type ViewMode, type ChordFunction,
+  type ViewMode, type ChordFunction, type ExtensionLevel, type VoicingType, type ExpressiveParams,
   PROGRESSION_TEMPLATES, STYLE_PRESETS, RHYTHMIC_FEELS,
+  EXTENSION_LEVELS, VOICING_TYPES, DEFAULT_EXPRESSIVE,
   sourceColors, sourceActiveColors, sourceDotColors, functionColors, functionDotColors,
   getSecondaryDominants, getTritoneSubs, getBorrowedChords, createIIV,
   transformProgression, getNextChordSuggestions,
   getRomanNumeral, getNashvilleNumber, getChordFunction,
-  transposeChord, useFlatsForKey,
-  playChordTones, downloadMidi, getStyleSuggestions,
+  transposeChord, useFlatsForKey, applyExtensionLevel,
+  playChordTonesExpressive, downloadMidi, getStyleSuggestions,
   NOTES_SHARP, NOTES_FLAT,
 } from "./chordProgressionUtils";
 
