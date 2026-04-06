@@ -452,10 +452,11 @@ const ModeVisualizer = () => {
 
         {/* Instrument Selector */}
         <div className="mb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {([
               { key: 'guitar' as const, label: 'Guitar', icon: <Guitar className="w-4 h-4" /> },
               { key: 'bass' as const, label: 'Bass', icon: <Guitar className="w-4 h-4" /> },
+              { key: 'other' as const, label: 'Other', icon: <Music className="w-4 h-4" /> },
               { key: 'keyboard' as const, label: 'Keyboard', icon: <Piano className="w-4 h-4" /> },
             ]).map((inst) => (
               <button
@@ -470,6 +471,17 @@ const ModeVisualizer = () => {
                 {inst.icon} {inst.label}
               </button>
             ))}
+            {instrument === 'other' && (
+              <select
+                value={otherInstrument}
+                onChange={(e) => setOtherInstrument(e.target.value)}
+                className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                {FRETTED_INSTRUMENTS.map((fi) => (
+                  <option key={fi.key} value={fi.key}>{fi.label}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
