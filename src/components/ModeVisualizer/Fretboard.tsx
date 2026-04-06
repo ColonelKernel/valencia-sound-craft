@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { playNoteAtOctave, type InstrumentTimbre } from "./audioSynth";
 import {
   StringTuning,
   getNoteAtFret,
@@ -31,7 +32,8 @@ interface FretboardProps {
   hoveredNote: string | null;
   onNoteHover: (note: string | null) => void;
   chordFilter: string[] | null;
-  onNoteClick?: (note: string) => void;
+  onNoteClick?: (note: string, octave: number) => void;
+  timbre?: InstrumentTimbre;
 }
 
 const FRET_COUNT = 22;
@@ -96,6 +98,7 @@ const Fretboard = ({
   onNoteHover,
   chordFilter,
   onNoteClick,
+  timbre = 'piano',
 }: FretboardProps) => {
   const [positionOverride, setPositionOverride] = useState<number | null>(null);
 
