@@ -457,12 +457,15 @@ const ChordProgressionBuilder = ({
           <label className="text-xs text-muted-foreground font-medium">Key</label>
           <select
             value={localRoot}
-            onChange={(e) => { stop(); setLocalRoot(e.target.value); setProgression([]); }}
+            onChange={(e) => handleTranspose(e.target.value)}
             className="bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer pr-6"
             style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\' stroke-width=\'2\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
           >
             {ALL_ROOTS.map(r => <option key={r} value={r} className="bg-background text-foreground">{r}</option>)}
           </select>
+          {progression.length > 0 && (
+            <span className="text-[9px] text-primary font-medium">♪ transposes</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground font-medium">Mode</label>
