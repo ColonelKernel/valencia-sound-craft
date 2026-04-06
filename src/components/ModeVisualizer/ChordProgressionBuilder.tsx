@@ -174,9 +174,29 @@ function getNoteAtSemitone(root: string, semitones: number): string {
     const alt = useFlats ? NOTES_SHARP : NOTES_FLAT;
     idx = alt.indexOf(root);
     if (idx === -1) return root;
-    return chromatic[(idx + semitones) % 12];
+    return chromatic[(idx + semitones + 12) % 12];
   }
-  return chromatic[(idx + semitones) % 12];
+  return chromatic[(idx + semitones + 12) % 12];
+}
+
+function transposeNote(note: string, semitones: number, useFlats: boolean): string {
+  const chromatic = useFlats ? NOTES_FLAT : NOTES_SHARP;
+  let idx = chromatic.indexOf(note);
+  if (idx === -1) {
+    const alt = useFlats ? NOTES_SHARP : NOTES_FLAT;
+    idx = alt.indexOf(note);
+    if (idx === -1) return note;
+  }
+  return chromatic[((idx + semitones) % 12 + 12) % 12];
+}
+
+function transposeChord(chord: ChordSpelling, semitones: number, useFlats: boolean): ChordSpelling {
+  return {
+    ...chord,
+    rootNote: transposeNote(chord.rootNote, semitones, useFlats),
+    notes: chord.notes.map(n => transposeNote(n, semitones, useFlats)),
+    name: chord.name.replace(/^[A-G][#b]?/, transposeNote(chord.rootNote, semitones, useFlats)),
+  };
 }
 
 function getSecondaryDominants(root: string, mode: string, diatonicChords: ChordSpelling[]): ProgressionChord[] {
