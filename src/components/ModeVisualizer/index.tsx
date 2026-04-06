@@ -172,7 +172,83 @@ const ModeVisualizer = () => {
           </button>
         </div>
 
-        {/* Scale Display */}
+        {/* Custom Tuning Editor */}
+        {isCustomTuning && (
+          <div className="fade-up flex flex-wrap items-start gap-6 mb-8 p-4 rounded-lg border border-border bg-card">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                <Settings2 className="w-3.5 h-3.5" /> Guitar Strings (low → high)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {customGuitar.map((s, i) => (
+                  <select
+                    key={i}
+                    value={s.note}
+                    onChange={(e) => {
+                      const next = [...customGuitar];
+                      next[i] = { ...next[i], note: e.target.value };
+                      setCustomGuitar(next);
+                    }}
+                    className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring w-16"
+                  >
+                    {ALL_ROOTS.map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                ))}
+                <button
+                  onClick={() => setCustomGuitar([...customGuitar, { note: 'B', octave: 3 }])}
+                  className="text-xs px-2 py-1 rounded border border-dashed border-border hover:bg-accent transition-colors text-muted-foreground"
+                  title="Add string"
+                >+</button>
+                {customGuitar.length > 4 && (
+                  <button
+                    onClick={() => setCustomGuitar(customGuitar.slice(0, -1))}
+                    className="text-xs px-2 py-1 rounded border border-dashed border-border hover:bg-destructive/20 transition-colors text-muted-foreground"
+                    title="Remove last string"
+                  >−</button>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                <Settings2 className="w-3.5 h-3.5" /> Bass Strings (low → high)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {customBass.map((s, i) => (
+                  <select
+                    key={i}
+                    value={s.note}
+                    onChange={(e) => {
+                      const next = [...customBass];
+                      next[i] = { ...next[i], note: e.target.value };
+                      setCustomBass(next);
+                    }}
+                    className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring w-16"
+                  >
+                    {ALL_ROOTS.map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                ))}
+                <button
+                  onClick={() => setCustomBass([...customBass, { note: 'G', octave: 2 }])}
+                  className="text-xs px-2 py-1 rounded border border-dashed border-border hover:bg-accent transition-colors text-muted-foreground"
+                  title="Add string"
+                >+</button>
+                {customBass.length > 3 && (
+                  <button
+                    onClick={() => setCustomBass(customBass.slice(0, -1))}
+                    className="text-xs px-2 py-1 rounded border border-dashed border-border hover:bg-destructive/20 transition-colors text-muted-foreground"
+                    title="Remove last string"
+                  >−</button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+
         <div className="fade-up mb-8">
           <div className="flex items-center gap-3 mb-3">
             <h3 className="text-lg font-semibold">
