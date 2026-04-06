@@ -4728,18 +4728,26 @@ export function getAllCategories(): string[] {
   return [...new Set(DRUM_PRESETS.map(p => p.category))];
 }
 
+export function getAllRhythmTypes(): RhythmType[] {
+  return [...new Set(DRUM_PRESETS.map(p => p.rhythmType).filter(Boolean))] as RhythmType[];
+}
+
 export function filterPresets(opts: {
   category?: string | null;
+  region?: string | null;
   timeFeel?: TimeFeel | null;
   complexity?: Complexity | null;
+  rhythmType?: RhythmType | null;
   bpmRange?: [number, number] | null;
   country?: string | null;
   search?: string;
 }): PatternPreset[] {
   return DRUM_PRESETS.filter(p => {
     if (opts.category && p.category !== opts.category) return false;
+    if (opts.region && p.region !== opts.region) return false;
     if (opts.timeFeel && p.timeFeel !== opts.timeFeel) return false;
     if (opts.complexity && p.complexity !== opts.complexity) return false;
+    if (opts.rhythmType && p.rhythmType !== opts.rhythmType) return false;
     if (opts.country && p.country !== opts.country) return false;
     if (opts.bpmRange) {
       if (p.bpm < opts.bpmRange[0] || p.bpm > opts.bpmRange[1]) return false;
@@ -4750,6 +4758,7 @@ export function filterPresets(opts: {
         p.name.toLowerCase().includes(s) ||
         p.country.toLowerCase().includes(s) ||
         p.category.toLowerCase().includes(s) ||
+        p.region.toLowerCase().includes(s) ||
         p.description.toLowerCase().includes(s) ||
         (p.artists || []).some(a => a.toLowerCase().includes(s))
       );
