@@ -416,23 +416,29 @@ const ChordProgressionBuilder = ({
       {/* Key & Timbre controls */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Key</label>
+          <label className="text-xs text-muted-foreground font-medium">Key</label>
           <select
             value={localRoot}
-            onChange={(e) => { setLocalRoot(e.target.value); setProgression([]); }}
-            className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            onChange={(e) => { stop(); setLocalRoot(e.target.value); setProgression([]); }}
+            className="bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer pr-6"
+            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\' stroke-width=\'2\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
           >
-            {ALL_ROOTS.map(r => <option key={r} value={r}>{r}</option>)}
+            {ALL_ROOTS.map(r => <option key={r} value={r} className="bg-background text-foreground">{r}</option>)}
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-muted-foreground">Mode</label>
+          <label className="text-xs text-muted-foreground font-medium">Mode</label>
           <select
             value={localMode}
-            onChange={(e) => { setLocalMode(e.target.value); setProgression([]); }}
-            className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            onChange={(e) => { stop(); setLocalMode(e.target.value); setProgression([]); }}
+            className="bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer pr-6 max-w-[200px]"
+            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\' stroke-width=\'2\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
           >
-            {allModes.map(m => <option key={m} value={m}>{m}</option>)}
+            {MODE_CATEGORIES.map(cat => (
+              <optgroup key={cat.label} label={cat.label}>
+                {cat.modes.map(m => <option key={m} value={m} className="bg-background text-foreground">{m}</option>)}
+              </optgroup>
+            ))}
           </select>
         </div>
         <div className="flex items-center gap-2">
