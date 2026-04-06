@@ -243,6 +243,19 @@ const ModeVisualizer = () => {
             Fingers
           </button>
           )}
+
+          <div className="flex items-center gap-2 ml-auto">
+            <label className="text-sm font-medium text-muted-foreground">Sound</label>
+            <select
+              value={timbre}
+              onChange={(e) => setTimbre(e.target.value as InstrumentTimbre)}
+              className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {INSTRUMENT_TIMBRES.map(t => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Custom Tuning Editor */}
