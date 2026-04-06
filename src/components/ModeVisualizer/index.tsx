@@ -21,6 +21,7 @@ import ModeReference from "./ModeReference";
 import Metronome from "./Metronome";
 import ChordProgressionBuilder from "./ChordProgressionBuilder";
 import KeyboardVisualizer from "./KeyboardVisualizer";
+import MasterScaleReference from "./MasterScaleReference";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
