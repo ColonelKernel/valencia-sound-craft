@@ -209,6 +209,7 @@ const MasterScaleReference = () => {
             ))}
           </select>
         </div>
+      </div>
 
       {/* Mode Table */}
       <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
