@@ -824,16 +824,32 @@ export function playChordTonesExpressive(
     'G': 392.00, 'G#': 415.30, 'Ab': 415.30,
     'A': 440.00, 'A#': 466.16, 'Bb': 466.16, 'B': 493.88,
   };
+  const PITCH_INDEX: Record<string, number> = {
+    'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4,
+    'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8, 'Ab': 8, 'A': 9,
+    'A#': 10, 'Bb': 10, 'B': 11,
+  };
 
   const volume = 0.08 * ep.velocityMultiplier;
-  const isOpen = voicing === 'open';
 
-  voiced.forEach((note, i) => {
+  // Build ascending frequencies
+  let octaveShift = 0;
+  let prevPitch = -1;
+  const freqList: number[] = [];
+  for (const note of voiced) {
     let freq = NOTE_FREQ[note];
-    if (!freq) return;
-    if (isOpen && i > 0 && i % 2 === 0) freq *= 2;
+    if (!freq) { freqList.push(0); continue; }
+    const pitch = PITCH_INDEX[note] ?? 0;
+    if (prevPitch >= 0 && pitch <= prevPitch) octaveShift++;
+    prevPitch = pitch;
+    freq = freq * Math.pow(2, octaveShift);
     freq += (Math.random() - 0.5) * ep.detuneRange;
     if (timbre === 'warm-bass') freq /= 2;
+    freqList.push(freq);
+  }
+
+  freqList.forEach((freq, i) => {
+    if (freq <= 0) return;
     const startTime = ctx.currentTime + i * 0.03;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
