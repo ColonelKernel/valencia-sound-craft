@@ -358,7 +358,7 @@ const ChordProgressionBuilder = ({
     progression.forEach((pc, i) => {
       const id = window.setTimeout(() => {
         setCurrentIdx(i);
-        playChordTones(pc.chord.notes, (chordDuration / 1000) * 0.9);
+        playChordTones(pc.chord.notes, (chordDuration / 1000) * 0.9, timbre);
       }, i * chordDuration);
       ids.push(id);
     });
@@ -370,7 +370,7 @@ const ChordProgressionBuilder = ({
     ids.push(endId);
 
     timeoutRef.current = ids;
-  }, [progression, bpm, beatsPerChord, stop]);
+  }, [progression, bpm, beatsPerChord, stop, timbre]);
 
   const addChord = (pc: ProgressionChord) => {
     setProgression(prev => [...prev, pc]);
@@ -378,6 +378,16 @@ const ChordProgressionBuilder = ({
 
   const removeChord = (idx: number) => {
     setProgression(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const moveChord = (idx: number, direction: -1 | 1) => {
+    setProgression(prev => {
+      const next = [...prev];
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= next.length) return prev;
+      [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
+      return next;
+    });
   };
 
   const loadTemplate = (degrees: number[]) => {
