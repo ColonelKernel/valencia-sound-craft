@@ -49,7 +49,7 @@ const Portfolio = () => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <section id="portfolio" className="section-padding bg-secondary/50" ref={ref}>
+    <section id="portfolio" className="section-padding !pt-8 bg-secondary/50" ref={ref}>
       <div className="container mx-auto">
         <button
           onClick={() => setExpanded(prev => !prev)}
