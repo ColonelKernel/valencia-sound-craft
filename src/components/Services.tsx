@@ -20,7 +20,7 @@ const services = [
       "Blending live instruments with modern production techniques",
       "From early demos to polished, release-ready masters",
     ],
-    cta: "Start a Project",
+    cta: "Inquire",
   },
   {
     icon: Video,
@@ -31,6 +31,16 @@ const services = [
       "Full post-production: editing, mixing, and delivery",
     ],
     cta: "Inquire",
+  },
+  {
+    icon: Music,
+    title: "Interactive Music Tools",
+    points: [
+      "Custom-built fretboard visualizers, scale explorers, and metronomes",
+      "Designed to make music theory intuitive and accessible",
+      "Tools for guitarists, bassists, and multi-instrumentalists",
+    ],
+    cta: "Start a Project",
   },
 ];
 
