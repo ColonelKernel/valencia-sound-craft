@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum, Globe } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum, Globe, ChevronDown, ChevronUp } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
@@ -43,6 +43,7 @@ const ModeVisualizer = () => {
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
   const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap'>('visualizer');
+  const [expanded, setExpanded] = useState(false);
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
@@ -100,82 +101,90 @@ const ModeVisualizer = () => {
   return (
     <section id="mode-visualizer" className="section-padding bg-secondary/50" ref={ref}>
       <div className="container mx-auto">
-        <div className="fade-up mb-10">
-          <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
-            Interactive Tools
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Interactive Tools
-          </h2>
-          <p className="text-muted-foreground mt-2 max-w-xl">
-            Explore modes across every key — major, melodic minor, harmonic minor, pentatonic, and more.
-          </p>
-        </div>
-
-        {/* Tool Tabs */}
-        <div className="fade-up flex gap-2 mb-8 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin">
-          {[
-            { id: 'visualizer' as const, label: 'Mode Visualizer', shortLabel: 'Modes', icon: <Guitar className="w-4 h-4" /> },
-            { id: 'progression' as const, label: 'Chord Progressions', shortLabel: 'Chords', icon: <ListMusic className="w-4 h-4" /> },
-            { id: 'metronome' as const, label: 'Metronome', shortLabel: 'Metro', icon: <Timer className="w-4 h-4" /> },
-            { id: 'reference' as const, label: 'Scale Reference', shortLabel: 'Scales', icon: <BookOpen className="w-4 h-4" /> },
-            { id: 'polyrhythm' as const, label: 'Rhythm Engine', shortLabel: 'Rhythm', icon: <Drum className="w-4 h-4" /> },
-            { id: 'rhythmmap' as const, label: 'Rhythm Map', shortLabel: 'Map', icon: <Globe className="w-4 h-4" /> },
-            
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
-                activeTab === tab.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border text-muted-foreground hover:bg-accent'
-              }`}
-            >
-              {tab.icon} <span className="hidden sm:inline">{tab.label}</span><span className="sm:hidden">{tab.shortLabel}</span>
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'reference' && (
-          <div>
-            <MasterScaleReference />
+        <button
+          onClick={() => setExpanded(prev => !prev)}
+          className="fade-up mb-6 w-full flex items-center justify-between group"
+        >
+          <div className="text-left">
+            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
+              Interactive Tools
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+              Interactive Tools
+            </h2>
+            <p className="text-muted-foreground mt-2 max-w-xl">
+              Explore modes across every key — major, melodic minor, harmonic minor, pentatonic, and more.
+            </p>
           </div>
-        )}
-
-        {activeTab === 'polyrhythm' && (
-          <div>
-            <DrumMachine />
+          <div className="shrink-0 ml-4 w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:bg-accent transition-colors">
+            {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </div>
-        )}
+        </button>
 
-        {activeTab === 'rhythmmap' && (
-          <div>
-            <RhythmMap onLoadPreset={(preset) => {
-              setActiveTab('polyrhythm');
-            }} />
-          </div>
-        )}
+        {expanded && (
+          <>
+            {/* Tool Tabs */}
+            <div className="fade-up flex gap-2 mb-8 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin">
+              {[
+                { id: 'visualizer' as const, label: 'Mode Visualizer', shortLabel: 'Modes', icon: <Guitar className="w-4 h-4" /> },
+                { id: 'progression' as const, label: 'Chord Progressions', shortLabel: 'Chords', icon: <ListMusic className="w-4 h-4" /> },
+                { id: 'metronome' as const, label: 'Metronome', shortLabel: 'Metro', icon: <Timer className="w-4 h-4" /> },
+                { id: 'reference' as const, label: 'Scale Reference', shortLabel: 'Scales', icon: <BookOpen className="w-4 h-4" /> },
+                { id: 'polyrhythm' as const, label: 'Rhythm Engine', shortLabel: 'Rhythm', icon: <Drum className="w-4 h-4" /> },
+                { id: 'rhythmmap' as const, label: 'Rhythm Map', shortLabel: 'Map', icon: <Globe className="w-4 h-4" /> },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
+                    activeTab === tab.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border text-muted-foreground hover:bg-accent'
+                  }`}
+                >
+                  {tab.icon} <span className="hidden sm:inline">{tab.label}</span><span className="sm:hidden">{tab.shortLabel}</span>
+                </button>
+              ))}
+            </div>
 
+            {activeTab === 'reference' && (
+              <div>
+                <MasterScaleReference />
+              </div>
+            )}
 
-        {activeTab === 'metronome' && (
-          <div>
-            <Metronome />
-          </div>
-        )}
+            {activeTab === 'polyrhythm' && (
+              <div>
+                <DrumMachine />
+              </div>
+            )}
 
-        {activeTab === 'progression' && (
-          <div>
-            <ChordProgressionBuilder
-              chordSpellings={chordSpellings}
-              root={root}
-              mode={mode}
-            />
-          </div>
-        )}
+            {activeTab === 'rhythmmap' && (
+              <div>
+                <RhythmMap onLoadPreset={(preset) => {
+                  setActiveTab('polyrhythm');
+                }} />
+              </div>
+            )}
 
-        {activeTab === 'visualizer' && (
-        <>
+            {activeTab === 'metronome' && (
+              <div>
+                <Metronome />
+              </div>
+            )}
+
+            {activeTab === 'progression' && (
+              <div>
+                <ChordProgressionBuilder
+                  chordSpellings={chordSpellings}
+                  root={root}
+                  mode={mode}
+                />
+              </div>
+            )}
+
+            {activeTab === 'visualizer' && (
+            <>
         {/* Control Panel */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="flex items-center gap-2">
