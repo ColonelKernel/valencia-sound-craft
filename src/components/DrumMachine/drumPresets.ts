@@ -2345,6 +2345,9 @@ export function getCountryMapData(): CountryMapData[] {
     'CN': [35.9, 104.2], 'JP': [36.2, 138.3], 'KR': [35.9, 127.8], 'MN': [46.9, 103.8], 'TW': [23.7, 121.0],
     // Southeast Asia & Pacific
     'ID': [-0.8, 113.9], 'TH': [15.9, 100.5], 'WS': [-13.8, -172.0], 'NZ': [-40.9, 174.9],
+    // Central America
+    'GT': [15.8, -90.2], 'BZ': [17.2, -88.5], 'HN': [15.2, -86.2], 'SV': [13.8, -88.9],
+    'NI': [12.9, -85.2], 'CR': [9.7, -83.8], 'PA': [8.5, -80.8],
   };
 
   const result: CountryMapData[] = [];
