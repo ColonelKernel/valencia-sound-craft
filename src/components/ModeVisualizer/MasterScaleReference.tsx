@@ -204,6 +204,7 @@ const MasterScaleReference = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
+              <th className="text-center text-xs text-muted-foreground font-medium px-1 py-2 w-10">▶</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-16">Mode</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-10">Deg</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-24">vs Major</th>
