@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
@@ -37,6 +37,7 @@ const ModeVisualizer = () => {
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
   const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression'>('visualizer');
+  const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard'>('guitar');
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
