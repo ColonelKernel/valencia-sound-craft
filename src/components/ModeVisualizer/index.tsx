@@ -36,6 +36,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression'>('visualizer');
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
