@@ -136,6 +136,11 @@ const MasterScaleReference = () => {
     });
   }, [parentNotes, family, root]);
 
+  // Max note count for table columns
+  const maxNotes = useMemo(() => {
+    return Math.max(...modeRows.map(r => r.notes.length), 1);
+  }, [modeRows]);
+
   return (
     <div className="rounded-lg border border-border bg-card p-4 md:p-6 space-y-4">
       <div>
