@@ -1,10 +1,14 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   Play, Square, RotateCcw, Download, ChevronDown, ChevronRight,
-  Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio
+  Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter
 } from "lucide-react";
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
-import { DRUM_PRESETS, getPresetsByRegion, type PatternPreset } from "./drumPresets";
+import {
+  DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories,
+  formatPulseGrouping,
+  type PatternPreset, type TimeFeel, type Complexity,
+} from "./drumPresets";
 import { generateMidiFile, downloadMidiFile, MIDI_MAPPINGS, type MidiMapping } from "./midiExport";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -12,7 +16,7 @@ import { generateMidiFile, downloadMidiFile, MIDI_MAPPINGS, type MidiMapping } f
 interface TrackState {
   id: string;
   instrumentId: string;
-  steps: number[]; // velocity values
+  steps: number[];
   subdivisions: number;
   volume: number;
   pitch: number;
@@ -59,11 +63,16 @@ const DrumMachine = () => {
   const [currentSteps, setCurrentSteps] = useState<Record<string, number>>({});
   const [activePreset, setActivePreset] = useState<string>('Basic Rock');
   const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | null>('presets');
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [midiMapping, setMidiMapping] = useState<MidiMapping>('general-midi');
   const [humanize, setHumanize] = useState(false);
   const [exportBars, setExportBars] = useState(4);
-  const [groove, setGroove] = useState(50); // 0=quantized, 50=natural, 100=loose
+  const [groove, setGroove] = useState(50);
+
+  // Filters
+  const [filterFeel, setFilterFeel] = useState<TimeFeel | null>(null);
+  const [filterComplexity, setFilterComplexity] = useState<Complexity | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -80,11 +89,19 @@ const DrumMachine = () => {
     return audioCtxRef.current;
   }, []);
 
-  // Preset regions
-  const presetsByRegion = useMemo(() => getPresetsByRegion(), []);
-  const regions = useMemo(() => Object.keys(presetsByRegion), [presetsByRegion]);
+  // Computed
+  const categories = useMemo(() => getAllCategories(), []);
+  const presetsByCategory = useMemo(() => getPresetsByRegion(), []);
 
-  // Solo logic: if any track is soloed, only soloed tracks play
+  const filteredPresets = useMemo(() => {
+    return filterPresets({
+      category: selectedCategory,
+      timeFeel: filterFeel,
+      complexity: filterComplexity,
+      search: searchQuery || undefined,
+    });
+  }, [selectedCategory, filterFeel, filterComplexity, searchQuery]);
+
   const hasSolo = tracks.some(t => t.solo);
 
   // ─── Scheduler ──────────────────────────────────────────────────────────────
@@ -107,18 +124,13 @@ const DrumMachine = () => {
           const inst = getInstrument(track.instrumentId);
           if (inst) {
             let time = nextNoteTimeRef.current;
-
-            // Swing on off-beats
             if (swing > 0 && currentStep % 2 === 1) {
               time += stepDuration * swing / 100;
             }
-
-            // Groove/humanization
             if (groove !== 50) {
-              const humanFactor = (groove - 50) / 50; // -1 to 1
+              const humanFactor = (groove - 50) / 50;
               time += (Math.random() - 0.5) * stepDuration * 0.1 * Math.abs(humanFactor);
             }
-
             const finalVel = velocity * track.volume;
             inst.play(ctx, time, finalVel, track.pitch, track.decay);
           }
@@ -127,7 +139,6 @@ const DrumMachine = () => {
         stepRef.current[track.id] = (currentStep + 1) % track.subdivisions;
       });
 
-      // Find smallest step duration
       let minStep = Infinity;
       currentTracks.forEach(track => {
         const sd = (60 / bpm) * (4 / track.subdivisions);
@@ -171,7 +182,6 @@ const DrumMachine = () => {
     setTracks(prev => prev.map(t => {
       if (t.id !== trackId) return t;
       const newSteps = [...t.steps];
-      // Cycle: off -> full -> accent -> ghost -> off
       if (newSteps[stepIdx] === 0) newSteps[stepIdx] = 0.7;
       else if (newSteps[stepIdx] < 0.6) newSteps[stepIdx] = 0;
       else if (newSteps[stepIdx] < 0.9) newSteps[stepIdx] = 1.0;
@@ -266,15 +276,26 @@ const DrumMachine = () => {
             Global Rhythm Engine
           </h3>
           <p className="text-xs text-muted-foreground mt-1 max-w-lg">
-            Culturally authentic drum patterns from around the world. Click cells to cycle: off → hit → accent → ghost.
+            {DRUM_PRESETS.length} culturally authentic patterns from {new Set(DRUM_PRESETS.filter(p => p.countryCode !== 'UN').map(p => p.country)).size} countries.
+            Click cells to cycle: off → hit → accent → ghost.
           </p>
         </div>
-        {claveInfo && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20">
-            <Music className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[11px] text-primary font-medium">Clave: {claveInfo}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {claveInfo && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20">
+              <Music className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[11px] text-primary font-medium">Clave: {claveInfo}</span>
+            </div>
+          )}
+          {currentPreset && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border">
+              <span className="text-[11px] font-medium">{currentPreset.country}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {formatPulseGrouping(currentPreset.pulseGrouping)}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Transport */}
@@ -331,10 +352,11 @@ const DrumMachine = () => {
           <div className="ml-auto text-xs text-muted-foreground">
             <span className="text-foreground font-medium">{currentPreset.name}</span>
             <span className="mx-1">·</span>
-            <span>{currentPreset.region}</span>
+            <span>{currentPreset.country}</span>
             {currentPreset.timeSignature && (
               <span className="ml-1">({currentPreset.timeSignature[0]}/{currentPreset.timeSignature[1]})</span>
             )}
+            <span className="ml-1 text-primary/70">{currentPreset.timeFeel}</span>
           </div>
         )}
       </div>
@@ -363,21 +385,65 @@ const DrumMachine = () => {
       {/* Presets Panel */}
       {showPanel === 'presets' && (
         <div className="p-4 rounded-lg bg-secondary/30 border border-border space-y-3">
-          {/* Region filters */}
+          {/* Search + Filters */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <div className="relative flex-1 min-w-[200px] max-w-xs">
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search rhythms, countries, artists..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full bg-card border border-border rounded-lg pl-7 pr-3 py-1.5 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {/* Feel filter */}
+            <select
+              value={filterFeel || ''}
+              onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
+              className="bg-card border border-border rounded-lg px-2 py-1.5 text-[11px] text-foreground"
+            >
+              <option value="">All Feels</option>
+              <option value="straight">Straight</option>
+              <option value="swing">Swing</option>
+              <option value="compound">Compound (6/8, 12/8)</option>
+              <option value="asymmetric">Asymmetric (5/8, 7/8, 9/8)</option>
+              <option value="polyrhythmic">Polyrhythmic</option>
+            </select>
+
+            {/* Complexity filter */}
+            <select
+              value={filterComplexity || ''}
+              onChange={e => setFilterComplexity((e.target.value || null) as Complexity | null)}
+              className="bg-card border border-border rounded-lg px-2 py-1.5 text-[11px] text-foreground"
+            >
+              <option value="">All Levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+
+            <span className="text-[10px] text-muted-foreground ml-auto">
+              {filteredPresets.length} of {DRUM_PRESETS.length} patterns
+            </span>
+          </div>
+
+          {/* Category chips */}
           <div className="flex flex-wrap gap-1.5">
             <button
-              onClick={() => setSelectedRegion(null)}
+              onClick={() => setSelectedCategory(null)}
               className={`text-[11px] px-2.5 py-1 rounded-full transition-colors ${
-                !selectedRegion ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
+                !selectedCategory ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
               }`}
             >
               All
             </button>
-            {regions.map(r => (
+            {categories.map(r => (
               <button key={r}
-                onClick={() => setSelectedRegion(r)}
+                onClick={() => setSelectedCategory(selectedCategory === r ? null : r)}
                 className={`text-[11px] px-2.5 py-1 rounded-full transition-colors ${
-                  selectedRegion === r ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
+                  selectedCategory === r ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
                 }`}
               >
                 {r}
@@ -386,25 +452,89 @@ const DrumMachine = () => {
           </div>
 
           {/* Presets grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            {(selectedRegion ? presetsByRegion[selectedRegion] || [] : DRUM_PRESETS).map(p => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
+            {filteredPresets.map(p => (
               <button key={p.name}
                 onClick={() => loadPreset(p)}
-                className={`text-left p-2.5 rounded-lg border transition-all hover:shadow-sm ${
+                className={`text-left p-3 rounded-lg border transition-all hover:shadow-sm ${
                   activePreset === p.name
                     ? 'border-primary bg-primary/5 shadow-sm'
                     : 'border-border hover:border-foreground/20 hover:bg-accent'
                 }`}
               >
-                <div className="text-xs font-medium truncate">{p.name}</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">{p.region} · {p.bpm} BPM</div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium truncate">{p.name}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      {p.country} · {p.bpm} BPM · {p.timeSignature[0]}/{p.timeSignature[1]}
+                    </div>
+                  </div>
+                  <span className={`text-[8px] px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                    p.complexity === 'beginner' ? 'bg-emerald-500/10 text-emerald-400' :
+                    p.complexity === 'intermediate' ? 'bg-amber-500/10 text-amber-400' :
+                    'bg-rose-500/10 text-rose-400'
+                  }`}>
+                    {p.complexity}
+                  </span>
+                </div>
+
+                {/* Pulse grouping dots */}
+                <div className="flex items-center gap-0.5 mt-1.5">
+                  {p.pulseGrouping.map((count, i) => (
+                    <div key={i} className="flex items-center">
+                      {i > 0 && <span className="text-[7px] text-muted-foreground/40 mx-[1px]">+</span>}
+                      <div className="flex gap-[1px]">
+                        {Array.from({ length: count }).map((_, j) => (
+                          <span key={j} className={`w-1 h-1 rounded-full ${j === 0 ? 'bg-primary' : 'bg-muted-foreground/25'}`} />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <span className="text-[8px] text-muted-foreground/60 ml-1 font-mono">
+                    {formatPulseGrouping(p.pulseGrouping)}
+                  </span>
+                </div>
+
+                {/* Feel badge */}
+                <div className="flex items-center gap-1 mt-1">
+                  <span className="text-[8px] px-1 py-0.5 rounded bg-secondary text-muted-foreground">{p.timeFeel}</span>
+                </div>
               </button>
             ))}
           </div>
 
           {/* Preset description */}
           {currentPreset && (
-            <p className="text-[11px] text-muted-foreground italic">{currentPreset.description}</p>
+            <div className="space-y-1.5">
+              <p className="text-[11px] text-muted-foreground italic">{currentPreset.description}</p>
+              {currentPreset.culturalDescription && (
+                <p className="text-[10px] text-primary/70">{currentPreset.culturalDescription}</p>
+              )}
+              {currentPreset.artists && currentPreset.artists.length > 0 && (
+                <p className="text-[10px] text-muted-foreground">
+                  <span className="font-medium">Artists:</span> {currentPreset.artists.join(', ')}
+                </p>
+              )}
+              {currentPreset.instrumentRoles && (
+                <div className="flex flex-wrap gap-2 text-[10px]">
+                  {currentPreset.instrumentRoles.timeline && (
+                    <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                      Timeline: {currentPreset.instrumentRoles.timeline}
+                    </span>
+                  )}
+                  {currentPreset.instrumentRoles.groove && (
+                    <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400">
+                      Groove: {currentPreset.instrumentRoles.groove}
+                    </span>
+                  )}
+                  {currentPreset.instrumentRoles.bass && (
+                    <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                      Bass: {currentPreset.instrumentRoles.bass}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -442,7 +572,7 @@ const DrumMachine = () => {
                     onChange={e => changeSubdivisions(track.id, Number(e.target.value))}
                     className="bg-secondary border border-border rounded px-1.5 py-0.5 text-xs text-foreground w-14"
                   >
-                    {[4,6,8,12,16,24,32].map(n => (
+                    {[4,6,7,8,9,10,11,12,16,20,24,32].map(n => (
                       <option key={n} value={n}>{n}</option>
                     ))}
                   </select>
@@ -604,7 +734,6 @@ const DrumMachine = () => {
           <Plus size={12} /> Add Track
         </button>
 
-        {/* Quick-add popular instruments */}
         {['kick', 'snare', 'hh-closed', 'clave', 'conga-low', 'cowbell', 'cajon', 'shaker'].map(instId => {
           const inst = getInstrument(instId);
           if (!inst) return null;
