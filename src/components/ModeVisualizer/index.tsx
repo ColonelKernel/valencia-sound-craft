@@ -652,7 +652,7 @@ const ModeVisualizer = () => {
 
         {/* Mode Reference Table */}
         <div className="mt-10">
-          <ModeReference rootNote={root} />
+          <ModeReference rootNote={root} timbre={timbre} />
         </div>
         </>
         )}
