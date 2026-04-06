@@ -132,21 +132,45 @@ function useFlats(root: string): boolean {
 export function getScaleNotes(root: string, mode: string): string[] {
   const intervals = MODE_INTERVALS[mode];
   if (!intervals) return [];
-  const flats = useFlats(root);
-  const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
-  let actualRootIndex = chromatic.indexOf(root);
-  let actualChromatic = chromatic;
-  if (actualRootIndex === -1) {
-    const alt = flats ? NOTES_SHARP : NOTES_FLAT;
-    actualRootIndex = alt.indexOf(root);
-    actualChromatic = alt;
-    if (actualRootIndex === -1) {
-      const enh = ENHARMONIC[root];
-      if (enh) { actualRootIndex = chromatic.indexOf(enh); actualChromatic = chromatic; }
+
+  // Try both sharp and flat spellings, pick the one with fewer accidentals
+  // (or use flat-preference for flat keys)
+  const trySpelling = (chromatic: string[]): string[] | null => {
+    let idx = chromatic.indexOf(root);
+    if (idx === -1) return null;
+    return intervals.map(i => chromatic[(idx + i) % 12]);
+  };
+
+  const sharpResult = trySpelling(NOTES_SHARP);
+  const flatResult = trySpelling(NOTES_FLAT);
+
+  if (sharpResult && !flatResult) return sharpResult;
+  if (flatResult && !sharpResult) return flatResult;
+  if (!sharpResult && !flatResult) {
+    // Try enharmonic
+    const enh = ENHARMONIC[root];
+    if (enh) {
+      const enhSharp = NOTES_SHARP.indexOf(enh) >= 0 ? intervals.map(i => NOTES_SHARP[(NOTES_SHARP.indexOf(enh) + i) % 12]) : null;
+      const enhFlat = NOTES_FLAT.indexOf(enh) >= 0 ? intervals.map(i => NOTES_FLAT[(NOTES_FLAT.indexOf(enh) + i) % 12]) : null;
+      return enhFlat || enhSharp || [];
     }
+    return [];
   }
-  if (actualRootIndex === -1) return [];
-  return intervals.map(i => actualChromatic[(actualRootIndex + i) % 12]);
+
+  // Both exist — prefer flats for flat keys, otherwise count accidentals
+  if (useFlats(root)) return flatResult!;
+
+  const countAccidentals = (notes: string[]) => notes.filter(n => n.includes('#') || n.includes('b')).length;
+  const sharpCount = countAccidentals(sharpResult!);
+  const flatCount = countAccidentals(flatResult!);
+
+  // Prefer fewer accidentals; if tied, prefer flats for minor-ish modes
+  if (flatCount < sharpCount) return flatResult!;
+  if (sharpCount < flatCount) return sharpResult!;
+
+  // Tie — prefer flats for modes that naturally have flats
+  const hasFlattedIntervals = intervals.some(i => [1, 3, 6, 8, 10].includes(i));
+  return hasFlattedIntervals ? flatResult! : sharpResult!;
 }
 
 export function isSharp(note: string): boolean { return note.includes('#'); }
