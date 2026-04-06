@@ -74,10 +74,10 @@ const ModeVisualizer = () => {
       <div className="container mx-auto">
         <div className="fade-up mb-10">
           <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
-            Interactive Tool
+            Interactive Tools
           </p>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Musical Mode Visualizer
+            Interactive Tools
           </h2>
           <p className="text-muted-foreground mt-2 max-w-xl">
             Explore modes across every key — major, melodic minor, harmonic minor, pentatonic, and more.
