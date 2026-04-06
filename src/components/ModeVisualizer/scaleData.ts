@@ -182,64 +182,112 @@ export interface StringTuning { note: string; octave: number; }
 export interface TuningPreset {
   label: string;
   guitar: StringTuning[];
+  guitar7: StringTuning[];
+  guitar8: StringTuning[];
   bass: StringTuning[];
+  bass5: StringTuning[];
+  bass6: StringTuning[];
 }
 
 export const TUNING_PRESETS: TuningPreset[] = [
   {
     label: 'Standard',
     guitar: [{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    guitar7: [{ note:'B',octave:1 },{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    guitar8: [{ note:'F#',octave:1 },{ note:'B',octave:1 },{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
     bass:   [{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+    bass5:  [{ note:'B',octave:0 },{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+    bass6:  [{ note:'B',octave:0 },{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 }],
   },
   {
     label: 'Half Step Down',
     guitar: [{ note:'Eb',octave:2 },{ note:'Ab',octave:2 },{ note:'Db',octave:3 },{ note:'Gb',octave:3 },{ note:'Bb',octave:3 },{ note:'Eb',octave:4 }],
+    guitar7: [{ note:'Bb',octave:1 },{ note:'Eb',octave:2 },{ note:'Ab',octave:2 },{ note:'Db',octave:3 },{ note:'Gb',octave:3 },{ note:'Bb',octave:3 },{ note:'Eb',octave:4 }],
+    guitar8: [{ note:'F',octave:1 },{ note:'Bb',octave:1 },{ note:'Eb',octave:2 },{ note:'Ab',octave:2 },{ note:'Db',octave:3 },{ note:'Gb',octave:3 },{ note:'Bb',octave:3 },{ note:'Eb',octave:4 }],
     bass:   [{ note:'Eb',octave:1 },{ note:'Ab',octave:1 },{ note:'Db',octave:2 },{ note:'Gb',octave:2 }],
+    bass5:  [{ note:'Bb',octave:0 },{ note:'Eb',octave:1 },{ note:'Ab',octave:1 },{ note:'Db',octave:2 },{ note:'Gb',octave:2 }],
+    bass6:  [{ note:'Bb',octave:0 },{ note:'Eb',octave:1 },{ note:'Ab',octave:1 },{ note:'Db',octave:2 },{ note:'Gb',octave:2 },{ note:'B',octave:2 }],
   },
   {
     label: 'Full Step Down',
     guitar: [{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 },{ note:'F',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    guitar7: [{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 },{ note:'F',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    guitar8: [{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 },{ note:'F',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
     bass:   [{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 }],
+    bass5:  [{ note:'A',octave:0 },{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 }],
+    bass6:  [{ note:'A',octave:0 },{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 },{ note:'Bb',octave:2 }],
   },
   {
     label: 'Drop D',
     guitar: [{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    guitar7: [{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    guitar8: [{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
     bass:   [{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+    bass5:  [{ note:'B',octave:0 },{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+    bass6:  [{ note:'B',octave:0 },{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 }],
   },
   {
     label: 'Drop C',
     guitar: [{ note:'C',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 },{ note:'F',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    guitar7: [{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 },{ note:'F',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    guitar8: [{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 },{ note:'F',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
     bass:   [{ note:'C',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 }],
+    bass5:  [{ note:'B',octave:0 },{ note:'C',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 }],
+    bass6:  [{ note:'B',octave:0 },{ note:'C',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 },{ note:'Bb',octave:2 }],
   },
   {
     label: 'Open G',
     guitar: [{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'D',octave:4 }],
+    guitar7: [{ note:'G',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'D',octave:4 }],
+    guitar8: [{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'D',octave:4 }],
     bass:   [{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+    bass5:  [{ note:'G',octave:0 },{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+    bass6:  [{ note:'G',octave:0 },{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'B',octave:2 }],
   },
   {
     label: 'Open D',
     guitar: [{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'F#',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    guitar7: [{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'F#',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    guitar8: [{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'F#',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
     bass:   [{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'F#',octave:2 }],
+    bass5:  [{ note:'A',octave:0 },{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'F#',octave:2 }],
+    bass6:  [{ note:'A',octave:0 },{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'F#',octave:2 },{ note:'A',octave:2 }],
   },
   {
     label: 'Open E',
     guitar: [{ note:'E',octave:2 },{ note:'B',octave:2 },{ note:'E',octave:3 },{ note:'G#',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    guitar7: [{ note:'B',octave:1 },{ note:'E',octave:2 },{ note:'B',octave:2 },{ note:'E',octave:3 },{ note:'G#',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    guitar8: [{ note:'E',octave:1 },{ note:'B',octave:1 },{ note:'E',octave:2 },{ note:'B',octave:2 },{ note:'E',octave:3 },{ note:'G#',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
     bass:   [{ note:'E',octave:1 },{ note:'B',octave:1 },{ note:'E',octave:2 },{ note:'G#',octave:2 }],
+    bass5:  [{ note:'B',octave:0 },{ note:'E',octave:1 },{ note:'B',octave:1 },{ note:'E',octave:2 },{ note:'G#',octave:2 }],
+    bass6:  [{ note:'B',octave:0 },{ note:'E',octave:1 },{ note:'B',octave:1 },{ note:'E',octave:2 },{ note:'G#',octave:2 },{ note:'B',octave:2 }],
   },
   {
     label: 'Open A',
     guitar: [{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'E',octave:3 },{ note:'A',octave:3 },{ note:'C#',octave:3 },{ note:'E',octave:4 }],
+    guitar7: [{ note:'A',octave:1 },{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'E',octave:3 },{ note:'A',octave:3 },{ note:'C#',octave:3 },{ note:'E',octave:4 }],
+    guitar8: [{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'E',octave:3 },{ note:'A',octave:3 },{ note:'C#',octave:3 },{ note:'E',octave:4 }],
     bass:   [{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'E',octave:2 },{ note:'A',octave:2 }],
+    bass5:  [{ note:'A',octave:0 },{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'E',octave:2 },{ note:'A',octave:2 }],
+    bass6:  [{ note:'A',octave:0 },{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'C#',octave:3 }],
   },
   {
     label: 'DADGAD',
     guitar: [{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    guitar7: [{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    guitar8: [{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
     bass:   [{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+    bass5:  [{ note:'A',octave:0 },{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+    bass6:  [{ note:'A',octave:0 },{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 }],
   },
   {
     label: 'Half Step Up',
     guitar: [{ note:'F',octave:2 },{ note:'A#',octave:2 },{ note:'D#',octave:3 },{ note:'G#',octave:3 },{ note:'C',octave:4 },{ note:'F',octave:4 }],
+    guitar7: [{ note:'C',octave:2 },{ note:'F',octave:2 },{ note:'A#',octave:2 },{ note:'D#',octave:3 },{ note:'G#',octave:3 },{ note:'C',octave:4 },{ note:'F',octave:4 }],
+    guitar8: [{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 },{ note:'A#',octave:2 },{ note:'D#',octave:3 },{ note:'G#',octave:3 },{ note:'C',octave:4 },{ note:'F',octave:4 }],
     bass:   [{ note:'F',octave:1 },{ note:'A#',octave:1 },{ note:'D#',octave:2 },{ note:'G#',octave:2 }],
+    bass5:  [{ note:'C',octave:1 },{ note:'F',octave:1 },{ note:'A#',octave:1 },{ note:'D#',octave:2 },{ note:'G#',octave:2 }],
+    bass6:  [{ note:'C',octave:1 },{ note:'F',octave:1 },{ note:'A#',octave:1 },{ note:'D#',octave:2 },{ note:'G#',octave:2 },{ note:'C',octave:3 }],
   },
 ];
 
