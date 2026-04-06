@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   Play, Square, RotateCcw, Download, ChevronDown, ChevronRight,
-  Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter, Send
+  Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter
 } from "lucide-react";
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
 import {
