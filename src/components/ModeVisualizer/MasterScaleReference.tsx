@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { getScaleNotes, MODE_INTERVALS } from "./scaleData";
-import { playScale, InstrumentTimbre } from "./audioSynth";
+import { playScale, InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 import { Play, Square } from "lucide-react";
 
 // ─── Scale Families ──────────────────────────────────────────
@@ -96,24 +96,23 @@ const COMMON_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A'
 const MasterScaleReference = () => {
   const [root, setRoot] = useState("C");
   const [familyIdx, setFamilyIdx] = useState(0);
+  const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
   const [playingIdx, setPlayingIdx] = useState<number | null>(null);
   const playingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handlePlayScale = useCallback((notes: string[], rowIdx: number) => {
     if (playingIdx === rowIdx) {
-      // Stop
       setPlayingIdx(null);
       if (playingTimeout.current) clearTimeout(playingTimeout.current);
       return;
     }
     setPlayingIdx(rowIdx);
-    // Play scale notes + octave root
     const notesWithOctave = [...notes, notes[0]];
-    playScale(notesWithOctave, 200, 'piano');
+    playScale(notesWithOctave, 200, timbre);
     const totalDuration = notesWithOctave.length * 200 + 350;
     if (playingTimeout.current) clearTimeout(playingTimeout.current);
     playingTimeout.current = setTimeout(() => setPlayingIdx(null), totalDuration);
-  }, [playingIdx]);
+  }, [playingIdx, timbre]);
 
   const family = SCALE_FAMILIES[familyIdx];
   const parentNotes = useMemo(() => getScaleNotes(root, family.modes[0]), [root, family]);
@@ -194,6 +193,19 @@ const MasterScaleReference = () => {
           >
             {SCALE_FAMILIES.map((f, i) => (
               <option key={f.label} value={i}>{f.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-muted-foreground">Sound</label>
+          <select
+            value={timbre}
+            onChange={e => setTimbre(e.target.value as InstrumentTimbre)}
+            className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {INSTRUMENT_TIMBRES.map(t => (
+              <option key={t.id} value={t.id}>{t.label}</option>
             ))}
           </select>
         </div>
