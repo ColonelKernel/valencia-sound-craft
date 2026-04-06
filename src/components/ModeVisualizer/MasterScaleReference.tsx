@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { getScaleNotes, MODE_INTERVALS } from "./scaleData";
+import { playScale, InstrumentTimbre } from "./audioSynth";
+import { Play, Square } from "lucide-react";
 
 // ─── Scale Families ──────────────────────────────────────────
 // "modal" families derive modes from a parent scale (each mode starts on a different degree).
@@ -94,6 +96,24 @@ const COMMON_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A'
 const MasterScaleReference = () => {
   const [root, setRoot] = useState("C");
   const [familyIdx, setFamilyIdx] = useState(0);
+  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
+  const playingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handlePlayScale = useCallback((notes: string[], rowIdx: number) => {
+    if (playingIdx === rowIdx) {
+      // Stop
+      setPlayingIdx(null);
+      if (playingTimeout.current) clearTimeout(playingTimeout.current);
+      return;
+    }
+    setPlayingIdx(rowIdx);
+    // Play scale notes + octave root
+    const notesWithOctave = [...notes, notes[0]];
+    playScale(notesWithOctave, 200, 'piano');
+    const totalDuration = notesWithOctave.length * 200 + 350;
+    if (playingTimeout.current) clearTimeout(playingTimeout.current);
+    playingTimeout.current = setTimeout(() => setPlayingIdx(null), totalDuration);
+  }, [playingIdx]);
 
   const family = SCALE_FAMILIES[familyIdx];
   const parentNotes = useMemo(() => getScaleNotes(root, family.modes[0]), [root, family]);
@@ -184,6 +204,7 @@ const MasterScaleReference = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
+              <th className="text-center text-xs text-muted-foreground font-medium px-1 py-2 w-10">▶</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-16">Mode</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-10">Deg</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-24">vs Major</th>
@@ -201,6 +222,19 @@ const MasterScaleReference = () => {
                   rowIdx === 0 ? 'bg-primary/5' : ''
                 }`}
               >
+                <td className="px-1 py-2.5 text-center">
+                  <button
+                    onClick={() => handlePlayScale(row.notes, rowIdx)}
+                    className={`inline-flex items-center justify-center w-7 h-7 rounded-full transition-colors ${
+                      playingIdx === rowIdx
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+                    }`}
+                    title={playingIdx === rowIdx ? 'Stop' : `Play ${row.modeName}`}
+                  >
+                    {playingIdx === rowIdx ? <Square className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                  </button>
+                </td>
                 <td className="px-2 py-2.5">
                   <span className="text-xs font-semibold">{row.modeName}</span>
                 </td>
