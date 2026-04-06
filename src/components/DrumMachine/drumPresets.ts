@@ -4655,6 +4655,9 @@ export function getCountryMapData(): CountryMapData[] {
     // Central America
     'GT': [15.8, -90.2], 'BZ': [17.2, -88.5], 'HN': [15.2, -86.2], 'SV': [13.8, -88.9],
     'NI': [12.9, -85.2], 'CR': [9.7, -83.8], 'PA': [8.5, -80.8],
+    // Middle East & South Asia additions
+    'IR': [32.4, 53.7], 'IQ': [33.2, 43.7], 'SA': [23.9, 45.1], 'LB': [33.9, 35.5],
+    'AF': [33.9, 67.7], 'PK': [30.4, 69.3],
   };
 
   const result: CountryMapData[] = [];
