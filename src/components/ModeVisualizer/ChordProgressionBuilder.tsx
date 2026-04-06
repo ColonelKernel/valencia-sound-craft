@@ -174,9 +174,29 @@ function getNoteAtSemitone(root: string, semitones: number): string {
     const alt = useFlats ? NOTES_SHARP : NOTES_FLAT;
     idx = alt.indexOf(root);
     if (idx === -1) return root;
-    return chromatic[(idx + semitones) % 12];
+    return chromatic[(idx + semitones + 12) % 12];
   }
-  return chromatic[(idx + semitones) % 12];
+  return chromatic[(idx + semitones + 12) % 12];
+}
+
+function transposeNote(note: string, semitones: number, useFlats: boolean): string {
+  const chromatic = useFlats ? NOTES_FLAT : NOTES_SHARP;
+  let idx = chromatic.indexOf(note);
+  if (idx === -1) {
+    const alt = useFlats ? NOTES_SHARP : NOTES_FLAT;
+    idx = alt.indexOf(note);
+    if (idx === -1) return note;
+  }
+  return chromatic[((idx + semitones) % 12 + 12) % 12];
+}
+
+function transposeChord(chord: ChordSpelling, semitones: number, useFlats: boolean): ChordSpelling {
+  return {
+    ...chord,
+    rootNote: transposeNote(chord.rootNote, semitones, useFlats),
+    notes: chord.notes.map(n => transposeNote(n, semitones, useFlats)),
+    name: chord.name.replace(/^[A-G][#b]?/, transposeNote(chord.rootNote, semitones, useFlats)),
+  };
 }
 
 function getSecondaryDominants(root: string, mode: string, diatonicChords: ChordSpelling[]): ProgressionChord[] {
@@ -398,6 +418,24 @@ const ChordProgressionBuilder = ({
     })));
   };
 
+  const handleTranspose = (newRoot: string) => {
+    if (newRoot === localRoot || progression.length === 0) {
+      setLocalRoot(newRoot);
+      return;
+    }
+    const oldIdx = NOTES_SHARP.indexOf(localRoot) !== -1 ? NOTES_SHARP.indexOf(localRoot) : NOTES_FLAT.indexOf(localRoot);
+    const newIdx = NOTES_SHARP.indexOf(newRoot) !== -1 ? NOTES_SHARP.indexOf(newRoot) : NOTES_FLAT.indexOf(newRoot);
+    const semitones = ((newIdx - oldIdx) % 12 + 12) % 12;
+    const useFlats = newRoot.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(newRoot);
+
+    stop();
+    setProgression(prev => prev.map(pc => ({
+      ...pc,
+      chord: transposeChord(pc.chord, semitones, useFlats),
+    })));
+    setLocalRoot(newRoot);
+  };
+
   if (chordSpellings.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-4 md:p-6">
@@ -419,12 +457,15 @@ const ChordProgressionBuilder = ({
           <label className="text-xs text-muted-foreground font-medium">Key</label>
           <select
             value={localRoot}
-            onChange={(e) => { stop(); setLocalRoot(e.target.value); setProgression([]); }}
+            onChange={(e) => handleTranspose(e.target.value)}
             className="bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring appearance-none cursor-pointer pr-6"
             style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\' stroke-width=\'2\'%3E%3Cpath d=\'m6 9 6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
           >
             {ALL_ROOTS.map(r => <option key={r} value={r} className="bg-background text-foreground">{r}</option>)}
           </select>
+          {progression.length > 0 && (
+            <span className="text-[9px] text-primary font-medium">♪ transposes</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground font-medium">Mode</label>
