@@ -727,6 +727,7 @@ const DrumMachine = () => {
             <span className="italic truncate max-w-xs">{currentPreset.description}</span>
           </div>
         )}
+      </div>}
       </div>
 
       {/* Velocity Legend */}
