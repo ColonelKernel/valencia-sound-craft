@@ -303,6 +303,29 @@ export const DRUM_PRESETS: PatternPreset[] = [
       { instrumentId: 'shaker', steps: [x,_,x,_,x,_,x,_,x,_,x,_,x,_,x,_], subdivisions: 16 },
     ],
   },
+  {
+    name: 'Marinera',
+    category: 'Peruvian',
+    region: 'Latin America',
+    country: 'Peru',
+    countryCode: 'PE',
+    description: 'Elegant Peruvian courtship dance. National dance of Peru with criolla and norteña variants.',
+    bpm: 130,
+    swing: 0,
+    timeSignature: [6, 8],
+    timeFeel: 'compound',
+    pulseGrouping: [3, 3],
+    tempoRange: [110, 150],
+    instrumentRoles: { timeline: 'Palmas', groove: 'Cajón', bass: 'Cajón bass tone' },
+    artists: ['Chabuca Granda', 'Eva Ayllón', 'Arturo "Zambo" Cavero'],
+    complexity: 'intermediate',
+    tracks: [
+      { instrumentId: 'cajon', steps: [X,_,_,x,_,_,X,_,_,x,_,_], subdivisions: 12 },
+      { instrumentId: 'clap', steps: [X,_,_,_,_,X,X,_,_,_,_,X], subdivisions: 12 },
+      { instrumentId: 'shaker', steps: [x,_,x,x,_,x,x,_,x,x,_,x], subdivisions: 12 },
+      { instrumentId: 'conga-low', steps: [X,_,_,_,_,_,X,_,_,_,_,_], subdivisions: 12 },
+    ],
+  },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // BRAZIL
