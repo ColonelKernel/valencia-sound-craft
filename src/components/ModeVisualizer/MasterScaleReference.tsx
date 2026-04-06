@@ -114,6 +114,8 @@ const MasterScaleReference = () => {
     if (playingTimeout.current) clearTimeout(playingTimeout.current);
     playingTimeout.current = setTimeout(() => setPlayingIdx(null), totalDuration);
   }, [playingIdx]);
+
+  const family = SCALE_FAMILIES[familyIdx];
   const parentNotes = useMemo(() => getScaleNotes(root, family.modes[0]), [root, family]);
 
   const modeRows = useMemo(() => {
