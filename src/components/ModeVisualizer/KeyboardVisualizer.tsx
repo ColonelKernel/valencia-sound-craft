@@ -1,4 +1,4 @@
-import { playNote } from "./audioSynth";
+import { playNote, type InstrumentTimbre } from "./audioSynth";
 
 const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const BLACK_KEYS = new Set([1, 3, 6, 8, 10]); // indices of sharps in ALL_NOTES
@@ -12,6 +12,7 @@ interface KeyboardVisualizerProps {
   chordFilter: string[] | null;
   showIntervals: boolean;
   intervals: string[];
+  timbre?: InstrumentTimbre;
 }
 
 // Normalize note for matching (e.g., Db -> C#)
@@ -33,6 +34,7 @@ const KeyboardVisualizer = ({
   chordFilter,
   showIntervals,
   intervals,
+  timbre = 'piano',
 }: KeyboardVisualizerProps) => {
   const normalizedScale = scaleNotes.map(normalize);
   const normalizedFilter = chordFilter ? chordFilter.map(normalize) : null;
@@ -126,7 +128,7 @@ const KeyboardVisualizer = ({
               onMouseLeave={() => onNoteHover(null)}
               onClick={() => {
                 if (inScale) {
-                  playNote(k.note);
+                  playNote(k.note, 0, 0.4, timbre);
                   onNoteClick?.(displayNote(k.note));
                 }
               }}
@@ -161,7 +163,7 @@ const KeyboardVisualizer = ({
             onMouseLeave={() => onNoteHover(null)}
             onClick={() => {
               if (inScale) {
-                playNote(k.note);
+                playNote(k.note, 0, 0.4, timbre);
                 onNoteClick?.(displayNote(k.note));
               }
             }}

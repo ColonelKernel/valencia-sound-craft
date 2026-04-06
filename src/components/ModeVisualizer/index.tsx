@@ -15,7 +15,7 @@ import {
   type StringTuning,
   type TuningPreset,
 } from "./scaleData";
-import { playNote, playChord, playScale } from "./audioSynth";
+import { playNote, playChord, playScale, type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 import Fretboard from "./Fretboard";
 import SheetMusic from "./SheetMusic";
 import ModeReference from "./ModeReference";
@@ -45,6 +45,7 @@ const ModeVisualizer = () => {
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
   const [otherInstrument, setOtherInstrument] = useState(FRETTED_INSTRUMENTS[0].key);
+  const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
@@ -71,19 +72,19 @@ const ModeVisualizer = () => {
 
   const handleChordClick = (cs: ChordSpelling) => {
     if (selectedChord?.symbol === cs.symbol) {
-      setSelectedChord(null); // deselect
+      setSelectedChord(null);
     } else {
       setSelectedChord(cs);
-      playChord(cs.notes);
+      playChord(cs.notes, 0.8, timbre);
     }
   };
 
   const handleNoteClick = (note: string) => {
-    playNote(note);
+    playNote(note, 0, 0.4, timbre);
   };
 
   const handlePlayScale = () => {
-    playScale([...scaleNotes, scaleNotes[0]]);
+    playScale([...scaleNotes, scaleNotes[0]], 200, timbre);
   };
 
   // Clear selected chord when mode/root changes
@@ -242,6 +243,19 @@ const ModeVisualizer = () => {
             Fingers
           </button>
           )}
+
+          <div className="flex items-center gap-2 ml-auto">
+            <label className="text-sm font-medium text-muted-foreground">Sound</label>
+            <select
+              value={timbre}
+              onChange={(e) => setTimbre(e.target.value as InstrumentTimbre)}
+              className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {INSTRUMENT_TIMBRES.map(t => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Custom Tuning Editor */}
@@ -342,7 +356,7 @@ const ModeVisualizer = () => {
                 }`}
                 onMouseEnter={() => setHoveredNote(note)}
                 onMouseLeave={() => setHoveredNote(null)}
-                onClick={() => playNote(note)}
+                onClick={() => playNote(note, 0, 0.4, timbre)}
               >
                 {showIntervals ? intervals[i] : note}
               </div>
@@ -614,6 +628,7 @@ const ModeVisualizer = () => {
               chordFilter={chordFilter}
               showIntervals={showIntervals}
               intervals={intervals}
+              timbre={timbre}
             />
           </div>
         )}

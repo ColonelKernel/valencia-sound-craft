@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from "react";
-import { Play, Pause, Plus, X, Volume2, RotateCcw, Sparkles, ArrowRightLeft, Music2, ChevronDown, ChevronUp, Download } from "lucide-react";
-import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS } from "./scaleData";
+import { Play, Pause, Plus, X, Volume2, RotateCcw, Sparkles, ArrowRightLeft, Music2, ChevronDown, ChevronUp, Download, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
+import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
+import { type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 
 // ─── Constants ──────────────────────────────────────────────
 const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -125,7 +126,7 @@ function downloadMidi(chords: ProgressionChord[], bpm: number, beatsPerChord: nu
 }
 
 // ─── Audio ──────────────────────────────────────────────────
-function playChordTones(notes: string[], duration = 0.8) {
+function playChordTones(notes: string[], duration = 0.8, timbre: InstrumentTimbre = 'piano') {
   const ctx = new AudioContext();
   const NOTE_FREQ: Record<string, number> = {
     'C': 261.63, 'C#': 277.18, 'Db': 277.18,
@@ -135,19 +136,32 @@ function playChordTones(notes: string[], duration = 0.8) {
     'A': 440.00, 'A#': 466.16, 'Bb': 466.16, 'B': 493.88,
   };
 
-  notes.forEach((note) => {
+  const volume = 0.08;
+
+  notes.forEach((note, i) => {
     const freq = NOTE_FREQ[note];
     if (!freq) return;
+    const startTime = ctx.currentTime + i * 0.03;
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    gain.gain.value = 0.08;
+
+    // Apply simple timbre mapping
+    switch (timbre) {
+      case 'guitar': osc.type = 'triangle'; break;
+      case 'organ': osc.type = 'sine'; break;
+      case 'synth-pad': osc.type = 'sawtooth'; break;
+      case 'bright-lead': osc.type = 'square'; break;
+      case 'warm-bass': osc.type = 'sine'; break;
+      default: osc.type = 'triangle'; break;
+    }
+    osc.frequency.value = timbre === 'warm-bass' ? freq / 2 : freq;
+    gain.gain.value = volume;
     osc.connect(gain);
     gain.connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    osc.stop(ctx.currentTime + duration + 0.05);
+    osc.start(startTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.stop(startTime + duration + 0.05);
   });
 }
 
@@ -296,9 +310,9 @@ const sourceDotColors = {
 
 // ─── Main Component ─────────────────────────────────────────
 const ChordProgressionBuilder = ({
-  chordSpellings,
-  root,
-  mode,
+  chordSpellings: initialChordSpellings,
+  root: initialRoot,
+  mode: initialMode,
 }: ChordProgressionBuilderProps) => {
   const [progression, setProgression] = useState<ProgressionChord[]>([]);
   const [playing, setPlaying] = useState(false);
@@ -309,7 +323,17 @@ const ChordProgressionBuilder = ({
   const [showSecondaryDoms, setShowSecondaryDoms] = useState(false);
   const [showTritoneSubs, setShowTritoneSubs] = useState(false);
   const [expandedBorrowMode, setExpandedBorrowMode] = useState<string | null>(null);
+  const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
+  const [localRoot, setLocalRoot] = useState(initialRoot);
+  const [localMode, setLocalMode] = useState(initialMode);
   const timeoutRef = useRef<number[]>([]);
+
+  // Derive chords from local key/mode
+  const root = localRoot;
+  const mode = localMode;
+  const localScaleNotes = useMemo(() => getScaleNotes(root, mode), [root, mode]);
+  const chordSpellings = useMemo(() => getChordSpellings(localScaleNotes, mode), [localScaleNotes, mode]);
+  const allModes = useMemo(() => MODE_CATEGORIES.flatMap(c => c.modes), []);
 
   // Compute harmonic tools
   const secondaryDoms = useMemo(() => getSecondaryDominants(root, mode, chordSpellings), [root, mode, chordSpellings]);
@@ -334,7 +358,7 @@ const ChordProgressionBuilder = ({
     progression.forEach((pc, i) => {
       const id = window.setTimeout(() => {
         setCurrentIdx(i);
-        playChordTones(pc.chord.notes, (chordDuration / 1000) * 0.9);
+        playChordTones(pc.chord.notes, (chordDuration / 1000) * 0.9, timbre);
       }, i * chordDuration);
       ids.push(id);
     });
@@ -346,7 +370,7 @@ const ChordProgressionBuilder = ({
     ids.push(endId);
 
     timeoutRef.current = ids;
-  }, [progression, bpm, beatsPerChord, stop]);
+  }, [progression, bpm, beatsPerChord, stop, timbre]);
 
   const addChord = (pc: ProgressionChord) => {
     setProgression(prev => [...prev, pc]);
@@ -354,6 +378,16 @@ const ChordProgressionBuilder = ({
 
   const removeChord = (idx: number) => {
     setProgression(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const moveChord = (idx: number, direction: -1 | 1) => {
+    setProgression(prev => {
+      const next = [...prev];
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= next.length) return prev;
+      [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
+      return next;
+    });
   };
 
   const loadTemplate = (degrees: number[]) => {
@@ -379,10 +413,39 @@ const ChordProgressionBuilder = ({
     <div className="rounded-lg border border-border bg-card p-4 md:p-6">
       <h3 className="text-lg font-semibold mb-4">Chord Progression Builder</h3>
 
-      {/* Key context */}
-      <p className="text-xs text-muted-foreground mb-4">
-        Key: <span className="font-semibold text-foreground">{root} {mode}</span> — click chords to build your progression
-      </p>
+      {/* Key & Timbre controls */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Key</label>
+          <select
+            value={localRoot}
+            onChange={(e) => { setLocalRoot(e.target.value); setProgression([]); }}
+            className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {ALL_ROOTS.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Mode</label>
+          <select
+            value={localMode}
+            onChange={(e) => { setLocalMode(e.target.value); setProgression([]); }}
+            className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {allModes.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Sound</label>
+          <select
+            value={timbre}
+            onChange={(e) => setTimbre(e.target.value as InstrumentTimbre)}
+            className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {INSTRUMENT_TIMBRES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+          </select>
+        </div>
+      </div>
 
       {/* ── Progression Timeline ─────────────────────────────── */}
       <div className="mb-6">
@@ -400,6 +463,33 @@ const ChordProgressionBuilder = ({
                     : 'border-border bg-card hover:border-muted-foreground'
                 }`}
               >
+                {/* Move & remove controls */}
+                <div className="absolute -top-2 left-0 right-0 flex items-center justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {i > 0 && (
+                    <button
+                      onClick={() => moveChord(i, -1)}
+                      className="w-4 h-4 rounded-full bg-secondary border border-border flex items-center justify-center hover:bg-accent"
+                      title="Move left"
+                    >
+                      <ArrowLeft size={8} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => removeChord(i)}
+                    className="w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                  >
+                    <X size={8} />
+                  </button>
+                  {i < progression.length - 1 && (
+                    <button
+                      onClick={() => moveChord(i, 1)}
+                      className="w-4 h-4 rounded-full bg-secondary border border-border flex items-center justify-center hover:bg-accent"
+                      title="Move right"
+                    >
+                      <ArrowRight size={8} />
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-center gap-1">
                   <span className={`w-1.5 h-1.5 rounded-full ${sourceDotColors[pc.source]}`} />
                   <span className="font-bold">{pc.chord.symbol}</span>
@@ -408,12 +498,6 @@ const ChordProgressionBuilder = ({
                 {pc.source !== 'diatonic' && (
                   <span className="text-[9px] text-muted-foreground/60 italic">{pc.sourceLabel}</span>
                 )}
-                <button
-                  onClick={() => removeChord(i)}
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X size={10} />
-                </button>
               </div>
             ))
           )}
@@ -658,7 +742,7 @@ const ChordProgressionBuilder = ({
         <button
           onClick={() => {
             if (progression.length > 0) {
-              playChordTones(progression[0].chord.notes);
+              playChordTones(progression[0].chord.notes, 0.8, timbre);
             }
           }}
           className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
