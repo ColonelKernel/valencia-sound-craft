@@ -71,7 +71,7 @@ const Metronome = () => {
 
   const stop = useCallback(() => {
     if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+      clearTimeout(intervalRef.current);
       intervalRef.current = null;
     }
     setPlaying(false);
