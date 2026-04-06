@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
@@ -23,6 +23,7 @@ import Metronome from "./Metronome";
 import ChordProgressionBuilder from "./ChordProgressionBuilder";
 import KeyboardVisualizer from "./KeyboardVisualizer";
 import MasterScaleReference from "./MasterScaleReference";
+import PolyrhythmTool from "./PolyrhythmTool";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -39,7 +40,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm'>('visualizer');
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
@@ -111,6 +112,7 @@ const ModeVisualizer = () => {
             { id: 'progression' as const, label: 'Chord Progressions', icon: <ListMusic className="w-4 h-4" /> },
             { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
             { id: 'reference' as const, label: 'Scale Reference', icon: <BookOpen className="w-4 h-4" /> },
+            { id: 'polyrhythm' as const, label: 'Drum Machine', icon: <Drum className="w-4 h-4" /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -129,6 +131,12 @@ const ModeVisualizer = () => {
         {activeTab === 'reference' && (
           <div>
             <MasterScaleReference />
+          </div>
+        )}
+
+        {activeTab === 'polyrhythm' && (
+          <div>
+            <PolyrhythmTool />
           </div>
         )}
 
