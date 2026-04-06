@@ -60,6 +60,10 @@ const ChordProgressionBuilder = ({
 
   const [rhythmicFeel, setRhythmicFeel] = useState<RhythmicFeel>('straight');
   const [harmonicStyle, setHarmonicStyle] = useState<HarmonicStyle>('neutral');
+  const [extensionLevel, setExtensionLevel] = useState<ExtensionLevel>('triad');
+  const [voicingType, setVoicingType] = useState<VoicingType>('close');
+  const [expressive, setExpressive] = useState<ExpressiveParams>(DEFAULT_EXPRESSIVE);
+  const [showExpressive, setShowExpressive] = useState(false);
 
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
