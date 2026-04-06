@@ -214,7 +214,22 @@ const ModeReference = ({ rootNote = 'C', timbre = 'piano' }: ModeReferenceProps)
 
                         return (
                           <tr key={modeName} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
-                            <td className="py-3 pr-4 font-semibold whitespace-nowrap text-xs md:text-sm">{modeName}</td>
+                            <td className="py-3 pr-2 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => handlePlayScale(modeName)}
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                                    playingMode === modeName
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'bg-secondary hover:bg-accent text-muted-foreground hover:text-foreground'
+                                  }`}
+                                  title={playingMode === modeName ? `Stop ${modeName}` : `Play ${modeName} scale`}
+                                >
+                                  {playingMode === modeName ? <Square size={10} /> : <Play size={10} className="ml-0.5" />}
+                                </button>
+                                <span className="font-semibold text-xs md:text-sm">{modeName}</span>
+                              </div>
+                            </td>
                             <td className="py-3 pr-2">
                               <div className="flex flex-wrap gap-1">
                                 {showType === 'notes'
