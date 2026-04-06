@@ -768,13 +768,62 @@ const DrumMachine = () => {
 
         {/* Active preset info */}
         {currentPreset && (
-          <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
-            <span className="font-medium text-foreground">{currentPreset.name}</span>
-            <span>{currentPreset.country} · {formatPulseGrouping(currentPreset.pulseGrouping)}</span>
-            {currentPreset.artists && currentPreset.artists.length > 0 && (
-              <span className="truncate max-w-[200px]">♪ {currentPreset.artists.join(', ')}</span>
+          <div className="space-y-1.5 pt-1 border-t border-border/50">
+            <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+              <span className="font-medium text-foreground">{currentPreset.name}</span>
+              <span>{currentPreset.country} · {formatPulseGrouping(currentPreset.pulseGrouping)}</span>
+              {currentPreset.rhythmType && (
+                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px]">{currentPreset.rhythmType}</span>
+              )}
+              {currentPreset.artists && currentPreset.artists.length > 0 && (
+                <span className="truncate max-w-[200px]">♪ {currentPreset.artists.join(', ')}</span>
+              )}
+              <span className="italic truncate max-w-xs">{currentPreset.description}</span>
+            </div>
+
+            {/* Tala cycle visualization */}
+            {currentPreset.talaStructure && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9px] text-muted-foreground font-medium">{currentPreset.talaStructure.name}:</span>
+                <div className="flex gap-0.5">
+                  {currentPreset.talaStructure.vibhags.map((v, vi) => (
+                    <div key={vi} className="flex gap-0.5">
+                      {Array.from({ length: v }).map((_, bi) => {
+                        const beatNum = currentPreset.talaStructure!.vibhags.slice(0, vi).reduce((a, b) => a + b, 0) + bi + 1;
+                        const isSam = beatNum === currentPreset.talaStructure!.sam;
+                        const isKhali = beatNum === currentPreset.talaStructure!.khali;
+                        return (
+                          <span key={bi} className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold ${
+                            isSam ? 'bg-primary text-primary-foreground' :
+                            isKhali ? 'bg-destructive/20 text-destructive' :
+                            'bg-secondary text-muted-foreground'
+                          }`}>
+                            {isSam ? 'X' : isKhali ? '0' : beatNum}
+                          </span>
+                        );
+                      })}
+                      {vi < currentPreset.talaStructure!.vibhags.length - 1 && (
+                        <span className="text-muted-foreground/30 mx-0.5">|</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-            <span className="italic truncate max-w-xs">{currentPreset.description}</span>
+
+            {/* Konnakol display */}
+            {showKonnakol && currentPreset.konnakol && (
+              <div className="flex flex-wrap gap-1 text-[9px] font-mono">
+                {currentPreset.pulseGrouping.map((g, i) => {
+                  const syllables = g === 1 ? 'TA' : g === 2 ? 'TA-KA' : g === 3 ? 'TA-KI-TA' : g === 4 ? 'TA-KA-DI-MI' : `(${g})`;
+                  return (
+                    <span key={i} className="px-1.5 py-0.5 rounded bg-accent text-accent-foreground">
+                      {syllables}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>}
