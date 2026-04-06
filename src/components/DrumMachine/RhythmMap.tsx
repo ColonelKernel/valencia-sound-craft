@@ -1,11 +1,10 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { Globe, Play, X, Users, Zap } from "lucide-react";
+import { Globe, Play, X, Zap } from "lucide-react";
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import {
   DRUM_PRESETS,
   getCountryMapData,
-  formatPulseGrouping,
   type PatternPreset,
   type CountryMapData,
 } from "../DrumMachine/drumPresets";
