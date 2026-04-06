@@ -317,10 +317,10 @@ const DrumMachine = () => {
       </div>
 
       {/* Transport */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <button
           onClick={() => setPlaying(!playing)}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all ${
             playing
               ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20'
               : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20'
@@ -332,42 +332,41 @@ const DrumMachine = () => {
 
         <button onClick={clearAll}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-border text-muted-foreground hover:bg-accent transition-colors">
-          <RotateCcw size={14} /> Clear
+          <RotateCcw size={14} /> <span className="hidden xs:inline">Clear</span>
         </button>
 
         {/* BPM */}
-        <div className="flex items-center gap-2 ml-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <span className="text-xs text-muted-foreground font-medium">BPM</span>
           <input type="range" min={40} max={400} value={bpm}
             onChange={e => setBpm(Number(e.target.value))}
-            className="w-20 accent-primary" />
+            className="w-16 sm:w-20 accent-primary" />
           <input type="number" min={40} max={400} value={bpm}
             onChange={e => setBpm(Math.max(40, Math.min(400, Number(e.target.value))))}
-            className="w-14 bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground text-center" />
+            className="w-12 sm:w-14 bg-secondary border border-border rounded px-1.5 py-1 text-xs sm:text-sm text-foreground text-center" />
         </div>
 
-        {/* Swing */}
+        {/* Swing + Groove - collapse on very small screens */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Swing</span>
+          <span className="text-xs text-muted-foreground">Sw</span>
           <input type="range" min={0} max={50} value={swing}
             onChange={e => setSwing(Number(e.target.value))}
-            className="w-16 accent-primary" />
-          <span className="text-xs text-muted-foreground w-8">{swing}%</span>
+            className="w-12 sm:w-16 accent-primary" />
+          <span className="text-[10px] text-muted-foreground w-6 sm:w-8">{swing}%</span>
         </div>
 
-        {/* Groove */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Feel</span>
           <input type="range" min={0} max={100} value={groove}
             onChange={e => setGroove(Number(e.target.value))}
-            className="w-16 accent-primary" />
-          <span className="text-[10px] text-muted-foreground w-14">
+            className="w-12 sm:w-16 accent-primary" />
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground w-10 sm:w-14">
             {groove < 30 ? 'Tight' : groove < 70 ? 'Natural' : 'Loose'}
           </span>
         </div>
 
         {currentPreset && (
-          <div className="ml-auto text-xs text-muted-foreground">
+          <div className="w-full sm:w-auto sm:ml-auto text-[10px] sm:text-xs text-muted-foreground mt-1 sm:mt-0">
             <span className="text-foreground font-medium">{currentPreset.name}</span>
             <span className="mx-1">·</span>
             <span>{currentPreset.country}</span>
