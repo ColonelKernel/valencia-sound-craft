@@ -72,19 +72,19 @@ const ModeVisualizer = () => {
 
   const handleChordClick = (cs: ChordSpelling) => {
     if (selectedChord?.symbol === cs.symbol) {
-      setSelectedChord(null); // deselect
+      setSelectedChord(null);
     } else {
       setSelectedChord(cs);
-      playChord(cs.notes);
+      playChord(cs.notes, 0.8, timbre);
     }
   };
 
   const handleNoteClick = (note: string) => {
-    playNote(note);
+    playNote(note, 0, 0.4, timbre);
   };
 
   const handlePlayScale = () => {
-    playScale([...scaleNotes, scaleNotes[0]]);
+    playScale([...scaleNotes, scaleNotes[0]], 200, timbre);
   };
 
   // Clear selected chord when mode/root changes
