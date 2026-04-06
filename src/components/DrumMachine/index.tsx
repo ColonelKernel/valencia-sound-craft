@@ -555,7 +555,7 @@ const DrumMachine = () => {
       )}
 
       {/* Step Sequencer Grid */}
-      <div className="space-y-1.5 overflow-x-auto">
+      <div className="space-y-1 sm:space-y-1.5 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
         {tracks.map(track => {
           const inst = getInstrument(track.instrumentId);
           const current = currentSteps[track.id] ?? -1;
@@ -563,9 +563,9 @@ const DrumMachine = () => {
           const shouldPlay = hasSolo ? track.solo : !track.muted;
 
           return (
-            <div key={track.id} className={`flex items-center gap-2 min-w-fit ${!shouldPlay ? 'opacity-30' : ''}`}>
+            <div key={track.id} className={`flex items-center gap-1.5 sm:gap-2 min-w-fit ${!shouldPlay ? 'opacity-30' : ''}`}>
               {/* Track controls */}
-              <div className="flex items-center gap-1 w-28 shrink-0">
+              <div className="flex items-center gap-0.5 sm:gap-1 w-20 sm:w-28 shrink-0">
                 <button onClick={() => updateTrack(track.id, { muted: !track.muted })}
                   className={`p-0.5 rounded transition-colors ${track.muted ? 'text-muted-foreground/40' : 'text-foreground'}`}
                   title={track.muted ? 'Unmute' : 'Mute'}>
