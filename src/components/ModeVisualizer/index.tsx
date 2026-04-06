@@ -40,9 +40,10 @@ const ModeVisualizer = () => {
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
   const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference'>('visualizer');
-  const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard'>('guitar');
+  const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
+  const [otherInstrument, setOtherInstrument] = useState(FRETTED_INSTRUMENTS[0].key);
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
