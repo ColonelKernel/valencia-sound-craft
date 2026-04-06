@@ -75,9 +75,13 @@ const DrumMachine = () => {
   const [groove, setGroove] = useState(50);
 
   // Filters
+  const [filterRegion, setFilterRegion] = useState<string | null>(null);
   const [filterFeel, setFilterFeel] = useState<TimeFeel | null>(null);
   const [filterComplexity, setFilterComplexity] = useState<Complexity | null>(null);
+  const [filterRhythmType, setFilterRhythmType] = useState<RhythmType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showKonnakol, setShowKonnakol] = useState(false);
+  const [complexityLevel, setComplexityLevel] = useState<number>(2); // 1=beginner, 2=intermediate, 3=advanced
 
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
