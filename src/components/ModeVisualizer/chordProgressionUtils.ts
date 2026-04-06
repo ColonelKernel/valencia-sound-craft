@@ -710,7 +710,7 @@ export function applyExtensionLevel(chord: ChordSpelling, level: ExtensionLevel,
   const baseNotes = chord.notes.slice(0, 3);
   let sym = chord.symbol.replace(/maj7|m7|7|9|11|13|add9|\(.*\)/g, '') || chord.rootNote;
 
-  if (level === 'triad') return { ...chord, notes: baseNotes, symbol: sym };
+  // triad already handled above
 
   // 7th
   const seventh = isDim
