@@ -10,6 +10,7 @@ import {
   MODE_INTERVAL_NAMES,
   TUNING_PRESETS,
   getChordSpellings,
+  FRETTED_INSTRUMENTS,
   type ChordSpelling,
   type StringTuning,
   type TuningPreset,
