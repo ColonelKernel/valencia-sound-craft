@@ -1,21 +1,23 @@
 import { useState, useMemo } from "react";
-import { ChevronDown, ChevronRight, Search } from "lucide-react";
-import { getScaleNotes, isSharp, isFlat, MODE_CATEGORIES, MODE_INTERVAL_NAMES } from "./scaleData";
+import { getScaleNotes, isSharp, isFlat, MODE_CATEGORIES, ALL_ROOTS } from "./scaleData";
 
-const KEYS_BY_SIGNATURE = [
-  { key: 'C',  sig: '—' },
-  { key: 'G',  sig: '1♯' },
-  { key: 'D',  sig: '2♯' },
-  { key: 'A',  sig: '3♯' },
-  { key: 'E',  sig: '4♯' },
-  { key: 'B',  sig: '5♯' },
-  { key: 'F#', sig: '6♯' },
-  { key: 'F',  sig: '1♭' },
-  { key: 'Bb', sig: '2♭' },
-  { key: 'Eb', sig: '3♭' },
-  { key: 'Ab', sig: '4♭' },
-  { key: 'Db', sig: '5♭' },
-  { key: 'Gb', sig: '6♭' },
+// The 7 modes of the major scale in order of degrees
+const MAJOR_MODES = ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
+const DEGREE_LABELS = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
+
+// Mode families for the dropdown
+const MODE_FAMILIES: { label: string; modes: string[]; degrees: string[] }[] = [
+  { label: 'Major Modes', modes: MAJOR_MODES, degrees: DEGREE_LABELS },
+  {
+    label: 'Melodic Minor Modes',
+    modes: ['Melodic Minor', 'Dorian b2', 'Lydian Augmented', 'Lydian Dominant', 'Mixolydian b6', 'Aeolian b5 (Locrian #2)', 'Altered (Super Locrian)'],
+    degrees: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii'],
+  },
+  {
+    label: 'Harmonic Minor Modes',
+    modes: ['Harmonic Minor', 'Locrian #6', 'Ionian #5', 'Dorian #4', 'Phrygian Dominant', 'Lydian #2', 'Ultra Locrian'],
+    degrees: ['I', 'ii', 'III', 'iv', 'V', 'VI', 'vii°'],
+  },
 ];
 
 const getNoteClass = (note: string, isRoot: boolean) => {
@@ -25,208 +27,122 @@ const getNoteClass = (note: string, isRoot: boolean) => {
   return "bg-stone-500/80 text-white";
 };
 
-const ScaleRow = ({
-  keyName,
-  sig,
-  notes,
-  intervals,
-  showType,
-}: {
-  keyName: string;
-  sig: string;
-  notes: string[];
-  intervals: string[];
-  showType: 'notes' | 'intervals';
-}) => (
-  <div className="flex items-center gap-2 py-2 px-3 rounded-md hover:bg-accent/20 transition-colors">
-    <span className="w-8 font-bold text-sm shrink-0">{keyName}</span>
-    <span className="w-8 text-[10px] text-muted-foreground shrink-0">{sig}</span>
-    <div className="flex flex-wrap gap-1">
-      {showType === 'notes'
-        ? [...notes, notes[0]].map((note, i) => (
-            <span
-              key={i}
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold ${getNoteClass(note, i === 0 || i === notes.length)}`}
-            >
-              {note}
-            </span>
-          ))
-        : [...intervals, '1'].map((interval, i) => (
-            <span
-              key={i}
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                interval === '1' ? 'bg-amber-500 text-black' :
-                interval.startsWith('#') ? 'bg-blue-600/80 text-white' :
-                interval.startsWith('b') ? 'bg-orange-500/80 text-white' :
-                'bg-stone-500/80 text-white'
-              }`}
-            >
-              {interval}
-            </span>
-          ))}
-    </div>
-  </div>
-);
-
-const CollapsibleSection = ({
-  title,
-  defaultOpen = false,
-  children,
-  badge,
-}: {
-  title: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-  badge?: string;
-}) => {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="border border-border/40 rounded-lg overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-accent/10 transition-colors"
-      >
-        {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        <span className="text-sm font-semibold">{title}</span>
-        {badge && (
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground ml-auto">
-            {badge}
-          </span>
-        )}
-      </button>
-      {open && <div className="px-2 pb-3">{children}</div>}
-    </div>
-  );
-};
+// Common roots (hide enharmonics for cleaner UI)
+const COMMON_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 
 const MasterScaleReference = () => {
-  const [selectedCategory, setSelectedCategory] = useState(MODE_CATEGORIES[0].label);
-  const [selectedMode, setSelectedMode] = useState("Ionian");
-  const [showType, setShowType] = useState<'notes' | 'intervals'>('notes');
-  const [keyFilter, setKeyFilter] = useState("");
+  const [root, setRoot] = useState("C");
+  const [familyIdx, setFamilyIdx] = useState(0);
 
-  const currentModes = useMemo(() => {
-    return MODE_CATEGORIES.find(c => c.label === selectedCategory)?.modes || [];
-  }, [selectedCategory]);
+  const family = MODE_FAMILIES[familyIdx];
 
-  const filteredKeys = useMemo(() => {
-    if (!keyFilter.trim()) return KEYS_BY_SIGNATURE;
-    const q = keyFilter.trim().toLowerCase();
-    return KEYS_BY_SIGNATURE.filter(k => k.key.toLowerCase().includes(q));
-  }, [keyFilter]);
+  // Get the parent scale notes (mode 1 of the family from the selected root)
+  const parentNotes = useMemo(() => getScaleNotes(root, family.modes[0]), [root, family]);
+
+  // For each mode/degree, get the scale starting from that degree's root
+  const modeRows = useMemo(() => {
+    return family.modes.map((modeName, i) => {
+      // The root of this mode is the (i)th note of the parent scale
+      const modeRoot = parentNotes[i] || parentNotes[0];
+      const notes = getScaleNotes(modeRoot, modeName);
+      return {
+        degree: family.degrees[i],
+        modeName,
+        root: modeRoot,
+        notes,
+      };
+    });
+  }, [parentNotes, family]);
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 md:p-6 space-y-4">
       <div>
         <h3 className="text-lg font-semibold">Master Scale Reference</h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Browse modes across every key. Expand sections to explore.
+          Select a root to see all modes derived from the same parent scale — each starting on a different degree.
         </p>
       </div>
 
-      {/* Compact controls */}
-      <div className="flex flex-wrap items-center gap-2">
-        <select
-          value={selectedCategory}
-          onChange={(e) => {
-            setSelectedCategory(e.target.value);
-            const cat = MODE_CATEGORIES.find(c => c.label === e.target.value);
-            if (cat && cat.modes.length > 0) setSelectedMode(cat.modes[0]);
-          }}
-          className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        >
-          {MODE_CATEGORIES.map(cat => (
-            <option key={cat.label} value={cat.label}>{cat.label}</option>
-          ))}
-        </select>
+      {/* Controls */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-muted-foreground">Root</label>
+          <select
+            value={root}
+            onChange={e => setRoot(e.target.value)}
+            className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {COMMON_ROOTS.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+        </div>
 
-        <select
-          value={selectedMode}
-          onChange={(e) => setSelectedMode(e.target.value)}
-          className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        >
-          {currentModes.map(m => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
-
-        <button
-          onClick={() => setShowType(showType === 'notes' ? 'intervals' : 'notes')}
-          className="text-xs px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
-        >
-          {showType === 'notes' ? '♪ Notes' : '# Intervals'}
-        </button>
-
-        <div className="relative ml-auto">
-          <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Filter key…"
-            value={keyFilter}
-            onChange={(e) => setKeyFilter(e.target.value)}
-            className="bg-secondary border border-border rounded pl-7 pr-3 py-1.5 text-sm text-foreground w-28 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
-          />
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-muted-foreground">Family</label>
+          <select
+            value={familyIdx}
+            onChange={e => setFamilyIdx(Number(e.target.value))}
+            className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {MODE_FAMILIES.map((f, i) => (
+              <option key={f.label} value={i}>{f.label}</option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Selected mode — all keys (open by default) */}
-      <CollapsibleSection
-        title={`${selectedMode} — All Keys`}
-        defaultOpen={true}
-        badge={`${filteredKeys.length} keys`}
-      >
-        <div className="divide-y divide-border/20">
-          {filteredKeys.map(({ key, sig }) => {
-            const notes = getScaleNotes(key, selectedMode);
-            const intervals = MODE_INTERVAL_NAMES[selectedMode] || [];
-            return (
-              <ScaleRow
-                key={key}
-                keyName={key}
-                sig={sig}
-                notes={notes}
-                intervals={intervals}
-                showType={showType}
-              />
-            );
-          })}
-        </div>
-      </CollapsibleSection>
-
-      {/* Other modes in the category — collapsed by default */}
-      {currentModes
-        .filter(m => m !== selectedMode)
-        .map(modeName => (
-          <CollapsibleSection
-            key={modeName}
-            title={`${modeName} — All Keys`}
-            badge={`${filteredKeys.length} keys`}
-          >
-            <div className="divide-y divide-border/20">
-              {filteredKeys.map(({ key, sig }) => {
-                const notes = getScaleNotes(key, modeName);
-                const intervals = MODE_INTERVAL_NAMES[modeName] || [];
-                return (
-                  <ScaleRow
-                    key={key}
-                    keyName={key}
-                    sig={sig}
-                    notes={notes}
-                    intervals={intervals}
-                    showType={showType}
-                  />
-                );
-              })}
-            </div>
-          </CollapsibleSection>
-        ))}
+      {/* Mode Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-16">Mode</th>
+              <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-10">Deg</th>
+              {Array.from({ length: (parentNotes.length || 7) + 1 }).map((_, i) => (
+                <th key={i} className="text-center text-[10px] text-muted-foreground font-medium px-1 py-2 w-9">
+                  {i < (parentNotes.length || 7) ? (i + 1) : '8'}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {modeRows.map((row, rowIdx) => (
+              <tr key={row.modeName}
+                className={`border-b border-border/30 transition-colors hover:bg-accent/20 ${
+                  rowIdx === 0 ? 'bg-primary/5' : ''
+                }`}
+              >
+                <td className="px-2 py-2.5">
+                  <span className="text-xs font-semibold">{row.modeName}</span>
+                </td>
+                <td className="px-2 py-2.5">
+                  <span className="text-xs text-muted-foreground font-medium">{row.degree}</span>
+                </td>
+                {[...row.notes, row.notes[0]].map((note, i) => (
+                  <td key={i} className="px-1 py-2.5 text-center">
+                    <span
+                      className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${
+                        getNoteClass(note, i === 0 || i === row.notes.length)
+                      }`}
+                    >
+                      {note}
+                    </span>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground pt-2">
+      <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground pt-2 border-t border-border">
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-500" /> Root</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-stone-500" /> Natural</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-600" /> Sharp</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-orange-500" /> Flat</span>
+        <span className="ml-auto">All modes share the same notes — each starts on a different degree</span>
       </div>
     </div>
   );
