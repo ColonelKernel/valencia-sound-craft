@@ -148,7 +148,7 @@ const Metronome = () => {
       const t = setTimeout(() => start(), 50);
       return () => clearTimeout(t);
     }
-  }, [bpm, timeSigIdx, subdivIdx, accentFirst]);
+  }, [bpm, timeSigIdx, subdivIdx, accentFirst, swing]);
 
   // Cleanup
   useEffect(() => {
