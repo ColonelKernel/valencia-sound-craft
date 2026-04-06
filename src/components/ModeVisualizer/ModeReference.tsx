@@ -36,6 +36,39 @@ const MODE_DESCRIPTIONS: Record<string, string> = {
   'Chromatic': 'All 12 notes — no tonal center',
 };
 
+// Quick comparisons per category
+const CATEGORY_COMPARISONS: Record<string, { mode: string; base: string; change: string; type: 'raised' | 'lowered' }[]> = {
+  'Major Modes': [
+    { mode: 'Dorian', base: 'Aeolian', change: 'raised 6th', type: 'raised' },
+    { mode: 'Phrygian', base: 'Aeolian', change: 'lowered 2nd', type: 'lowered' },
+    { mode: 'Lydian', base: 'Ionian', change: 'raised 4th', type: 'raised' },
+    { mode: 'Mixolydian', base: 'Ionian', change: 'lowered 7th', type: 'lowered' },
+    { mode: 'Locrian', base: 'Aeolian', change: 'lowered 2nd & 5th', type: 'lowered' },
+  ],
+  'Melodic Minor Modes': [
+    { mode: 'Melodic Minor', base: 'Aeolian', change: 'raised 6th & 7th', type: 'raised' },
+    { mode: 'Dorian b2', base: 'Dorian', change: 'lowered 2nd', type: 'lowered' },
+    { mode: 'Lydian Augmented', base: 'Lydian', change: 'raised 5th', type: 'raised' },
+    { mode: 'Lydian Dominant', base: 'Lydian', change: 'lowered 7th', type: 'lowered' },
+    { mode: 'Mixolydian b6', base: 'Mixolydian', change: 'lowered 6th', type: 'lowered' },
+    { mode: 'Altered (Super Locrian)', base: 'Locrian', change: 'lowered 4th', type: 'lowered' },
+  ],
+  'Harmonic Minor Modes': [
+    { mode: 'Harmonic Minor', base: 'Aeolian', change: 'raised 7th', type: 'raised' },
+    { mode: 'Phrygian Dominant', base: 'Phrygian', change: 'raised 3rd', type: 'raised' },
+    { mode: 'Dorian #4', base: 'Dorian', change: 'raised 4th', type: 'raised' },
+    { mode: 'Lydian #2', base: 'Lydian', change: 'raised 2nd', type: 'raised' },
+    { mode: 'Ionian #5', base: 'Ionian', change: 'raised 5th', type: 'raised' },
+  ],
+  'Pentatonic & Blues': [
+    { mode: 'Minor Pentatonic', base: 'Major Pentatonic', change: 'minor tonality (b3, b7)', type: 'lowered' },
+    { mode: 'Blues', base: 'Minor Pentatonic', change: 'added b5 (blue note)', type: 'lowered' },
+  ],
+  'Other Scales': [
+    { mode: 'Diminished (WH)', base: 'Diminished (HW)', change: 'starts whole step', type: 'raised' },
+  ],
+};
+
 const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
   const [selectedRoot, setSelectedRoot] = useState(rootNote);
   const [showType, setShowType] = useState<'notes' | 'intervals'>('notes');
@@ -88,6 +121,7 @@ const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
 
       {MODE_CATEGORIES.map((cat) => {
         const isExpanded = expandedCategories.has(cat.label);
+        const comparisons = CATEGORY_COMPARISONS[cat.label];
         return (
           <div key={cat.label} className="mb-4">
             <button
@@ -99,72 +133,76 @@ const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
             </button>
 
             {isExpanded && (
-              <div className="overflow-x-auto mt-2">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-2 pr-4 text-muted-foreground font-medium whitespace-nowrap">Mode</th>
-                      <th className="text-left py-2 pr-2 text-muted-foreground font-medium">Formula / Notes</th>
-                      <th className="text-left py-2 text-muted-foreground font-medium whitespace-nowrap">Character</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cat.modes.map((modeName) => {
-                      const notes = getScaleNotes(selectedRoot, modeName);
-                      const intervals = MODE_INTERVAL_NAMES[modeName] || [];
-                      const displayNotes = [...notes, notes[0]];
-                      const displayIntervals = [...intervals, '1'];
+              <div className="mt-2">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 pr-4 text-muted-foreground font-medium whitespace-nowrap">Mode</th>
+                        <th className="text-left py-2 pr-2 text-muted-foreground font-medium">Formula / Notes</th>
+                        <th className="text-left py-2 text-muted-foreground font-medium whitespace-nowrap">Character</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cat.modes.map((modeName) => {
+                        const notes = getScaleNotes(selectedRoot, modeName);
+                        const intervals = MODE_INTERVAL_NAMES[modeName] || [];
+                        const displayNotes = [...notes, notes[0]];
+                        const displayIntervals = [...intervals, '1'];
 
-                      return (
-                        <tr key={modeName} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
-                          <td className="py-3 pr-4 font-semibold whitespace-nowrap text-xs md:text-sm">{modeName}</td>
-                          <td className="py-3 pr-2">
-                            <div className="flex flex-wrap gap-1">
-                              {showType === 'notes'
-                                ? displayNotes.map((note, i) => (
-                                    <span
-                                      key={i}
-                                      className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-bold ${getNoteStyle(note, i === 0 || i === displayNotes.length - 1)}`}
-                                    >
-                                      {note}
-                                    </span>
-                                  ))
-                                : displayIntervals.map((interval, i) => (
-                                    <span
-                                      key={i}
-                                      className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-bold ${getIntervalStyle(interval)}`}
-                                    >
-                                      {interval}
-                                    </span>
-                                  ))}
-                            </div>
-                          </td>
-                          <td className="py-3 text-xs text-muted-foreground whitespace-nowrap">{MODE_DESCRIPTIONS[modeName] || ''}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                        return (
+                          <tr key={modeName} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
+                            <td className="py-3 pr-4 font-semibold whitespace-nowrap text-xs md:text-sm">{modeName}</td>
+                            <td className="py-3 pr-2">
+                              <div className="flex flex-wrap gap-1">
+                                {showType === 'notes'
+                                  ? displayNotes.map((note, i) => (
+                                      <span
+                                        key={i}
+                                        className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-bold ${getNoteStyle(note, i === 0 || i === displayNotes.length - 1)}`}
+                                      >
+                                        {note}
+                                      </span>
+                                    ))
+                                  : displayIntervals.map((interval, i) => (
+                                      <span
+                                        key={i}
+                                        className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-bold ${getIntervalStyle(interval)}`}
+                                      >
+                                        {interval}
+                                      </span>
+                                    ))}
+                              </div>
+                            </td>
+                            <td className="py-3 text-xs text-muted-foreground whitespace-nowrap">{MODE_DESCRIPTIONS[modeName] || ''}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Quick comparison inside each dropdown */}
+                {comparisons && comparisons.length > 0 && (
+                  <div className="mt-3 p-3 rounded bg-secondary/50 border border-border">
+                    <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Quick Comparison</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs">
+                      {comparisons.map((c) => (
+                        <div key={c.mode}>
+                          <span className="font-bold">{c.mode}</span> = {c.base} +{' '}
+                          <span className={c.type === 'raised' ? 'text-blue-400' : 'text-orange-400'}>
+                            {c.change}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
         );
       })}
-
-      {/* Quick comparison */}
-      <div className="mt-4 p-3 rounded bg-secondary/50 border border-border">
-        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Quick Comparison — what makes each mode unique</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs">
-          <div><span className="font-bold">Dorian</span> = Aeolian + <span className="text-blue-400">raised 6th</span></div>
-          <div><span className="font-bold">Phrygian</span> = Aeolian + <span className="text-orange-400">lowered 2nd</span></div>
-          <div><span className="font-bold">Lydian</span> = Ionian + <span className="text-blue-400">raised 4th</span></div>
-          <div><span className="font-bold">Mixolydian</span> = Ionian + <span className="text-orange-400">lowered 7th</span></div>
-          <div><span className="font-bold">Locrian</span> = Aeolian + <span className="text-orange-400">lowered 2nd & 5th</span></div>
-          <div><span className="font-bold">Melodic Minor</span> = Aeolian + <span className="text-blue-400">raised 6th & 7th</span></div>
-          <div><span className="font-bold">Harmonic Minor</span> = Aeolian + <span className="text-blue-400">raised 7th</span></div>
-          <div><span className="font-bold">Phrygian Dominant</span> = Phrygian + <span className="text-blue-400">raised 3rd</span></div>
-        </div>
-      </div>
     </div>
   );
 };
