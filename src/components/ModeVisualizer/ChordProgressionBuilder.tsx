@@ -3,10 +3,11 @@ import {
   Play, Pause, X, RotateCcw, Sparkles, ArrowRightLeft,
   Music2, ChevronDown, ChevronUp, Download, ArrowLeft, ArrowRight,
   Lock, Unlock, Wand2, Globe2, Lightbulb, GripVertical,
-  Undo2, Music, Settings2, ChevronRight, Sliders,
+  Undo2, Music, Settings2, ChevronRight, Sliders, Eye,
 } from "lucide-react";
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
 import { type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
+import ChordStaffView from "./ChordStaffView";
 import {
   type ProgressionChord, type ChordSource, type RhythmicFeel, type HarmonicStyle,
   type ViewMode, type ChordFunction, type ExtensionLevel, type VoicingType, type ExpressiveParams,
@@ -54,6 +55,8 @@ const ChordProgressionBuilder = ({
   const [expandedBorrowMode, setExpandedBorrowMode] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'harmonic' | 'transform' | 'style' | 'suggest'>('harmonic');
   const [viewMode, setViewMode] = useState<ViewMode>('standard');
+  const [showNoteSpelling, setShowNoteSpelling] = useState(false);
+  const [showStaff, setShowStaff] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showToolsPanel, setShowToolsPanel] = useState(false);
   const [centerTab, setCenterTab] = useState<'chords' | 'templates'>('chords');
@@ -268,6 +271,16 @@ const ChordProgressionBuilder = ({
               {vm === 'standard' ? 'Name' : vm === 'roman' ? 'ⅣⅤ' : '#'}
             </button>
           ))}
+          <button onClick={() => setShowNoteSpelling(!showNoteSpelling)}
+            className={`text-[9px] px-1.5 py-0.5 rounded border transition-colors ${showNoteSpelling ? 'border-primary bg-primary/15 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}
+            title="Show chord note spelling">
+            Notes
+          </button>
+          <button onClick={() => setShowStaff(!showStaff)}
+            className={`text-[9px] px-1.5 py-0.5 rounded border transition-colors ${showStaff ? 'border-primary bg-primary/15 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}
+            title="Show chord on staff notation">
+            Staff
+          </button>
         </div>
 
         {/* Settings gear */}
@@ -385,6 +398,9 @@ const ChordProgressionBuilder = ({
                         <span className="font-bold text-xs">{getChordLabel(pc, i)}</span>
                       </div>
                       <span className="text-[8px] text-muted-foreground leading-tight">{getSubLabel(pc)}</span>
+                      {showNoteSpelling && (
+                        <span className="text-[7px] text-muted-foreground/70 font-mono">{pc.chord.notes.join('–')}</span>
+                      )}
                       {pc.source !== 'diatonic' && <span className="text-[7px] text-muted-foreground/50 italic">{pc.sourceLabel}</span>}
                     </div>
                   );
@@ -405,16 +421,21 @@ const ChordProgressionBuilder = ({
 
           {/* Chord Edit Popup (inline, compact) */}
           {editingIdx !== null && editingIdx < progression.length && (
-            <div className="mb-3 p-2 rounded border border-primary/30 bg-primary/5 flex flex-wrap items-center gap-3 text-xs">
-              <span className="font-semibold">{progression[editingIdx].chord.symbol}</span>
-              <span className="text-muted-foreground">{progression[editingIdx].chord.notes.join('-')}</span>
-              <span className="text-muted-foreground capitalize">{progression[editingIdx].function || 'other'}</span>
-              <div className="flex gap-1 ml-auto">
-                <button onClick={() => playChordTonesExpressive(progression[editingIdx].chord.notes, 0.8, timbre, voicingType, expressive)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
-                <button onClick={() => removeChord(editingIdx)} className="px-1.5 py-0.5 rounded border border-destructive/50 text-destructive hover:bg-destructive/10 text-[10px]">Del</button>
-                {has7Notes && <button onClick={() => { insertIIV(editingIdx); setEditingIdx(null); }} className="px-1.5 py-0.5 rounded border border-pink-500/50 text-pink-400 hover:bg-pink-500/10 text-[10px]">ii-V</button>}
-                <button onClick={() => setEditingIdx(null)} className="text-muted-foreground hover:text-foreground"><X size={12} /></button>
+            <div className="mb-3 p-2 rounded border border-primary/30 bg-primary/5 space-y-2">
+              <div className="flex flex-wrap items-center gap-3 text-xs">
+                <span className="font-semibold">{progression[editingIdx].chord.symbol}</span>
+                <span className="text-muted-foreground">{progression[editingIdx].chord.notes.join(' – ')}</span>
+                <span className="text-muted-foreground capitalize">{progression[editingIdx].function || 'other'}</span>
+                <div className="flex gap-1 ml-auto">
+                  <button onClick={() => playChordTonesExpressive(progression[editingIdx].chord.notes, 0.8, timbre, voicingType, expressive)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
+                  <button onClick={() => removeChord(editingIdx)} className="px-1.5 py-0.5 rounded border border-destructive/50 text-destructive hover:bg-destructive/10 text-[10px]">Del</button>
+                  {has7Notes && <button onClick={() => { insertIIV(editingIdx); setEditingIdx(null); }} className="px-1.5 py-0.5 rounded border border-pink-500/50 text-pink-400 hover:bg-pink-500/10 text-[10px]">ii-V</button>}
+                  <button onClick={() => setEditingIdx(null)} className="text-muted-foreground hover:text-foreground"><X size={12} /></button>
+                </div>
               </div>
+              {showStaff && (
+                <ChordStaffView notes={progression[editingIdx].chord.notes} symbol={progression[editingIdx].chord.symbol} />
+              )}
             </div>
           )}
 
