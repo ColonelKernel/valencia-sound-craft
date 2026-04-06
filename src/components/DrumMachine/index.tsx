@@ -299,11 +299,11 @@ const DrumMachine = () => {
         {/* BPM */}
         <div className="flex items-center gap-2 ml-2">
           <span className="text-xs text-muted-foreground font-medium">BPM</span>
-          <input type="range" min={40} max={280} value={bpm}
+          <input type="range" min={40} max={400} value={bpm}
             onChange={e => setBpm(Number(e.target.value))}
             className="w-20 accent-primary" />
-          <input type="number" min={40} max={280} value={bpm}
-            onChange={e => setBpm(Math.max(40, Math.min(280, Number(e.target.value))))}
+          <input type="number" min={40} max={400} value={bpm}
+            onChange={e => setBpm(Math.max(40, Math.min(400, Number(e.target.value))))}
             className="w-14 bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground text-center" />
         </div>
 
