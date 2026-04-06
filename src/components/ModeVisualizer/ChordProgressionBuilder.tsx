@@ -126,7 +126,7 @@ function downloadMidi(chords: ProgressionChord[], bpm: number, beatsPerChord: nu
 }
 
 // ─── Audio ──────────────────────────────────────────────────
-function playChordTones(notes: string[], duration = 0.8) {
+function playChordTones(notes: string[], duration = 0.8, timbre: InstrumentTimbre = 'piano') {
   const ctx = new AudioContext();
   const NOTE_FREQ: Record<string, number> = {
     'C': 261.63, 'C#': 277.18, 'Db': 277.18,
@@ -136,19 +136,32 @@ function playChordTones(notes: string[], duration = 0.8) {
     'A': 440.00, 'A#': 466.16, 'Bb': 466.16, 'B': 493.88,
   };
 
-  notes.forEach((note) => {
+  const volume = 0.08;
+
+  notes.forEach((note, i) => {
     const freq = NOTE_FREQ[note];
     if (!freq) return;
+    const startTime = ctx.currentTime + i * 0.03;
+
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.value = freq;
-    gain.gain.value = 0.08;
+
+    // Apply simple timbre mapping
+    switch (timbre) {
+      case 'guitar': osc.type = 'triangle'; break;
+      case 'organ': osc.type = 'sine'; break;
+      case 'synth-pad': osc.type = 'sawtooth'; break;
+      case 'bright-lead': osc.type = 'square'; break;
+      case 'warm-bass': osc.type = 'sine'; break;
+      default: osc.type = 'triangle'; break;
+    }
+    osc.frequency.value = timbre === 'warm-bass' ? freq / 2 : freq;
+    gain.gain.value = volume;
     osc.connect(gain);
     gain.connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    osc.stop(ctx.currentTime + duration + 0.05);
+    osc.start(startTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.stop(startTime + duration + 0.05);
   });
 }
 
