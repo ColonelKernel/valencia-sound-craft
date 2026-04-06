@@ -1,8 +1,11 @@
-import { useState, useRef, useCallback } from "react";
-import { Play, Pause, Plus, X, Volume2, RotateCcw } from "lucide-react";
-import { type ChordSpelling } from "./scaleData";
+import { useState, useRef, useCallback, useMemo } from "react";
+import { Play, Pause, Plus, X, Volume2, RotateCcw, Sparkles, ArrowRightLeft, Music2, ChevronDown, ChevronUp } from "lucide-react";
+import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS } from "./scaleData";
 
-// Common progressions templates (by degree index, 0-based)
+// ─── Constants ──────────────────────────────────────────────
+const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
 const PROGRESSION_TEMPLATES = [
   { label: 'I – V – vi – IV', degrees: [0, 4, 5, 3], desc: 'Pop classic' },
   { label: 'I – IV – V – I', degrees: [0, 3, 4, 0], desc: 'Blues/rock' },
@@ -14,13 +17,32 @@ const PROGRESSION_TEMPLATES = [
   { label: 'I – V – vi – iii – IV', degrees: [0, 4, 5, 2, 3], desc: 'Canon in D' },
 ];
 
+// Parallel modes for borrowing depending on current mode type
+const PARALLEL_BORROW_MODES: Record<string, string[]> = {
+  'Ionian': ['Aeolian', 'Dorian', 'Mixolydian', 'Phrygian', 'Lydian'],
+  'Dorian': ['Ionian', 'Aeolian', 'Mixolydian'],
+  'Phrygian': ['Aeolian', 'Phrygian Dominant'],
+  'Lydian': ['Ionian', 'Mixolydian'],
+  'Mixolydian': ['Ionian', 'Dorian', 'Aeolian'],
+  'Aeolian': ['Ionian', 'Dorian', 'Mixolydian', 'Harmonic Minor'],
+  'Locrian': ['Aeolian', 'Phrygian'],
+  'Harmonic Minor': ['Aeolian', 'Ionian'],
+  'Melodic Minor': ['Aeolian', 'Ionian', 'Dorian'],
+};
+
+interface ProgressionChord {
+  chord: ChordSpelling;
+  source: 'diatonic' | 'borrowed' | 'secondary-dom' | 'tritone-sub';
+  sourceLabel?: string;
+}
+
 interface ChordProgressionBuilderProps {
   chordSpellings: ChordSpelling[];
   root: string;
   mode: string;
 }
 
-// Simple chord audio using Web Audio API
+// ─── Audio ──────────────────────────────────────────────────
 function playChordTones(notes: string[], duration = 0.8) {
   const ctx = new AudioContext();
   const NOTE_FREQ: Record<string, number> = {
@@ -31,13 +53,13 @@ function playChordTones(notes: string[], duration = 0.8) {
     'A': 440.00, 'A#': 466.16, 'Bb': 466.16, 'B': 493.88,
   };
 
-  notes.forEach((note, i) => {
+  notes.forEach((note) => {
     const freq = NOTE_FREQ[note];
     if (!freq) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
-    osc.frequency.value = freq * (i > 1 ? 1 : 1); // keep same octave
+    osc.frequency.value = freq;
     gain.gain.value = 0.08;
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -47,17 +69,170 @@ function playChordTones(notes: string[], duration = 0.8) {
   });
 }
 
+// ─── Helpers ────────────────────────────────────────────────
+function getNoteAtSemitone(root: string, semitones: number): string {
+  const useFlats = root.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(root);
+  const chromatic = useFlats ? NOTES_FLAT : NOTES_SHARP;
+  let idx = chromatic.indexOf(root);
+  if (idx === -1) {
+    const alt = useFlats ? NOTES_SHARP : NOTES_FLAT;
+    idx = alt.indexOf(root);
+    if (idx === -1) return root;
+    return chromatic[(idx + semitones) % 12];
+  }
+  return chromatic[(idx + semitones) % 12];
+}
+
+function getSecondaryDominants(root: string, mode: string, diatonicChords: ChordSpelling[]): ProgressionChord[] {
+  const intervals = MODE_INTERVALS[mode];
+  if (!intervals || intervals.length < 7) return [];
+  
+  const results: ProgressionChord[] = [];
+  const useFlats = root.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(root);
+  const chromatic = useFlats ? NOTES_FLAT : NOTES_SHARP;
+  const rootIdx = chromatic.indexOf(root);
+  if (rootIdx === -1) return results;
+
+  // For each diatonic chord (except the tonic), create its V7
+  diatonicChords.forEach((target, i) => {
+    if (i === 0) return; // skip V/I (that's just the V)
+    const targetRoot = target.rootNote;
+    let targetIdx = chromatic.indexOf(targetRoot);
+    if (targetIdx === -1) {
+      const alt = useFlats ? NOTES_SHARP : NOTES_FLAT;
+      targetIdx = alt.indexOf(targetRoot);
+      if (targetIdx === -1) return;
+    }
+    // V of target = 7 semitones below target = 5 semitones above
+    const domRoot = chromatic[(targetIdx + 7) % 12];
+    // Skip if this is already a diatonic chord with the same root and dominant quality
+    const alreadyDiatonic = diatonicChords.some(c => c.rootNote === domRoot && c.symbol.includes('7') && !c.symbol.includes('m'));
+    if (alreadyDiatonic) return;
+
+    const domNotes = [
+      domRoot,
+      chromatic[(chromatic.indexOf(domRoot) + 4) % 12],
+      chromatic[(chromatic.indexOf(domRoot) + 7) % 12],
+      chromatic[(chromatic.indexOf(domRoot) + 10) % 12],
+    ];
+
+    const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+    results.push({
+      chord: {
+        symbol: `V7/${romanNumerals[i] || (i + 1).toString()}`,
+        rootNote: domRoot,
+        name: `${domRoot}7 → ${target.symbol}`,
+        notes: domNotes,
+        intervals: ['1', '3', '5', 'b7'],
+      },
+      source: 'secondary-dom',
+      sourceLabel: `resolves to ${target.symbol}`,
+    });
+  });
+
+  return results;
+}
+
+function getTritoneSubs(secondaryDoms: ProgressionChord[]): ProgressionChord[] {
+  const results: ProgressionChord[] = [];
+  
+  secondaryDoms.forEach((sd) => {
+    const domRoot = sd.chord.rootNote;
+    const useFlats = domRoot.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(domRoot);
+    const chromatic = useFlats ? NOTES_FLAT : NOTES_SHARP;
+    let idx = chromatic.indexOf(domRoot);
+    if (idx === -1) {
+      const alt = useFlats ? NOTES_SHARP : NOTES_FLAT;
+      idx = alt.indexOf(domRoot);
+      if (idx === -1) return;
+    }
+    const subRoot = chromatic[(idx + 6) % 12];
+    const subNotes = [
+      subRoot,
+      chromatic[(chromatic.indexOf(subRoot) + 4) % 12],
+      chromatic[(chromatic.indexOf(subRoot) + 7) % 12],
+      chromatic[(chromatic.indexOf(subRoot) + 10) % 12],
+    ];
+
+    results.push({
+      chord: {
+        symbol: `sub(${sd.chord.symbol})`,
+        rootNote: subRoot,
+        name: `${subRoot}7 (tritone sub of ${sd.chord.rootNote}7)`,
+        notes: subNotes,
+        intervals: ['1', '3', '5', 'b7'],
+      },
+      source: 'tritone-sub',
+      sourceLabel: `tritone sub of ${sd.chord.rootNote}7`,
+    });
+  });
+
+  return results;
+}
+
+function getBorrowedChords(root: string, currentMode: string, diatonicChords: ChordSpelling[]): { mode: string; chords: ProgressionChord[] }[] {
+  const borrowModes = PARALLEL_BORROW_MODES[currentMode] || [];
+  const diatonicSymbols = new Set(diatonicChords.map(c => `${c.rootNote}-${c.notes.join(',')}`));
+  
+  return borrowModes.map(borrowMode => {
+    const borrowScale = getScaleNotes(root, borrowMode);
+    const borrowChords = getChordSpellings(borrowScale, borrowMode);
+    
+    const unique = borrowChords
+      .filter(c => !diatonicSymbols.has(`${c.rootNote}-${c.notes.join(',')}`))
+      .map(c => ({
+        chord: c,
+        source: 'borrowed' as const,
+        sourceLabel: borrowMode,
+      }));
+
+    return { mode: borrowMode, chords: unique };
+  }).filter(g => g.chords.length > 0);
+}
+
+// ─── Chord Badge Component ──────────────────────────────────
+const sourceColors = {
+  'diatonic': 'border-border hover:border-amber-500/50 hover:bg-amber-500/5',
+  'borrowed': 'border-violet-500/40 hover:border-violet-500/70 hover:bg-violet-500/10',
+  'secondary-dom': 'border-sky-500/40 hover:border-sky-500/70 hover:bg-sky-500/10',
+  'tritone-sub': 'border-emerald-500/40 hover:border-emerald-500/70 hover:bg-emerald-500/10',
+};
+
+const sourceActiveColors = {
+  'diatonic': 'border-amber-500 bg-amber-500/15 text-amber-300',
+  'borrowed': 'border-violet-500 bg-violet-500/15 text-violet-300',
+  'secondary-dom': 'border-sky-500 bg-sky-500/15 text-sky-300',
+  'tritone-sub': 'border-emerald-500 bg-emerald-500/15 text-emerald-300',
+};
+
+const sourceDotColors = {
+  'diatonic': 'bg-amber-500',
+  'borrowed': 'bg-violet-500',
+  'secondary-dom': 'bg-sky-500',
+  'tritone-sub': 'bg-emerald-500',
+};
+
+// ─── Main Component ─────────────────────────────────────────
 const ChordProgressionBuilder = ({
   chordSpellings,
   root,
   mode,
 }: ChordProgressionBuilderProps) => {
-  const [progression, setProgression] = useState<number[]>([0, 3, 4, 0]);
+  const [progression, setProgression] = useState<ProgressionChord[]>([]);
   const [playing, setPlaying] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(-1);
   const [bpm, setBpm] = useState(100);
   const [beatsPerChord, setBeatsPerChord] = useState(4);
+  const [showBorrowed, setShowBorrowed] = useState(false);
+  const [showSecondaryDoms, setShowSecondaryDoms] = useState(false);
+  const [showTritoneSubs, setShowTritoneSubs] = useState(false);
+  const [expandedBorrowMode, setExpandedBorrowMode] = useState<string | null>(null);
   const timeoutRef = useRef<number[]>([]);
+
+  // Compute harmonic tools
+  const secondaryDoms = useMemo(() => getSecondaryDominants(root, mode, chordSpellings), [root, mode, chordSpellings]);
+  const tritoneSubs = useMemo(() => getTritoneSubs(secondaryDoms), [secondaryDoms]);
+  const borrowedGroups = useMemo(() => getBorrowedChords(root, mode, chordSpellings), [root, mode, chordSpellings]);
 
   const stop = useCallback(() => {
     timeoutRef.current.forEach(clearTimeout);
@@ -67,24 +242,21 @@ const ChordProgressionBuilder = ({
   }, []);
 
   const playProgression = useCallback(() => {
-    if (chordSpellings.length === 0 || progression.length === 0) return;
+    if (progression.length === 0) return;
     stop();
     setPlaying(true);
 
     const chordDuration = (60 / bpm) * beatsPerChord * 1000;
     const ids: number[] = [];
 
-    progression.forEach((degreeIdx, i) => {
-      const chord = chordSpellings[degreeIdx % chordSpellings.length];
-      if (!chord) return;
+    progression.forEach((pc, i) => {
       const id = window.setTimeout(() => {
         setCurrentIdx(i);
-        playChordTones(chord.notes, (chordDuration / 1000) * 0.9);
+        playChordTones(pc.chord.notes, (chordDuration / 1000) * 0.9);
       }, i * chordDuration);
       ids.push(id);
     });
 
-    // Stop after last chord
     const endId = window.setTimeout(() => {
       setPlaying(false);
       setCurrentIdx(-1);
@@ -92,20 +264,22 @@ const ChordProgressionBuilder = ({
     ids.push(endId);
 
     timeoutRef.current = ids;
-  }, [chordSpellings, progression, bpm, beatsPerChord, stop]);
+  }, [progression, bpm, beatsPerChord, stop]);
 
-  const addChord = (degreeIdx: number) => {
-    setProgression([...progression, degreeIdx]);
+  const addChord = (pc: ProgressionChord) => {
+    setProgression(prev => [...prev, pc]);
   };
 
   const removeChord = (idx: number) => {
-    setProgression(progression.filter((_, i) => i !== idx));
+    setProgression(prev => prev.filter((_, i) => i !== idx));
   };
 
   const loadTemplate = (degrees: number[]) => {
     stop();
-    // Clamp degrees to available chords
-    setProgression(degrees.map(d => Math.min(d, chordSpellings.length - 1)));
+    setProgression(degrees.map(d => ({
+      chord: chordSpellings[Math.min(d, chordSpellings.length - 1)],
+      source: 'diatonic',
+    })));
   };
 
   if (chordSpellings.length === 0) {
@@ -117,58 +291,71 @@ const ChordProgressionBuilder = ({
     );
   }
 
+  const has7Notes = (MODE_INTERVALS[mode]?.length ?? 0) >= 7;
+
   return (
     <div className="rounded-lg border border-border bg-card p-4 md:p-6">
       <h3 className="text-lg font-semibold mb-4">Chord Progression Builder</h3>
 
-      {/* Current key context */}
+      {/* Key context */}
       <p className="text-xs text-muted-foreground mb-4">
-        Key: <span className="font-semibold text-foreground">{root} {mode}</span> — click chords below to build your progression
+        Key: <span className="font-semibold text-foreground">{root} {mode}</span> — click chords to build your progression
       </p>
 
-      {/* Progression Timeline */}
+      {/* ── Progression Timeline ─────────────────────────────── */}
       <div className="mb-6">
         <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Your Progression</p>
         <div className="flex flex-wrap gap-2 min-h-[56px] p-3 rounded-lg border border-dashed border-border bg-secondary/30">
           {progression.length === 0 ? (
             <p className="text-xs text-muted-foreground italic">Click chords below to add them here…</p>
           ) : (
-            progression.map((degreeIdx, i) => {
-              const chord = chordSpellings[degreeIdx % chordSpellings.length];
-              if (!chord) return null;
-              return (
-                <div
-                  key={i}
-                  className={`relative group flex flex-col items-center justify-center px-4 py-2 rounded-lg border text-sm transition-all ${
-                    currentIdx === i
-                      ? 'border-amber-500 bg-amber-500/15 text-amber-300 scale-105 shadow-lg shadow-amber-500/20'
-                      : 'border-border bg-card hover:border-muted-foreground'
-                  }`}
-                >
-                  <span className="font-bold">{chord.symbol}</span>
-                  <span className="text-[10px] text-muted-foreground">{chord.notes.join(' ')}</span>
-                  <button
-                    onClick={() => removeChord(i)}
-                    className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X size={10} />
-                  </button>
+            progression.map((pc, i) => (
+              <div
+                key={i}
+                className={`relative group flex flex-col items-center justify-center px-4 py-2 rounded-lg border text-sm transition-all ${
+                  currentIdx === i
+                    ? `${sourceActiveColors[pc.source]} scale-105 shadow-lg`
+                    : 'border-border bg-card hover:border-muted-foreground'
+                }`}
+              >
+                <div className="flex items-center gap-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${sourceDotColors[pc.source]}`} />
+                  <span className="font-bold">{pc.chord.symbol}</span>
                 </div>
-              );
-            })
+                <span className="text-[10px] text-muted-foreground">{pc.chord.notes.join(' ')}</span>
+                {pc.source !== 'diatonic' && (
+                  <span className="text-[9px] text-muted-foreground/60 italic">{pc.sourceLabel}</span>
+                )}
+                <button
+                  onClick={() => removeChord(i)}
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X size={10} />
+                </button>
+              </div>
+            ))
           )}
         </div>
+        {/* Legend */}
+        {progression.some(p => p.source !== 'diatonic') && (
+          <div className="flex flex-wrap gap-3 mt-2 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> Diatonic</span>
+            {progression.some(p => p.source === 'borrowed') && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-violet-500" /> Borrowed</span>}
+            {progression.some(p => p.source === 'secondary-dom') && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-500" /> Secondary Dom.</span>}
+            {progression.some(p => p.source === 'tritone-sub') && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Tritone Sub</span>}
+          </div>
+        )}
       </div>
 
-      {/* Available Chords */}
+      {/* ── Diatonic Chords ──────────────────────────────────── */}
       <div className="mb-6">
-        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Available Chords</p>
+        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Diatonic Chords</p>
         <div className="flex flex-wrap gap-2">
           {chordSpellings.map((chord, i) => (
             <button
               key={i}
-              onClick={() => addChord(i)}
-              className="flex flex-col items-center px-3 py-2 rounded-lg border border-border hover:border-amber-500/50 hover:bg-amber-500/5 transition-colors text-sm"
+              onClick={() => addChord({ chord, source: 'diatonic' })}
+              className={`flex flex-col items-center px-3 py-2 rounded-lg border ${sourceColors['diatonic']} transition-colors text-sm`}
             >
               <span className="font-bold">{chord.symbol}</span>
               <span className="text-[10px] text-muted-foreground">{chord.notes.join('-')}</span>
@@ -177,7 +364,152 @@ const ChordProgressionBuilder = ({
         </div>
       </div>
 
-      {/* Templates */}
+      {/* ── Harmonic Tools Panel ─────────────────────────────── */}
+      <div className="mb-6 rounded-lg border border-dashed border-accent bg-accent/5 p-4">
+        <p className="text-xs font-semibold text-foreground mb-1 flex items-center gap-1.5">
+          <Sparkles size={14} className="text-amber-400" />
+          Harmonic Tools
+        </p>
+        <p className="text-[11px] text-muted-foreground mb-4">
+          Add color to your progressions with borrowed chords, secondary dominants, and tritone substitutions.
+        </p>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {has7Notes && borrowedGroups.length > 0 && (
+            <button
+              onClick={() => { setShowBorrowed(!showBorrowed); if (showBorrowed) setExpandedBorrowMode(null); }}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                showBorrowed
+                  ? 'border-violet-500 bg-violet-500/15 text-violet-300'
+                  : 'border-border text-muted-foreground hover:border-violet-500/50'
+              }`}
+            >
+              <Music2 size={12} />
+              Borrowed Chords
+              {showBorrowed ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+          )}
+          {has7Notes && secondaryDoms.length > 0 && (
+            <button
+              onClick={() => setShowSecondaryDoms(!showSecondaryDoms)}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                showSecondaryDoms
+                  ? 'border-sky-500 bg-sky-500/15 text-sky-300'
+                  : 'border-border text-muted-foreground hover:border-sky-500/50'
+              }`}
+            >
+              <ArrowRightLeft size={12} />
+              Secondary Dominants
+              {showSecondaryDoms ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+          )}
+          {has7Notes && tritoneSubs.length > 0 && (
+            <button
+              onClick={() => setShowTritoneSubs(!showTritoneSubs)}
+              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                showTritoneSubs
+                  ? 'border-emerald-500 bg-emerald-500/15 text-emerald-300'
+                  : 'border-border text-muted-foreground hover:border-emerald-500/50'
+              }`}
+            >
+              <Sparkles size={12} />
+              Tritone Substitutions
+              {showTritoneSubs ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+          )}
+        </div>
+
+        {/* Borrowed Chords expanded */}
+        {showBorrowed && (
+          <div className="mb-4">
+            <p className="text-[11px] text-violet-400/80 mb-2">
+              Borrow chords from parallel modes of <span className="font-semibold">{root}</span> to add unexpected color.
+            </p>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {borrowedGroups.map(g => (
+                <button
+                  key={g.mode}
+                  onClick={() => setExpandedBorrowMode(expandedBorrowMode === g.mode ? null : g.mode)}
+                  className={`text-[11px] px-2.5 py-1 rounded border transition-colors ${
+                    expandedBorrowMode === g.mode
+                      ? 'border-violet-500/60 bg-violet-500/10 text-violet-300'
+                      : 'border-border text-muted-foreground hover:border-violet-500/40'
+                  }`}
+                >
+                  {g.mode} <span className="text-muted-foreground/50">({g.chords.length})</span>
+                </button>
+              ))}
+            </div>
+            {expandedBorrowMode && (
+              <div className="flex flex-wrap gap-2 p-2 rounded bg-violet-500/5 border border-violet-500/20">
+                {borrowedGroups.find(g => g.mode === expandedBorrowMode)?.chords.map((pc, i) => (
+                  <button
+                    key={i}
+                    onClick={() => addChord(pc)}
+                    className={`flex flex-col items-center px-3 py-2 rounded-lg border ${sourceColors['borrowed']} transition-colors text-sm`}
+                  >
+                    <span className="font-bold">{pc.chord.symbol}</span>
+                    <span className="text-[10px] text-muted-foreground">{pc.chord.notes.join('-')}</span>
+                    <span className="text-[9px] text-violet-400/60 italic">from {pc.sourceLabel}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Secondary Dominants expanded */}
+        {showSecondaryDoms && (
+          <div className="mb-4">
+            <p className="text-[11px] text-sky-400/80 mb-2">
+              Dominant 7th chords that resolve to each diatonic chord — add tension before resolution.
+            </p>
+            <div className="flex flex-wrap gap-2 p-2 rounded bg-sky-500/5 border border-sky-500/20">
+              {secondaryDoms.map((pc, i) => (
+                <button
+                  key={i}
+                  onClick={() => addChord(pc)}
+                  className={`flex flex-col items-center px-3 py-2 rounded-lg border ${sourceColors['secondary-dom']} transition-colors text-sm`}
+                >
+                  <span className="font-bold">{pc.chord.symbol}</span>
+                  <span className="text-[10px] text-muted-foreground">{pc.chord.notes.join('-')}</span>
+                  <span className="text-[9px] text-sky-400/60 italic">{pc.sourceLabel}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tritone Subs expanded */}
+        {showTritoneSubs && (
+          <div className="mb-4">
+            <p className="text-[11px] text-emerald-400/80 mb-2">
+              Replace any dominant chord with its tritone substitution — a dominant chord a tritone away with shared guide tones.
+            </p>
+            <div className="flex flex-wrap gap-2 p-2 rounded bg-emerald-500/5 border border-emerald-500/20">
+              {tritoneSubs.map((pc, i) => (
+                <button
+                  key={i}
+                  onClick={() => addChord(pc)}
+                  className={`flex flex-col items-center px-3 py-2 rounded-lg border ${sourceColors['tritone-sub']} transition-colors text-sm`}
+                >
+                  <span className="font-bold">{pc.chord.symbol}</span>
+                  <span className="text-[10px] text-muted-foreground">{pc.chord.notes.join('-')}</span>
+                  <span className="text-[9px] text-emerald-400/60 italic">{pc.sourceLabel}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!has7Notes && (
+          <p className="text-[11px] text-muted-foreground/60 italic">
+            Harmonic tools work best with 7-note scales. Try a major or minor mode.
+          </p>
+        )}
+      </div>
+
+      {/* ── Templates ────────────────────────────────────────── */}
       <div className="mb-6">
         <p className="text-xs text-muted-foreground mb-2 uppercase tracking-widest">Common Progressions</p>
         <div className="flex flex-wrap gap-2">
@@ -194,7 +526,7 @@ const ChordProgressionBuilder = ({
         </div>
       </div>
 
-      {/* Playback Controls */}
+      {/* ── Playback Controls ────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-4">
         <button
           onClick={() => (playing ? stop() : playProgression())}
@@ -244,8 +576,7 @@ const ChordProgressionBuilder = ({
         <button
           onClick={() => {
             if (progression.length > 0) {
-              const chord = chordSpellings[progression[0] % chordSpellings.length];
-              if (chord) playChordTones(chord.notes);
+              playChordTones(progression[0].chord.notes);
             }
           }}
           className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
