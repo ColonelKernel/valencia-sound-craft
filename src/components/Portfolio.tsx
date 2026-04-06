@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import AudioPlaylist from "./AudioPlaylist";
 
@@ -44,38 +46,51 @@ const embeds = [
 
 const Portfolio = () => {
   const ref = useFadeIn();
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <section id="portfolio" className="section-padding bg-secondary/50" ref={ref}>
       <div className="container mx-auto">
-        <div className="fade-up mb-16">
-          <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">Selected Work</p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Portfolio</h2>
-        </div>
+        <button
+          onClick={() => setExpanded(prev => !prev)}
+          className="fade-up mb-10 w-full flex items-center justify-between group"
+        >
+          <div className="text-left">
+            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">Selected Work</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Portfolio</h2>
+          </div>
+          <div className="shrink-0 ml-4 w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:bg-accent transition-colors">
+            {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          </div>
+        </button>
 
-        <div className="fade-up grid md:grid-cols-2 gap-6">
-          {embeds.map((embed) => (
-            <div key={embed.title} className="rounded-sm overflow-hidden border border-border bg-card">
-              <p className="px-4 py-3 text-sm font-display font-semibold border-b border-border">
-                {embed.title}
-              </p>
-              <iframe
-                title={embed.title}
-                src={embed.src}
-                width="100%"
-                height={embed.height}
-                frameBorder="0"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
-                className="block"
-              />
+        {expanded && (
+          <>
+            <div className="fade-up grid md:grid-cols-2 gap-6">
+              {embeds.map((embed) => (
+                <div key={embed.title} className="rounded-sm overflow-hidden border border-border bg-card">
+                  <p className="px-4 py-3 text-sm font-display font-semibold border-b border-border">
+                    {embed.title}
+                  </p>
+                  <iframe
+                    title={embed.title}
+                    src={embed.src}
+                    width="100%"
+                    height={embed.height}
+                    frameBorder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    className="block"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <div className="fade-up mt-6 max-w-2xl">
-          <AudioPlaylist title="Spiral of Doubt" tracks={globalPulseTracks} />
-        </div>
+            <div className="fade-up mt-6 max-w-2xl">
+              <AudioPlaylist title="Spiral of Doubt" tracks={globalPulseTracks} />
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
