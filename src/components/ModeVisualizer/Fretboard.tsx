@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   StringTuning,
   getNoteAtFret,
@@ -232,6 +233,14 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
           <div className="flex flex-wrap items-center gap-3 mt-2 text-[10px] text-muted-foreground">
             <span className="flex items-center gap-1.5 font-medium text-foreground">
               Position:
+              <button
+                onClick={() => setPositionOverride(Math.max(1, (positionOverride ?? autoPos) - 1))}
+                disabled={(positionOverride ?? autoPos) <= 1}
+                className="p-0.5 rounded border border-border hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                title="Previous position"
+              >
+                <ChevronLeft size={14} />
+              </button>
               <select
                 value={positionOverride ?? autoPos}
                 onChange={(e) => setPositionOverride(Number(e.target.value))}
@@ -241,6 +250,14 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
                   <option key={p} value={p}>Frets {p}–{p + 3}</option>
                 ))}
               </select>
+              <button
+                onClick={() => setPositionOverride(Math.min(19, (positionOverride ?? autoPos) + 1))}
+                disabled={(positionOverride ?? autoPos) >= 19}
+                className="p-0.5 rounded border border-border hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                title="Next position"
+              >
+                <ChevronRight size={14} />
+              </button>
             </span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-stone-600 inline-block" /> Open</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-600 inline-block" /> Index (1)</span>
