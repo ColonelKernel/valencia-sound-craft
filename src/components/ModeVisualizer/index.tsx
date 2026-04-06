@@ -112,25 +112,25 @@ const ModeVisualizer = () => {
         </div>
 
         {/* Tool Tabs */}
-        <div className="fade-up flex gap-2 mb-8">
+        <div className="fade-up flex gap-2 mb-8 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin">
           {[
-            { id: 'visualizer' as const, label: 'Mode Visualizer', icon: <Guitar className="w-4 h-4" /> },
-            { id: 'progression' as const, label: 'Chord Progressions', icon: <ListMusic className="w-4 h-4" /> },
-            { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
-            { id: 'reference' as const, label: 'Scale Reference', icon: <BookOpen className="w-4 h-4" /> },
-            { id: 'polyrhythm' as const, label: 'Rhythm Engine', icon: <Drum className="w-4 h-4" /> },
-            { id: 'rhythmmap' as const, label: 'Rhythm Map', icon: <Globe className="w-4 h-4" /> },
+            { id: 'visualizer' as const, label: 'Mode Visualizer', shortLabel: 'Modes', icon: <Guitar className="w-4 h-4" /> },
+            { id: 'progression' as const, label: 'Chord Progressions', shortLabel: 'Chords', icon: <ListMusic className="w-4 h-4" /> },
+            { id: 'metronome' as const, label: 'Metronome', shortLabel: 'Metro', icon: <Timer className="w-4 h-4" /> },
+            { id: 'reference' as const, label: 'Scale Reference', shortLabel: 'Scales', icon: <BookOpen className="w-4 h-4" /> },
+            { id: 'polyrhythm' as const, label: 'Rhythm Engine', shortLabel: 'Rhythm', icon: <Drum className="w-4 h-4" /> },
+            { id: 'rhythmmap' as const, label: 'Rhythm Map', shortLabel: 'Map', icon: <Globe className="w-4 h-4" /> },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                 activeTab === tab.id
                   ? 'bg-primary text-primary-foreground'
                   : 'border border-border text-muted-foreground hover:bg-accent'
               }`}
             >
-              {tab.icon} {tab.label}
+              {tab.icon} <span className="hidden sm:inline">{tab.label}</span><span className="sm:hidden">{tab.shortLabel}</span>
             </button>
           ))}
         </div>
@@ -174,7 +174,7 @@ const ModeVisualizer = () => {
         {activeTab === 'visualizer' && (
         <>
         {/* Control Panel */}
-        <div className="flex flex-wrap items-center gap-3 mb-8 p-4 rounded-lg border border-border bg-card">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Root</label>
             <select
@@ -258,7 +258,7 @@ const ModeVisualizer = () => {
           </button>
           )}
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
             <label className="text-sm font-medium text-muted-foreground">Sound</label>
             <select
               value={timbre}
@@ -365,8 +365,8 @@ const ModeVisualizer = () => {
             {scaleNotes.map((note, i) => (
               <div
                 key={i}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer transition-all ${getNoteStyle(note, note === root)} ${
-                  hoveredNote === note ? "scale-125 ring-2 ring-white" : "hover:scale-110"
+                className={`w-10 h-10 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold cursor-pointer transition-all touch-manipulation ${getNoteStyle(note, note === root)} ${
+                  hoveredNote === note ? "scale-125 ring-2 ring-white" : "hover:scale-110 active:scale-95"
                 }`}
                 onMouseEnter={() => setHoveredNote(note)}
                 onMouseLeave={() => setHoveredNote(null)}
@@ -488,30 +488,30 @@ const ModeVisualizer = () => {
 
         {/* Instrument Selector */}
         <div className="mb-4">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {([
-              { key: 'guitar' as const, label: 'Guitar', icon: <Guitar className="w-4 h-4" /> },
-              { key: 'bass' as const, label: 'Bass', icon: <Guitar className="w-4 h-4" /> },
-              { key: 'other' as const, label: 'Other', icon: <Music className="w-4 h-4" /> },
-              { key: 'keyboard' as const, label: 'Keyboard', icon: <Piano className="w-4 h-4" /> },
+              { key: 'guitar' as const, label: 'Guitar', shortLabel: 'Gtr', icon: <Guitar className="w-4 h-4" /> },
+              { key: 'bass' as const, label: 'Bass', shortLabel: 'Bass', icon: <Guitar className="w-4 h-4" /> },
+              { key: 'other' as const, label: 'Other', shortLabel: 'Other', icon: <Music className="w-4 h-4" /> },
+              { key: 'keyboard' as const, label: 'Keyboard', shortLabel: 'Keys', icon: <Piano className="w-4 h-4" /> },
             ]).map((inst) => (
               <button
                 key={inst.key}
                 onClick={() => setInstrument(inst.key)}
-                className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded-lg border transition-colors ${
                   instrument === inst.key
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'border-border text-muted-foreground hover:bg-accent'
                 }`}
               >
-                {inst.icon} {inst.label}
+                {inst.icon} <span className="hidden sm:inline">{inst.label}</span><span className="sm:hidden">{inst.shortLabel}</span>
               </button>
             ))}
             {instrument === 'other' && (
               <select
                 value={otherInstrument}
                 onChange={(e) => setOtherInstrument(e.target.value)}
-                className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="bg-secondary border border-border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 {FRETTED_INSTRUMENTS.map((fi) => (
                   <option key={fi.key} value={fi.key}>{fi.label}</option>

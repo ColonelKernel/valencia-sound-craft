@@ -284,30 +284,31 @@ const DrumMachine = () => {
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 md:p-6 space-y-5">
+    <div className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div>
-          <h3 className="text-xl font-bold flex items-center gap-2">
+          <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
             <Globe className="w-5 h-5 text-primary" />
             Global Rhythm Engine
           </h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-lg">
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 max-w-lg">
             {DRUM_PRESETS.length} culturally authentic patterns from {new Set(DRUM_PRESETS.filter(p => p.countryCode !== 'UN').map(p => p.country)).size} countries.
-            Click cells to cycle: off → hit → accent → ghost.
+            <span className="hidden sm:inline"> Click cells to cycle: off → hit → accent → ghost.</span>
+            <span className="sm:hidden"> Tap cells to toggle.</span>
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {claveInfo && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/10 border border-primary/20">
               <Music className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[11px] text-primary font-medium">Clave: {claveInfo}</span>
+              <span className="text-[10px] sm:text-[11px] text-primary font-medium">Clave: {claveInfo}</span>
             </div>
           )}
           {currentPreset && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border">
-              <span className="text-[11px] font-medium">{currentPreset.country}</span>
-              <span className="text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary border border-border">
+              <span className="text-[10px] sm:text-[11px] font-medium">{currentPreset.country}</span>
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground">
                 {formatPulseGrouping(currentPreset.pulseGrouping)}
               </span>
             </div>
@@ -316,10 +317,10 @@ const DrumMachine = () => {
       </div>
 
       {/* Transport */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <button
           onClick={() => setPlaying(!playing)}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all ${
             playing
               ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20'
               : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20'
@@ -331,42 +332,41 @@ const DrumMachine = () => {
 
         <button onClick={clearAll}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-border text-muted-foreground hover:bg-accent transition-colors">
-          <RotateCcw size={14} /> Clear
+          <RotateCcw size={14} /> <span className="hidden xs:inline">Clear</span>
         </button>
 
         {/* BPM */}
-        <div className="flex items-center gap-2 ml-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <span className="text-xs text-muted-foreground font-medium">BPM</span>
           <input type="range" min={40} max={400} value={bpm}
             onChange={e => setBpm(Number(e.target.value))}
-            className="w-20 accent-primary" />
+            className="w-16 sm:w-20 accent-primary" />
           <input type="number" min={40} max={400} value={bpm}
             onChange={e => setBpm(Math.max(40, Math.min(400, Number(e.target.value))))}
-            className="w-14 bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground text-center" />
+            className="w-12 sm:w-14 bg-secondary border border-border rounded px-1.5 py-1 text-xs sm:text-sm text-foreground text-center" />
         </div>
 
-        {/* Swing */}
+        {/* Swing + Groove - collapse on very small screens */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Swing</span>
+          <span className="text-xs text-muted-foreground">Sw</span>
           <input type="range" min={0} max={50} value={swing}
             onChange={e => setSwing(Number(e.target.value))}
-            className="w-16 accent-primary" />
-          <span className="text-xs text-muted-foreground w-8">{swing}%</span>
+            className="w-12 sm:w-16 accent-primary" />
+          <span className="text-[10px] text-muted-foreground w-6 sm:w-8">{swing}%</span>
         </div>
 
-        {/* Groove */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Feel</span>
           <input type="range" min={0} max={100} value={groove}
             onChange={e => setGroove(Number(e.target.value))}
-            className="w-16 accent-primary" />
-          <span className="text-[10px] text-muted-foreground w-14">
+            className="w-12 sm:w-16 accent-primary" />
+          <span className="text-[9px] sm:text-[10px] text-muted-foreground w-10 sm:w-14">
             {groove < 30 ? 'Tight' : groove < 70 ? 'Natural' : 'Loose'}
           </span>
         </div>
 
         {currentPreset && (
-          <div className="ml-auto text-xs text-muted-foreground">
+          <div className="w-full sm:w-auto sm:ml-auto text-[10px] sm:text-xs text-muted-foreground mt-1 sm:mt-0">
             <span className="text-foreground font-medium">{currentPreset.name}</span>
             <span className="mx-1">·</span>
             <span>{currentPreset.country}</span>
@@ -555,7 +555,7 @@ const DrumMachine = () => {
       )}
 
       {/* Step Sequencer Grid */}
-      <div className="space-y-1.5 overflow-x-auto">
+      <div className="space-y-1 sm:space-y-1.5 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
         {tracks.map(track => {
           const inst = getInstrument(track.instrumentId);
           const current = currentSteps[track.id] ?? -1;
@@ -563,9 +563,9 @@ const DrumMachine = () => {
           const shouldPlay = hasSolo ? track.solo : !track.muted;
 
           return (
-            <div key={track.id} className={`flex items-center gap-2 min-w-fit ${!shouldPlay ? 'opacity-30' : ''}`}>
+            <div key={track.id} className={`flex items-center gap-1.5 sm:gap-2 min-w-fit ${!shouldPlay ? 'opacity-30' : ''}`}>
               {/* Track controls */}
-              <div className="flex items-center gap-1 w-28 shrink-0">
+              <div className="flex items-center gap-0.5 sm:gap-1 w-20 sm:w-28 shrink-0">
                 <button onClick={() => updateTrack(track.id, { muted: !track.muted })}
                   className={`p-0.5 rounded transition-colors ${track.muted ? 'text-muted-foreground/40' : 'text-foreground'}`}
                   title={track.muted ? 'Unmute' : 'Mute'}>
@@ -579,7 +579,7 @@ const DrumMachine = () => {
                   S
                 </button>
                 <span className={`w-2 h-2 rounded-full shrink-0 ${inst?.color || 'bg-muted'}`} />
-                <span className="text-[11px] font-medium truncate">{inst?.name || track.instrumentId}</span>
+                <span className="text-[9px] sm:text-[11px] font-medium truncate">{inst?.shortName || inst?.name || track.instrumentId}</span>
               </div>
 
               {/* Steps */}
@@ -594,7 +594,7 @@ const DrumMachine = () => {
                   return (
                     <button key={i} onClick={() => toggleStep(track.id, i)}
                       className={`
-                        w-7 h-7 md:w-8 md:h-8 rounded-sm transition-all text-[8px] font-bold
+                        w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-sm transition-all text-[7px] sm:text-[8px] font-bold
                         ${getStepClass(vel, inst?.color || 'bg-muted', isCurrent, isDownbeat)}
                         ${isBeatBoundary && i > 0 ? 'ml-1' : ''}
                       `}

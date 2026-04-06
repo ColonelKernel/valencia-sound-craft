@@ -162,7 +162,7 @@ const MasterScaleReference = () => {
   }, [modeRows]);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 md:p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card p-3 sm:p-4 md:p-6 space-y-4">
       <div>
         <h3 className="text-lg font-semibold">Master Scale Reference</h3>
         <p className="text-xs text-muted-foreground mt-1">
@@ -200,8 +200,8 @@ const MasterScaleReference = () => {
       </div>
 
       {/* Mode Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+        <table className="w-full text-xs sm:text-sm min-w-[500px]">
           <thead>
             <tr className="border-b border-border">
               <th className="text-center text-xs text-muted-foreground font-medium px-1 py-2 w-10">▶</th>
