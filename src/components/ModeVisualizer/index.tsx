@@ -556,6 +556,7 @@ const ModeVisualizer = () => {
               onNoteHover={setHoveredNote}
               chordFilter={chordFilter}
               onNoteClick={handleNoteClick}
+              timbre={timbre}
             />
           </div>
         )}
@@ -595,7 +596,7 @@ const ModeVisualizer = () => {
               onNoteHover={setHoveredNote}
               chordFilter={chordFilter}
               onNoteClick={handleNoteClick}
-            />
+              timbre={timbre}
           </div>
         )}
 
@@ -621,7 +622,7 @@ const ModeVisualizer = () => {
                 onNoteHover={setHoveredNote}
                 chordFilter={chordFilter}
                 onNoteClick={handleNoteClick}
-              />
+                timbre={timbre}
             </div>
           );
         })()}
