@@ -8,6 +8,7 @@ import {
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
 import { type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 import ChordStaffView from "./ChordStaffView";
+import ChordPianoMini from "./ChordPianoMini";
 import {
   type ProgressionChord, type ChordSource, type RhythmicFeel, type HarmonicStyle,
   type ViewMode, type ChordFunction, type ExtensionLevel, type VoicingType, type ExpressiveParams,
@@ -436,6 +437,12 @@ const ChordProgressionBuilder = ({
               {showStaff && (
                 <ChordStaffView notes={progression[editingIdx].chord.notes} symbol={progression[editingIdx].chord.symbol} />
               )}
+              <ChordPianoMini
+                chordNotes={progression[editingIdx].chord.notes}
+                rootNote={progression[editingIdx].chord.rootNote}
+                symbol={progression[editingIdx].chord.symbol}
+                timbre={timbre}
+              />
             </div>
           )}
 
