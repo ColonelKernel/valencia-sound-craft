@@ -60,6 +60,7 @@ const Metronome = () => {
   const [subdivIdx, setSubdivIdx] = useState(0);
   const [currentBeat, setCurrentBeat] = useState(-1);
   const [accentFirst, setAccentFirst] = useState(true);
+  const [swing, setSwing] = useState(50); // 50 = straight, 67 = triplet swing
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
