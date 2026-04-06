@@ -113,7 +113,7 @@ const ModeVisualizer = () => {
               Interactive Tools
             </h2>
             <p className="text-muted-foreground mt-2 max-w-xl">
-              Explore modes across every key — major, melodic minor, harmonic minor, pentatonic, and more.
+              Scales, chords, rhythm engines, metronomes, and more — everything you need to create, practice, and produce.
             </p>
           </div>
           <div className="shrink-0 ml-4 w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:bg-accent transition-colors">
