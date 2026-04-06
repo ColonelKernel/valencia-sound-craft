@@ -137,7 +137,6 @@ const SD_MAP: Record<string, number> = {
   'tom-high':     48,  // C2
   'tom-low':      45,  // A1
   'crash':        49,
-  'ride':         51,
   'ride':         51,  // D#2 - Bow
 };
 
