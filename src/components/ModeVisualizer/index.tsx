@@ -99,7 +99,7 @@ const ModeVisualizer = () => {
   const handleModeChange = (m: string) => { setMode(m); setSelectedChord(null); };
 
   return (
-    <section id="mode-visualizer" className="section-padding bg-secondary/50" ref={ref}>
+    <section id="mode-visualizer" className="section-padding !pb-8 bg-secondary/50" ref={ref}>
       <div className="container mx-auto">
         <button
           onClick={() => setExpanded(prev => !prev)}
