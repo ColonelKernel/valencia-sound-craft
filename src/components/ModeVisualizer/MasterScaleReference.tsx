@@ -162,7 +162,7 @@ const MasterScaleReference = () => {
   }, [modeRows]);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 md:p-6 space-y-4">
+    <div className="rounded-lg border border-border bg-card p-3 sm:p-4 md:p-6 space-y-4">
       <div>
         <h3 className="text-lg font-semibold">Master Scale Reference</h3>
         <p className="text-xs text-muted-foreground mt-1">
