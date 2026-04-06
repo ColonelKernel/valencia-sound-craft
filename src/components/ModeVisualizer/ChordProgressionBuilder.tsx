@@ -674,6 +674,25 @@ const ChordProgressionBuilder = ({
           </div>
         )}
       </div>
+      {/* ═══ EXPRESSIVE CONTROLS BOTTOM BAR ═══ */}
+      {showExpressive && (
+        <div className="flex flex-wrap items-center gap-4 px-3 py-2 border-t border-border bg-secondary/10">
+          {([
+            { key: 'tension' as const, label: 'Tension', emoji: '⚡' },
+            { key: 'density' as const, label: 'Density', emoji: '🎛️' },
+            { key: 'movement' as const, label: 'Movement', emoji: '🌊' },
+            { key: 'brightness' as const, label: 'Bright', emoji: '☀️' },
+          ]).map(s => (
+            <div key={s.key} className="flex items-center gap-1.5 min-w-[120px]">
+              <span className="text-[9px] text-muted-foreground w-12 shrink-0">{s.emoji} {s.label}</span>
+              <input type="range" min={0} max={100} value={expressive[s.key]}
+                onChange={(e) => setExpressive(prev => ({ ...prev, [s.key]: Number(e.target.value) }))}
+                className="flex-1 h-1 accent-primary cursor-pointer" />
+              <span className="text-[9px] text-muted-foreground w-6 text-right">{expressive[s.key]}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
