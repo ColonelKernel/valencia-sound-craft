@@ -13,6 +13,8 @@ export const MODE_CATEGORIES: ModeCategory[] = [
   { label: 'Major Modes', modes: ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'] },
   { label: 'Melodic Minor Modes', modes: ['Melodic Minor', 'Dorian b2', 'Lydian Augmented', 'Lydian Dominant', 'Mixolydian b6', 'Aeolian b5 (Locrian #2)', 'Altered (Super Locrian)'] },
   { label: 'Harmonic Minor Modes', modes: ['Harmonic Minor', 'Locrian #6', 'Ionian #5', 'Dorian #4', 'Phrygian Dominant', 'Lydian #2', 'Ultra Locrian'] },
+  { label: 'Harmonic Major Modes', modes: ['Harmonic Major', 'Dorian b5', 'Phrygian b4', 'Lydian b3', 'Mixolydian b2', 'Lydian Augmented #2', 'Locrian bb7'] },
+  { label: 'Bebop Scales', modes: ['Bebop Dominant', 'Bebop Major', 'Bebop Minor', 'Bebop Dorian', 'Bebop Harmonic Minor'] },
   { label: 'Pentatonic & Blues', modes: ['Major Pentatonic', 'Minor Pentatonic', 'Blues'] },
   { label: 'Other Scales', modes: ['Whole Tone', 'Diminished (HW)', 'Diminished (WH)', 'Chromatic'] },
 ];
