@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { getScaleNotes, isSharp, isFlat, MODE_CATEGORIES, ALL_ROOTS } from "./scaleData";
+import { getScaleNotes, MODE_INTERVALS } from "./scaleData";
 
 // The 7 modes of the major scale in order of degrees
 const MAJOR_MODES = ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
@@ -20,14 +20,50 @@ const MODE_FAMILIES: { label: string; modes: string[]; degrees: string[] }[] = [
   },
 ];
 
-const getNoteClass = (note: string, isRoot: boolean) => {
+// Chromatic note-to-semitone lookup
+const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+function noteToSemitone(note: string): number {
+  let idx = NOTES_SHARP.indexOf(note);
+  if (idx >= 0) return idx;
+  idx = NOTES_FLAT.indexOf(note);
+  return idx >= 0 ? idx : 0;
+}
+
+type Deviation = 'root' | 'natural' | 'flat' | 'sharp';
+
+/** Compare mode notes against the major scale of the same root */
+function getDeviations(modeRoot: string, modeNotes: string[]): Deviation[] {
+  const majorNotes = getScaleNotes(modeRoot, 'Ionian');
+  if (majorNotes.length === 0) return modeNotes.map(() => 'natural');
+
+  const majorSemitones = majorNotes.map(n => noteToSemitone(n));
+
+  return modeNotes.map((note, i) => {
+    if (i === 0) return 'root';
+    const modeSemi = noteToSemitone(note);
+    const majorSemi = majorSemitones[i];
+    if (majorSemi === undefined) return 'natural';
+    const diff = ((modeSemi - majorSemi) % 12 + 12) % 12;
+    if (diff === 0) return 'natural';
+    return diff <= 6 ? 'sharp' : 'flat';
+  });
+}
+
+function getDeviationLabel(dev: Deviation, degreeNum: number): string | null {
+  if (dev === 'flat') return `♭${degreeNum}`;
+  if (dev === 'sharp') return `♯${degreeNum}`;
+  return null;
+}
+
+const getNoteClass = (note: string, isRoot: boolean, deviation: Deviation) => {
   if (isRoot) return "bg-amber-500 text-black font-bold";
-  if (isSharp(note)) return "bg-blue-600/80 text-white";
-  if (isFlat(note)) return "bg-orange-500/80 text-white";
+  if (deviation === 'flat') return "bg-sky-500/80 text-white ring-2 ring-sky-400/40";
+  if (deviation === 'sharp') return "bg-rose-500/80 text-white ring-2 ring-rose-400/40";
   return "bg-stone-500/80 text-white";
 };
 
-// Common roots (hide enharmonics for cleaner UI)
 const COMMON_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 
 const MasterScaleReference = () => {
@@ -35,21 +71,23 @@ const MasterScaleReference = () => {
   const [familyIdx, setFamilyIdx] = useState(0);
 
   const family = MODE_FAMILIES[familyIdx];
-
-  // Get the parent scale notes (mode 1 of the family from the selected root)
   const parentNotes = useMemo(() => getScaleNotes(root, family.modes[0]), [root, family]);
 
-  // For each mode/degree, get the scale starting from that degree's root
   const modeRows = useMemo(() => {
     return family.modes.map((modeName, i) => {
-      // The root of this mode is the (i)th note of the parent scale
       const modeRoot = parentNotes[i] || parentNotes[0];
       const notes = getScaleNotes(modeRoot, modeName);
+      const deviations = getDeviations(modeRoot, notes);
+      const devLabels = deviations
+        .map((d, idx) => getDeviationLabel(d, idx + 1))
+        .filter(Boolean);
       return {
         degree: family.degrees[i],
         modeName,
         root: modeRoot,
         notes,
+        deviations,
+        devSummary: devLabels.length > 0 ? devLabels.join(' ') : 'no deviations',
       };
     });
   }, [parentNotes, family]);
@@ -59,7 +97,7 @@ const MasterScaleReference = () => {
       <div>
         <h3 className="text-lg font-semibold">Master Scale Reference</h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Select a root to see all modes derived from the same parent scale — each starting on a different degree.
+          Select a root to see all modes. Deviations from each mode root's own major scale are highlighted.
         </p>
       </div>
 
@@ -99,6 +137,7 @@ const MasterScaleReference = () => {
             <tr className="border-b border-border">
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-16">Mode</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-10">Deg</th>
+              <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-24">vs Major</th>
               {Array.from({ length: (parentNotes.length || 7) + 1 }).map((_, i) => (
                 <th key={i} className="text-center text-[10px] text-muted-foreground font-medium px-1 py-2 w-9">
                   {i < (parentNotes.length || 7) ? (i + 1) : '8'}
@@ -119,17 +158,40 @@ const MasterScaleReference = () => {
                 <td className="px-2 py-2.5">
                   <span className="text-xs text-muted-foreground font-medium">{row.degree}</span>
                 </td>
-                {[...row.notes, row.notes[0]].map((note, i) => (
-                  <td key={i} className="px-1 py-2.5 text-center">
-                    <span
-                      className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${
-                        getNoteClass(note, i === 0 || i === row.notes.length)
-                      }`}
-                    >
-                      {note}
+                <td className="px-2 py-2.5">
+                  {row.devSummary === 'no deviations' ? (
+                    <span className="text-[10px] text-muted-foreground/60 italic">natural</span>
+                  ) : (
+                    <span className="flex flex-wrap gap-0.5">
+                      {row.deviations.map((d, i) => {
+                        const label = getDeviationLabel(d, i + 1);
+                        if (!label) return null;
+                        return (
+                          <span key={i} className={`text-[10px] font-bold px-1 py-0.5 rounded ${
+                            d === 'flat' ? 'bg-sky-500/20 text-sky-400' : 'bg-rose-500/20 text-rose-400'
+                          }`}>
+                            {label}
+                          </span>
+                        );
+                      })}
                     </span>
-                  </td>
-                ))}
+                  )}
+                </td>
+                {[...row.notes, row.notes[0]].map((note, i) => {
+                  const isRoot = i === 0 || i === row.notes.length;
+                  const dev = i < row.notes.length ? row.deviations[i] : 'root';
+                  return (
+                    <td key={i} className="px-1 py-2.5 text-center">
+                      <span
+                        className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${
+                          getNoteClass(note, isRoot, dev)
+                        }`}
+                      >
+                        {note}
+                      </span>
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
@@ -139,10 +201,10 @@ const MasterScaleReference = () => {
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground pt-2 border-t border-border">
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-500" /> Root</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-stone-500" /> Natural</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-600" /> Sharp</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-orange-500" /> Flat</span>
-        <span className="ml-auto">All modes share the same notes — each starts on a different degree</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-stone-500" /> Natural (matches major)</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-sky-500" /> Flatted vs major</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-rose-500" /> Sharped vs major</span>
+        <span className="ml-auto">Compared to each mode root's own major scale</span>
       </div>
     </div>
   );
