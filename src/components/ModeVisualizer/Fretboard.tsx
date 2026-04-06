@@ -7,6 +7,16 @@ import {
   isFlat,
 } from "./scaleData";
 
+const ENHARMONIC_MAP: Record<string, string> = {
+  'C#':'Db','Db':'C#','D#':'Eb','Eb':'D#','F#':'Gb','Gb':'F#','G#':'Ab','Ab':'G#','A#':'Bb','Bb':'A#',
+};
+
+function noteMatchesChord(note: string, chordNotes: string[]): boolean {
+  if (chordNotes.includes(note)) return true;
+  const enh = ENHARMONIC_MAP[note];
+  return !!(enh && chordNotes.includes(enh));
+}
+
 interface FretboardProps {
   scaleNotes: string[];
   root: string;
@@ -175,15 +185,22 @@ const Fretboard = ({
                         fret === 0 ? "border-l-4 border-stone-400 bg-stone-800/30" : "border-stone-700/40"
                       } ${showFingers && isInPosition && fret > 0 ? "bg-white/[0.03]" : ""}`}
                     >
-                      {inScale ? (
-                        <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all duration-150 ${circleStyle} ${isHovered ? "scale-125" : "hover:scale-110"}`}
-                          onMouseEnter={() => onNoteHover(displayNote)}
-                          onMouseLeave={() => onNoteHover(null)}
-                        >
-                          {displayLabel}
-                        </div>
-                      ) : (
+                      {inScale ? (() => {
++                        const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter);
+                        const finalStyle = dimmedByChord
+                          ? 'bg-stone-800 text-stone-500 border border-stone-700'
+                          : circleStyle;
+                        return (
+                          <div
+                            className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all duration-150 ${finalStyle} ${isHovered && !dimmedByChord ? "scale-125" : "hover:scale-110"}`}
+                            onMouseEnter={() => onNoteHover(displayNote)}
+                            onMouseLeave={() => onNoteHover(null)}
+                            onClick={() => onNoteClick?.(displayNote)}
+                          >
+                            {displayLabel}
+                          </div>
+                        );
+                      })() : (
                         <div className="w-7 h-7" />
                       )}
                     </div>
