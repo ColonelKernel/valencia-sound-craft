@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { getScaleNotes, MODE_INTERVALS } from "./scaleData";
-import { playScale, InstrumentTimbre } from "./audioSynth";
+import { playScale, InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 import { Play, Square } from "lucide-react";
 
 // ─── Scale Families ──────────────────────────────────────────
