@@ -418,6 +418,24 @@ const ChordProgressionBuilder = ({
     })));
   };
 
+  const handleTranspose = (newRoot: string) => {
+    if (newRoot === localRoot || progression.length === 0) {
+      setLocalRoot(newRoot);
+      return;
+    }
+    const oldIdx = NOTES_SHARP.indexOf(localRoot) !== -1 ? NOTES_SHARP.indexOf(localRoot) : NOTES_FLAT.indexOf(localRoot);
+    const newIdx = NOTES_SHARP.indexOf(newRoot) !== -1 ? NOTES_SHARP.indexOf(newRoot) : NOTES_FLAT.indexOf(newRoot);
+    const semitones = ((newIdx - oldIdx) % 12 + 12) % 12;
+    const useFlats = newRoot.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(newRoot);
+
+    stop();
+    setProgression(prev => prev.map(pc => ({
+      ...pc,
+      chord: transposeChord(pc.chord, semitones, useFlats),
+    })));
+    setLocalRoot(newRoot);
+  };
+
   if (chordSpellings.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-4 md:p-6">
