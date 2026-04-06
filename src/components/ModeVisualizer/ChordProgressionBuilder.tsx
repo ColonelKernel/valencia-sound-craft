@@ -666,6 +666,15 @@ const ChordProgressionBuilder = ({
         >
           <Volume2 size={12} /> Preview
         </button>
+
+        <button
+          onClick={() => downloadMidi(progression, bpm, beatsPerChord, root, mode)}
+          disabled={progression.length === 0}
+          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed"
+          title="Download as MIDI file"
+        >
+          <Download size={12} /> MIDI
+        </button>
       </div>
     </div>
   );
