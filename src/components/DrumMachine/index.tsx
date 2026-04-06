@@ -5,9 +5,9 @@ import {
 } from "lucide-react";
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
 import {
-  DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories,
+  DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories, getAllRegions, getAllRhythmTypes,
   formatPulseGrouping,
-  type PatternPreset, type TimeFeel, type Complexity,
+  type PatternPreset, type TimeFeel, type Complexity, type RhythmType,
 } from "./drumPresets";
 import { generateMidiFile, downloadMidiFile, MIDI_MAPPINGS, type MidiMapping } from "./midiExport";
 
