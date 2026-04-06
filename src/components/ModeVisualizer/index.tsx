@@ -124,7 +124,7 @@ const ModeVisualizer = () => {
         {expanded && (
           <>
             {/* Tool Selector Dropdown */}
-            <div className="fade-up mb-6">
+            <div className="mb-6">
               <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Select Tool</label>
               <select
                 value={activeTab}

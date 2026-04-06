@@ -7,6 +7,8 @@ export function useFadeIn() {
     const el = ref.current;
     if (!el) return;
 
+    const observedNodes = new WeakSet<Element>();
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -18,11 +20,38 @@ export function useFadeIn() {
       { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
     );
 
-    const children = el.querySelectorAll(".fade-up");
-    children.forEach((child) => observer.observe(child));
-    if (el.classList.contains("fade-up")) observer.observe(el);
+    const observeFadeElements = (node: Element) => {
+      if (node.classList.contains("fade-up") && !observedNodes.has(node)) {
+        observedNodes.add(node);
+        observer.observe(node);
+      }
 
-    return () => observer.disconnect();
+      node.querySelectorAll(".fade-up").forEach((child) => {
+        if (!observedNodes.has(child)) {
+          observedNodes.add(child);
+          observer.observe(child);
+        }
+      });
+    };
+
+    observeFadeElements(el);
+
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof Element) {
+            observeFadeElements(node);
+          }
+        });
+      });
+    });
+
+    mutationObserver.observe(el, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      mutationObserver.disconnect();
+    };
   }, []);
 
   return ref;
