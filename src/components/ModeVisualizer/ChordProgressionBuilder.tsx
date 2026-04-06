@@ -400,7 +400,17 @@ const ChordProgressionBuilder = ({
                       </div>
                       <span className="text-[8px] text-muted-foreground leading-tight">{getSubLabel(pc)}</span>
                       {showNoteSpelling && (
-                        <span className="text-[7px] text-muted-foreground/70 font-mono">{pc.chord.notes.join('–')}</span>
+                        <span className="text-[7px] text-muted-foreground/70 font-mono">
+                          {pc.chord.notes.map((n, ni) => (
+                            <span key={ni}>
+                              {ni > 0 && '–'}
+                              {n}
+                              <span className="text-primary/60 text-[6px]">
+                                {pc.chord.intervals[ni] ? `(${pc.chord.intervals[ni]})` : ''}
+                              </span>
+                            </span>
+                          ))}
+                        </span>
                       )}
                       {pc.source !== 'diatonic' && <span className="text-[7px] text-muted-foreground/50 italic">{pc.sourceLabel}</span>}
                     </div>
@@ -425,7 +435,17 @@ const ChordProgressionBuilder = ({
             <div className="mb-3 p-2 rounded border border-primary/30 bg-primary/5 space-y-2">
               <div className="flex flex-wrap items-center gap-3 text-xs">
                 <span className="font-semibold">{progression[editingIdx].chord.symbol}</span>
-                <span className="text-muted-foreground">{progression[editingIdx].chord.notes.join(' – ')}</span>
+                <span className="text-muted-foreground font-mono">
+                  {progression[editingIdx].chord.notes.map((n, ni) => (
+                    <span key={ni}>
+                      {ni > 0 && ' – '}
+                      {n}
+                      <span className="text-primary/70 text-[10px]">
+                        ({progression[editingIdx].chord.intervals[ni] || '?'})
+                      </span>
+                    </span>
+                  ))}
+                </span>
                 <span className="text-muted-foreground capitalize">{progression[editingIdx].function || 'other'}</span>
                 <div className="flex gap-1 ml-auto">
                   <button onClick={() => playChordTonesExpressive(progression[editingIdx].chord.notes, 0.8, timbre, voicingType, expressive)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
