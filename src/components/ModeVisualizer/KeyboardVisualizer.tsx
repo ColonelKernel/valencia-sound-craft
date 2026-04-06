@@ -1,4 +1,4 @@
-import { playNote } from "./audioSynth";
+import { playNote, type InstrumentTimbre } from "./audioSynth";
 
 const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const BLACK_KEYS = new Set([1, 3, 6, 8, 10]); // indices of sharps in ALL_NOTES
