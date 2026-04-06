@@ -39,6 +39,8 @@ export interface PatternPreset {
     timeline?: string;
     groove?: string;
     bass?: string;
+    pulse?: string;
+    ornament?: string;
   };
   culturalDescription?: string;
   artists?: string[];
