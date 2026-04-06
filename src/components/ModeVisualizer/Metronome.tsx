@@ -300,6 +300,49 @@ const Metronome = () => {
           Accent 1
         </button>
       </div>
+
+      {/* Swing Control */}
+      <div className="mt-5 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3 w-full max-w-xs">
+          <label className="text-xs text-muted-foreground whitespace-nowrap w-16">Swing</label>
+          <input
+            type="range"
+            min={50}
+            max={75}
+            value={swing}
+            onChange={(e) => setSwing(Number(e.target.value))}
+            className="flex-1 accent-amber-500"
+          />
+          <span className={`text-xs font-mono w-10 text-right ${swing > 50 ? 'text-amber-400' : 'text-muted-foreground'}`}>
+            {swing}%
+          </span>
+        </div>
+        <div className="flex gap-2 justify-center">
+          {[
+            { label: 'Straight', value: 50 },
+            { label: 'Light', value: 58 },
+            { label: 'Triplet', value: 67 },
+            { label: 'Hard', value: 72 },
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => setSwing(preset.value)}
+              className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                swing === preset.value
+                  ? 'border-amber-500 text-amber-400 bg-amber-500/10'
+                  : 'border-border text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+        {subdivision === 1 && swing > 50 && (
+          <p className="text-[10px] text-muted-foreground/60 italic">
+            Swing is audible with subdivisions (♫ or ♬)
+          </p>
+        )}
+      </div>
     </div>
   );
 };
