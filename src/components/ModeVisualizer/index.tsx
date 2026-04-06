@@ -597,6 +597,7 @@ const ModeVisualizer = () => {
               chordFilter={chordFilter}
               onNoteClick={handleNoteClick}
               timbre={timbre}
+            />
           </div>
         )}
 
@@ -623,6 +624,7 @@ const ModeVisualizer = () => {
                 chordFilter={chordFilter}
                 onNoteClick={handleNoteClick}
                 timbre={timbre}
+              />
             </div>
           );
         })()}
