@@ -311,15 +311,26 @@ const CHORD_FORMULAS: Record<string, { semitones: number[]; intervals: string[] 
   'dim':      { semitones: [0,3,6],      intervals: ['1','b3','b5'] },
 };
 
-function parseRomanChord(symbol: string): { degreeIndex: number; quality: string } | null {
+// Map roman numeral to semitones from root (diatonic reference)
+const ROMAN_SEMITONES: Record<string, number> = {
+  'I': 0, 'II': 2, 'III': 4, 'IV': 5, 'V': 7, 'VI': 9, 'VII': 11,
+};
+
+function parseRomanChord(symbol: string): { semitonesFromRoot: number; quality: string } | null {
   const match = symbol.match(/^([b#]*)([IViv]+)(.*)/);
   if (!match) return null;
+  const accidentals = match[1];
   const roman = match[2].toUpperCase();
   const quality = match[3];
-  const romanMap: Record<string, number> = { 'I':0,'II':1,'III':2,'IV':3,'V':4,'VI':5,'VII':6 };
-  const base = romanMap[roman];
-  if (base === undefined) return null;
-  return { degreeIndex: base, quality };
+  let semitones = ROMAN_SEMITONES[roman];
+  if (semitones === undefined) return null;
+  // Apply accidentals
+  for (const ch of accidentals) {
+    if (ch === 'b') semitones--;
+    if (ch === '#') semitones++;
+  }
+  semitones = ((semitones % 12) + 12) % 12;
+  return { semitonesFromRoot: semitones, quality };
 }
 
 export interface ChordSpelling {
@@ -339,20 +350,26 @@ export function getChordSpellings(scaleNotes: string[], mode: string): ChordSpel
   return chordSymbols.map((symbol) => {
     const parsed = parseRomanChord(symbol);
     if (!parsed) return { symbol, rootNote: '?', name: symbol, notes: [], intervals: [] };
-    const { degreeIndex, quality } = parsed;
-    const chordRoot = degreeIndex < scaleNotes.length ? scaleNotes[degreeIndex] : scaleNotes[0];
-    const formula = CHORD_FORMULAS[quality] || CHORD_FORMULAS[''];
-    const rootIdx = chromatic.indexOf(chordRoot);
-    let actualIdx = rootIdx;
+    const { semitonesFromRoot, quality } = parsed;
+
+    // Find chord root by applying semitone offset from scale root
+    const scaleRoot = scaleNotes[0];
+    const rootIdx = chromatic.indexOf(scaleRoot);
+    let actualRootIdx = rootIdx;
     let actualChromatic = chromatic;
     if (rootIdx === -1) {
       const alt = flats ? NOTES_SHARP : NOTES_FLAT;
-      actualIdx = alt.indexOf(chordRoot);
+      actualRootIdx = alt.indexOf(scaleRoot);
       actualChromatic = alt;
     }
-    if (actualIdx === -1) return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes: [chordRoot], intervals: ['1'] };
-    const notes = formula.semitones.map(s => actualChromatic[(actualIdx + s) % 12]);
-    return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes, intervals: formula.intervals };
+    if (actualRootIdx === -1) return { symbol, rootNote: '?', name: symbol, notes: [], intervals: [] };
+
+    const chordRootIdx = (actualRootIdx + semitonesFromRoot) % 12;
+    const chordRoot = actualChromatic[chordRootIdx];
+
+    const formula = CHORD_FORMULAS[quality] || CHORD_FORMULAS[''];
+    const chordNotes = formula.semitones.map(s => actualChromatic[(chordRootIdx + s) % 12]);
+    return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes: chordNotes, intervals: formula.intervals };
   });
 }
 
