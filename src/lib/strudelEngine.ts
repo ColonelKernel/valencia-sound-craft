@@ -1,15 +1,6 @@
-/**
- * Strudel Audio Engine — isolated playback module.
- *
- * Exposes a strict API contract so the engine can be swapped later
- * (Web MIDI, Ableton Link, etc.) without changing consuming code.
- *
- * Uses @strudel/web for browser-native pattern evaluation & audio.
- */
+import { rhythmBus, type RhythmPayload } from "@/lib/rhythmBus";
 
-import { rhythmBus, type RhythmPayload, type RhythmLayer } from '@/lib/rhythmBus';
-
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── Types ─────────────────────────────────────────
 
 export interface StrudelEngineState {
   playing: boolean;
@@ -22,7 +13,7 @@ export interface StrudelEngineState {
 
 export type StrudelStateListener = (state: StrudelEngineState) => void;
 
-// ─── Engine ─────────────────────────────────────────────────────────────────
+// ─── Engine ────────────────────────────────────────
 
 class StrudelEngine {
   private state: StrudelEngineState = {
@@ -34,160 +25,196 @@ class StrudelEngine {
     error: null,
   };
 
-  private stateListeners = new Set<StrudelStateListener>();
-  private strudelRepl: any = null;
+  private listeners = new Set<StrudelStateListener>();
+  private repl: any = null;
   private initPromise: Promise<void> | null = null;
   private busUnsubs: (() => void)[] = [];
+  private audioUnlocked = false;
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────
+  // ── Init ────────────────────────────────────────
 
-  /** Initialize Strudel once. Safe to call multiple times. */
   async init(): Promise<void> {
     if (this.initPromise) return this.initPromise;
-    this.initPromise = this._doInit();
+    this.initPromise = this._init();
     return this.initPromise;
   }
 
-  private async _doInit(): Promise<void> {
+  private async _init(): Promise<void> {
     try {
-      // Dynamic import so the bundle only loads when needed
-      const strudelWeb = await import('@strudel/web');
-      const { initStrudel } = strudelWeb;
+      if (typeof window === "undefined") return;
 
-      const { repl } = await initStrudel({
-        prebake: async () => {
-          // Minimal prebake — just load the mini notation + webaudio
-        },
-      });
+      await this.loadScript();
 
-      this.strudelRepl = repl;
+      const { repl } = await (window as any).initStrudel();
+      this.repl = repl;
+
       this.updateState({ ready: true, error: null });
-      this._subscribeBus();
+      this.subscribeBus();
     } catch (err: any) {
-      console.error('[StrudelEngine] Init failed:', err);
-      this.updateState({ error: err.message || 'Failed to initialize Strudel' });
+      console.error("[StrudelEngine] Init failed:", err);
+      this.updateState({ error: err.message || "Init failed" });
     }
   }
 
-  /** Subscribe to rhythm bus events */
-  private _subscribeBus(): void {
+  private async loadScript(): Promise<void> {
+    if ((window as any).initStrudel) return;
+
+    const script = document.createElement("script");
+    script.src = "https://unpkg.com/@strudel/web@latest";
+    script.async = true;
+
+    document.body.appendChild(script);
+
+    await new Promise((res, rej) => {
+      script.onload = res;
+      script.onerror = rej;
+    });
+  }
+
+  // ── Audio unlock (REQUIRED) ──────────────────────
+
+  unlockAudio(): void {
+    this.audioUnlocked = true;
+  }
+
+  // ── Bus ─────────────────────────────────────────
+
+  private subscribeBus(): void {
     this.busUnsubs.push(
-      rhythmBus.on('PLAY_REQUESTED', (data) => this.playFromPayload(data)),
-      rhythmBus.on('STOP_REQUESTED', () => this.stop()),
-      rhythmBus.on('TEMPO_CHANGED', ({ tempo }) => this.setTempo(tempo)),
-      rhythmBus.on('VOLUME_CHANGED', ({ volume }) => this.setVolume(volume)),
-      rhythmBus.on('PATTERN_UPDATED', (data) => this.updateFromPayload(data)),
-      rhythmBus.on('MAP_HOVER_PREVIEW', (data) => this.playFromPayload(data)),
-      rhythmBus.on('RHYTHM_SELECTED', (data) => this.playFromPayload(data)),
+      rhythmBus.on("PLAY_REQUESTED", (d) => this.playFromPayload(d)),
+      rhythmBus.on("STOP_REQUESTED", () => this.stop()),
+      rhythmBus.on("TEMPO_CHANGED", ({ tempo }) => this.setTempo(tempo)),
+      rhythmBus.on("VOLUME_CHANGED", ({ volume }) => this.setVolume(volume)),
+      rhythmBus.on("PATTERN_UPDATED", (d) => this.updateFromPayload(d)),
+      rhythmBus.on("MAP_HOVER_PREVIEW", (d) => this.playFromPayload(d)),
+      rhythmBus.on("RHYTHM_SELECTED", (d) => this.playFromPayload(d)),
     );
   }
 
-  // ── Public API (strict contract) ──────────────────────────────────────
+  // ── Public API ──────────────────────────────────
 
-  async play(pattern: string, options?: { tempo?: number; volume?: number }): Promise<void> {
+  async play(pattern: string, options?: { tempo?: number; volume?: number }) {
     await this.init();
-    if (!this.strudelRepl) return;
+
+    if (!this.audioUnlocked) {
+      console.warn("Audio not unlocked yet");
+      return;
+    }
+
+    if (!this.repl) return;
+
     try {
       if (options?.tempo) this.state.tempo = options.tempo;
       if (options?.volume !== undefined) this.state.volume = options.volume;
 
-      await this.strudelRepl.evaluate(pattern);
-      this.strudelRepl.scheduler?.setCps(this.state.tempo / 60 / 4);
-      this.strudelRepl.scheduler?.start();
-      this.updateState({ playing: true, currentPattern: pattern, error: null });
+      await this.repl.evaluate(pattern);
+
+      if (this.repl.scheduler) {
+        this.repl.scheduler.setCps(this.state.tempo / 60 / 4);
+        this.repl.scheduler.start();
+      }
+
+      this.updateState({
+        playing: true,
+        currentPattern: pattern,
+        error: null,
+      });
     } catch (err: any) {
-      console.error('[StrudelEngine] Play error:', err);
+      console.error("[StrudelEngine] Play error:", err);
       this.updateState({ error: err.message });
     }
   }
 
-  stop(): void {
-    if (!this.strudelRepl) return;
+  stop() {
+    if (!this.repl?.scheduler) return;
+
     try {
-      this.strudelRepl.scheduler?.stop();
+      this.repl.scheduler.stop();
       this.updateState({ playing: false });
-    } catch (err: any) {
-      console.error('[StrudelEngine] Stop error:', err);
+    } catch (err) {
+      console.error("[StrudelEngine] Stop error:", err);
     }
   }
 
-  async update(pattern: string): Promise<void> {
-    if (!this.strudelRepl || !this.state.playing) return;
+  async update(pattern: string) {
+    if (!this.repl || !this.state.playing) return;
+
     try {
-      await this.strudelRepl.evaluate(pattern);
+      await this.repl.evaluate(pattern);
       this.updateState({ currentPattern: pattern, error: null });
     } catch (err: any) {
-      console.error('[StrudelEngine] Update error:', err);
+      console.error("[StrudelEngine] Update error:", err);
       this.updateState({ error: err.message });
     }
   }
 
-  setTempo(bpm: number): void {
+  setTempo(bpm: number) {
     this.state.tempo = Math.max(20, Math.min(400, bpm));
-    if (this.strudelRepl?.scheduler) {
-      this.strudelRepl.scheduler.setCps(this.state.tempo / 60 / 4);
+
+    if (this.repl?.scheduler) {
+      this.repl.scheduler.setCps(this.state.tempo / 60 / 4);
     }
-    this.notifyListeners();
+
+    this.notify();
   }
 
-  setVolume(level: number): void {
-    this.state.volume = Math.max(0, Math.min(1, level));
-    this.notifyListeners();
+  setVolume(vol: number) {
+    this.state.volume = Math.max(0, Math.min(1, vol));
+    this.notify();
   }
 
-  getState(): Readonly<StrudelEngineState> {
+  subscribe(fn: StrudelStateListener) {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+
+  getState() {
     return { ...this.state };
   }
 
-  subscribe(listener: StrudelStateListener): () => void {
-    this.stateListeners.add(listener);
-    return () => this.stateListeners.delete(listener);
+  // ── Payload helpers ─────────────────────────────
+
+  private playFromPayload(data: RhythmPayload) {
+    const pattern = this.payloadToPattern(data);
+    if (pattern) this.play(pattern, { tempo: data.tempo });
   }
 
-  // ── Internal helpers ──────────────────────────────────────────────────
-
-  private playFromPayload(data: RhythmPayload): void {
+  private updateFromPayload(data: RhythmPayload) {
     const pattern = this.payloadToPattern(data);
-    if (pattern) {
-      this.play(pattern, { tempo: data.tempo });
-    }
-  }
-
-  private updateFromPayload(data: RhythmPayload): void {
-    const pattern = this.payloadToPattern(data);
-    if (pattern) {
-      this.update(pattern);
-    }
+    if (pattern) this.update(pattern);
   }
 
   private payloadToPattern(data: RhythmPayload): string | null {
     if (data.pattern) return data.pattern;
-    if (data.layers && data.layers.length > 0) {
-      return data.layers
-        .map(l => `(${l.pattern}).gain(${l.volume})`)
-        .join('\n.stack(\n') + (data.layers.length > 1 ? ')' : '');
+
+    if (data.layers?.length) {
+      return `stack(
+${data.layers.map((l) => `${l.pattern}.gain(${l.volume})`).join(",\n")}
+)`;
     }
+
     return null;
   }
 
-  private updateState(partial: Partial<StrudelEngineState>): void {
+  // ── State ──────────────────────────────────────
+
+  private updateState(partial: Partial<StrudelEngineState>) {
     Object.assign(this.state, partial);
-    this.notifyListeners();
+    this.notify();
   }
 
-  private notifyListeners(): void {
+  private notify() {
     const snapshot = { ...this.state };
-    this.stateListeners.forEach(fn => fn(snapshot));
+    this.listeners.forEach((fn) => fn(snapshot));
   }
 
-  /** Cleanup — mainly for HMR */
-  destroy(): void {
+  // ── Cleanup ────────────────────────────────────
+
+  destroy() {
     this.stop();
-    this.busUnsubs.forEach(fn => fn());
-    this.busUnsubs = [];
-    this.stateListeners.clear();
+    this.busUnsubs.forEach((fn) => fn());
+    this.listeners.clear();
   }
 }
 
-/** Singleton engine instance */
 export const strudelEngine = new StrudelEngine();
