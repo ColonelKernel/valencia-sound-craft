@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo } from "react";
-import { Play, Pause, Plus, X, Volume2, RotateCcw, Sparkles, ArrowRightLeft, Music2, ChevronDown, ChevronUp } from "lucide-react";
+import { Play, Pause, Plus, X, Volume2, RotateCcw, Sparkles, ArrowRightLeft, Music2, ChevronDown, ChevronUp, Download } from "lucide-react";
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS } from "./scaleData";
 
 // ─── Constants ──────────────────────────────────────────────
