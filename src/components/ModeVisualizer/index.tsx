@@ -126,13 +126,24 @@ const ModeVisualizer = () => {
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Tuning</label>
             <select
-              value={tuningIdx}
-              onChange={(e) => setTuningIdx(Number(e.target.value))}
+              value={isCustomTuning ? 'custom' : String(tuningIdx)}
+              onChange={(e) => {
+                if (e.target.value === 'custom') {
+                  setIsCustomTuning(true);
+                  // Initialize custom from current preset
+                  setCustomGuitar([...TUNING_PRESETS[tuningIdx].guitar]);
+                  setCustomBass([...TUNING_PRESETS[tuningIdx].bass]);
+                } else {
+                  setIsCustomTuning(false);
+                  setTuningIdx(Number(e.target.value));
+                }
+              }}
               className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             >
               {TUNING_PRESETS.map((t, i) => (
                 <option key={t.label} value={i}>{t.label}</option>
               ))}
+              <option value="custom">✏️ Custom</option>
             </select>
           </div>
 
