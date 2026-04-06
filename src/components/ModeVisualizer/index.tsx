@@ -119,6 +119,12 @@ const ModeVisualizer = () => {
           ))}
         </div>
 
+        {activeTab === 'reference' && (
+          <div>
+            <MasterScaleReference />
+          </div>
+        )}
+
         {activeTab === 'metronome' && (
           <div>
             <Metronome />
