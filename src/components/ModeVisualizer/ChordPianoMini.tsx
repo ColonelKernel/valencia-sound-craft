@@ -75,12 +75,16 @@ const ChordPianoMini = ({ chordNotes, chordIntervals, rootNote, symbol, timbre =
                   }`}
                 onClick={() => active && playNote(k.note, 0, 0.35, timbre)}
               >
-                {active && (
-                  <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 text-[7px] font-bold
-                    ${root ? 'text-primary-foreground' : 'text-foreground'}`}>
-                    {displayName(k.note)}
-                  </span>
-                )}
+                {active && (() => {
+                  const { name, interval } = getLabel(k.note);
+                  return (
+                    <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 text-center leading-tight
+                      ${root ? 'text-primary-foreground' : 'text-foreground'}`}>
+                      <span className="block text-[7px] font-bold">{name}</span>
+                      {interval && <span className="block text-[5px] opacity-70">{interval}</span>}
+                    </span>
+                  );
+                })()}
               </div>
             );
           })}
@@ -106,12 +110,16 @@ const ChordPianoMini = ({ chordNotes, chordIntervals, rootNote, symbol, timbre =
               }}
               onClick={() => active && playNote(bp.note, 0, 0.35, timbre)}
             >
-              {active && (
-                <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[6px] font-bold
-                  ${root ? 'text-primary-foreground' : 'text-white'}`}>
-                  {displayName(bp.note)}
-                </span>
-              )}
+              {active && (() => {
+                const { name, interval } = getLabel(bp.note);
+                return (
+                  <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 text-center leading-tight
+                    ${root ? 'text-primary-foreground' : 'text-white'}`}>
+                    <span className="block text-[6px] font-bold">{name}</span>
+                    {interval && <span className="block text-[5px] opacity-70">{interval}</span>}
+                  </span>
+                );
+              })()}
             </div>
           );
         })}
