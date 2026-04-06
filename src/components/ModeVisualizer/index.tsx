@@ -103,6 +103,7 @@ const ModeVisualizer = () => {
             { id: 'visualizer' as const, label: 'Mode Visualizer', icon: <Guitar className="w-4 h-4" /> },
             { id: 'progression' as const, label: 'Chord Progressions', icon: <ListMusic className="w-4 h-4" /> },
             { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
+            { id: 'reference' as const, label: 'Scale Reference', icon: <BookOpen className="w-4 h-4" /> },
           ].map((tab) => (
             <button
               key={tab.id}
