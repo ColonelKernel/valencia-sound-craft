@@ -60,6 +60,7 @@ const Metronome = () => {
   const [subdivIdx, setSubdivIdx] = useState(0);
   const [currentBeat, setCurrentBeat] = useState(-1);
   const [accentFirst, setAccentFirst] = useState(true);
+  const [swing, setSwing] = useState(50); // 50 = straight, 67 = triplet swing
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -70,7 +71,7 @@ const Metronome = () => {
 
   const stop = useCallback(() => {
     if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+      clearTimeout(intervalRef.current);
       intervalRef.current = null;
     }
     setPlaying(false);
@@ -89,7 +90,8 @@ const Metronome = () => {
     setPlaying(true);
 
     const totalSubBeats = timeSig.beats * subdivision;
-    const intervalMs = (60000 / bpm) / subdivision;
+    const beatDuration = 60 / bpm; // duration of one main beat in seconds
+    const swingRatio = swing / 100; // 0.5 = straight, 0.67 = triplet swing
 
     // Play first beat immediately
     const isAccent = accentFirst && beatRef.current === 0;
@@ -98,15 +100,45 @@ const Metronome = () => {
     setCurrentBeat(Math.floor(beatRef.current / subdivision));
     beatRef.current = (beatRef.current + 1) % totalSubBeats;
 
-    intervalRef.current = window.setInterval(() => {
-      const mainBeat = Math.floor(beatRef.current / subdivision);
-      const isAcc = accentFirst && beatRef.current === 0;
-      const isSubBeat = beatRef.current % subdivision !== 0;
-      createClick(ctx, ctx.currentTime, isAcc, isSubBeat);
-      setCurrentBeat(mainBeat);
-      beatRef.current = (beatRef.current + 1) % totalSubBeats;
-    }, intervalMs);
-  }, [bpm, timeSig, subdivision, accentFirst]);
+    // For swing: we need variable timing per sub-beat, so use setTimeout chain
+    const scheduleNext = () => {
+      const subBeatInMain = beatRef.current % subdivision;
+      let delayMs: number;
+
+      if (subdivision === 1) {
+        delayMs = beatDuration * 1000;
+      } else {
+        // Apply swing to even-numbered sub-beats within each main beat
+        // Even sub-beat (0, 2, ...) gets swingRatio of the beat duration
+        // Odd sub-beat (1, 3, ...) gets (1 - swingRatio)
+        if (subBeatInMain === 0) {
+          // This is a main beat; time from last sub-beat of prev main beat
+          // Last sub was odd, so it took (1-swingRatio) * beatDuration
+          // But we just need the interval from the previous sub-beat
+          const prevWasOdd = true;
+          delayMs = (prevWasOdd ? (1 - swingRatio) : swingRatio) * beatDuration * 1000 * (2 / subdivision);
+        } else if (subBeatInMain % 2 === 1) {
+          // Odd sub-beat: preceded by even sub-beat which took swingRatio
+          delayMs = swingRatio * beatDuration * 1000 * (2 / subdivision);
+        } else {
+          // Even sub-beat (not 0): preceded by odd which took (1-swingRatio)
+          delayMs = (1 - swingRatio) * beatDuration * 1000 * (2 / subdivision);
+        }
+      }
+
+      intervalRef.current = window.setTimeout(() => {
+        const mainBeat = Math.floor(beatRef.current / subdivision);
+        const isAcc = accentFirst && beatRef.current === 0;
+        const isSubBeat = beatRef.current % subdivision !== 0;
+        createClick(ctx, ctx.currentTime, isAcc, isSubBeat);
+        setCurrentBeat(mainBeat);
+        beatRef.current = (beatRef.current + 1) % totalSubBeats;
+        scheduleNext();
+      }, delayMs);
+    };
+
+    scheduleNext();
+  }, [bpm, timeSig, subdivision, accentFirst, swing]);
 
   // Restart if params change while playing
   useEffect(() => {
@@ -116,12 +148,12 @@ const Metronome = () => {
       const t = setTimeout(() => start(), 50);
       return () => clearTimeout(t);
     }
-  }, [bpm, timeSigIdx, subdivIdx, accentFirst]);
+  }, [bpm, timeSigIdx, subdivIdx, accentFirst, swing]);
 
   // Cleanup
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) clearTimeout(intervalRef.current);
     };
   }, []);
 
@@ -267,6 +299,49 @@ const Metronome = () => {
         >
           Accent 1
         </button>
+      </div>
+
+      {/* Swing Control */}
+      <div className="mt-5 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3 w-full max-w-xs">
+          <label className="text-xs text-muted-foreground whitespace-nowrap w-16">Swing</label>
+          <input
+            type="range"
+            min={50}
+            max={75}
+            value={swing}
+            onChange={(e) => setSwing(Number(e.target.value))}
+            className="flex-1 accent-amber-500"
+          />
+          <span className={`text-xs font-mono w-10 text-right ${swing > 50 ? 'text-amber-400' : 'text-muted-foreground'}`}>
+            {swing}%
+          </span>
+        </div>
+        <div className="flex gap-2 justify-center">
+          {[
+            { label: 'Straight', value: 50 },
+            { label: 'Light', value: 58 },
+            { label: 'Triplet', value: 67 },
+            { label: 'Hard', value: 72 },
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              onClick={() => setSwing(preset.value)}
+              className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
+                swing === preset.value
+                  ? 'border-amber-500 text-amber-400 bg-amber-500/10'
+                  : 'border-border text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+        {subdivision === 1 && swing > 50 && (
+          <p className="text-[10px] text-muted-foreground/60 italic">
+            Swing is audible with subdivisions (♫ or ♬)
+          </p>
+        )}
       </div>
     </div>
   );
