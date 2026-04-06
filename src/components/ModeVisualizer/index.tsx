@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2 } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
