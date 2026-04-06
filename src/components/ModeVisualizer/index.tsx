@@ -169,17 +169,61 @@ const ModeVisualizer = () => {
           </div>
 
           {/* Chords */}
-          {chords.length > 0 && (
+          {chordSpellings.length > 0 && (
             <div>
-              <p className="text-xs text-muted-foreground mb-1.5 uppercase tracking-widest">Associated Chords</p>
-              <div className="flex flex-wrap gap-1.5">
-                {chords.map((chord, i) => (
-                  <span
+              <div className="flex items-center gap-3 mb-2">
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Associated Chords</p>
+                <button
+                  onClick={() => setChordDisplay(chordDisplay === 'notes' ? 'intervals' : 'notes')}
+                  className="text-[10px] px-2 py-0.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
+                >
+                  Show: {chordDisplay === 'notes' ? 'Notes' : 'Intervals'}
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {chordSpellings.map((cs, i) => (
+                  <div
                     key={i}
-                    className="px-2.5 py-1 text-xs font-mono rounded border border-border bg-card text-foreground"
+                    className="relative group"
+                    onMouseEnter={() => setHoveredChord(cs)}
+                    onMouseLeave={() => setHoveredChord(null)}
                   >
-                    {chord}
-                  </span>
+                    <div className={`px-3 py-1.5 text-xs font-mono rounded border transition-all cursor-pointer ${
+                      hoveredChord?.symbol === cs.symbol
+                        ? 'border-amber-500 bg-amber-500/10 text-foreground'
+                        : 'border-border bg-card text-foreground hover:border-muted-foreground'
+                    }`}>
+                      <div className="font-bold">{cs.symbol}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        {chordDisplay === 'notes'
+                          ? cs.notes.join(' – ')
+                          : cs.intervals.join(' – ')}
+                      </div>
+                    </div>
+
+                    {/* Hover tooltip with full spelling */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20">
+                      <div className="bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 shadow-xl min-w-[140px] text-center">
+                        <p className="text-xs font-bold text-foreground mb-1">{cs.name}</p>
+                        <div className="flex justify-center gap-1.5 mb-1">
+                          {cs.notes.map((n, ni) => {
+                            const noteStyle = n === cs.rootNote
+                              ? 'bg-amber-500 text-black border-yellow-300'
+                              : isSharp(n) ? 'bg-blue-600 text-white' : isFlat(n) ? 'bg-orange-500 text-white' : 'bg-stone-500 text-white';
+                            return (
+                              <span key={ni} className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border ${noteStyle}`}>
+                                {n}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground font-mono">
+                          {cs.intervals.join(' – ')}
+                        </p>
+                      </div>
+                      <div className="w-2 h-2 bg-stone-900 border-r border-b border-stone-600 rotate-45 mx-auto -mt-1" />
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
