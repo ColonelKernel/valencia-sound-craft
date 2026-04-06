@@ -661,6 +661,8 @@ const ModeVisualizer = () => {
             />
           </div>
         )}
+        </>
+        )}
 
         {/* Mode Reference Table */}
         <div className="mt-10">
