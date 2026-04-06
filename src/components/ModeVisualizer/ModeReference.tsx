@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { Play, Square } from "lucide-react";
 import { getScaleNotes, isSharp, isFlat, MODE_INTERVAL_NAMES, MODE_CATEGORIES, MODE_INTERVALS } from "./scaleData";
+import { playScale, type InstrumentTimbre } from "./audioSynth";
 
 interface ModeReferenceProps {
   rootNote?: string;
+  timbre?: InstrumentTimbre;
 }
 
 const MODE_DESCRIPTIONS: Record<string, string> = {
@@ -91,10 +94,12 @@ const getStepStyle = (step: string) => {
   return 'bg-stone-500 text-white';
 };
 
-const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
+const ModeReference = ({ rootNote = 'C', timbre = 'piano' }: ModeReferenceProps) => {
   const [selectedRoot, setSelectedRoot] = useState(rootNote);
   const [showType, setShowType] = useState<'notes' | 'intervals' | 'steps'>('notes');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Major Modes']));
+  const [playingMode, setPlayingMode] = useState<string | null>(null);
+  const playTimeouts = useRef<number[]>([]);
 
   const roots = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
 
@@ -104,6 +109,32 @@ const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
       if (next.has(label)) next.delete(label); else next.add(label);
       return next;
     });
+  };
+
+  const handlePlayScale = (modeName: string) => {
+    // Stop any currently playing
+    playTimeouts.current.forEach(clearTimeout);
+    playTimeouts.current = [];
+    
+    if (playingMode === modeName) {
+      setPlayingMode(null);
+      return;
+    }
+    
+    const notes = getScaleNotes(selectedRoot, modeName);
+    // Ascending + descending + final root
+    const ascending = [...notes, notes[0]];
+    const descending = [...notes].reverse();
+    const fullScale = [...ascending, ...descending.slice(1)];
+    
+    setPlayingMode(modeName);
+    playScale(fullScale, 180, timbre);
+    
+    const totalDuration = fullScale.length * 180;
+    const endTimeout = window.setTimeout(() => {
+      setPlayingMode(null);
+    }, totalDuration);
+    playTimeouts.current.push(endTimeout);
   };
 
   const getNoteStyle = (note: string, isRoot: boolean) => {
@@ -183,7 +214,22 @@ const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
 
                         return (
                           <tr key={modeName} className="border-b border-border/50 hover:bg-accent/30 transition-colors">
-                            <td className="py-3 pr-4 font-semibold whitespace-nowrap text-xs md:text-sm">{modeName}</td>
+                            <td className="py-3 pr-2 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => handlePlayScale(modeName)}
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                                    playingMode === modeName
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'bg-secondary hover:bg-accent text-muted-foreground hover:text-foreground'
+                                  }`}
+                                  title={playingMode === modeName ? `Stop ${modeName}` : `Play ${modeName} scale`}
+                                >
+                                  {playingMode === modeName ? <Square size={10} /> : <Play size={10} className="ml-0.5" />}
+                                </button>
+                                <span className="font-semibold text-xs md:text-sm">{modeName}</span>
+                              </div>
+                            </td>
                             <td className="py-3 pr-2">
                               <div className="flex flex-wrap gap-1">
                                 {showType === 'notes'

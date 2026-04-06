@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { playNoteAtOctave, type InstrumentTimbre } from "./audioSynth";
 import {
   StringTuning,
   getNoteAtFret,
@@ -31,7 +32,8 @@ interface FretboardProps {
   hoveredNote: string | null;
   onNoteHover: (note: string | null) => void;
   chordFilter: string[] | null;
-  onNoteClick?: (note: string) => void;
+  onNoteClick?: (note: string, octave: number) => void;
+  timbre?: InstrumentTimbre;
 }
 
 const FRET_COUNT = 22;
@@ -96,6 +98,7 @@ const Fretboard = ({
   onNoteHover,
   chordFilter,
   onNoteClick,
+  timbre = 'piano',
 }: FretboardProps) => {
   const [positionOverride, setPositionOverride] = useState<number | null>(null);
 
@@ -161,6 +164,14 @@ const Fretboard = ({
                   const isRoot = displayNote === root;
                   const isHovered = hoveredNote !== null && (displayNote === hoveredNote || rawNote === hoveredNote);
 
+                  // Compute actual octave: open string octave + semitones crossed
+                  const CHROMATIC = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+                  const openIdx = CHROMATIC.indexOf(stringTuning.note) !== -1 ? CHROMATIC.indexOf(stringTuning.note) : (() => {
+                    const FLATS: Record<string,string> = {'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#'};
+                    return CHROMATIC.indexOf(FLATS[stringTuning.note] || stringTuning.note);
+                  })();
+                  const noteOctave = stringTuning.octave + Math.floor((openIdx + fret) / 12);
+
                   const fingerKey = `${sIdx}-${fret}`;
                   const finger = fingerMap.get(fingerKey);
                   const hasFingerAssignment = showFingers && finger !== undefined;
@@ -198,7 +209,10 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
                             className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all duration-150 ${finalStyle} ${isHovered && !dimmedByChord ? "scale-125" : "hover:scale-110"}`}
                             onMouseEnter={() => onNoteHover(displayNote)}
                             onMouseLeave={() => onNoteHover(null)}
-                            onClick={() => onNoteClick?.(displayNote)}
+                            onClick={() => {
+                              onNoteClick?.(displayNote, noteOctave);
+                              playNoteAtOctave(displayNote, noteOctave, 0.4, timbre);
+                            }}
                           >
                             {displayLabel}
                           </div>

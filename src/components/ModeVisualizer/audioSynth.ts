@@ -169,6 +169,17 @@ export function playNote(note: string, octaveOffset = 0, duration = 0.4, timbre:
   applyTimbre(ctx, adjustedFreq, ctx.currentTime, duration, 0.25, timbre);
 }
 
+// Play a note at an absolute octave (e.g. E2 = note 'E', octave 2)
+// Reference: NOTE_FREQUENCIES are at octave 4 (A4=440)
+export function playNoteAtOctave(note: string, octave: number, duration = 0.4, timbre: InstrumentTimbre = 'piano'): void {
+  const ctx = getAudioContext();
+  const freq = NOTE_FREQUENCIES[note];
+  if (!freq) return;
+  const octaveOffset = octave - 4; // NOTE_FREQUENCIES are octave 4
+  const adjustedFreq = freq * Math.pow(2, octaveOffset);
+  applyTimbre(ctx, adjustedFreq, ctx.currentTime, duration, 0.25, timbre);
+}
+
 export function playChord(notes: string[], duration = 0.8, timbre: InstrumentTimbre = 'piano'): void {
   const ctx = getAudioContext();
   const now = ctx.currentTime;
