@@ -17,6 +17,15 @@ export interface TrackPreset {
 
 export type TimeFeel = 'straight' | 'swing' | 'compound' | 'asymmetric' | 'polyrhythmic';
 export type Complexity = 'beginner' | 'intermediate' | 'advanced';
+export type RhythmType = 'groove' | 'odd-meter' | 'tala' | 'trance';
+
+export interface TalaStructure {
+  name: string;
+  beats: number;
+  vibhags: number[];
+  sam: number;
+  khali: number;
+}
 
 export interface PatternPreset {
   name: string;
@@ -47,6 +56,9 @@ export interface PatternPreset {
   complexity: Complexity;
   subdivisionType?: string;
   regional?: boolean; // inherited from broader region
+  rhythmType?: RhythmType;
+  konnakol?: boolean;
+  talaStructure?: TalaStructure;
 }
 
 // ─── Velocity shorthands ────────────────────────────────────────────────────
