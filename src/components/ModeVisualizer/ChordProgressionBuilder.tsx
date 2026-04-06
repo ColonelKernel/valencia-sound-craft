@@ -107,7 +107,7 @@ const ChordProgressionBuilder = ({
     progression.forEach((pc, i) => {
       ids.push(window.setTimeout(() => {
         setCurrentIdx(i);
-        playChordTones(pc.chord.notes, (chordDuration / 1000) * 0.9, timbre);
+        playChordTonesExpressive(pc.chord.notes, (chordDuration / 1000) * 0.9, timbre, voicingType, expressive);
       }, i * chordDuration));
     });
     ids.push(window.setTimeout(() => {
