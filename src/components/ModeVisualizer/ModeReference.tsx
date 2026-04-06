@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { Play, Square } from "lucide-react";
 import { getScaleNotes, isSharp, isFlat, MODE_INTERVAL_NAMES, MODE_CATEGORIES, MODE_INTERVALS } from "./scaleData";
+import { playScale, type InstrumentTimbre } from "./audioSynth";
 
 interface ModeReferenceProps {
   rootNote?: string;
+  timbre?: InstrumentTimbre;
 }
 
 const MODE_DESCRIPTIONS: Record<string, string> = {
@@ -91,10 +94,12 @@ const getStepStyle = (step: string) => {
   return 'bg-stone-500 text-white';
 };
 
-const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
+const ModeReference = ({ rootNote = 'C', timbre = 'piano' }: ModeReferenceProps) => {
   const [selectedRoot, setSelectedRoot] = useState(rootNote);
   const [showType, setShowType] = useState<'notes' | 'intervals' | 'steps'>('notes');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Major Modes']));
+  const [playingMode, setPlayingMode] = useState<string | null>(null);
+  const playTimeouts = useRef<number[]>([]);
 
   const roots = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
 
