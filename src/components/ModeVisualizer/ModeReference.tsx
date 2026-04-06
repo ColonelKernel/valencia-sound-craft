@@ -133,12 +133,21 @@ const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
             <option key={n} value={n}>{n}</option>
           ))}
         </select>
-        <button
-          onClick={() => setShowType(showType === 'notes' ? 'intervals' : 'notes')}
-          className="text-xs px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
-        >
-          {showType === 'notes' ? '♪ Notes' : '# Intervals'}
-        </button>
+        <div className="flex gap-1">
+          {(['notes', 'intervals', 'steps'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setShowType(t)}
+              className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                showType === t
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-border text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              {t === 'notes' ? '♪ Notes' : t === 'intervals' ? '# Intervals' : 'W/H Steps'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {MODE_CATEGORIES.map((cat) => {
