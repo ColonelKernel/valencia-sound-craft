@@ -95,10 +95,29 @@ const MasterScaleReference = () => {
   const [root, setRoot] = useState("C");
   const [familyIdx, setFamilyIdx] = useState(0);
 
-  const family = MODE_FAMILIES[familyIdx];
+  const family = SCALE_FAMILIES[familyIdx];
   const parentNotes = useMemo(() => getScaleNotes(root, family.modes[0]), [root, family]);
 
   const modeRows = useMemo(() => {
+    if (family.type === 'standalone') {
+      // Each scale starts from the selected root
+      return family.modes.map((modeName, i) => {
+        const notes = getScaleNotes(root, modeName);
+        const deviations = getDeviations(root, notes);
+        const devLabels = deviations
+          .map((d, idx) => getDeviationLabel(d, idx + 1))
+          .filter(Boolean);
+        return {
+          degree: family.degrees[i] || '—',
+          modeName,
+          root,
+          notes,
+          deviations,
+          devSummary: devLabels.length > 0 ? devLabels.join(' ') : 'no deviations',
+        };
+      });
+    }
+    // Modal: derive from parent scale degrees
     return family.modes.map((modeName, i) => {
       const modeRoot = parentNotes[i] || parentNotes[0];
       const notes = getScaleNotes(modeRoot, modeName);
@@ -115,7 +134,7 @@ const MasterScaleReference = () => {
         devSummary: devLabels.length > 0 ? devLabels.join(' ') : 'no deviations',
       };
     });
-  }, [parentNotes, family]);
+  }, [parentNotes, family, root]);
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 md:p-6 space-y-4">
