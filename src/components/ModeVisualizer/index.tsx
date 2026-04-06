@@ -430,49 +430,96 @@ const ModeVisualizer = () => {
           <SheetMusic scaleNotes={scaleNotes} hoveredNote={hoveredNote} />
         </div>
 
-        {/* Guitar Fretboard */}
-        <div className="fade-up mb-8">
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Guitar className="w-5 h-5" /> Guitar ({tuningLabel(tuning.guitar)})
-            {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
-          </h3>
-          <Fretboard
-            scaleNotes={scaleNotes}
-            root={root}
-            mode={mode}
-            tuning={tuning.guitar}
-            label="Guitar"
-            lefty={lefty}
-            showIntervals={showIntervals}
-            showFingers={showFingers}
-            hoveredNote={hoveredNote}
-            onNoteHover={setHoveredNote}
-            chordFilter={chordFilter}
-            onNoteClick={handleNoteClick}
-          />
+        {/* Instrument Selector */}
+        <div className="fade-up mb-4">
+          <div className="flex items-center gap-2">
+            {([
+              { key: 'guitar' as const, label: 'Guitar', icon: <Guitar className="w-4 h-4" /> },
+              { key: 'bass' as const, label: 'Bass', icon: <Guitar className="w-4 h-4" /> },
+              { key: 'keyboard' as const, label: 'Keyboard', icon: <Piano className="w-4 h-4" /> },
+            ]).map((inst) => (
+              <button
+                key={inst.key}
+                onClick={() => setInstrument(inst.key)}
+                className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                  instrument === inst.key
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'border-border text-muted-foreground hover:bg-accent'
+                }`}
+              >
+                {inst.icon} {inst.label}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Guitar Fretboard */}
+        {instrument === 'guitar' && (
+          <div className="fade-up mb-8">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Guitar className="w-5 h-5" /> Guitar ({tuningLabel(tuning.guitar)})
+              {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
+            </h3>
+            <Fretboard
+              scaleNotes={scaleNotes}
+              root={root}
+              mode={mode}
+              tuning={tuning.guitar}
+              label="Guitar"
+              lefty={lefty}
+              showIntervals={showIntervals}
+              showFingers={showFingers}
+              hoveredNote={hoveredNote}
+              onNoteHover={setHoveredNote}
+              chordFilter={chordFilter}
+              onNoteClick={handleNoteClick}
+            />
+          </div>
+        )}
+
         {/* Bass Fretboard */}
-        <div className="fade-up">
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Guitar className="w-5 h-5" /> Bass ({tuningLabel(tuning.bass)})
-            {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
-          </h3>
-          <Fretboard
-            scaleNotes={scaleNotes}
-            root={root}
-            mode={mode}
-            tuning={tuning.bass}
-            label="Bass"
-            lefty={lefty}
-            showIntervals={showIntervals}
-            showFingers={showFingers}
-            hoveredNote={hoveredNote}
-            onNoteHover={setHoveredNote}
-            chordFilter={chordFilter}
-            onNoteClick={handleNoteClick}
-          />
-        </div>
+        {instrument === 'bass' && (
+          <div className="fade-up mb-8">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Guitar className="w-5 h-5" /> Bass ({tuningLabel(tuning.bass)})
+              {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
+            </h3>
+            <Fretboard
+              scaleNotes={scaleNotes}
+              root={root}
+              mode={mode}
+              tuning={tuning.bass}
+              label="Bass"
+              lefty={lefty}
+              showIntervals={showIntervals}
+              showFingers={showFingers}
+              hoveredNote={hoveredNote}
+              onNoteHover={setHoveredNote}
+              chordFilter={chordFilter}
+              onNoteClick={handleNoteClick}
+            />
+          </div>
+        )}
+
+        {/* Keyboard */}
+        {instrument === 'keyboard' && (
+          <div className="fade-up mb-8">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Piano className="w-5 h-5" /> Keyboard
+              {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
+            </h3>
+            <KeyboardVisualizer
+              scaleNotes={scaleNotes}
+              root={root}
+              hoveredNote={hoveredNote}
+              onNoteHover={setHoveredNote}
+              onNoteClick={handleNoteClick}
+              chordFilter={chordFilter}
+              showIntervals={showIntervals}
+              intervals={intervals}
+            />
+          </div>
+        )}
 
         {/* Mode Reference Table */}
         <div className="fade-up mt-10">
