@@ -8,7 +8,7 @@ const links = [
   { label: "Contact", href: "#contact" },
   { label: "Work", href: "#portfolio" },
   { label: "About", href: "#about" },
-  { label: "Policy & Data", href: "#data-analysis" },
+  
 ];
 
 const socialLinks = [
