@@ -182,7 +182,11 @@ export interface StringTuning { note: string; octave: number; }
 export interface TuningPreset {
   label: string;
   guitar: StringTuning[];
+  guitar7: StringTuning[];
+  guitar8: StringTuning[];
   bass: StringTuning[];
+  bass5: StringTuning[];
+  bass6: StringTuning[];
 }
 
 export const TUNING_PRESETS: TuningPreset[] = [
