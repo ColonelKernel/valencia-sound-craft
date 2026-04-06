@@ -34,6 +34,7 @@ const KeyboardVisualizer = ({
   chordFilter,
   showIntervals,
   intervals,
+  timbre = 'piano',
 }: KeyboardVisualizerProps) => {
   const normalizedScale = scaleNotes.map(normalize);
   const normalizedFilter = chordFilter ? chordFilter.map(normalize) : null;
