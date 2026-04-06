@@ -167,7 +167,7 @@ const MasterScaleReference = () => {
             onChange={e => setFamilyIdx(Number(e.target.value))}
             className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
-            {MODE_FAMILIES.map((f, i) => (
+            {SCALE_FAMILIES.map((f, i) => (
               <option key={f.label} value={i}>{f.label}</option>
             ))}
           </select>
