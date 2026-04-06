@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2 } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
@@ -18,6 +18,8 @@ import { playNote, playChord, playScale } from "./audioSynth";
 import Fretboard from "./Fretboard";
 import SheetMusic from "./SheetMusic";
 import ModeReference from "./ModeReference";
+import Metronome from "./Metronome";
+import ChordProgressionBuilder from "./ChordProgressionBuilder";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -34,6 +36,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression'>('visualizer');
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
@@ -91,6 +94,45 @@ const ModeVisualizer = () => {
           </p>
         </div>
 
+        {/* Tool Tabs */}
+        <div className="fade-up flex gap-2 mb-8">
+          {[
+            { id: 'visualizer' as const, label: 'Mode Visualizer', icon: <Guitar className="w-4 h-4" /> },
+            { id: 'progression' as const, label: 'Chord Progressions', icon: <ListMusic className="w-4 h-4" /> },
+            { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'border border-border text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'metronome' && (
+          <div className="fade-up">
+            <Metronome />
+          </div>
+        )}
+
+        {activeTab === 'progression' && (
+          <div className="fade-up">
+            <ChordProgressionBuilder
+              chordSpellings={chordSpellings}
+              root={root}
+              mode={mode}
+            />
+          </div>
+        )}
+
+        {activeTab === 'visualizer' && (
+        <>
         {/* Control Panel */}
         <div className="fade-up flex flex-wrap items-center gap-3 mb-8 p-4 rounded-lg border border-border bg-card">
           <div className="flex items-center gap-2">
@@ -434,6 +476,8 @@ const ModeVisualizer = () => {
         <div className="fade-up mt-10">
           <ModeReference rootNote={root} />
         </div>
+        </>
+        )}
       </div>
     </section>
   );
