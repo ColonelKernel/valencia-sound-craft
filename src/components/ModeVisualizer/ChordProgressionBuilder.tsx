@@ -305,6 +305,26 @@ const ChordProgressionBuilder = ({
             </select>
           </div>
           <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground text-[10px]">Ext</span>
+            <div className="flex gap-0.5">
+              {EXTENSION_LEVELS.map(ext => (
+                <button key={ext.id} onClick={() => setExtensionLevel(ext.id)}
+                  className={`text-[8px] px-1 py-0.5 rounded border transition-colors ${extensionLevel === ext.id ? 'border-primary bg-primary/15 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}>
+                  {ext.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground text-[10px]">Voice</span>
+            <select value={voicingType} onChange={(e) => setVoicingType(e.target.value as VoicingType)}
+              className="bg-background border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none">
+              {VOICING_TYPES.map(v => <option key={v.id} value={v.id}>{v.label}</option>)}
+            </select>
+          </div>
+          <div className="h-4 w-px bg-border" />
           {[
             { l: 'Prog', v: lockProgression, s: setLockProgression },
             { l: 'Root', v: lockRoots, s: setLockRoots },
