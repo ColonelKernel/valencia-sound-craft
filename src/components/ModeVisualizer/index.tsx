@@ -475,14 +475,29 @@ const ModeVisualizer = () => {
         {instrument === 'guitar' && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Guitar className="w-5 h-5" /> Guitar ({tuningLabel(tuning.guitar)})
+              <Guitar className="w-5 h-5" /> Guitar ({tuningLabel(activeGuitarTuning)})
+              <div className="flex items-center gap-1 ml-2">
+                {([6, 7, 8] as const).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setGuitarStrings(n)}
+                    className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                      guitarStrings === n
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'border-border text-muted-foreground hover:bg-accent'
+                    }`}
+                  >
+                    {n}-str
+                  </button>
+                ))}
+              </div>
               {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
             </h3>
             <Fretboard
               scaleNotes={scaleNotes}
               root={root}
               mode={mode}
-              tuning={tuning.guitar}
+              tuning={activeGuitarTuning}
               label="Guitar"
               lefty={lefty}
               showIntervals={showIntervals}
@@ -499,14 +514,29 @@ const ModeVisualizer = () => {
         {instrument === 'bass' && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Guitar className="w-5 h-5" /> Bass ({tuningLabel(tuning.bass)})
+              <Guitar className="w-5 h-5" /> Bass ({tuningLabel(activeBassTuning)})
+              <div className="flex items-center gap-1 ml-2">
+                {([4, 5, 6] as const).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setBassStrings(n)}
+                    className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                      bassStrings === n
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'border-border text-muted-foreground hover:bg-accent'
+                    }`}
+                  >
+                    {n}-str
+                  </button>
+                ))}
+              </div>
               {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
             </h3>
             <Fretboard
               scaleNotes={scaleNotes}
               root={root}
               mode={mode}
-              tuning={tuning.bass}
+              tuning={activeBassTuning}
               label="Bass"
               lefty={lefty}
               showIntervals={showIntervals}
