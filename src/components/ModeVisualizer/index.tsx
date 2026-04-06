@@ -27,6 +27,9 @@ const ModeVisualizer = () => {
   const [showIntervals, setShowIntervals] = useState(false);
   const [showFingers, setShowFingers] = useState(false);
   const [tuningIdx, setTuningIdx] = useState(0);
+  const [isCustomTuning, setIsCustomTuning] = useState(false);
+  const [customGuitar, setCustomGuitar] = useState<StringTuning[]>(TUNING_PRESETS[0].guitar);
+  const [customBass, setCustomBass] = useState<StringTuning[]>(TUNING_PRESETS[0].bass);
   const [hoveredNote, setHoveredNote] = useState<string | null>(null);
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
@@ -35,7 +38,9 @@ const ModeVisualizer = () => {
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
   const chordSpellings = getChordSpellings(scaleNotes, mode);
-  const tuning = TUNING_PRESETS[tuningIdx];
+  const tuning: TuningPreset = isCustomTuning
+    ? { label: 'Custom', guitar: customGuitar, bass: customBass }
+    : TUNING_PRESETS[tuningIdx];
 
   // Active chord filter for fretboard
   const chordFilter = selectedChord ? selectedChord.notes : null;
