@@ -1,42 +1,128 @@
 // All 12 chromatic notes in order (using flats for flat keys, sharps for sharp keys)
 const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-
-// Keys that use flats in their spelling
 const FLAT_KEYS = ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'];
 
-// Mode intervals (semitones from root)
+// ─── Mode Categories ────────────────────────────────────────
+export interface ModeCategory {
+  label: string;
+  modes: string[];
+}
+
+export const MODE_CATEGORIES: ModeCategory[] = [
+  { label: 'Major Modes', modes: ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'] },
+  { label: 'Melodic Minor Modes', modes: ['Melodic Minor', 'Dorian b2', 'Lydian Augmented', 'Lydian Dominant', 'Mixolydian b6', 'Aeolian b5 (Locrian #2)', 'Altered (Super Locrian)'] },
+  { label: 'Harmonic Minor Modes', modes: ['Harmonic Minor', 'Locrian #6', 'Ionian #5', 'Dorian #4', 'Phrygian Dominant', 'Lydian #2', 'Ultra Locrian'] },
+  { label: 'Pentatonic & Blues', modes: ['Major Pentatonic', 'Minor Pentatonic', 'Blues'] },
+  { label: 'Other Scales', modes: ['Whole Tone', 'Diminished (HW)', 'Diminished (WH)', 'Chromatic'] },
+];
+
+// ─── Intervals (semitones from root) ────────────────────────
 export const MODE_INTERVALS: Record<string, number[]> = {
-  Ionian:     [0, 2, 4, 5, 7, 9, 11],
-  Dorian:     [0, 2, 3, 5, 7, 9, 10],
-  Phrygian:   [0, 1, 3, 5, 7, 8, 10],
-  Lydian:     [0, 2, 4, 6, 7, 9, 11],
-  Mixolydian: [0, 2, 4, 5, 7, 9, 10],
-  Aeolian:    [0, 2, 3, 5, 7, 8, 10],
-  Locrian:    [0, 1, 3, 5, 6, 8, 10],
+  // Major modes
+  Ionian:     [0,2,4,5,7,9,11],
+  Dorian:     [0,2,3,5,7,9,10],
+  Phrygian:   [0,1,3,5,7,8,10],
+  Lydian:     [0,2,4,6,7,9,11],
+  Mixolydian: [0,2,4,5,7,9,10],
+  Aeolian:    [0,2,3,5,7,8,10],
+  Locrian:    [0,1,3,5,6,8,10],
+  // Melodic minor modes
+  'Melodic Minor':          [0,2,3,5,7,9,11],
+  'Dorian b2':              [0,1,3,5,7,9,10],
+  'Lydian Augmented':       [0,2,4,6,8,9,11],
+  'Lydian Dominant':        [0,2,4,6,7,9,10],
+  'Mixolydian b6':          [0,2,4,5,7,8,10],
+  'Aeolian b5 (Locrian #2)':[0,2,3,5,6,8,10],
+  'Altered (Super Locrian)':[0,1,3,4,6,8,10],
+  // Harmonic minor modes
+  'Harmonic Minor':   [0,2,3,5,7,8,11],
+  'Locrian #6':       [0,1,3,5,6,9,10],
+  'Ionian #5':        [0,2,4,5,8,9,11],
+  'Dorian #4':        [0,2,3,6,7,9,10],
+  'Phrygian Dominant':[0,1,4,5,7,8,10],
+  'Lydian #2':        [0,3,4,6,7,9,11],
+  'Ultra Locrian':    [0,1,3,4,6,8,9],
+  // Pentatonic & Blues
+  'Major Pentatonic': [0,2,4,7,9],
+  'Minor Pentatonic': [0,3,5,7,10],
+  'Blues':            [0,3,5,6,7,10],
+  // Other
+  'Whole Tone':       [0,2,4,6,8,10],
+  'Diminished (HW)':  [0,1,3,4,6,7,9,10],
+  'Diminished (WH)':  [0,2,3,5,6,8,9,11],
+  'Chromatic':        [0,1,2,3,4,5,6,7,8,9,10,11],
 };
 
-// Interval names for each mode
+// ─── Interval Names ─────────────────────────────────────────
 export const MODE_INTERVAL_NAMES: Record<string, string[]> = {
-  Ionian:     ['1', '2', '3', '4', '5', '6', '7'],
-  Dorian:     ['1', '2', 'b3', '4', '5', '6', 'b7'],
-  Phrygian:   ['1', 'b2', 'b3', '4', '5', 'b6', 'b7'],
-  Lydian:     ['1', '2', '3', '#4', '5', '6', '7'],
-  Mixolydian: ['1', '2', '3', '4', '5', '6', 'b7'],
-  Aeolian:    ['1', '2', 'b3', '4', '5', 'b6', 'b7'],
-  Locrian:    ['1', 'b2', 'b3', '4', 'b5', 'b6', 'b7'],
+  Ionian:     ['1','2','3','4','5','6','7'],
+  Dorian:     ['1','2','b3','4','5','6','b7'],
+  Phrygian:   ['1','b2','b3','4','5','b6','b7'],
+  Lydian:     ['1','2','3','#4','5','6','7'],
+  Mixolydian: ['1','2','3','4','5','6','b7'],
+  Aeolian:    ['1','2','b3','4','5','b6','b7'],
+  Locrian:    ['1','b2','b3','4','b5','b6','b7'],
+  'Melodic Minor':          ['1','2','b3','4','5','6','7'],
+  'Dorian b2':              ['1','b2','b3','4','5','6','b7'],
+  'Lydian Augmented':       ['1','2','3','#4','#5','6','7'],
+  'Lydian Dominant':        ['1','2','3','#4','5','6','b7'],
+  'Mixolydian b6':          ['1','2','3','4','5','b6','b7'],
+  'Aeolian b5 (Locrian #2)':['1','2','b3','4','b5','b6','b7'],
+  'Altered (Super Locrian)':['1','b2','b3','b4','b5','b6','b7'],
+  'Harmonic Minor':   ['1','2','b3','4','5','b6','7'],
+  'Locrian #6':       ['1','b2','b3','4','b5','6','b7'],
+  'Ionian #5':        ['1','2','3','4','#5','6','7'],
+  'Dorian #4':        ['1','2','b3','#4','5','6','b7'],
+  'Phrygian Dominant':['1','b2','3','4','5','b6','b7'],
+  'Lydian #2':        ['1','#2','3','#4','5','6','7'],
+  'Ultra Locrian':    ['1','b2','b3','b4','b5','b6','bb7'],
+  'Major Pentatonic': ['1','2','3','5','6'],
+  'Minor Pentatonic': ['1','b3','4','5','b7'],
+  'Blues':            ['1','b3','4','b5','5','b7'],
+  'Whole Tone':       ['1','2','3','#4','#5','b7'],
+  'Diminished (HW)':  ['1','b2','b3','3','#4','5','6','b7'],
+  'Diminished (WH)':  ['1','2','b3','4','b5','b6','6','7'],
+  'Chromatic':        ['1','b2','2','b3','3','4','b5','5','b6','6','b7','7'],
 };
 
-export const ALL_ROOTS = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
+// ─── Chord Associations ─────────────────────────────────────
+export const MODE_CHORDS: Record<string, string[]> = {
+  Ionian:     ['Imaj7','IIm7','IIIm7','IVmaj7','V7','VIm7','VIIm7b5'],
+  Dorian:     ['Im7','IIm7','bIIImaj7','IV7','Vm7','VIm7b5','bVIImaj7'],
+  Phrygian:   ['Im7','bII7','bIIImaj7','IVm7','Vm7b5','bVImaj7','bVIIm7'],
+  Lydian:     ['Imaj7','II7','IIIm7','#IVm7b5','Vmaj7','VIm7','VIIm7'],
+  Mixolydian: ['I7','IIm7','IIIm7b5','IVmaj7','Vm7','VIm7','bVIImaj7'],
+  Aeolian:    ['Im7','IIm7b5','bIIImaj7','IVm7','Vm7','bVImaj7','bVII7'],
+  Locrian:    ['Im7b5','bIImaj7','bIIIm7','IVm7','bVmaj7','bVI7','bVIIm7'],
+  'Melodic Minor':          ['Im(maj7)','IIm7','bIIImaj7#5','IV7','V7','VIm7b5','VIIm7b5'],
+  'Dorian b2':              ['Im7','bIImaj7#5','bIII7','IV7','Vm7b5','VIm7b5','bVIImaj7'],
+  'Lydian Augmented':       ['Imaj7#5','II7','IIIm7','#IVm7b5','Vmaj7','#Vm7b5','VIIm7'],
+  'Lydian Dominant':        ['I7','IIm7','IIIm7b5','#IVmaj7','Vm7','VIm7','bVIImaj7'],
+  'Mixolydian b6':          ['I7','IIm7b5','bIIImaj7','IVm7','Vm7','bVImaj7','bVII7'],
+  'Aeolian b5 (Locrian #2)':['Im7b5','IIm7','bIIImaj7','IVm7','bVmaj7','bVI7','bVIIm7'],
+  'Altered (Super Locrian)':['Im7b5','bIImaj7','bIIm7','bIV7','bVmaj7','bVI7','bVIIm7'],
+  'Harmonic Minor':   ['Im(maj7)','IIm7b5','bIIImaj7#5','IVm7','V7','bVImaj7','VIIdim7'],
+  'Locrian #6':       ['Im7b5','bIImaj7','bIIIm7','IVm7','bVmaj7#5','VI7','bVIIm7'],
+  'Ionian #5':        ['Imaj7#5','IIm7','IIIm7','IVmaj7','#Vdim7','VIm7','VII7'],
+  'Dorian #4':        ['Im7','II7','bIIImaj7#5','#IVdim7','Vm7','VIm7b5','bVIImaj7'],
+  'Phrygian Dominant':['I7','bIImaj7','bIIIm7b5','IVm7','bVmaj7','bVIm7','bVIIdim7'],
+  'Lydian #2':        ['Imaj7','#IIdim7','IIIm7','#IVm7','Vmaj7#5','VIm7','VII7'],
+  'Ultra Locrian':    ['Idim7','bIIm7b5','bIIm7','bIV7','bVm7','bVImaj7','bVIm(maj7)'],
+  'Major Pentatonic': ['I','IIm','IIIm','V','VIm'],
+  'Minor Pentatonic': ['Im','bIII','IVm','Vm','bVII'],
+  'Blues':            ['I7','IV7','V7'],
+  'Whole Tone':       ['Iaug','IIaug','IIIaug'],
+  'Diminished (HW)':  ['Idim7','bIIdim7','bIIIdim7','IIIdim7'],
+  'Diminished (WH)':  ['I7','bIII7','bV7','VI7'],
+  'Chromatic':        [],
+};
+
+export const ALL_ROOTS = ['C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B'];
 export const MODE_NAMES = Object.keys(MODE_INTERVALS);
 
-// Enharmonic equivalents
 const ENHARMONIC: Record<string, string> = {
-  'C#': 'Db', 'Db': 'C#',
-  'D#': 'Eb', 'Eb': 'D#',
-  'F#': 'Gb', 'Gb': 'F#',
-  'G#': 'Ab', 'Ab': 'G#',
-  'A#': 'Bb', 'Bb': 'A#',
+  'C#':'Db','Db':'C#','D#':'Eb','Eb':'D#','F#':'Gb','Gb':'F#','G#':'Ab','Ab':'G#','A#':'Bb','Bb':'A#',
 };
 
 function useFlats(root: string): boolean {
@@ -46,69 +132,97 @@ function useFlats(root: string): boolean {
 export function getScaleNotes(root: string, mode: string): string[] {
   const intervals = MODE_INTERVALS[mode];
   if (!intervals) return [];
-
   const flats = useFlats(root);
   const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
-  const rootIndex = chromatic.indexOf(root);
-
-  // Handle enharmonic root
-  let actualRootIndex = rootIndex;
+  let actualRootIndex = chromatic.indexOf(root);
   let actualChromatic = chromatic;
-  if (rootIndex === -1) {
+  if (actualRootIndex === -1) {
     const alt = flats ? NOTES_SHARP : NOTES_FLAT;
     actualRootIndex = alt.indexOf(root);
     actualChromatic = alt;
     if (actualRootIndex === -1) {
-      // Try enharmonic
       const enh = ENHARMONIC[root];
-      if (enh) {
-        actualRootIndex = chromatic.indexOf(enh);
-        actualChromatic = chromatic;
-      }
+      if (enh) { actualRootIndex = chromatic.indexOf(enh); actualChromatic = chromatic; }
     }
   }
-
   if (actualRootIndex === -1) return [];
-
   return intervals.map(i => actualChromatic[(actualRootIndex + i) % 12]);
 }
 
-export function isSharp(note: string): boolean {
-  return note.includes('#');
+export function isSharp(note: string): boolean { return note.includes('#'); }
+export function isFlat(note: string): boolean { return note.includes('b'); }
+
+// ─── Tunings ─────────────────────────────────────────────────
+export interface StringTuning { note: string; octave: number; }
+
+export interface TuningPreset {
+  label: string;
+  guitar: StringTuning[];
+  bass: StringTuning[];
 }
 
-export function isFlat(note: string): boolean {
-  return note.includes('b');
-}
-
-export function isNatural(note: string): boolean {
-  return !isSharp(note) && !isFlat(note);
-}
-
-// Guitar standard tuning (low to high): E2, A2, D3, G3, B3, E4
-export const GUITAR_TUNING = [
-  { note: 'E', octave: 2 },
-  { note: 'A', octave: 2 },
-  { note: 'D', octave: 3 },
-  { note: 'G', octave: 3 },
-  { note: 'B', octave: 3 },
-  { note: 'E', octave: 4 },
+export const TUNING_PRESETS: TuningPreset[] = [
+  {
+    label: 'Standard',
+    guitar: [{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    bass:   [{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+  },
+  {
+    label: 'Half Step Down',
+    guitar: [{ note:'Eb',octave:2 },{ note:'Ab',octave:2 },{ note:'Db',octave:3 },{ note:'Gb',octave:3 },{ note:'Bb',octave:3 },{ note:'Eb',octave:4 }],
+    bass:   [{ note:'Eb',octave:1 },{ note:'Ab',octave:1 },{ note:'Db',octave:2 },{ note:'Gb',octave:2 }],
+  },
+  {
+    label: 'Full Step Down',
+    guitar: [{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 },{ note:'F',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    bass:   [{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 }],
+  },
+  {
+    label: 'Drop D',
+    guitar: [{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    bass:   [{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+  },
+  {
+    label: 'Drop C',
+    guitar: [{ note:'C',octave:2 },{ note:'G',octave:2 },{ note:'C',octave:3 },{ note:'F',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    bass:   [{ note:'C',octave:1 },{ note:'G',octave:1 },{ note:'C',octave:2 },{ note:'F',octave:2 }],
+  },
+  {
+    label: 'Open G',
+    guitar: [{ note:'D',octave:2 },{ note:'G',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'D',octave:4 }],
+    bass:   [{ note:'D',octave:1 },{ note:'G',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+  },
+  {
+    label: 'Open D',
+    guitar: [{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'F#',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    bass:   [{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'F#',octave:2 }],
+  },
+  {
+    label: 'Open E',
+    guitar: [{ note:'E',octave:2 },{ note:'B',octave:2 },{ note:'E',octave:3 },{ note:'G#',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }],
+    bass:   [{ note:'E',octave:1 },{ note:'B',octave:1 },{ note:'E',octave:2 },{ note:'G#',octave:2 }],
+  },
+  {
+    label: 'Open A',
+    guitar: [{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'E',octave:3 },{ note:'A',octave:3 },{ note:'C#',octave:3 },{ note:'E',octave:4 }],
+    bass:   [{ note:'E',octave:1 },{ note:'A',octave:1 },{ note:'E',octave:2 },{ note:'A',octave:2 }],
+  },
+  {
+    label: 'DADGAD',
+    guitar: [{ note:'D',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }],
+    bass:   [{ note:'D',octave:1 },{ note:'A',octave:1 },{ note:'D',octave:2 },{ note:'G',octave:2 }],
+  },
+  {
+    label: 'Half Step Up',
+    guitar: [{ note:'F',octave:2 },{ note:'A#',octave:2 },{ note:'D#',octave:3 },{ note:'G#',octave:3 },{ note:'C',octave:4 },{ note:'F',octave:4 }],
+    bass:   [{ note:'F',octave:1 },{ note:'A#',octave:1 },{ note:'D#',octave:2 },{ note:'G#',octave:2 }],
+  },
 ];
 
-// Bass standard tuning: E1, A1, D2, G2
-export const BASS_TUNING = [
-  { note: 'E', octave: 1 },
-  { note: 'A', octave: 1 },
-  { note: 'D', octave: 2 },
-  { note: 'G', octave: 2 },
-];
-
-// Get note at a specific fret on a string
+// ─── Fretboard helpers ──────────────────────────────────────
 export function getNoteAtFret(openNote: string, fret: number): string {
-  // Always use sharps for fretboard mapping, then we'll match against scale
-  const idx = NOTES_SHARP.indexOf(openNote);
+  let idx = NOTES_SHARP.indexOf(openNote);
   if (idx === -1) {
-    // Try flat
     const flatIdx = NOTES_FLAT.indexOf(openNote);
     if (flatIdx === -1) return '';
     return NOTES_SHARP[(flatIdx + fret) % 12];
@@ -116,15 +230,6 @@ export function getNoteAtFret(openNote: string, fret: number): string {
   return NOTES_SHARP[(idx + fret) % 12];
 }
 
-// Check if a note matches any note in the scale (considering enharmonics)
-export function noteInScale(note: string, scaleNotes: string[]): boolean {
-  if (scaleNotes.includes(note)) return true;
-  const enh = ENHARMONIC[note];
-  if (enh && scaleNotes.includes(enh)) return true;
-  return false;
-}
-
-// Get the matching scale note (for display with correct spelling)
 export function getScaleNote(note: string, scaleNotes: string[]): string | null {
   if (scaleNotes.includes(note)) return note;
   const enh = ENHARMONIC[note];
@@ -132,7 +237,6 @@ export function getScaleNote(note: string, scaleNotes: string[]): string | null 
   return null;
 }
 
-// Get interval name for a note in the scale
 export function getIntervalName(note: string, scaleNotes: string[], mode: string): string {
   const intervals = MODE_INTERVAL_NAMES[mode];
   if (!intervals) return '';
@@ -146,59 +250,49 @@ export function getIntervalName(note: string, scaleNotes: string[], mode: string
   return '';
 }
 
-// Convert scale to ABC notation — always ascending
+// ─── Finger positions (basic open-position pattern) ─────────
+// Returns suggested finger (0=open, 1-4) for a fret relative to a position
+export function getFingerForFret(fret: number, lowestFretInPosition: number): number {
+  if (fret === 0) return 0;
+  const rel = fret - lowestFretInPosition;
+  if (rel < 0) return 1;
+  return Math.min(rel + 1, 4);
+}
+
+// ─── ABC notation ───────────────────────────────────────────
 export function scaleToAbc(scaleNotes: string[]): string {
   const abcMap: Record<string, string> = {
-    'C': 'C', 'C#': '^C', 'Db': '_D',
-    'D': 'D', 'D#': '^D', 'Eb': '_E',
-    'E': 'E', 'F': 'F', 'F#': '^F', 'Gb': '_G',
-    'G': 'G', 'G#': '^G', 'Ab': '_A',
-    'A': 'A', 'A#': '^A', 'Bb': '_B',
-    'B': 'B',
+    'C':'C','C#':'^C','Db':'_D','D':'D','D#':'^D','Eb':'_E',
+    'E':'E','F':'F','F#':'^F','Gb':'_G','G':'G','G#':'^G','Ab':'_A',
+    'A':'A','A#':'^A','Bb':'_B','B':'B',
   };
-
-  // Chromatic index for pitch comparison
   const chromaticIndex: Record<string, number> = {
-    'C': 0, 'C#': 1, 'Db': 1,
-    'D': 2, 'D#': 3, 'Eb': 3,
-    'E': 4, 'F': 5, 'F#': 6, 'Gb': 6,
-    'G': 7, 'G#': 8, 'Ab': 8,
-    'A': 9, 'A#': 10, 'Bb': 10,
-    'B': 11,
+    'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'F':5,'F#':6,'Gb':6,
+    'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11,
   };
 
-  // Build notes with correct octave so pitch always ascends
-  // ABC default octave: C-B is middle octave (C4). Lowercase = octave up.
-  let octave = 0; // 0 = default (C4-B4), 1 = up one octave (lowercase)
+  let octave = 0;
   let prevPitch = -1;
   const abcNotes: string[] = [];
 
   for (const n of scaleNotes) {
     const base = abcMap[n] || n;
     const pitch = chromaticIndex[n] ?? 0;
-
-    if (prevPitch >= 0 && pitch <= prevPitch) {
-      octave++; // wrapped around, go up an octave
-    }
+    if (prevPitch >= 0 && pitch <= prevPitch) octave++;
     prevPitch = pitch;
 
-    if (octave === 0) {
-      abcNotes.push(base);
-    } else if (octave === 1) {
-      abcNotes.push(base.toLowerCase());
-    } else {
-      abcNotes.push(base.toLowerCase() + "'".repeat(octave - 1));
-    }
+    if (octave === 0) abcNotes.push(base);
+    else if (octave === 1) abcNotes.push(base.toLowerCase());
+    else abcNotes.push(base.toLowerCase() + "'".repeat(octave - 1));
   }
 
-  // Add the high root (one octave above last note's octave)
+  // High root — always one octave above the last note
   const rootBase = abcMap[scaleNotes[0]] || scaleNotes[0];
   const finalOctave = octave + 1;
-  if (finalOctave === 1) {
-    abcNotes.push(rootBase.toLowerCase());
-  } else {
-    abcNotes.push(rootBase.toLowerCase() + "'".repeat(finalOctave - 1));
-  }
+  if (finalOctave === 1) abcNotes.push(rootBase.toLowerCase());
+  else abcNotes.push(rootBase.toLowerCase() + "'".repeat(finalOctave - 1));
 
-  return `X:1\nT:\nM:4/4\nL:1/4\nK:C clef=treble\n${abcNotes.join(' ')} |]\n`;
+  // Use L:1/8 so all notes fit on one line without wrapping
+  const noteCount = abcNotes.length;
+  return `X:1\nT:\nM:${noteCount}/8\nL:1/8\nK:C clef=treble\n${abcNotes.join(' ')} |]\n`;
 }
