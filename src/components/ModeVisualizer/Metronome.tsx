@@ -400,26 +400,26 @@ const Metronome = () => {
   const isFlow = mode === 'flow';
 
   return (
-    <div className={`rounded-lg border border-border ${isPerformance ? 'bg-black' : 'bg-card'} p-4 md:p-6 transition-colors`}>
+    <div className={`rounded-lg border border-border ${isPerformance ? 'bg-black' : 'bg-card'} p-3 sm:p-4 md:p-6 transition-colors`}>
       {/* Mode Toggle */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-6">
         <h3 className={`text-lg font-semibold ${isPerformance ? 'text-white' : ''}`}>Metronome</h3>
         <div className="flex gap-1">
           {([
-            { id: 'practice' as const, label: 'Practice', icon: <Music2 size={14} /> },
-            { id: 'performance' as const, label: 'Perform', icon: <Zap size={14} /> },
-            { id: 'flow' as const, label: 'Flow', icon: <Waves size={14} /> },
+            { id: 'practice' as const, label: 'Practice', shortLabel: 'Prac', icon: <Music2 size={14} /> },
+            { id: 'performance' as const, label: 'Perform', shortLabel: 'Perf', icon: <Zap size={14} /> },
+            { id: 'flow' as const, label: 'Flow', shortLabel: 'Flow', icon: <Waves size={14} /> },
           ]).map(m => (
             <button
               key={m.id}
               onClick={() => setMode(m.id)}
-              className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              className={`flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs px-2 sm:px-3 py-1.5 rounded-full border transition-colors touch-manipulation ${
                 mode === m.id
                   ? 'border-amber-500 bg-amber-500/15 text-amber-400'
                   : `border-border ${isPerformance ? 'text-white/60 hover:text-white' : 'text-muted-foreground'} hover:bg-accent/50`
               }`}
             >
-              {m.icon} {m.label}
+              {m.icon} <span className="hidden sm:inline">{m.label}</span><span className="sm:hidden">{m.shortLabel}</span>
             </button>
           ))}
         </div>
