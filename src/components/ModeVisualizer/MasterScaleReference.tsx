@@ -226,16 +226,27 @@ const MasterScaleReference = () => {
                     </span>
                   )}
                 </td>
-                {[...row.notes, row.notes[0]].map((note, i) => {
-                  const isRoot = i === 0 || i === row.notes.length;
-                  const dev = i < row.notes.length ? row.deviations[i] : 'root';
+                {Array.from({ length: maxNotes + 1 }).map((_, i) => {
+                  if (i > row.notes.length) {
+                    return <td key={i} className="px-1 py-2.5" />;
+                  }
+                  if (i === row.notes.length) {
+                    // Octave repeat
+                    const note = row.notes[0];
+                    return (
+                      <td key={i} className="px-1 py-2.5 text-center">
+                        <span className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${getNoteClass(note, true, 'root')}`}>
+                          {note}
+                        </span>
+                      </td>
+                    );
+                  }
+                  const note = row.notes[i];
+                  const isRoot = i === 0;
+                  const dev = row.deviations[i];
                   return (
                     <td key={i} className="px-1 py-2.5 text-center">
-                      <span
-                        className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${
-                          getNoteClass(note, isRoot, dev)
-                        }`}
-                      >
+                      <span className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${getNoteClass(note, isRoot, dev)}`}>
                         {note}
                       </span>
                     </td>
