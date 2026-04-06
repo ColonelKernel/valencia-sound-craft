@@ -261,7 +261,8 @@ export function getSecondaryDominants(root: string, mode: string, diatonicChords
 
 // ─── Tritone Substitutions ──────────────────────────────────
 export function getTritoneSubs(secondaryDoms: ProgressionChord[]): ProgressionChord[] {
-  return secondaryDoms.map(sd => {
+  const results: ProgressionChord[] = [];
+  secondaryDoms.forEach(sd => {
     const domRoot = sd.chord.rootNote;
     const flats = useFlatsForKey(domRoot);
     const chromatic = getChromatic(domRoot);
@@ -269,7 +270,7 @@ export function getTritoneSubs(secondaryDoms: ProgressionChord[]): ProgressionCh
     if (idx === -1) {
       const alt = flats ? NOTES_SHARP : NOTES_FLAT;
       idx = alt.indexOf(domRoot);
-      if (idx === -1) return null;
+      if (idx === -1) return;
     }
     const subRoot = chromatic[(idx + 6) % 12];
     const subNotes = [
@@ -279,7 +280,7 @@ export function getTritoneSubs(secondaryDoms: ProgressionChord[]): ProgressionCh
       chromatic[(chromatic.indexOf(subRoot) + 10) % 12],
     ];
 
-    return {
+    results.push({
       chord: {
         symbol: `sub(${sd.chord.symbol})`,
         rootNote: subRoot,
@@ -287,11 +288,12 @@ export function getTritoneSubs(secondaryDoms: ProgressionChord[]): ProgressionCh
         notes: subNotes,
         intervals: ['1', '3', '5', 'b7'],
       },
-      source: 'tritone-sub' as const,
+      source: 'tritone-sub',
       sourceLabel: `tritone sub of ${sd.chord.rootNote}7`,
-      function: 'dominant' as ChordFunction,
-    };
-  }).filter((x): x is ProgressionChord => x !== null);
+      function: 'dominant',
+    });
+  });
+  return results;
 }
 
 // ─── Borrowed Chords ────────────────────────────────────────
