@@ -42,7 +42,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef'>('visualizer');
   const [expanded, setExpanded] = useState(false);
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
@@ -135,6 +135,7 @@ const ModeVisualizer = () => {
                 <option value="progression">🎵 Chord Progressions</option>
                 <option value="metronome">⏱ Metronome</option>
                 <option value="reference">📖 Scale Reference</option>
+                <option value="moderef">🎼 Mode Reference</option>
                 <option value="polyrhythm">🥁 Rhythm Engine</option>
                 <option value="rhythmmap">🌍 Rhythm Map</option>
               </select>
@@ -657,10 +658,11 @@ const ModeVisualizer = () => {
         </>
         )}
 
-        {/* Mode Reference Table */}
-        <div className="mt-10">
-          <ModeReference rootNote={root} timbre={timbre} />
-        </div>
+            {activeTab === 'moderef' && (
+              <div>
+                <ModeReference rootNote={root} timbre={timbre} />
+              </div>
+            )}
         </>
         )}
       </div>
