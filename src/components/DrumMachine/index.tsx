@@ -522,7 +522,6 @@ const DrumMachine = () => {
             <div className="grid grid-cols-3 md:grid-cols-4 gap-1.5">
               {tracks.map(t => {
                 const inst = getInstrument(t.instrumentId);
-                const note = (await import('./midiExport')).then ? 0 : 0;
                 return (
                   <div key={t.id} className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-card rounded px-2 py-1 border border-border">
                     <span className={`w-2 h-2 rounded-full ${inst?.color || 'bg-muted'}`} />
