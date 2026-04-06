@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   StringTuning,
   getNoteAtFret,
@@ -95,24 +96,25 @@ const Fretboard = ({
   chordFilter,
   onNoteClick,
 }: FretboardProps) => {
+  const [positionOverride, setPositionOverride] = useState<number | null>(null);
+
   const strings = lefty ? [...tuning].reverse() : tuning;
-  const originalOrder = lefty ? [...tuning].reverse() : tuning;
   const frets = Array.from({ length: FRET_COUNT + 1 }, (_, i) => i);
   const displayFrets = lefty ? [...frets].reverse() : frets;
 
-  // Find a good starting position: the lowest fret where the root note appears on the lowest string
-  let startPos = 1;
+  // Auto-detect a default starting position based on root
+  let autoPos = 1;
   if (showFingers) {
-    for (let f = 0; f <= 12; f++) {
+    for (let f = 1; f <= 12; f++) {
       const raw = getNoteAtFret(tuning[0].note, f);
-      if (getScaleNote(raw, scaleNotes) === root && f > 0) {
-        startPos = f;
+      if (getScaleNote(raw, scaleNotes) === root) {
+        autoPos = Math.max(1, f - 1);
         break;
       }
     }
-    // Adjust so the position spans nicely
-    if (startPos > 1) startPos = Math.max(1, startPos - 1);
   }
+
+  const startPos = showFingers ? (positionOverride ?? autoPos) : 1;
 
   const fingerMap = showFingers ? computeFingerMap(tuning, scaleNotes, startPos) : new Map();
   const posEnd = startPos + 3;
@@ -227,8 +229,19 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
         </div>
 
         {showFingers && (
-          <div className="flex flex-wrap gap-3 mt-2 text-[10px] text-muted-foreground">
-            <span className="font-medium text-foreground">Position: Frets {startPos}–{posEnd}</span>
+          <div className="flex flex-wrap items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1.5 font-medium text-foreground">
+              Position:
+              <select
+                value={positionOverride ?? autoPos}
+                onChange={(e) => setPositionOverride(Number(e.target.value))}
+                className="bg-secondary border border-border rounded px-2 py-0.5 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                {Array.from({ length: 19 }, (_, i) => i + 1).map((p) => (
+                  <option key={p} value={p}>Frets {p}–{p + 3}</option>
+                ))}
+              </select>
+            </span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-stone-600 inline-block" /> Open</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-600 inline-block" /> Index (1)</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-sky-600 inline-block" /> Middle (2)</span>
