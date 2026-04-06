@@ -23,6 +23,7 @@ const regionColors: Record<string, string> = {
   'South Asia': '#a855f7',
   'East Asia': '#ec4899',
   'Southeast Asia': '#14b8a6',
+  'Central America': '#8b5cf6',
   'Pacific': '#06b6d4',
   'Universal': '#6b7280',
 };
