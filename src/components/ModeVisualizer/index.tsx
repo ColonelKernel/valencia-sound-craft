@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, ToggleLeft, ToggleRight } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
@@ -8,11 +8,11 @@ import {
   isSharp,
   isFlat,
   MODE_INTERVAL_NAMES,
-  MODE_CHORDS,
   TUNING_PRESETS,
   getChordSpellings,
   type ChordSpelling,
 } from "./scaleData";
+import { playNote, playChord, playScale } from "./audioSynth";
 import Fretboard from "./Fretboard";
 import SheetMusic from "./SheetMusic";
 import ModeReference from "./ModeReference";
@@ -27,12 +27,16 @@ const ModeVisualizer = () => {
   const [tuningIdx, setTuningIdx] = useState(0);
   const [hoveredNote, setHoveredNote] = useState<string | null>(null);
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
+  const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
   const chordSpellings = getChordSpellings(scaleNotes, mode);
   const tuning = TUNING_PRESETS[tuningIdx];
+
+  // Active chord filter for fretboard
+  const chordFilter = selectedChord ? selectedChord.notes : null;
 
   const getNoteStyle = (note: string, isRoot: boolean) => {
     if (isRoot) return "bg-amber-500 text-black border-yellow-300 border-2";
@@ -43,6 +47,27 @@ const ModeVisualizer = () => {
 
   const tuningLabel = (notes: { note: string }[]) =>
     notes.map((s) => s.note).join(" ");
+
+  const handleChordClick = (cs: ChordSpelling) => {
+    if (selectedChord?.symbol === cs.symbol) {
+      setSelectedChord(null); // deselect
+    } else {
+      setSelectedChord(cs);
+      playChord(cs.notes);
+    }
+  };
+
+  const handleNoteClick = (note: string) => {
+    playNote(note);
+  };
+
+  const handlePlayScale = () => {
+    playScale([...scaleNotes, scaleNotes[0]]);
+  };
+
+  // Clear selected chord when mode/root changes
+  const handleRootChange = (r: string) => { setRoot(r); setSelectedChord(null); };
+  const handleModeChange = (m: string) => { setMode(m); setSelectedChord(null); };
 
   return (
     <section id="mode-visualizer" className="section-padding bg-secondary/50" ref={ref}>
@@ -61,12 +86,11 @@ const ModeVisualizer = () => {
 
         {/* Control Panel */}
         <div className="fade-up flex flex-wrap items-center gap-3 mb-8 p-4 rounded-lg border border-border bg-card">
-          {/* Root */}
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Root</label>
             <select
               value={root}
-              onChange={(e) => setRoot(e.target.value)}
+              onChange={(e) => handleRootChange(e.target.value)}
               className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             >
               {ALL_ROOTS.map((n) => (
@@ -75,12 +99,11 @@ const ModeVisualizer = () => {
             </select>
           </div>
 
-          {/* Mode — grouped */}
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Mode</label>
             <select
               value={mode}
-              onChange={(e) => setMode(e.target.value)}
+              onChange={(e) => handleModeChange(e.target.value)}
               className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             >
               {MODE_CATEGORIES.map((cat) => (
@@ -93,7 +116,6 @@ const ModeVisualizer = () => {
             </select>
           </div>
 
-          {/* Tuning */}
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Tuning</label>
             <select
@@ -107,7 +129,6 @@ const ModeVisualizer = () => {
             </select>
           </div>
 
-          {/* Toggles */}
           <button
             onClick={() => setLefty(!lefty)}
             className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors"
@@ -135,9 +156,17 @@ const ModeVisualizer = () => {
 
         {/* Scale Display */}
         <div className="fade-up mb-8">
-          <h3 className="text-lg font-semibold mb-3">
-            {root} {mode}
-          </h3>
+          <div className="flex items-center gap-3 mb-3">
+            <h3 className="text-lg font-semibold">
+              {root} {mode}
+            </h3>
+            <button
+              onClick={handlePlayScale}
+              className="flex items-center gap-1 text-xs px-2.5 py-1 rounded border border-border hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <Volume2 className="w-3.5 h-3.5" /> Play Scale
+            </button>
+          </div>
           <div className="flex flex-wrap gap-2 mb-4">
             {scaleNotes.map((note, i) => (
               <div
@@ -147,6 +176,7 @@ const ModeVisualizer = () => {
                 }`}
                 onMouseEnter={() => setHoveredNote(note)}
                 onMouseLeave={() => setHoveredNote(null)}
+                onClick={() => playNote(note)}
               >
                 {showIntervals ? intervals[i] : note}
               </div>
@@ -174,58 +204,79 @@ const ModeVisualizer = () => {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <p className="text-xs text-muted-foreground uppercase tracking-widest">Associated Chords</p>
+                <span className="text-[10px] text-muted-foreground">(click to isolate on fretboard)</span>
                 <button
                   onClick={() => setChordDisplay(chordDisplay === 'notes' ? 'intervals' : 'notes')}
                   className="text-[10px] px-2 py-0.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
                 >
                   Show: {chordDisplay === 'notes' ? 'Notes' : 'Intervals'}
                 </button>
+                {selectedChord && (
+                  <button
+                    onClick={() => setSelectedChord(null)}
+                    className="text-[10px] px-2 py-0.5 rounded border border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 transition-colors text-amber-400"
+                  >
+                    ✕ Clear filter
+                  </button>
+                )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {chordSpellings.map((cs, i) => (
-                  <div
-                    key={i}
-                    className="relative group"
-                    onMouseEnter={() => setHoveredChord(cs)}
-                    onMouseLeave={() => setHoveredChord(null)}
-                  >
-                    <div className={`px-3 py-1.5 text-xs font-mono rounded border transition-all cursor-pointer ${
-                      hoveredChord?.symbol === cs.symbol
-                        ? 'border-amber-500 bg-amber-500/10 text-foreground'
-                        : 'border-border bg-card text-foreground hover:border-muted-foreground'
-                    }`}>
-                      <div className="font-bold">{cs.symbol}</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">
-                        {chordDisplay === 'notes'
-                          ? cs.notes.join(' – ')
-                          : cs.intervals.join(' – ')}
-                      </div>
-                    </div>
-
-                    {/* Hover tooltip with full spelling */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20">
-                      <div className="bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 shadow-xl min-w-[140px] text-center">
-                        <p className="text-xs font-bold text-foreground mb-1">{cs.name}</p>
-                        <div className="flex justify-center gap-1.5 mb-1">
-                          {cs.notes.map((n, ni) => {
-                            const noteStyle = n === cs.rootNote
-                              ? 'bg-amber-500 text-black border-yellow-300'
-                              : isSharp(n) ? 'bg-blue-600 text-white' : isFlat(n) ? 'bg-orange-500 text-white' : 'bg-stone-500 text-white';
-                            return (
-                              <span key={ni} className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border ${noteStyle}`}>
-                                {n}
-                              </span>
-                            );
-                          })}
+                {chordSpellings.map((cs, i) => {
+                  const isSelected = selectedChord?.symbol === cs.symbol;
+                  const isHoveredChordItem = hoveredChord?.symbol === cs.symbol;
+                  return (
+                    <div
+                      key={i}
+                      className="relative group"
+                      onMouseEnter={() => setHoveredChord(cs)}
+                      onMouseLeave={() => setHoveredChord(null)}
+                    >
+                      <div
+                        className={`px-3 py-1.5 text-xs font-mono rounded border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-amber-500 bg-amber-500/20 text-foreground ring-1 ring-amber-500/50'
+                            : isHoveredChordItem
+                            ? 'border-amber-500 bg-amber-500/10 text-foreground'
+                            : 'border-border bg-card text-foreground hover:border-muted-foreground'
+                        }`}
+                        onClick={() => handleChordClick(cs)}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold">{cs.symbol}</span>
+                          <Volume2 className="w-3 h-3 text-muted-foreground" />
                         </div>
-                        <p className="text-[10px] text-muted-foreground font-mono">
-                          {cs.intervals.join(' – ')}
-                        </p>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                          {chordDisplay === 'notes'
+                            ? cs.notes.join(' – ')
+                            : cs.intervals.join(' – ')}
+                        </div>
                       </div>
-                      <div className="w-2 h-2 bg-stone-900 border-r border-b border-stone-600 rotate-45 mx-auto -mt-1" />
+
+                      {/* Hover tooltip */}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20">
+                        <div className="bg-stone-900 border border-stone-600 rounded-lg px-3 py-2 shadow-xl min-w-[140px] text-center">
+                          <p className="text-xs font-bold text-foreground mb-1">{cs.name}</p>
+                          <div className="flex justify-center gap-1.5 mb-1">
+                            {cs.notes.map((n, ni) => {
+                              const noteStyle = n === cs.rootNote
+                                ? 'bg-amber-500 text-black border-yellow-300'
+                                : isSharp(n) ? 'bg-blue-600 text-white' : isFlat(n) ? 'bg-orange-500 text-white' : 'bg-stone-500 text-white';
+                              return (
+                                <span key={ni} className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border ${noteStyle}`}>
+                                  {n}
+                                </span>
+                              );
+                            })}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-mono">
+                            {cs.intervals.join(' – ')}
+                          </p>
+                        </div>
+                        <div className="w-2 h-2 bg-stone-900 border-r border-b border-stone-600 rotate-45 mx-auto -mt-1" />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -233,9 +284,11 @@ const ModeVisualizer = () => {
 
         {/* Sheet Music */}
         <div className="fade-up mb-8">
-          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <Music className="w-5 h-5" /> Staff Notation
-          </h3>
+          <div className="flex items-center gap-3 mb-3">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Music className="w-5 h-5" /> Staff Notation
+            </h3>
+          </div>
           <SheetMusic scaleNotes={scaleNotes} hoveredNote={hoveredNote} />
         </div>
 
@@ -243,6 +296,7 @@ const ModeVisualizer = () => {
         <div className="fade-up mb-8">
           <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
             <Guitar className="w-5 h-5" /> Guitar ({tuningLabel(tuning.guitar)})
+            {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
           </h3>
           <Fretboard
             scaleNotes={scaleNotes}
@@ -255,6 +309,8 @@ const ModeVisualizer = () => {
             showFingers={showFingers}
             hoveredNote={hoveredNote}
             onNoteHover={setHoveredNote}
+            chordFilter={chordFilter}
+            onNoteClick={handleNoteClick}
           />
         </div>
 
@@ -262,6 +318,7 @@ const ModeVisualizer = () => {
         <div className="fade-up">
           <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
             <Guitar className="w-5 h-5" /> Bass ({tuningLabel(tuning.bass)})
+            {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
           </h3>
           <Fretboard
             scaleNotes={scaleNotes}
@@ -274,6 +331,8 @@ const ModeVisualizer = () => {
             showFingers={showFingers}
             hoveredNote={hoveredNote}
             onNoteHover={setHoveredNote}
+            chordFilter={chordFilter}
+            onNoteClick={handleNoteClick}
           />
         </div>
 
