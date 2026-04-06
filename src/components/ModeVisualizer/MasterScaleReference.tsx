@@ -1,22 +1,47 @@
 import { useState, useMemo } from "react";
 import { getScaleNotes, MODE_INTERVALS } from "./scaleData";
 
-// The 7 modes of the major scale in order of degrees
-const MAJOR_MODES = ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
-const DEGREE_LABELS = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
+// ─── Scale Families ──────────────────────────────────────────
+// "modal" families derive modes from a parent scale (each mode starts on a different degree).
+// "standalone" families list scales that all start from the selected root.
 
-// Mode families for the dropdown
-const MODE_FAMILIES: { label: string; modes: string[]; degrees: string[] }[] = [
-  { label: 'Major Modes', modes: MAJOR_MODES, degrees: DEGREE_LABELS },
+interface ScaleFamily {
+  label: string;
+  modes: string[];
+  degrees: string[];
+  type: 'modal' | 'standalone';
+}
+
+const SCALE_FAMILIES: ScaleFamily[] = [
+  {
+    label: 'Major Modes',
+    type: 'modal',
+    modes: ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'],
+    degrees: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'],
+  },
   {
     label: 'Melodic Minor Modes',
+    type: 'modal',
     modes: ['Melodic Minor', 'Dorian b2', 'Lydian Augmented', 'Lydian Dominant', 'Mixolydian b6', 'Aeolian b5 (Locrian #2)', 'Altered (Super Locrian)'],
     degrees: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii'],
   },
   {
     label: 'Harmonic Minor Modes',
+    type: 'modal',
     modes: ['Harmonic Minor', 'Locrian #6', 'Ionian #5', 'Dorian #4', 'Phrygian Dominant', 'Lydian #2', 'Ultra Locrian'],
     degrees: ['I', 'ii', 'III', 'iv', 'V', 'VI', 'vii°'],
+  },
+  {
+    label: 'Pentatonic & Blues',
+    type: 'standalone',
+    modes: ['Major Pentatonic', 'Minor Pentatonic', 'Blues'],
+    degrees: ['—', '—', '—'],
+  },
+  {
+    label: 'Symmetric & Other',
+    type: 'standalone',
+    modes: ['Whole Tone', 'Diminished (HW)', 'Diminished (WH)', 'Chromatic'],
+    degrees: ['—', '—', '—', '—'],
   },
 ];
 
