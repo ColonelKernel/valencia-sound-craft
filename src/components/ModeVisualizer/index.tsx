@@ -15,7 +15,7 @@ import {
   type StringTuning,
   type TuningPreset,
 } from "./scaleData";
-import { playNote, playChord, playScale } from "./audioSynth";
+import { playNote, playChord, playScale, type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 import Fretboard from "./Fretboard";
 import SheetMusic from "./SheetMusic";
 import ModeReference from "./ModeReference";
