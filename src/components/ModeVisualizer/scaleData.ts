@@ -146,7 +146,7 @@ export function getIntervalName(note: string, scaleNotes: string[], mode: string
   return '';
 }
 
-// Convert scale to ABC notation
+// Convert scale to ABC notation — always ascending
 export function scaleToAbc(scaleNotes: string[]): string {
   const abcMap: Record<string, string> = {
     'C': 'C', 'C#': '^C', 'Db': '_D',
@@ -157,15 +157,48 @@ export function scaleToAbc(scaleNotes: string[]): string {
     'B': 'B',
   };
 
-  const notes = scaleNotes.map(n => {
-    const abc = abcMap[n];
-    return abc || n;
-  });
+  // Chromatic index for pitch comparison
+  const chromaticIndex: Record<string, number> = {
+    'C': 0, 'C#': 1, 'Db': 1,
+    'D': 2, 'D#': 3, 'Eb': 3,
+    'E': 4, 'F': 5, 'F#': 6, 'Gb': 6,
+    'G': 7, 'G#': 8, 'Ab': 8,
+    'A': 9, 'A#': 10, 'Bb': 10,
+    'B': 11,
+  };
 
-  // Add the octave root
-  const root = scaleNotes[0];
-  const rootAbc = abcMap[root] || root;
-  notes.push(rootAbc.toLowerCase());
+  // Build notes with correct octave so pitch always ascends
+  // ABC default octave: C-B is middle octave (C4). Lowercase = octave up.
+  let octave = 0; // 0 = default (C4-B4), 1 = up one octave (lowercase)
+  let prevPitch = -1;
+  const abcNotes: string[] = [];
 
-  return `X:1\nT:\nM:4/4\nL:1/4\nK:C clef=treble\n${notes.join(' ')} |]\n`;
+  for (const n of scaleNotes) {
+    const base = abcMap[n] || n;
+    const pitch = chromaticIndex[n] ?? 0;
+
+    if (prevPitch >= 0 && pitch <= prevPitch) {
+      octave++; // wrapped around, go up an octave
+    }
+    prevPitch = pitch;
+
+    if (octave === 0) {
+      abcNotes.push(base);
+    } else if (octave === 1) {
+      abcNotes.push(base.toLowerCase());
+    } else {
+      abcNotes.push(base.toLowerCase() + "'".repeat(octave - 1));
+    }
+  }
+
+  // Add the high root (one octave above last note's octave)
+  const rootBase = abcMap[scaleNotes[0]] || scaleNotes[0];
+  const finalOctave = octave + 1;
+  if (finalOctave === 1) {
+    abcNotes.push(rootBase.toLowerCase());
+  } else {
+    abcNotes.push(rootBase.toLowerCase() + "'".repeat(finalOctave - 1));
+  }
+
+  return `X:1\nT:\nM:4/4\nL:1/4\nK:C clef=treble\n${abcNotes.join(' ')} |]\n`;
 }
