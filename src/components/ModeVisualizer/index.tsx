@@ -153,39 +153,38 @@ const ModeVisualizer = () => {
               </div>
             )}
 
-        {activeTab === 'polyrhythm' && (
-          <div>
-            <DrumMachine />
-          </div>
-        )}
+            {activeTab === 'polyrhythm' && (
+              <div>
+                <DrumMachine />
+              </div>
+            )}
 
-        {activeTab === 'rhythmmap' && (
-          <div>
-            <RhythmMap onLoadPreset={(preset) => {
-              setActiveTab('polyrhythm');
-            }} />
-          </div>
-        )}
+            {activeTab === 'rhythmmap' && (
+              <div>
+                <RhythmMap onLoadPreset={(preset) => {
+                  setActiveTab('polyrhythm');
+                }} />
+              </div>
+            )}
 
+            {activeTab === 'metronome' && (
+              <div>
+                <Metronome />
+              </div>
+            )}
 
-        {activeTab === 'metronome' && (
-          <div>
-            <Metronome />
-          </div>
-        )}
+            {activeTab === 'progression' && (
+              <div>
+                <ChordProgressionBuilder
+                  chordSpellings={chordSpellings}
+                  root={root}
+                  mode={mode}
+                />
+              </div>
+            )}
 
-        {activeTab === 'progression' && (
-          <div>
-            <ChordProgressionBuilder
-              chordSpellings={chordSpellings}
-              root={root}
-              mode={mode}
-            />
-          </div>
-        )}
-
-        {activeTab === 'visualizer' && (
-        <>
+            {activeTab === 'visualizer' && (
+            <>
         {/* Control Panel */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="flex items-center gap-2">
