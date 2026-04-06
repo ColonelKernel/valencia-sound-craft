@@ -11,6 +11,8 @@ import {
   TUNING_PRESETS,
   getChordSpellings,
   type ChordSpelling,
+  type StringTuning,
+  type TuningPreset,
 } from "./scaleData";
 import { playNote, playChord, playScale } from "./audioSynth";
 import Fretboard from "./Fretboard";
