@@ -23,6 +23,7 @@ import Metronome from "./Metronome";
 import ChordProgressionBuilder from "./ChordProgressionBuilder";
 import KeyboardVisualizer from "./KeyboardVisualizer";
 import MasterScaleReference from "./MasterScaleReference";
+import PolyrhythmTool from "./PolyrhythmTool";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
