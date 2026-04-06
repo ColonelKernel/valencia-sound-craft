@@ -67,6 +67,7 @@ const DrumMachine = () => {
   const [currentSteps, setCurrentSteps] = useState<Record<string, number>>({});
   const [activePreset, setActivePreset] = useState<string>('Basic Rock');
   const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | null>('presets');
+  const [showBrowser, setShowBrowser] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [midiMapping, setMidiMapping] = useState<MidiMapping>('general-midi');
   const [humanize, setHumanize] = useState(false);
