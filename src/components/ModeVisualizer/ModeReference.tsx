@@ -69,9 +69,31 @@ const CATEGORY_COMPARISONS: Record<string, { mode: string; base: string; change:
   ],
 };
 
+const getStepPattern = (modeName: string): string[] => {
+  const intervals = MODE_INTERVALS[modeName];
+  if (!intervals) return [];
+  const steps: string[] = [];
+  for (let i = 0; i < intervals.length; i++) {
+    const next = i + 1 < intervals.length ? intervals[i + 1] : 12;
+    const diff = next - intervals[i];
+    if (diff === 1) steps.push('H');
+    else if (diff === 2) steps.push('W');
+    else if (diff === 3) steps.push('WH');
+    else steps.push(`${diff}`);
+  }
+  return steps;
+};
+
+const getStepStyle = (step: string) => {
+  if (step === 'W') return 'bg-emerald-600 text-white';
+  if (step === 'H') return 'bg-rose-500 text-white';
+  if (step === 'WH') return 'bg-violet-600 text-white';
+  return 'bg-stone-500 text-white';
+};
+
 const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
   const [selectedRoot, setSelectedRoot] = useState(rootNote);
-  const [showType, setShowType] = useState<'notes' | 'intervals'>('notes');
+  const [showType, setShowType] = useState<'notes' | 'intervals' | 'steps'>('notes');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Major Modes']));
 
   const roots = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
