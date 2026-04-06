@@ -174,7 +174,7 @@ const ModeVisualizer = () => {
         {activeTab === 'visualizer' && (
         <>
         {/* Control Panel */}
-        <div className="flex flex-wrap items-center gap-3 mb-8 p-4 rounded-lg border border-border bg-card">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg border border-border bg-card">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Root</label>
             <select
@@ -258,7 +258,7 @@ const ModeVisualizer = () => {
           </button>
           )}
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
             <label className="text-sm font-medium text-muted-foreground">Sound</label>
             <select
               value={timbre}
