@@ -167,10 +167,10 @@ export function getScaleNotes(root: string, mode: string): string[] {
   if (flatCount < sharpCount) return flatResult!;
   if (sharpCount < flatCount) return sharpResult!;
 
-  // Tie — check if mode formula has minor/flat character (b3, b7, etc.)
-  const minorModeIntervals = [1, 3, 8, 10]; // b2, b3, b6, b7 semitones
-  const hasMinorCharacter = intervals.some(i => minorModeIntervals.includes(i));
-  return hasMinorCharacter ? flatResult! : sharpResult!;
+  // Tie — sharp keys (A, B, D, E, G, C#, F#, G#) prefer sharps; C and F prefer flats for minor modes
+  const sharpRoots = ['A', 'B', 'D', 'E', 'G', 'C#', 'F#', 'G#', 'D#', 'A#'];
+  if (sharpRoots.includes(root)) return sharpResult!;
+  return flatResult!;
 }
 
 export function isSharp(note: string): boolean { return note.includes('#'); }
