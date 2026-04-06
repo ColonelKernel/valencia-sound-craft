@@ -628,6 +628,7 @@ const ModeVisualizer = () => {
               chordFilter={chordFilter}
               showIntervals={showIntervals}
               intervals={intervals}
+              timbre={timbre}
             />
           </div>
         )}
