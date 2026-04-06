@@ -229,8 +229,19 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
         </div>
 
         {showFingers && (
-          <div className="flex flex-wrap gap-3 mt-2 text-[10px] text-muted-foreground">
-            <span className="font-medium text-foreground">Position: Frets {startPos}–{posEnd}</span>
+          <div className="flex flex-wrap items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1.5 font-medium text-foreground">
+              Position:
+              <select
+                value={positionOverride ?? autoPos}
+                onChange={(e) => setPositionOverride(Number(e.target.value))}
+                className="bg-secondary border border-border rounded px-2 py-0.5 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                {Array.from({ length: 19 }, (_, i) => i + 1).map((p) => (
+                  <option key={p} value={p}>Frets {p}–{p + 3}</option>
+                ))}
+              </select>
+            </span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-stone-600 inline-block" /> Open</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-600 inline-block" /> Index (1)</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-sky-600 inline-block" /> Middle (2)</span>
