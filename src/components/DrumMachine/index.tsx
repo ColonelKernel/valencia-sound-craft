@@ -628,6 +628,94 @@ const DrumMachine = () => {
         })}
       </div>
 
+      {/* ─── Rhythm Browser (below tracks) ──────────────────────────── */}
+      <div className="rounded-lg border border-border bg-secondary/20 p-3 space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[160px] max-w-xs">
+            <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search rhythms…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full bg-card border border-border rounded pl-6 pr-2 py-1 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <select
+            value={filterFeel || ''}
+            onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
+            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+          >
+            <option value="">All Feels</option>
+            <option value="straight">Straight</option>
+            <option value="swing">Swing</option>
+            <option value="compound">Compound</option>
+            <option value="asymmetric">Asymmetric</option>
+            <option value="polyrhythmic">Polyrhythmic</option>
+          </select>
+          <select
+            value={filterComplexity || ''}
+            onChange={e => setFilterComplexity((e.target.value || null) as Complexity | null)}
+            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+          >
+            <option value="">All Levels</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <span className="text-[9px] text-muted-foreground ml-auto">{filteredPresets.length} patterns</span>
+        </div>
+
+        {/* Category chips */}
+        <div className="flex flex-wrap gap-1">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
+              !selectedCategory ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
+            }`}
+          >All</button>
+          {categories.map(r => (
+            <button key={r}
+              onClick={() => setSelectedCategory(selectedCategory === r ? null : r)}
+              className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
+                selectedCategory === r ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
+              }`}
+            >{r}</button>
+          ))}
+        </div>
+
+        {/* Compact preset list */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 max-h-[240px] overflow-y-auto">
+          {filteredPresets.map(p => (
+            <button key={p.name}
+              onClick={() => loadPreset(p)}
+              className={`text-left px-2 py-1.5 rounded border transition-all ${
+                activePreset === p.name
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
+              }`}
+            >
+              <div className="text-[11px] font-medium truncate">{p.name}</div>
+              <div className="text-[9px] text-muted-foreground truncate">
+                {p.country} · {p.bpm} · {p.timeSignature[0]}/{p.timeSignature[1]} · {p.timeFeel}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Active preset info */}
+        {currentPreset && (
+          <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
+            <span className="font-medium text-foreground">{currentPreset.name}</span>
+            <span>{currentPreset.country} · {formatPulseGrouping(currentPreset.pulseGrouping)}</span>
+            {currentPreset.artists && currentPreset.artists.length > 0 && (
+              <span className="truncate max-w-[200px]">♪ {currentPreset.artists.join(', ')}</span>
+            )}
+            <span className="italic truncate max-w-xs">{currentPreset.description}</span>
+          </div>
+        )}
+      </div>
+
       {/* Velocity Legend */}
       <div className="flex flex-wrap items-center gap-4 text-[10px] text-muted-foreground pt-2 border-t border-border">
         <span className="flex items-center gap-1">
