@@ -365,8 +365,8 @@ const ModeVisualizer = () => {
             {scaleNotes.map((note, i) => (
               <div
                 key={i}
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold cursor-pointer transition-all ${getNoteStyle(note, note === root)} ${
-                  hoveredNote === note ? "scale-125 ring-2 ring-white" : "hover:scale-110"
+                className={`w-10 h-10 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold cursor-pointer transition-all touch-manipulation ${getNoteStyle(note, note === root)} ${
+                  hoveredNote === note ? "scale-125 ring-2 ring-white" : "hover:scale-110 active:scale-95"
                 }`}
                 onMouseEnter={() => setHoveredNote(note)}
                 onMouseLeave={() => setHoveredNote(null)}
