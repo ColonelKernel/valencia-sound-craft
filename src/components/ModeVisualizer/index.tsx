@@ -10,6 +10,8 @@ import {
   MODE_INTERVAL_NAMES,
   MODE_CHORDS,
   TUNING_PRESETS,
+  getChordSpellings,
+  type ChordSpelling,
 } from "./scaleData";
 import Fretboard from "./Fretboard";
 import SheetMusic from "./SheetMusic";

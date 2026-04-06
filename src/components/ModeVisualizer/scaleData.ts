@@ -292,7 +292,67 @@ export function scaleToAbc(scaleNotes: string[]): string {
   if (finalOctave === 1) abcNotes.push(rootBase.toLowerCase());
   else abcNotes.push(rootBase.toLowerCase() + "'".repeat(finalOctave - 1));
 
-  // Use L:1/8 so all notes fit on one line without wrapping
   const noteCount = abcNotes.length;
   return `X:1\nT:\nM:${noteCount}/8\nL:1/8\nK:C clef=treble\n${abcNotes.join(' ')} |]\n`;
 }
+
+// ─── Chord Spelling ─────────────────────────────────────────
+const CHORD_FORMULAS: Record<string, { semitones: number[]; intervals: string[] }> = {
+  'maj7':     { semitones: [0,4,7,11],   intervals: ['1','3','5','7'] },
+  'm7':       { semitones: [0,3,7,10],   intervals: ['1','b3','5','b7'] },
+  '7':        { semitones: [0,4,7,10],   intervals: ['1','3','5','b7'] },
+  'm7b5':     { semitones: [0,3,6,10],   intervals: ['1','b3','b5','b7'] },
+  'dim7':     { semitones: [0,3,6,9],    intervals: ['1','b3','b5','bb7'] },
+  'm(maj7)':  { semitones: [0,3,7,11],   intervals: ['1','b3','5','7'] },
+  'maj7#5':   { semitones: [0,4,8,11],   intervals: ['1','3','#5','7'] },
+  'aug':      { semitones: [0,4,8],      intervals: ['1','3','#5'] },
+  '':         { semitones: [0,4,7],      intervals: ['1','3','5'] },
+  'm':        { semitones: [0,3,7],      intervals: ['1','b3','5'] },
+  'dim':      { semitones: [0,3,6],      intervals: ['1','b3','b5'] },
+};
+
+function parseRomanChord(symbol: string): { degreeIndex: number; quality: string } | null {
+  const match = symbol.match(/^([b#]*)([IViv]+)(.*)/);
+  if (!match) return null;
+  const roman = match[2].toUpperCase();
+  const quality = match[3];
+  const romanMap: Record<string, number> = { 'I':0,'II':1,'III':2,'IV':3,'V':4,'VI':5,'VII':6 };
+  const base = romanMap[roman];
+  if (base === undefined) return null;
+  return { degreeIndex: base, quality };
+}
+
+export interface ChordSpelling {
+  symbol: string;
+  rootNote: string;
+  name: string;
+  notes: string[];
+  intervals: string[];
+}
+
+export function getChordSpellings(scaleNotes: string[], mode: string): ChordSpelling[] {
+  const chordSymbols = MODE_CHORDS[mode] || [];
+  if (chordSymbols.length === 0 || scaleNotes.length === 0) return [];
+  const flats = useFlats(scaleNotes[0]);
+  const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
+
+  return chordSymbols.map((symbol) => {
+    const parsed = parseRomanChord(symbol);
+    if (!parsed) return { symbol, rootNote: '?', name: symbol, notes: [], intervals: [] };
+    const { degreeIndex, quality } = parsed;
+    const chordRoot = degreeIndex < scaleNotes.length ? scaleNotes[degreeIndex] : scaleNotes[0];
+    const formula = CHORD_FORMULAS[quality] || CHORD_FORMULAS[''];
+    const rootIdx = chromatic.indexOf(chordRoot);
+    let actualIdx = rootIdx;
+    let actualChromatic = chromatic;
+    if (rootIdx === -1) {
+      const alt = flats ? NOTES_SHARP : NOTES_FLAT;
+      actualIdx = alt.indexOf(chordRoot);
+      actualChromatic = alt;
+    }
+    if (actualIdx === -1) return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes: [chordRoot], intervals: ['1'] };
+    const notes = formula.semitones.map(s => actualChromatic[(actualIdx + s) % 12]);
+    return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes, intervals: formula.intervals };
+  });
+}
+
