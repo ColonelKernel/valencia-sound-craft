@@ -123,29 +123,49 @@ const ModeVisualizer = () => {
 
         {expanded && (
           <>
-            {/* Tool Tabs */}
-            <div className="fade-up flex gap-2 mb-8 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin">
-              {[
-                { id: 'visualizer' as const, label: 'Mode Visualizer', shortLabel: 'Modes', icon: <Guitar className="w-4 h-4" /> },
-                { id: 'progression' as const, label: 'Chord Progressions', shortLabel: 'Chords', icon: <ListMusic className="w-4 h-4" /> },
-                { id: 'metronome' as const, label: 'Metronome', shortLabel: 'Metro', icon: <Timer className="w-4 h-4" /> },
-                { id: 'reference' as const, label: 'Scale Reference', shortLabel: 'Scales', icon: <BookOpen className="w-4 h-4" /> },
-                { id: 'polyrhythm' as const, label: 'Rhythm Engine', shortLabel: 'Rhythm', icon: <Drum className="w-4 h-4" /> },
-                { id: 'rhythmmap' as const, label: 'Rhythm Map', shortLabel: 'Map', icon: <Globe className="w-4 h-4" /> },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
-                    activeTab === tab.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'border border-border text-muted-foreground hover:bg-accent'
-                  }`}
-                >
-                  {tab.icon} <span className="hidden sm:inline">{tab.label}</span><span className="sm:hidden">{tab.shortLabel}</span>
-                </button>
-              ))}
-            </div>
+            {/* Tool Selector — dropdown on mobile, tabs on md+ */}
+            {(() => {
+              const tools = [
+                { id: 'visualizer' as const, label: 'Mode Visualizer', icon: <Guitar className="w-4 h-4" /> },
+                { id: 'progression' as const, label: 'Chord Progressions', icon: <ListMusic className="w-4 h-4" /> },
+                { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
+                { id: 'reference' as const, label: 'Scale Reference', icon: <BookOpen className="w-4 h-4" /> },
+                { id: 'polyrhythm' as const, label: 'Rhythm Engine', icon: <Drum className="w-4 h-4" /> },
+                { id: 'rhythmmap' as const, label: 'Rhythm Map', icon: <Globe className="w-4 h-4" /> },
+              ];
+              return (
+                <>
+                  {/* Mobile dropdown */}
+                  <div className="fade-up mb-6 md:hidden">
+                    <select
+                      value={activeTab}
+                      onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
+                      className="w-full bg-card border border-border rounded-lg px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      {tools.map((t) => (
+                        <option key={t.id} value={t.id}>{t.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Desktop tabs */}
+                  <div className="fade-up hidden md:flex gap-2 mb-8">
+                    {tools.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                          activeTab === tab.id
+                            ? 'bg-primary text-primary-foreground'
+                            : 'border border-border text-muted-foreground hover:bg-accent'
+                        }`}
+                      >
+                        {tab.icon} {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
 
             {activeTab === 'reference' && (
               <div>
@@ -186,7 +206,7 @@ const ModeVisualizer = () => {
             {activeTab === 'visualizer' && (
             <>
         {/* Control Panel */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg border border-border bg-card">
+        <div className="flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg border border-border bg-card">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Root</label>
             <select
@@ -410,7 +430,7 @@ const ModeVisualizer = () => {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <p className="text-xs text-muted-foreground uppercase tracking-widest">Associated Chords</p>
-                <span className="text-[10px] text-muted-foreground">(click to isolate on fretboard)</span>
+                <span className="text-[10px] text-muted-foreground hidden sm:inline">(click to isolate on fretboard)</span>
                 <button
                   onClick={() => setChordDisplay(chordDisplay === 'notes' ? 'intervals' : 'notes')}
                   className="text-[10px] px-2 py-0.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
@@ -536,7 +556,7 @@ const ModeVisualizer = () => {
         {/* Guitar Fretboard */}
         {instrument === 'guitar' && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 flex flex-wrap items-center gap-2">
               <Guitar className="w-5 h-5" /> Guitar ({tuningLabel(activeGuitarTuning)})
               <div className="flex items-center gap-1 ml-2">
                 {([6, 7, 8] as const).map((n) => (
@@ -576,7 +596,7 @@ const ModeVisualizer = () => {
         {/* Bass Fretboard */}
         {instrument === 'bass' && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 flex flex-wrap items-center gap-2">
               <Guitar className="w-5 h-5" /> Bass ({tuningLabel(activeBassTuning)})
               <div className="flex items-center gap-1 ml-2">
                 {([4, 5, 6] as const).map((n) => (
