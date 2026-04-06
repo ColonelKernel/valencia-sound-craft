@@ -389,7 +389,7 @@ const ChordProgressionBuilder = ({
               <span className="text-muted-foreground">{progression[editingIdx].chord.notes.join('-')}</span>
               <span className="text-muted-foreground capitalize">{progression[editingIdx].function || 'other'}</span>
               <div className="flex gap-1 ml-auto">
-                <button onClick={() => playChordTones(progression[editingIdx].chord.notes, 0.8, timbre)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
+                <button onClick={() => playChordTonesExpressive(progression[editingIdx].chord.notes, 0.8, timbre, voicingType, expressive)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
                 <button onClick={() => removeChord(editingIdx)} className="px-1.5 py-0.5 rounded border border-destructive/50 text-destructive hover:bg-destructive/10 text-[10px]">Del</button>
                 {has7Notes && <button onClick={() => { insertIIV(editingIdx); setEditingIdx(null); }} className="px-1.5 py-0.5 rounded border border-pink-500/50 text-pink-400 hover:bg-pink-500/10 text-[10px]">ii-V</button>}
                 <button onClick={() => setEditingIdx(null)} className="text-muted-foreground hover:text-foreground"><X size={12} /></button>
