@@ -3,10 +3,11 @@ import {
   Play, Pause, X, RotateCcw, Sparkles, ArrowRightLeft,
   Music2, ChevronDown, ChevronUp, Download, ArrowLeft, ArrowRight,
   Lock, Unlock, Wand2, Globe2, Lightbulb, GripVertical,
-  Undo2, Music, Settings2, ChevronRight, Sliders,
+  Undo2, Music, Settings2, ChevronRight, Sliders, Eye,
 } from "lucide-react";
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
 import { type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
+import ChordStaffView from "./ChordStaffView";
 import {
   type ProgressionChord, type ChordSource, type RhythmicFeel, type HarmonicStyle,
   type ViewMode, type ChordFunction, type ExtensionLevel, type VoicingType, type ExpressiveParams,
