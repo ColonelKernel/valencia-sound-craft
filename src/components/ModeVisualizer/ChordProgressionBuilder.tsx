@@ -464,7 +464,29 @@ const ChordProgressionBuilder = ({
             {ALL_ROOTS.map(r => <option key={r} value={r} className="bg-background text-foreground">{r}</option>)}
           </select>
           {progression.length > 0 && (
-            <span className="text-[9px] text-primary font-medium">♪ transposes</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => {
+                  const allRoots = ALL_ROOTS;
+                  const curIdx = allRoots.indexOf(localRoot);
+                  const prevRoot = allRoots[(curIdx - 1 + allRoots.length) % allRoots.length];
+                  handleTranspose(prevRoot);
+                }}
+                className="w-6 h-6 flex items-center justify-center rounded border border-border bg-background text-foreground hover:bg-accent text-xs font-bold"
+                title="Transpose down 1 semitone"
+              >−</button>
+              <button
+                onClick={() => {
+                  const allRoots = ALL_ROOTS;
+                  const curIdx = allRoots.indexOf(localRoot);
+                  const nextRoot = allRoots[(curIdx + 1) % allRoots.length];
+                  handleTranspose(nextRoot);
+                }}
+                className="w-6 h-6 flex items-center justify-center rounded border border-border bg-background text-foreground hover:bg-accent text-xs font-bold"
+                title="Transpose up 1 semitone"
+              >+</button>
+              <span className="text-[9px] text-primary font-medium">♪ transposes</span>
+            </div>
           )}
         </div>
         <div className="flex items-center gap-2">
