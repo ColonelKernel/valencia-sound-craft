@@ -1,11 +1,10 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { Globe, Play, X, Users, Zap } from "lucide-react";
+import { Globe, Play, X, Zap } from "lucide-react";
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import {
   DRUM_PRESETS,
   getCountryMapData,
-  formatPulseGrouping,
   type PatternPreset,
   type CountryMapData,
 } from "../DrumMachine/drumPresets";
@@ -174,82 +173,46 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
             </button>
           </div>
 
-          <div className="grid gap-2">
+          <div className="grid gap-1.5">
             {countryPresets.map(preset => (
               <div
                 key={preset.name}
-                className="p-3 rounded-lg border border-border bg-card hover:border-primary/30 transition-all group"
+                className="flex items-center justify-between gap-2 p-2 rounded-lg border border-border bg-card hover:border-primary/30 transition-all"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h5 className="text-xs font-bold truncate">{preset.name}</h5>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
-                        {preset.timeSignature[0]}/{preset.timeSignature[1]}
-                      </span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-                        preset.complexity === 'beginner' ? 'bg-emerald-500/10 text-emerald-400' :
-                        preset.complexity === 'intermediate' ? 'bg-amber-500/10 text-amber-400' :
-                        'bg-rose-500/10 text-rose-400'
-                      }`}>
-                        {preset.complexity}
-                      </span>
-                    </div>
-
-                    {/* Pulse grouping visual */}
-                    <div className="flex items-center gap-1 mt-1.5">
-                      {preset.pulseGrouping.map((count, i) => (
-                        <div key={i} className="flex items-center gap-0.5">
-                          {i > 0 && <span className="text-[8px] text-muted-foreground/50 mx-0.5">+</span>}
-                          <div className="flex gap-[2px]">
-                            {Array.from({ length: count }).map((_, j) => (
-                              <span
-                                key={j}
-                                className={`w-1.5 h-1.5 rounded-full ${j === 0 ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      <span className="text-[9px] text-muted-foreground ml-1.5 font-mono">
-                        ({formatPulseGrouping(preset.pulseGrouping)})
-                      </span>
-                    </div>
-
-                    <p className="text-[10px] text-muted-foreground mt-1 line-clamp-2">{preset.description}</p>
-
-                    {preset.artists && preset.artists.length > 0 && (
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <Users size={9} className="text-muted-foreground/50 shrink-0" />
-                        <p className="text-[9px] text-muted-foreground truncate">
-                          {preset.artists.join(', ')}
-                        </p>
-                      </div>
-                    )}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold truncate">{preset.name}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                      {preset.timeSignature[0]}/{preset.timeSignature[1]}
+                    </span>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                      preset.complexity === 'beginner' ? 'bg-emerald-500/10 text-emerald-400' :
+                      preset.complexity === 'intermediate' ? 'bg-amber-500/10 text-amber-400' :
+                      'bg-rose-500/10 text-rose-400'
+                    }`}>{preset.complexity}</span>
                   </div>
-
-                  <div className="flex flex-col gap-1.5 shrink-0">
+                  <span className="text-[9px] text-muted-foreground">{preset.bpm} BPM · {preset.timeFeel}</span>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    onClick={() => previewRhythm(preset)}
+                    className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all ${
+                      previewingPreset === preset.name
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-border text-muted-foreground hover:bg-accent'
+                    }`}
+                  >
+                    <Play size={9} />
+                    {previewingPreset === preset.name ? '…' : '▸'}
+                  </button>
+                  {onLoadPreset && (
                     <button
-                      onClick={() => previewRhythm(preset)}
-                      className={`flex items-center gap-1 px-2.5 py-1.5 rounded text-[10px] font-medium transition-all ${
-                        previewingPreset === preset.name
-                          ? 'bg-primary text-primary-foreground'
-                          : 'border border-border text-muted-foreground hover:bg-accent hover:text-foreground'
-                      }`}
+                      onClick={() => onLoadPreset(preset)}
+                      className="flex items-center gap-1 px-2 py-1 rounded bg-primary text-primary-foreground text-[10px] font-medium hover:bg-primary/90 transition-colors"
                     >
-                      <Play size={10} />
-                      {previewingPreset === preset.name ? 'Playing...' : 'Preview'}
+                      <Zap size={9} /> Load
                     </button>
-
-                    {onLoadPreset && (
-                      <button
-                        onClick={() => onLoadPreset(preset)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-primary text-primary-foreground text-[10px] font-medium hover:bg-primary/90 transition-colors"
-                      >
-                        <Zap size={10} /> Open in Generator
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             ))}
