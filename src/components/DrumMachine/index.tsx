@@ -21,6 +21,7 @@ interface TrackState {
   volume: number;
   pitch: number;
   decay: number;
+  swing: number | null; // null = use global swing, 0-50 = per-track override
   muted: boolean;
   solo: boolean;
 }
@@ -44,6 +45,7 @@ function createTrackFromPreset(
     volume: inst?.defaultVelocity ?? 0.8,
     pitch: inst?.defaultPitch ?? 1,
     decay: inst?.defaultDecay ?? 0.3,
+    swing: null, // use global swing by default
     muted: false,
     solo: false,
   };
@@ -124,8 +126,10 @@ const DrumMachine = () => {
           const inst = getInstrument(track.instrumentId);
           if (inst) {
             let time = nextNoteTimeRef.current;
-            if (swing > 0 && currentStep % 2 === 1) {
-              time += stepDuration * swing / 100;
+            // Per-track swing overrides global
+            const effectiveSwing = track.swing !== null ? track.swing : swing;
+            if (effectiveSwing > 0 && currentStep % 2 === 1) {
+              time += stepDuration * effectiveSwing / 100;
             }
             if (groove !== 50) {
               const humanFactor = (groove - 50) / 50;
@@ -202,6 +206,7 @@ const DrumMachine = () => {
       volume: inst?.defaultVelocity ?? 0.8,
       pitch: inst?.defaultPitch ?? 1,
       decay: inst?.defaultDecay ?? 0.3,
+      swing: null,
       muted: false,
       solo: false,
     }]);
@@ -597,6 +602,26 @@ const DrumMachine = () => {
                   <input type="range" min={5} max={150} value={track.decay * 100}
                     onChange={e => updateTrack(track.id, { decay: Number(e.target.value) / 100 })}
                     className="w-14 accent-primary" />
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-muted-foreground">Swing</span>
+                  <input type="range" min={0} max={50}
+                    value={track.swing !== null ? track.swing : swing}
+                    onChange={e => updateTrack(track.id, { swing: Number(e.target.value) })}
+                    className="w-14 accent-primary" />
+                  <span className="text-[9px] text-muted-foreground w-8">
+                    {track.swing !== null ? `${track.swing}%` : 'G'}
+                  </span>
+                  {track.swing !== null && (
+                    <button
+                      onClick={() => updateTrack(track.id, { swing: null })}
+                      className="text-[8px] px-1 py-0.5 rounded border border-border text-muted-foreground hover:bg-accent"
+                      title="Reset to global swing"
+                    >
+                      ↺
+                    </button>
+                  )}
                 </div>
               </div>
             );
