@@ -209,6 +209,7 @@ const DrumMachine = () => {
       pitch: inst?.defaultPitch ?? 1,
       decay: inst?.defaultDecay ?? 0.3,
       swing: null,
+      probability: 100,
       muted: false,
       solo: false,
     }]);
