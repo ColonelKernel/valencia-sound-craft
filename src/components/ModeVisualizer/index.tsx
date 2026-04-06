@@ -123,29 +123,49 @@ const ModeVisualizer = () => {
 
         {expanded && (
           <>
-            {/* Tool Tabs */}
-            <div className="fade-up flex gap-2 mb-8 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin">
-              {[
-                { id: 'visualizer' as const, label: 'Mode Visualizer', shortLabel: 'Modes', icon: <Guitar className="w-4 h-4" /> },
-                { id: 'progression' as const, label: 'Chord Progressions', shortLabel: 'Chords', icon: <ListMusic className="w-4 h-4" /> },
-                { id: 'metronome' as const, label: 'Metronome', shortLabel: 'Metro', icon: <Timer className="w-4 h-4" /> },
-                { id: 'reference' as const, label: 'Scale Reference', shortLabel: 'Scales', icon: <BookOpen className="w-4 h-4" /> },
-                { id: 'polyrhythm' as const, label: 'Rhythm Engine', shortLabel: 'Rhythm', icon: <Drum className="w-4 h-4" /> },
-                { id: 'rhythmmap' as const, label: 'Rhythm Map', shortLabel: 'Map', icon: <Globe className="w-4 h-4" /> },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
-                    activeTab === tab.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'border border-border text-muted-foreground hover:bg-accent'
-                  }`}
-                >
-                  {tab.icon} <span className="hidden sm:inline">{tab.label}</span><span className="sm:hidden">{tab.shortLabel}</span>
-                </button>
-              ))}
-            </div>
+            {/* Tool Selector — dropdown on mobile, tabs on md+ */}
+            {(() => {
+              const tools = [
+                { id: 'visualizer' as const, label: 'Mode Visualizer', icon: <Guitar className="w-4 h-4" /> },
+                { id: 'progression' as const, label: 'Chord Progressions', icon: <ListMusic className="w-4 h-4" /> },
+                { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
+                { id: 'reference' as const, label: 'Scale Reference', icon: <BookOpen className="w-4 h-4" /> },
+                { id: 'polyrhythm' as const, label: 'Rhythm Engine', icon: <Drum className="w-4 h-4" /> },
+                { id: 'rhythmmap' as const, label: 'Rhythm Map', icon: <Globe className="w-4 h-4" /> },
+              ];
+              return (
+                <>
+                  {/* Mobile dropdown */}
+                  <div className="fade-up mb-6 md:hidden">
+                    <select
+                      value={activeTab}
+                      onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
+                      className="w-full bg-card border border-border rounded-lg px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      {tools.map((t) => (
+                        <option key={t.id} value={t.id}>{t.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Desktop tabs */}
+                  <div className="fade-up hidden md:flex gap-2 mb-8">
+                    {tools.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                          activeTab === tab.id
+                            ? 'bg-primary text-primary-foreground'
+                            : 'border border-border text-muted-foreground hover:bg-accent'
+                        }`}
+                      >
+                        {tab.icon} {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
 
             {activeTab === 'reference' && (
               <div>
