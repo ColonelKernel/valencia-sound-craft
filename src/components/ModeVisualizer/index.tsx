@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum, Globe } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
@@ -24,6 +24,7 @@ import ChordProgressionBuilder from "./ChordProgressionBuilder";
 import KeyboardVisualizer from "./KeyboardVisualizer";
 import MasterScaleReference from "./MasterScaleReference";
 import DrumMachine from "../DrumMachine";
+import RhythmMap from "../DrumMachine/RhythmMap";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -40,7 +41,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap'>('visualizer');
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
@@ -114,6 +115,7 @@ const ModeVisualizer = () => {
             { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
             { id: 'reference' as const, label: 'Scale Reference', icon: <BookOpen className="w-4 h-4" /> },
             { id: 'polyrhythm' as const, label: 'Rhythm Engine', icon: <Drum className="w-4 h-4" /> },
+            { id: 'rhythmmap' as const, label: 'Rhythm Map', icon: <Globe className="w-4 h-4" /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -138,6 +140,14 @@ const ModeVisualizer = () => {
         {activeTab === 'polyrhythm' && (
           <div>
             <DrumMachine />
+          </div>
+        )}
+
+        {activeTab === 'rhythmmap' && (
+          <div>
+            <RhythmMap onLoadPreset={(preset) => {
+              setActiveTab('polyrhythm');
+            }} />
           </div>
         )}
 
