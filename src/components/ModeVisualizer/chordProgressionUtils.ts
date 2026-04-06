@@ -681,3 +681,179 @@ export const RHYTHMIC_FEELS: { id: RhythmicFeel; label: string; beats: number }[
   { id: '7/8', label: '7/8 Odd', beats: 7 },
   { id: 'free', label: 'Free', beats: 4 },
 ];
+
+// ─── Extension Level ────────────────────────────────────────
+export const EXTENSION_LEVELS: { id: ExtensionLevel; label: string }[] = [
+  { id: 'triad', label: 'Triad' },
+  { id: '7th', label: '7th' },
+  { id: '9th', label: '9th' },
+  { id: '11th', label: '11th' },
+  { id: '13th', label: '13th' },
+];
+
+export function applyExtensionLevel(chord: ChordSpelling, level: ExtensionLevel, root: string): ChordSpelling {
+  const flats = useFlatsForKey(root);
+  const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
+  const rootIdx = chromatic.indexOf(chord.rootNote);
+  if (rootIdx === -1 || level === 'triad') {
+    // Strip to triad
+    if (level === 'triad' && chord.notes.length > 3) {
+      const notes = chord.notes.slice(0, 3);
+      const symbol = chord.symbol.replace(/maj7|m7|7|9|11|13|add9|\(.*\)/g, '');
+      return { ...chord, notes, symbol: symbol || chord.rootNote, name: `${chord.rootNote}${symbol ? symbol.replace(chord.rootNote, '') : ''}` };
+    }
+    return chord;
+  }
+
+  const isMinor = chord.symbol.includes('m') && !chord.symbol.includes('maj');
+  const isDim = chord.symbol.includes('dim') || chord.symbol.includes('°');
+  const baseNotes = chord.notes.slice(0, 3);
+  let sym = chord.symbol.replace(/maj7|m7|7|9|11|13|add9|\(.*\)/g, '') || chord.rootNote;
+
+  // triad already handled above
+
+  // 7th
+  const seventh = isDim
+    ? chromatic[(rootIdx + 9) % 12]   // dim7
+    : isMinor
+      ? chromatic[(rootIdx + 10) % 12]  // m7
+      : chromatic[(rootIdx + 11) % 12]; // maj7
+  const notes7 = [...baseNotes, seventh];
+  const sym7 = isDim ? `${sym}dim7` : isMinor ? `${sym}7` : `${sym}maj7`;
+  if (level === '7th') return { ...chord, notes: notes7, symbol: sym7, name: `${chord.rootNote} ${sym7.replace(chord.rootNote, '')}`.trim() };
+
+  // 9th
+  const ninth = chromatic[(rootIdx + 2) % 12];
+  const notes9 = [...notes7, ninth];
+  const sym9 = isDim ? `${sym}dim9` : isMinor ? `${sym}9` : `${sym}maj9`;
+  if (level === '9th') return { ...chord, notes: notes9, symbol: sym9, name: `${chord.rootNote} ${sym9.replace(chord.rootNote, '')}`.trim() };
+
+  // 11th
+  const eleventh = chromatic[(rootIdx + 5) % 12];
+  const notes11 = [...notes9, eleventh];
+  const sym11 = isDim ? `${sym}dim11` : isMinor ? `${sym}11` : `${sym}maj11`;
+  if (level === '11th') return { ...chord, notes: notes11, symbol: sym11, name: `${chord.rootNote} ${sym11.replace(chord.rootNote, '')}`.trim() };
+
+  // 13th
+  const thirteenth = chromatic[(rootIdx + 9) % 12];
+  const notes13 = [...notes11, thirteenth];
+  const sym13 = isDim ? `${sym}dim13` : isMinor ? `${sym}13` : `${sym}maj13`;
+  return { ...chord, notes: notes13, symbol: sym13, name: `${chord.rootNote} ${sym13.replace(chord.rootNote, '')}`.trim() };
+}
+
+// ─── Voicing Engine ─────────────────────────────────────────
+export const VOICING_TYPES: { id: VoicingType; label: string; desc: string }[] = [
+  { id: 'close', label: 'Close', desc: 'Root position, tightest spacing' },
+  { id: 'open', label: 'Open', desc: 'Spread across octaves' },
+  { id: 'drop2', label: 'Drop 2', desc: 'Jazz piano voicing' },
+  { id: 'drop3', label: 'Drop 3', desc: 'Wide jazz voicing' },
+  { id: 'quartal', label: 'Quartal', desc: 'Stacked 4ths, modal sound' },
+  { id: 'guitar', label: 'Guitar', desc: 'Open string-friendly' },
+];
+
+export function applyVoicing(notes: string[], voicing: VoicingType): string[] {
+  if (notes.length < 3) return notes;
+  switch (voicing) {
+    case 'close': return notes;
+    case 'open': {
+      // Spread: root, skip, 3rd up octave, skip, 5th up octave
+      const result = [notes[0]];
+      for (let i = 1; i < notes.length; i++) {
+        result.push(notes[i]); // just label-wise same, but playback will spread
+      }
+      return result;
+    }
+    case 'drop2': {
+      if (notes.length < 4) return notes;
+      // Drop the 2nd-from-top voice down an octave
+      const arr = [...notes];
+      const dropped = arr.splice(arr.length - 2, 1)[0];
+      return [dropped, ...arr];
+    }
+    case 'drop3': {
+      if (notes.length < 4) return notes;
+      const arr = [...notes];
+      const dropped = arr.splice(arr.length - 3, 1)[0];
+      return [dropped, ...arr];
+    }
+    case 'quartal': {
+      // Revoice in 4ths from root
+      const chromatic = NOTES_SHARP;
+      const rootIdx = chromatic.indexOf(notes[0]);
+      if (rootIdx === -1) return notes;
+      return notes.map((_, i) => chromatic[(rootIdx + i * 5) % 12]);
+    }
+    case 'guitar': {
+      // Guitar-friendly: root on bottom, open spacing
+      return notes.length > 4 ? [notes[0], notes[2], notes[1], ...notes.slice(3)] : notes;
+    }
+    default: return notes;
+  }
+}
+
+// ─── Expressive Controls ────────────────────────────────────
+export interface ExpressiveParams {
+  tension: number;    // 0-100
+  density: number;    // 0-100
+  movement: number;   // 0-100
+  brightness: number; // 0-100
+}
+
+export const DEFAULT_EXPRESSIVE: ExpressiveParams = { tension: 50, density: 50, movement: 50, brightness: 50 };
+
+export function getExpressivePlaybackParams(params: ExpressiveParams) {
+  return {
+    velocityMultiplier: 0.5 + (params.density / 200),
+    detuneRange: (params.tension / 100) * 15,
+    attackSpeed: 0.01 + ((100 - params.brightness) / 100) * 0.1,
+    sustainMultiplier: 0.5 + (params.movement / 200),
+  };
+}
+
+export function playChordTonesExpressive(
+  notes: string[], duration: number, timbre: InstrumentTimbre,
+  voicing: VoicingType, params: ExpressiveParams
+) {
+  const voiced = applyVoicing(notes, voicing);
+  const ep = getExpressivePlaybackParams(params);
+  const ctx = new AudioContext();
+  const NOTE_FREQ: Record<string, number> = {
+    'C': 261.63, 'C#': 277.18, 'Db': 277.18,
+    'D': 293.66, 'D#': 311.13, 'Eb': 311.13,
+    'E': 329.63, 'F': 349.23, 'F#': 369.99, 'Gb': 369.99,
+    'G': 392.00, 'G#': 415.30, 'Ab': 415.30,
+    'A': 440.00, 'A#': 466.16, 'Bb': 466.16, 'B': 493.88,
+  };
+
+  const volume = 0.08 * ep.velocityMultiplier;
+  const isOpen = voicing === 'open';
+
+  voiced.forEach((note, i) => {
+    let freq = NOTE_FREQ[note];
+    if (!freq) return;
+    if (isOpen && i > 0 && i % 2 === 0) freq *= 2;
+    freq += (Math.random() - 0.5) * ep.detuneRange;
+    if (timbre === 'warm-bass') freq /= 2;
+    const startTime = ctx.currentTime + i * 0.03;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    switch (timbre) {
+      case 'guitar': osc.type = 'triangle'; break;
+      case 'organ': osc.type = 'sine'; break;
+      case 'synth-pad': osc.type = 'sawtooth'; break;
+      case 'bright-lead': osc.type = 'square'; break;
+      case 'warm-bass': osc.type = 'sine'; break;
+      default: osc.type = 'triangle'; break;
+    }
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.001, startTime);
+    gain.gain.linearRampToValueAtTime(volume, startTime + ep.attackSpeed);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startTime);
+    const end = startTime + duration * ep.sustainMultiplier;
+    gain.gain.exponentialRampToValueAtTime(0.001, end);
+    osc.stop(end + 0.05);
+  });
+}

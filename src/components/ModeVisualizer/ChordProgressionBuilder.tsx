@@ -3,20 +3,21 @@ import {
   Play, Pause, X, RotateCcw, Sparkles, ArrowRightLeft,
   Music2, ChevronDown, ChevronUp, Download, ArrowLeft, ArrowRight,
   Lock, Unlock, Wand2, Globe2, Lightbulb, GripVertical,
-  Undo2, Music, Settings2, ChevronRight,
+  Undo2, Music, Settings2, ChevronRight, Sliders,
 } from "lucide-react";
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
 import { type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 import {
   type ProgressionChord, type ChordSource, type RhythmicFeel, type HarmonicStyle,
-  type ViewMode, type ChordFunction,
+  type ViewMode, type ChordFunction, type ExtensionLevel, type VoicingType, type ExpressiveParams,
   PROGRESSION_TEMPLATES, STYLE_PRESETS, RHYTHMIC_FEELS,
+  EXTENSION_LEVELS, VOICING_TYPES, DEFAULT_EXPRESSIVE,
   sourceColors, sourceActiveColors, sourceDotColors, functionColors, functionDotColors,
   getSecondaryDominants, getTritoneSubs, getBorrowedChords, createIIV,
   transformProgression, getNextChordSuggestions,
   getRomanNumeral, getNashvilleNumber, getChordFunction,
-  transposeChord, useFlatsForKey,
-  playChordTones, downloadMidi, getStyleSuggestions,
+  transposeChord, useFlatsForKey, applyExtensionLevel,
+  playChordTonesExpressive, downloadMidi, getStyleSuggestions,
   NOTES_SHARP, NOTES_FLAT,
 } from "./chordProgressionUtils";
 
@@ -59,6 +60,10 @@ const ChordProgressionBuilder = ({
 
   const [rhythmicFeel, setRhythmicFeel] = useState<RhythmicFeel>('straight');
   const [harmonicStyle, setHarmonicStyle] = useState<HarmonicStyle>('neutral');
+  const [extensionLevel, setExtensionLevel] = useState<ExtensionLevel>('triad');
+  const [voicingType, setVoicingType] = useState<VoicingType>('close');
+  const [expressive, setExpressive] = useState<ExpressiveParams>(DEFAULT_EXPRESSIVE);
+  const [showExpressive, setShowExpressive] = useState(false);
 
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -102,7 +107,7 @@ const ChordProgressionBuilder = ({
     progression.forEach((pc, i) => {
       ids.push(window.setTimeout(() => {
         setCurrentIdx(i);
-        playChordTones(pc.chord.notes, (chordDuration / 1000) * 0.9, timbre);
+        playChordTonesExpressive(pc.chord.notes, (chordDuration / 1000) * 0.9, timbre, voicingType, expressive);
       }, i * chordDuration));
     });
     ids.push(window.setTimeout(() => {
@@ -115,7 +120,8 @@ const ChordProgressionBuilder = ({
   const addChord = (pc: ProgressionChord) => {
     if (lockProgression) return;
     pushUndo();
-    setProgression(prev => [...prev, pc]);
+    const extChord = extensionLevel !== 'triad' ? applyExtensionLevel(pc.chord, extensionLevel, root) : pc.chord;
+    setProgression(prev => [...prev, { ...pc, chord: extChord }]);
   };
 
   const removeChord = (idx: number) => {
@@ -300,6 +306,26 @@ const ChordProgressionBuilder = ({
             </select>
           </div>
           <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground text-[10px]">Ext</span>
+            <div className="flex gap-0.5">
+              {EXTENSION_LEVELS.map(ext => (
+                <button key={ext.id} onClick={() => setExtensionLevel(ext.id)}
+                  className={`text-[8px] px-1 py-0.5 rounded border transition-colors ${extensionLevel === ext.id ? 'border-primary bg-primary/15 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}>
+                  {ext.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground text-[10px]">Voice</span>
+            <select value={voicingType} onChange={(e) => setVoicingType(e.target.value as VoicingType)}
+              className="bg-background border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none">
+              {VOICING_TYPES.map(v => <option key={v.id} value={v.id}>{v.label}</option>)}
+            </select>
+          </div>
+          <div className="h-4 w-px bg-border" />
           {[
             { l: 'Prog', v: lockProgression, s: setLockProgression },
             { l: 'Root', v: lockRoots, s: setLockRoots },
@@ -384,7 +410,7 @@ const ChordProgressionBuilder = ({
               <span className="text-muted-foreground">{progression[editingIdx].chord.notes.join('-')}</span>
               <span className="text-muted-foreground capitalize">{progression[editingIdx].function || 'other'}</span>
               <div className="flex gap-1 ml-auto">
-                <button onClick={() => playChordTones(progression[editingIdx].chord.notes, 0.8, timbre)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
+                <button onClick={() => playChordTonesExpressive(progression[editingIdx].chord.notes, 0.8, timbre, voicingType, expressive)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
                 <button onClick={() => removeChord(editingIdx)} className="px-1.5 py-0.5 rounded border border-destructive/50 text-destructive hover:bg-destructive/10 text-[10px]">Del</button>
                 {has7Notes && <button onClick={() => { insertIIV(editingIdx); setEditingIdx(null); }} className="px-1.5 py-0.5 rounded border border-pink-500/50 text-pink-400 hover:bg-pink-500/10 text-[10px]">ii-V</button>}
                 <button onClick={() => setEditingIdx(null)} className="text-muted-foreground hover:text-foreground"><X size={12} /></button>
@@ -453,7 +479,11 @@ const ChordProgressionBuilder = ({
               className="flex items-center gap-0.5 text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:bg-accent disabled:opacity-40">
               <Download size={10} /> MIDI
             </button>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1">
+              <button onClick={() => setShowExpressive(!showExpressive)}
+                className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded border transition-colors ${showExpressive ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}>
+                <Sliders size={10} /> Feel
+              </button>
               <button onClick={() => setShowToolsPanel(!showToolsPanel)}
                 className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded border transition-colors ${showToolsPanel ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}>
                 <Sparkles size={10} /> Tools
@@ -644,6 +674,25 @@ const ChordProgressionBuilder = ({
           </div>
         )}
       </div>
+      {/* ═══ EXPRESSIVE CONTROLS BOTTOM BAR ═══ */}
+      {showExpressive && (
+        <div className="flex flex-wrap items-center gap-4 px-3 py-2 border-t border-border bg-secondary/10">
+          {([
+            { key: 'tension' as const, label: 'Tension', emoji: '⚡' },
+            { key: 'density' as const, label: 'Density', emoji: '🎛️' },
+            { key: 'movement' as const, label: 'Movement', emoji: '🌊' },
+            { key: 'brightness' as const, label: 'Bright', emoji: '☀️' },
+          ]).map(s => (
+            <div key={s.key} className="flex items-center gap-1.5 min-w-[120px]">
+              <span className="text-[9px] text-muted-foreground w-12 shrink-0">{s.emoji} {s.label}</span>
+              <input type="range" min={0} max={100} value={expressive[s.key]}
+                onChange={(e) => setExpressive(prev => ({ ...prev, [s.key]: Number(e.target.value) }))}
+                className="flex-1 h-1 accent-primary cursor-pointer" />
+              <span className="text-[9px] text-muted-foreground w-6 text-right">{expressive[s.key]}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
