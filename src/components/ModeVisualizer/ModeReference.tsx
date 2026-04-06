@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getScaleNotes, isSharp, isFlat, MODE_INTERVAL_NAMES, MODE_CATEGORIES } from "./scaleData";
+import { getScaleNotes, isSharp, isFlat, MODE_INTERVAL_NAMES, MODE_CATEGORIES, MODE_INTERVALS } from "./scaleData";
 
 interface ModeReferenceProps {
   rootNote?: string;
@@ -69,9 +69,31 @@ const CATEGORY_COMPARISONS: Record<string, { mode: string; base: string; change:
   ],
 };
 
+const getStepPattern = (modeName: string): string[] => {
+  const intervals = MODE_INTERVALS[modeName];
+  if (!intervals) return [];
+  const steps: string[] = [];
+  for (let i = 0; i < intervals.length; i++) {
+    const next = i + 1 < intervals.length ? intervals[i + 1] : 12;
+    const diff = next - intervals[i];
+    if (diff === 1) steps.push('H');
+    else if (diff === 2) steps.push('W');
+    else if (diff === 3) steps.push('WH');
+    else steps.push(`${diff}`);
+  }
+  return steps;
+};
+
+const getStepStyle = (step: string) => {
+  if (step === 'W') return 'bg-emerald-600 text-white';
+  if (step === 'H') return 'bg-rose-500 text-white';
+  if (step === 'WH') return 'bg-violet-600 text-white';
+  return 'bg-stone-500 text-white';
+};
+
 const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
   const [selectedRoot, setSelectedRoot] = useState(rootNote);
-  const [showType, setShowType] = useState<'notes' | 'intervals'>('notes');
+  const [showType, setShowType] = useState<'notes' | 'intervals' | 'steps'>('notes');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Major Modes']));
 
   const roots = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B'];
@@ -111,12 +133,21 @@ const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
             <option key={n} value={n}>{n}</option>
           ))}
         </select>
-        <button
-          onClick={() => setShowType(showType === 'notes' ? 'intervals' : 'notes')}
-          className="text-xs px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
-        >
-          {showType === 'notes' ? '♪ Notes' : '# Intervals'}
-        </button>
+        <div className="flex gap-1">
+          {(['notes', 'intervals', 'steps'] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setShowType(t)}
+              className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                showType === t
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-border text-muted-foreground hover:bg-accent'
+              }`}
+            >
+              {t === 'notes' ? '♪ Notes' : t === 'intervals' ? '# Intervals' : 'W/H Steps'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {MODE_CATEGORIES.map((cat) => {
@@ -164,12 +195,21 @@ const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
                                         {note}
                                       </span>
                                     ))
-                                  : displayIntervals.map((interval, i) => (
+                                  : showType === 'intervals'
+                                  ? displayIntervals.map((interval, i) => (
                                       <span
                                         key={i}
                                         className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-bold ${getIntervalStyle(interval)}`}
                                       >
                                         {interval}
+                                      </span>
+                                    ))
+                                  : getStepPattern(modeName).map((step, i) => (
+                                      <span
+                                        key={i}
+                                        className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-bold ${getStepStyle(step)}`}
+                                      >
+                                        {step}
                                       </span>
                                     ))}
                               </div>
