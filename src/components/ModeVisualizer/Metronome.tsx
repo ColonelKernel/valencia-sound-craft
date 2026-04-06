@@ -535,7 +535,7 @@ const Metronome = () => {
       <div className="flex justify-center gap-3 mb-6">
         <button
           onClick={handleTap}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+          className={`flex items-center gap-2 px-5 py-3 rounded-lg text-sm font-medium border transition-colors touch-manipulation active:scale-95 ${
             isPerformance
               ? 'border-white/30 text-white hover:bg-white/10'
               : 'border-border text-foreground hover:bg-accent'
@@ -554,12 +554,12 @@ const Metronome = () => {
       </div>
 
       {/* ─── Beat Indicator ───────────────────────────── */}
-      <div className="flex justify-center gap-2 mb-6">
+      <div className="flex justify-center flex-wrap gap-1.5 sm:gap-2 mb-6">
         {Array.from({ length: timeSig.beats }).map((_, i) => (
           <div
             key={i}
             onClick={handleTimingTap}
-            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all duration-100 cursor-pointer ${
+            className={`w-9 h-9 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all duration-100 cursor-pointer touch-manipulation ${
               currentBeat === i
                 ? i === 0 && accentFirst
                   ? 'bg-amber-500 border-amber-400 text-black scale-110'
