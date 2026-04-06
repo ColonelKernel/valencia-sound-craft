@@ -186,7 +186,7 @@ const Fretboard = ({
                       } ${showFingers && isInPosition && fret > 0 ? "bg-white/[0.03]" : ""}`}
                     >
                       {inScale ? (() => {
-+                        const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter);
+const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter);
                         const finalStyle = dimmedByChord
                           ? 'bg-stone-800 text-stone-500 border border-stone-700'
                           : circleStyle;
