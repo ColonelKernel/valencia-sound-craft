@@ -157,6 +157,12 @@ const ModeVisualizer = () => {
           </div>
         )}
 
+        {activeTab === 'strudel' && (
+          <Suspense fallback={<div className="text-center py-12 text-muted-foreground">Loading Strudel Editor…</div>}>
+            <StrudelEditor />
+          </Suspense>
+        )}
+
         {activeTab === 'metronome' && (
           <div>
             <Metronome />
