@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   StringTuning,
   getNoteAtFret,
@@ -95,24 +96,25 @@ const Fretboard = ({
   chordFilter,
   onNoteClick,
 }: FretboardProps) => {
+  const [positionOverride, setPositionOverride] = useState<number | null>(null);
+
   const strings = lefty ? [...tuning].reverse() : tuning;
-  const originalOrder = lefty ? [...tuning].reverse() : tuning;
   const frets = Array.from({ length: FRET_COUNT + 1 }, (_, i) => i);
   const displayFrets = lefty ? [...frets].reverse() : frets;
 
-  // Find a good starting position: the lowest fret where the root note appears on the lowest string
-  let startPos = 1;
+  // Auto-detect a default starting position based on root
+  let autoPos = 1;
   if (showFingers) {
-    for (let f = 0; f <= 12; f++) {
+    for (let f = 1; f <= 12; f++) {
       const raw = getNoteAtFret(tuning[0].note, f);
-      if (getScaleNote(raw, scaleNotes) === root && f > 0) {
-        startPos = f;
+      if (getScaleNote(raw, scaleNotes) === root) {
+        autoPos = Math.max(1, f - 1);
         break;
       }
     }
-    // Adjust so the position spans nicely
-    if (startPos > 1) startPos = Math.max(1, startPos - 1);
   }
+
+  const startPos = showFingers ? (positionOverride ?? autoPos) : 1;
 
   const fingerMap = showFingers ? computeFingerMap(tuning, scaleNotes, startPos) : new Map();
   const posEnd = startPos + 3;
