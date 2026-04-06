@@ -563,6 +563,33 @@ const ModeVisualizer = () => {
           </div>
         )}
 
+        {/* Other Fretted Instruments */}
+        {instrument === 'other' && (() => {
+          const fi = FRETTED_INSTRUMENTS.find(f => f.key === otherInstrument) || FRETTED_INSTRUMENTS[0];
+          return (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Music className="w-5 h-5" /> {fi.label} ({tuningLabel(fi.tuning)})
+                {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
+              </h3>
+              <Fretboard
+                scaleNotes={scaleNotes}
+                root={root}
+                mode={mode}
+                tuning={fi.tuning}
+                label={fi.label}
+                lefty={lefty}
+                showIntervals={showIntervals}
+                showFingers={showFingers}
+                hoveredNote={hoveredNote}
+                onNoteHover={setHoveredNote}
+                chordFilter={chordFilter}
+                onNoteClick={handleNoteClick}
+              />
+            </div>
+          );
+        })()}
+
         {/* Keyboard */}
         {instrument === 'keyboard' && (
           <div className="mb-8">
