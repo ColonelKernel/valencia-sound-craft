@@ -145,7 +145,7 @@ const ChordProgressionBuilder = ({
                       : 'border-border bg-card hover:border-muted-foreground'
                   }`}
                 >
-                  <span className="font-bold">{chord.roman}</span>
+                  <span className="font-bold">{chord.symbol}</span>
                   <span className="text-[10px] text-muted-foreground">{chord.notes.join(' ')}</span>
                   <button
                     onClick={() => removeChord(i)}
@@ -170,7 +170,7 @@ const ChordProgressionBuilder = ({
               onClick={() => addChord(i)}
               className="flex flex-col items-center px-3 py-2 rounded-lg border border-border hover:border-amber-500/50 hover:bg-amber-500/5 transition-colors text-sm"
             >
-              <span className="font-bold">{chord.roman}</span>
+              <span className="font-bold">{chord.symbol}</span>
               <span className="text-[10px] text-muted-foreground">{chord.notes.join('-')}</span>
             </button>
           ))}
