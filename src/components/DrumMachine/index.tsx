@@ -100,16 +100,20 @@ const DrumMachine = () => {
 
   // Computed
   const categories = useMemo(() => getAllCategories(), []);
+  const regions = useMemo(() => getAllRegions(), []);
+  const rhythmTypes = useMemo(() => getAllRhythmTypes(), []);
   const presetsByCategory = useMemo(() => getPresetsByRegion(), []);
 
   const filteredPresets = useMemo(() => {
     return filterPresets({
       category: selectedCategory,
+      region: filterRegion,
       timeFeel: filterFeel,
       complexity: filterComplexity,
+      rhythmType: filterRhythmType,
       search: searchQuery || undefined,
     });
-  }, [selectedCategory, filterFeel, filterComplexity, searchQuery]);
+  }, [selectedCategory, filterRegion, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
 
   const hasSolo = tracks.some(t => t.solo);
 
