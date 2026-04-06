@@ -463,6 +463,33 @@ const ChordProgressionBuilder = ({
                     : 'border-border bg-card hover:border-muted-foreground'
                 }`}
               >
+                {/* Move & remove controls */}
+                <div className="absolute -top-2 left-0 right-0 flex items-center justify-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {i > 0 && (
+                    <button
+                      onClick={() => moveChord(i, -1)}
+                      className="w-4 h-4 rounded-full bg-secondary border border-border flex items-center justify-center hover:bg-accent"
+                      title="Move left"
+                    >
+                      <ArrowLeft size={8} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => removeChord(i)}
+                    className="w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                  >
+                    <X size={8} />
+                  </button>
+                  {i < progression.length - 1 && (
+                    <button
+                      onClick={() => moveChord(i, 1)}
+                      className="w-4 h-4 rounded-full bg-secondary border border-border flex items-center justify-center hover:bg-accent"
+                      title="Move right"
+                    >
+                      <ArrowRight size={8} />
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-center gap-1">
                   <span className={`w-1.5 h-1.5 rounded-full ${sourceDotColors[pc.source]}`} />
                   <span className="font-bold">{pc.chord.symbol}</span>
@@ -471,12 +498,6 @@ const ChordProgressionBuilder = ({
                 {pc.source !== 'diatonic' && (
                   <span className="text-[9px] text-muted-foreground/60 italic">{pc.sourceLabel}</span>
                 )}
-                <button
-                  onClick={() => removeChord(i)}
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X size={10} />
-                </button>
               </div>
             ))
           )}
