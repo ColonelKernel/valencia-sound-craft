@@ -1370,8 +1370,8 @@ export const DRUM_PRESETS: PatternPreset[] = [
 export interface CountryMapData {
   code: string;
   name: string;
-  x: number; // 0-100 percentage
-  y: number; // 0-100 percentage
+  lat: number;
+  lng: number;
   region: string;
   rhythmCount: number;
 }
@@ -1388,25 +1388,25 @@ export function getCountryMapData(): CountryMapData[] {
     }
   });
 
-  // Approximate Mercator-ish positions (x: 0-100, y: 0-100)
+  // Real lat/lng coordinates
   const positions: Record<string, [number, number]> = {
-    'US': [22, 35], 'CU': [27, 42], 'PR': [30, 43], 'JM': [27, 44],
-    'DO': [29, 43], 'TT': [32, 48], 'CO': [28, 52], 'PE': [27, 58],
-    'BR': [35, 60], 'UY': [33, 67], 'AR': [31, 70], 'MX': [20, 42],
-    'ES': [48, 32], 'IE': [46, 26], 'BG': [56, 30], 'MK': [55, 32],
-    'RS': [54, 30], 'GH': [48, 50], 'NG': [52, 50], 'SN': [44, 47],
-    'GN': [45, 49], 'MA': [47, 36], 'ET': [60, 48], 'ZA': [57, 72],
-    'CD': [57, 56], 'EG': [58, 38], 'TR': [60, 32], 'IN': [72, 42],
+    'US': [39.8, -98.6], 'CU': [21.5, -80.0], 'PR': [18.2, -66.6], 'JM': [18.1, -77.3],
+    'DO': [18.7, -70.2], 'TT': [10.4, -61.2], 'CO': [4.6, -74.1], 'PE': [-12.0, -77.0],
+    'BR': [-14.2, -51.9], 'UY': [-32.5, -55.8], 'AR': [-38.4, -63.6], 'MX': [23.6, -102.6],
+    'ES': [40.5, -3.7], 'IE': [53.4, -8.2], 'BG': [42.7, 25.5], 'MK': [41.5, 21.7],
+    'RS': [44.0, 21.0], 'GH': [7.9, -1.0], 'NG': [9.1, 7.5], 'SN': [14.5, -14.5],
+    'GN': [9.9, -11.6], 'MA': [31.8, -7.1], 'ET': [9.1, 40.5], 'ZA': [-30.6, 22.9],
+    'CD': [-4.0, 21.8], 'EG': [26.8, 30.8], 'TR': [39.0, 35.2], 'IN': [20.6, 79.0],
   };
 
   const result: CountryMapData[] = [];
   countryMap.forEach((data, code) => {
-    const pos = positions[code] || [50, 50];
+    const pos = positions[code] || [0, 0];
     result.push({
       code,
       name: data.name,
-      x: pos[0],
-      y: pos[1],
+      lat: pos[0],
+      lng: pos[1],
       region: data.region,
       rhythmCount: data.count,
     });
