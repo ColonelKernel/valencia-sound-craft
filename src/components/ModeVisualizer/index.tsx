@@ -476,6 +476,8 @@ const ModeVisualizer = () => {
         <div className="fade-up mt-10">
           <ModeReference rootNote={root} />
         </div>
+        </>
+        )}
       </div>
     </section>
   );
