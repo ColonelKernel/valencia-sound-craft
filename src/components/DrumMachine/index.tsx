@@ -517,8 +517,18 @@ const DrumMachine = () => {
                 onChange={e => setMidiMapping(e.target.value as MidiMapping)}
                 className="bg-secondary border border-border rounded px-2 py-1.5 text-xs text-foreground"
               >
-                {MIDI_MAPPINGS.map(m => (
-                  <option key={m.id} value={m.id}>{m.label}</option>
+                {Object.entries(
+                  MIDI_MAPPINGS.reduce((acc, m) => {
+                    if (!acc[m.category]) acc[m.category] = [];
+                    acc[m.category].push(m);
+                    return acc;
+                  }, {} as Record<string, typeof MIDI_MAPPINGS>)
+                ).map(([cat, items]) => (
+                  <optgroup key={cat} label={cat}>
+                    {items.map(m => (
+                      <option key={m.id} value={m.id}>{m.label}</option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
