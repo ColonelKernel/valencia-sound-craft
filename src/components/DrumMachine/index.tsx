@@ -22,6 +22,7 @@ interface TrackState {
   pitch: number;
   decay: number;
   swing: number | null; // null = use global swing, 0-50 = per-track override
+  probability: number; // 0-100, chance each hit actually plays
   muted: boolean;
   solo: boolean;
 }
@@ -45,7 +46,8 @@ function createTrackFromPreset(
     volume: inst?.defaultVelocity ?? 0.8,
     pitch: inst?.defaultPitch ?? 1,
     decay: inst?.defaultDecay ?? 0.3,
-    swing: null, // use global swing by default
+    swing: null,
+    probability: 100,
     muted: false,
     solo: false,
   };
@@ -122,7 +124,7 @@ const DrumMachine = () => {
         const currentStep = stepRef.current[track.id] ?? 0;
         const velocity = track.steps[currentStep];
 
-        if (velocity > 0) {
+        if (velocity > 0 && (track.probability >= 100 || Math.random() * 100 < track.probability)) {
           const inst = getInstrument(track.instrumentId);
           if (inst) {
             let time = nextNoteTimeRef.current;
@@ -207,6 +209,7 @@ const DrumMachine = () => {
       pitch: inst?.defaultPitch ?? 1,
       decay: inst?.defaultDecay ?? 0.3,
       swing: null,
+      probability: 100,
       muted: false,
       solo: false,
     }]);
@@ -622,6 +625,17 @@ const DrumMachine = () => {
                       ↺
                     </button>
                   )}
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-muted-foreground">Prob</span>
+                  <input type="range" min={0} max={100}
+                    value={track.probability}
+                    onChange={e => updateTrack(track.id, { probability: Number(e.target.value) })}
+                    className="w-14 accent-primary" />
+                  <span className={`text-[9px] w-8 ${track.probability < 100 ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                    {track.probability}%
+                  </span>
                 </div>
               </div>
             );
