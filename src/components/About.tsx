@@ -36,11 +36,13 @@ const About = () => {
               <p>
                 I work with artists to take ideas from early sketches to fully realized,
                 release-ready tracks, combining live instruments with digital tools and
-                data-driven production workflows.
+                data-driven production workflows. I also build interactive music tools —
+                like fretboard visualizers, metronomes, and chord progression builders —
+                to help musicians learn, practice, and create more effectively.
               </p>
               <p className="text-foreground font-medium">
                 I'm especially interested in projects that sit between genres — where
-                traditional instruments meet modern production.
+                traditional instruments meet modern production and technology.
               </p>
               <p>
                 Outside of client work, I write and produce original music under the name{" "}
