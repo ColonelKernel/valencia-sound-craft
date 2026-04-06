@@ -96,8 +96,24 @@ const COMMON_ROOTS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'Ab', 'A'
 const MasterScaleReference = () => {
   const [root, setRoot] = useState("C");
   const [familyIdx, setFamilyIdx] = useState(0);
+  const [playingIdx, setPlayingIdx] = useState<number | null>(null);
+  const playingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const family = SCALE_FAMILIES[familyIdx];
+  const handlePlayScale = useCallback((notes: string[], rowIdx: number) => {
+    if (playingIdx === rowIdx) {
+      // Stop
+      setPlayingIdx(null);
+      if (playingTimeout.current) clearTimeout(playingTimeout.current);
+      return;
+    }
+    setPlayingIdx(rowIdx);
+    // Play scale notes + octave root
+    const notesWithOctave = [...notes, notes[0]];
+    playScale(notesWithOctave, 200, 'piano');
+    const totalDuration = notesWithOctave.length * 200 + 350;
+    if (playingTimeout.current) clearTimeout(playingTimeout.current);
+    playingTimeout.current = setTimeout(() => setPlayingIdx(null), totalDuration);
+  }, [playingIdx]);
   const parentNotes = useMemo(() => getScaleNotes(root, family.modes[0]), [root, family]);
 
   const modeRows = useMemo(() => {
