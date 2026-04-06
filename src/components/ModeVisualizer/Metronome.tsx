@@ -153,7 +153,7 @@ const Metronome = () => {
   // Cleanup
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) clearTimeout(intervalRef.current);
     };
   }, []);
 
