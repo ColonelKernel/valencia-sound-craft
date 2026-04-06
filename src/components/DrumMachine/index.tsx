@@ -284,30 +284,31 @@ const DrumMachine = () => {
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 md:p-6 space-y-5">
+    <div className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div>
-          <h3 className="text-xl font-bold flex items-center gap-2">
+          <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
             <Globe className="w-5 h-5 text-primary" />
             Global Rhythm Engine
           </h3>
-          <p className="text-xs text-muted-foreground mt-1 max-w-lg">
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 max-w-lg">
             {DRUM_PRESETS.length} culturally authentic patterns from {new Set(DRUM_PRESETS.filter(p => p.countryCode !== 'UN').map(p => p.country)).size} countries.
-            Click cells to cycle: off → hit → accent → ghost.
+            <span className="hidden sm:inline"> Click cells to cycle: off → hit → accent → ghost.</span>
+            <span className="sm:hidden"> Tap cells to toggle.</span>
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {claveInfo && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/10 border border-primary/20">
               <Music className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[11px] text-primary font-medium">Clave: {claveInfo}</span>
+              <span className="text-[10px] sm:text-[11px] text-primary font-medium">Clave: {claveInfo}</span>
             </div>
           )}
           {currentPreset && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-secondary border border-border">
-              <span className="text-[11px] font-medium">{currentPreset.country}</span>
-              <span className="text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-secondary border border-border">
+              <span className="text-[10px] sm:text-[11px] font-medium">{currentPreset.country}</span>
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground">
                 {formatPulseGrouping(currentPreset.pulseGrouping)}
               </span>
             </div>
