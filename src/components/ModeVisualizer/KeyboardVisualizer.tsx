@@ -124,18 +124,18 @@ const KeyboardVisualizer = ({
               className={`relative flex-1 border border-border rounded-b-md cursor-pointer transition-all ${getKeyColor(k.note, false)} ${
                 hovered ? 'ring-2 ring-amber-400 scale-[1.02] z-10' : ''
               }`}
-              onMouseEnter={() => inScale && onNoteHover(displayNote(k.note, 0, 0.4, timbre))}
+              onMouseEnter={() => inScale && onNoteHover(displayNote(k.note))}
               onMouseLeave={() => onNoteHover(null)}
               onClick={() => {
                 if (inScale) {
                   playNote(k.note, 0, 0.4, timbre);
-                  onNoteClick?.(displayNote(k.note, 0, 0.4, timbre));
+                  onNoteClick?.(displayNote(k.note));
                 }
               }}
             >
               {inScale && (
                 <span className={`absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] ${getTextColor(k.note, false)}`}>
-                  {showIntervals && scaleIdx >= 0 ? intervals[scaleIdx] : displayNote(k.note, 0, 0.4, timbre)}
+                  {showIntervals && scaleIdx >= 0 ? intervals[scaleIdx] : displayNote(k.note)}
                 </span>
               )}
             </div>
@@ -159,18 +159,18 @@ const KeyboardVisualizer = ({
               width: `${(0.7 / totalWhiteKeys) * 100}%`,
               height: '60%',
             }}
-            onMouseEnter={() => inScale && onNoteHover(displayNote(k.note, 0, 0.4, timbre))}
+            onMouseEnter={() => inScale && onNoteHover(displayNote(k.note))}
             onMouseLeave={() => onNoteHover(null)}
             onClick={() => {
               if (inScale) {
                 playNote(k.note, 0, 0.4, timbre);
-                onNoteClick?.(displayNote(k.note, 0, 0.4, timbre));
+                onNoteClick?.(displayNote(k.note));
               }
             }}
           >
             {inScale && (
               <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 text-[8px] ${getTextColor(k.note, true)}`}>
-                {showIntervals && scaleIdx >= 0 ? intervals[scaleIdx] : displayNote(k.note, 0, 0.4, timbre)}
+                {showIntervals && scaleIdx >= 0 ? intervals[scaleIdx] : displayNote(k.note)}
               </span>
             )}
           </div>
