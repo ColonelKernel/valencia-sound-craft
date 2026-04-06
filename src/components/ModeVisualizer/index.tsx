@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
   ALL_ROOTS,
@@ -21,6 +21,7 @@ import ModeReference from "./ModeReference";
 import Metronome from "./Metronome";
 import ChordProgressionBuilder from "./ChordProgressionBuilder";
 import KeyboardVisualizer from "./KeyboardVisualizer";
+import MasterScaleReference from "./MasterScaleReference";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -37,7 +38,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference'>('visualizer');
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard'>('guitar');
 
   const scaleNotes = getScaleNotes(root, mode);
@@ -102,6 +103,7 @@ const ModeVisualizer = () => {
             { id: 'visualizer' as const, label: 'Mode Visualizer', icon: <Guitar className="w-4 h-4" /> },
             { id: 'progression' as const, label: 'Chord Progressions', icon: <ListMusic className="w-4 h-4" /> },
             { id: 'metronome' as const, label: 'Metronome', icon: <Timer className="w-4 h-4" /> },
+            { id: 'reference' as const, label: 'Scale Reference', icon: <BookOpen className="w-4 h-4" /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -116,6 +118,12 @@ const ModeVisualizer = () => {
             </button>
           ))}
         </div>
+
+        {activeTab === 'reference' && (
+          <div>
+            <MasterScaleReference />
+          </div>
+        )}
 
         {activeTab === 'metronome' && (
           <div>
