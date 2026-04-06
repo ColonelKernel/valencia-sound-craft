@@ -310,9 +310,9 @@ const sourceDotColors = {
 
 // ─── Main Component ─────────────────────────────────────────
 const ChordProgressionBuilder = ({
-  chordSpellings,
-  root,
-  mode,
+  chordSpellings: initialChordSpellings,
+  root: initialRoot,
+  mode: initialMode,
 }: ChordProgressionBuilderProps) => {
   const [progression, setProgression] = useState<ProgressionChord[]>([]);
   const [playing, setPlaying] = useState(false);
@@ -323,7 +323,17 @@ const ChordProgressionBuilder = ({
   const [showSecondaryDoms, setShowSecondaryDoms] = useState(false);
   const [showTritoneSubs, setShowTritoneSubs] = useState(false);
   const [expandedBorrowMode, setExpandedBorrowMode] = useState<string | null>(null);
+  const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
+  const [localRoot, setLocalRoot] = useState(initialRoot);
+  const [localMode, setLocalMode] = useState(initialMode);
   const timeoutRef = useRef<number[]>([]);
+
+  // Derive chords from local key/mode
+  const root = localRoot;
+  const mode = localMode;
+  const localScaleNotes = useMemo(() => getScaleNotes(root, mode), [root, mode]);
+  const chordSpellings = useMemo(() => getChordSpellings(localScaleNotes, mode), [localScaleNotes, mode]);
+  const allModes = useMemo(() => MODE_CATEGORIES.flatMap(c => c.modes), []);
 
   // Compute harmonic tools
   const secondaryDoms = useMemo(() => getSecondaryDominants(root, mode, chordSpellings), [root, mode, chordSpellings]);
