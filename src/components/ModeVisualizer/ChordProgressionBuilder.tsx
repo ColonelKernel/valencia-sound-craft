@@ -479,7 +479,11 @@ const ChordProgressionBuilder = ({
               className="flex items-center gap-0.5 text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:bg-accent disabled:opacity-40">
               <Download size={10} /> MIDI
             </button>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1">
+              <button onClick={() => setShowExpressive(!showExpressive)}
+                className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded border transition-colors ${showExpressive ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}>
+                <Sliders size={10} /> Feel
+              </button>
               <button onClick={() => setShowToolsPanel(!showToolsPanel)}
                 className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded border transition-colors ${showToolsPanel ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}>
                 <Sparkles size={10} /> Tools
