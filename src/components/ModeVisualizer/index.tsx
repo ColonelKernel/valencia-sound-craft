@@ -488,30 +488,30 @@ const ModeVisualizer = () => {
 
         {/* Instrument Selector */}
         <div className="mb-4">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {([
-              { key: 'guitar' as const, label: 'Guitar', icon: <Guitar className="w-4 h-4" /> },
-              { key: 'bass' as const, label: 'Bass', icon: <Guitar className="w-4 h-4" /> },
-              { key: 'other' as const, label: 'Other', icon: <Music className="w-4 h-4" /> },
-              { key: 'keyboard' as const, label: 'Keyboard', icon: <Piano className="w-4 h-4" /> },
+              { key: 'guitar' as const, label: 'Guitar', shortLabel: 'Gtr', icon: <Guitar className="w-4 h-4" /> },
+              { key: 'bass' as const, label: 'Bass', shortLabel: 'Bass', icon: <Guitar className="w-4 h-4" /> },
+              { key: 'other' as const, label: 'Other', shortLabel: 'Other', icon: <Music className="w-4 h-4" /> },
+              { key: 'keyboard' as const, label: 'Keyboard', shortLabel: 'Keys', icon: <Piano className="w-4 h-4" /> },
             ]).map((inst) => (
               <button
                 key={inst.key}
                 onClick={() => setInstrument(inst.key)}
-                className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                className={`flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 rounded-lg border transition-colors ${
                   instrument === inst.key
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'border-border text-muted-foreground hover:bg-accent'
                 }`}
               >
-                {inst.icon} {inst.label}
+                {inst.icon} <span className="hidden sm:inline">{inst.label}</span><span className="sm:hidden">{inst.shortLabel}</span>
               </button>
             ))}
             {instrument === 'other' && (
               <select
                 value={otherInstrument}
                 onChange={(e) => setOtherInstrument(e.target.value)}
-                className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="bg-secondary border border-border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 {FRETTED_INSTRUMENTS.map((fi) => (
                   <option key={fi.key} value={fi.key}>{fi.label}</option>
