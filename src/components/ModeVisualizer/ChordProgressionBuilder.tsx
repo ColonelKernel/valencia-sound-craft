@@ -421,16 +421,21 @@ const ChordProgressionBuilder = ({
 
           {/* Chord Edit Popup (inline, compact) */}
           {editingIdx !== null && editingIdx < progression.length && (
-            <div className="mb-3 p-2 rounded border border-primary/30 bg-primary/5 flex flex-wrap items-center gap-3 text-xs">
-              <span className="font-semibold">{progression[editingIdx].chord.symbol}</span>
-              <span className="text-muted-foreground">{progression[editingIdx].chord.notes.join('-')}</span>
-              <span className="text-muted-foreground capitalize">{progression[editingIdx].function || 'other'}</span>
-              <div className="flex gap-1 ml-auto">
-                <button onClick={() => playChordTonesExpressive(progression[editingIdx].chord.notes, 0.8, timbre, voicingType, expressive)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
-                <button onClick={() => removeChord(editingIdx)} className="px-1.5 py-0.5 rounded border border-destructive/50 text-destructive hover:bg-destructive/10 text-[10px]">Del</button>
-                {has7Notes && <button onClick={() => { insertIIV(editingIdx); setEditingIdx(null); }} className="px-1.5 py-0.5 rounded border border-pink-500/50 text-pink-400 hover:bg-pink-500/10 text-[10px]">ii-V</button>}
-                <button onClick={() => setEditingIdx(null)} className="text-muted-foreground hover:text-foreground"><X size={12} /></button>
+            <div className="mb-3 p-2 rounded border border-primary/30 bg-primary/5 space-y-2">
+              <div className="flex flex-wrap items-center gap-3 text-xs">
+                <span className="font-semibold">{progression[editingIdx].chord.symbol}</span>
+                <span className="text-muted-foreground">{progression[editingIdx].chord.notes.join(' – ')}</span>
+                <span className="text-muted-foreground capitalize">{progression[editingIdx].function || 'other'}</span>
+                <div className="flex gap-1 ml-auto">
+                  <button onClick={() => playChordTonesExpressive(progression[editingIdx].chord.notes, 0.8, timbre, voicingType, expressive)} className="px-1.5 py-0.5 rounded border border-border hover:bg-accent text-[10px]">▶</button>
+                  <button onClick={() => removeChord(editingIdx)} className="px-1.5 py-0.5 rounded border border-destructive/50 text-destructive hover:bg-destructive/10 text-[10px]">Del</button>
+                  {has7Notes && <button onClick={() => { insertIIV(editingIdx); setEditingIdx(null); }} className="px-1.5 py-0.5 rounded border border-pink-500/50 text-pink-400 hover:bg-pink-500/10 text-[10px]">ii-V</button>}
+                  <button onClick={() => setEditingIdx(null)} className="text-muted-foreground hover:text-foreground"><X size={12} /></button>
+                </div>
               </div>
+              {showStaff && (
+                <ChordStaffView notes={progression[editingIdx].chord.notes} symbol={progression[editingIdx].chord.symbol} />
+              )}
             </div>
           )}
 
