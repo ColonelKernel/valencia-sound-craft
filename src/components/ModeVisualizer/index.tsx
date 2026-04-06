@@ -147,11 +147,11 @@ const ModeVisualizer = () => {
               ))}
             </div>
 
-        {activeTab === 'reference' && (
-          <div>
-            <MasterScaleReference />
-          </div>
-        )}
+            {activeTab === 'reference' && (
+              <div>
+                <MasterScaleReference />
+              </div>
+            )}
 
         {activeTab === 'polyrhythm' && (
           <div>
