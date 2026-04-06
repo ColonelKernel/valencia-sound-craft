@@ -167,6 +167,8 @@ const ModeVisualizer = () => {
             </select>
           </div>
 
+          {instrument !== 'keyboard' && (
+          <>
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Tuning</label>
             <select
@@ -174,7 +176,6 @@ const ModeVisualizer = () => {
               onChange={(e) => {
                 if (e.target.value === 'custom') {
                   setIsCustomTuning(true);
-                  // Initialize custom from current preset
                   setCustomGuitar([...TUNING_PRESETS[tuningIdx].guitar]);
                   setCustomBass([...TUNING_PRESETS[tuningIdx].bass]);
                 } else {
@@ -198,6 +199,8 @@ const ModeVisualizer = () => {
             {lefty ? <ToggleRight className="w-4 h-4 text-amber-400" /> : <ToggleLeft className="w-4 h-4" />}
             Lefty
           </button>
+          </>
+          )}
 
           <button
             onClick={() => { setShowIntervals(!showIntervals); if (!showIntervals) setShowFingers(false); }}
@@ -207,6 +210,7 @@ const ModeVisualizer = () => {
             Intervals
           </button>
 
+          {instrument !== 'keyboard' && (
           <button
             onClick={() => { setShowFingers(!showFingers); if (!showFingers) setShowIntervals(false); }}
             className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded border border-border hover:bg-accent transition-colors"
@@ -214,6 +218,7 @@ const ModeVisualizer = () => {
             {showFingers ? <ToggleRight className="w-4 h-4 text-emerald-400" /> : <ToggleLeft className="w-4 h-4" />}
             Fingers
           </button>
+          )}
         </div>
 
         {/* Custom Tuning Editor */}
