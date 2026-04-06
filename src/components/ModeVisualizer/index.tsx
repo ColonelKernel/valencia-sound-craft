@@ -20,6 +20,7 @@ import SheetMusic from "./SheetMusic";
 import ModeReference from "./ModeReference";
 import Metronome from "./Metronome";
 import ChordProgressionBuilder from "./ChordProgressionBuilder";
+import KeyboardVisualizer from "./KeyboardVisualizer";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
