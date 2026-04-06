@@ -115,7 +115,7 @@ function buildMidiFile(chords: ProgressionChord[], bpm: number, beatsPerChord: n
 
 function downloadMidi(chords: ProgressionChord[], bpm: number, beatsPerChord: number, root: string, mode: string) {
   const data = buildMidiFile(chords, bpm, beatsPerChord);
-  const blob = new Blob([data], { type: 'audio/midi' });
+  const blob = new Blob([data.buffer as ArrayBuffer], { type: 'audio/midi' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
