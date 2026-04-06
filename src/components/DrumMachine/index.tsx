@@ -579,7 +579,7 @@ const DrumMachine = () => {
                   S
                 </button>
                 <span className={`w-2 h-2 rounded-full shrink-0 ${inst?.color || 'bg-muted'}`} />
-                <span className="text-[11px] font-medium truncate">{inst?.name || track.instrumentId}</span>
+                <span className="text-[9px] sm:text-[11px] font-medium truncate">{inst?.shortName || inst?.name || track.instrumentId}</span>
               </div>
 
               {/* Steps */}
@@ -594,7 +594,7 @@ const DrumMachine = () => {
                   return (
                     <button key={i} onClick={() => toggleStep(track.id, i)}
                       className={`
-                        w-7 h-7 md:w-8 md:h-8 rounded-sm transition-all text-[8px] font-bold
+                        w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-sm transition-all text-[7px] sm:text-[8px] font-bold
                         ${getStepClass(vel, inst?.color || 'bg-muted', isCurrent, isDownbeat)}
                         ${isBeatBoundary && i > 0 ? 'ml-1' : ''}
                       `}
