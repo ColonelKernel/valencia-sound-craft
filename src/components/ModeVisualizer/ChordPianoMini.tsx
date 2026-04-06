@@ -12,12 +12,13 @@ function norm(n: string) { return ENHARMONIC[n] || n; }
 
 interface ChordPianoMiniProps {
   chordNotes: string[];
+  chordIntervals?: string[];
   rootNote: string;
   symbol: string;
   timbre?: InstrumentTimbre;
 }
 
-const ChordPianoMini = ({ chordNotes, rootNote, symbol, timbre = 'piano' }: ChordPianoMiniProps) => {
+const ChordPianoMini = ({ chordNotes, chordIntervals, rootNote, symbol, timbre = 'piano' }: ChordPianoMiniProps) => {
   const normRoot = norm(rootNote);
   const normChord = new Set(chordNotes.map(norm));
 
@@ -41,10 +42,12 @@ const ChordPianoMini = ({ chordNotes, rootNote, symbol, timbre = 'piano' }: Chor
   const isChordTone = (n: string) => normChord.has(norm(n));
   const isRoot = (n: string) => norm(n) === normRoot;
 
-  // Find display name from original chord notes
-  const displayName = (n: string): string => {
-    const found = chordNotes.find(cn => norm(cn) === norm(n));
-    return found || n;
+  // Find display name + interval from original chord notes
+  const getLabel = (n: string): { name: string; interval: string } => {
+    const idx = chordNotes.findIndex(cn => norm(cn) === norm(n));
+    const name = idx >= 0 ? chordNotes[idx] : n;
+    const interval = idx >= 0 && chordIntervals?.[idx] ? chordIntervals[idx] : '';
+    return { name, interval };
   };
 
   return (
