@@ -459,6 +459,7 @@ const ChordProgressionBuilder = ({
               )}
               <ChordPianoMini
                 chordNotes={progression[editingIdx].chord.notes}
+                chordIntervals={progression[editingIdx].chord.intervals}
                 rootNote={progression[editingIdx].chord.rootNote}
                 symbol={progression[editingIdx].chord.symbol}
                 timbre={timbre}
