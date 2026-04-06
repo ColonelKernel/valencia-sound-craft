@@ -187,9 +187,9 @@ const MasterScaleReference = () => {
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-16">Mode</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-10">Deg</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-24">vs Major</th>
-              {Array.from({ length: (parentNotes.length || 7) + 1 }).map((_, i) => (
+              {Array.from({ length: maxNotes + 1 }).map((_, i) => (
                 <th key={i} className="text-center text-[10px] text-muted-foreground font-medium px-1 py-2 w-9">
-                  {i < (parentNotes.length || 7) ? (i + 1) : '8'}
+                  {i < maxNotes ? (i + 1) : '8'}
                 </th>
               ))}
             </tr>
