@@ -772,8 +772,6 @@ const DrumMachine = () => {
             </button>
           ))}
         </div>
-          ))}
-        </div>
 
         {/* Active preset info */}
         {currentPreset && (
