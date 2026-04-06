@@ -6,6 +6,7 @@ import About from "@/components/About";
 import DataAnalysis from "@/components/DataAnalysis";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import ModeVisualizer from "@/components/ModeVisualizer";
 
 const Index = () => {
   return (
@@ -15,6 +16,7 @@ const Index = () => {
       <Services />
       <Contact />
       <Portfolio />
+      <ModeVisualizer />
       <About />
       <DataAnalysis />
       <Footer />
