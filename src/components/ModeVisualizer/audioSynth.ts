@@ -185,16 +185,50 @@ export function playChord(notes: string[], duration = 0.8, timbre: InstrumentTim
   const now = ctx.currentTime;
   const volume = 0.15 / Math.max(notes.length, 1);
 
-  notes.forEach((note, i) => {
-    const freq = NOTE_FREQUENCIES[note];
-    if (!freq) return;
+  // Ensure ascending pitch: track octave wrapping from first note
+  const freqs = getAscendingFrequencies(notes);
+
+  freqs.forEach((freq, i) => {
     const startTime = now + i * 0.03;
     applyTimbre(ctx, freq, startTime, duration, volume, timbre);
   });
 }
 
 export function playScale(notes: string[], tempo = 200, timbre: InstrumentTimbre = 'piano'): void {
-  notes.forEach((note, i) => {
-    setTimeout(() => playNote(note, 0, 0.35, timbre), i * tempo);
+  const freqs = getAscendingFrequencies(notes);
+  freqs.forEach((freq, i) => {
+    setTimeout(() => {
+      const ctx = getAudioContext();
+      applyTimbre(ctx, freq, ctx.currentTime, 0.35, 0.25, timbre);
+    }, i * tempo);
   });
+}
+
+/**
+ * Convert an array of pitch-class names (e.g. ['A', 'C', 'E']) into
+ * ascending frequencies starting from octave 4 for the first note.
+ * When a note's pitch class is <= the previous one, we bump the octave.
+ */
+function getAscendingFrequencies(notes: string[]): number[] {
+  if (notes.length === 0) return [];
+  const PITCH_INDEX: Record<string, number> = {
+    'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4,
+    'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8, 'Ab': 8, 'A': 9,
+    'A#': 10, 'Bb': 10, 'B': 11,
+  };
+
+  const freqs: number[] = [];
+  let octaveShift = 0;
+  let prevPitch = -1;
+
+  for (const note of notes) {
+    const baseFreq = NOTE_FREQUENCIES[note];
+    if (!baseFreq) continue;
+    const pitch = PITCH_INDEX[note] ?? 0;
+    if (prevPitch >= 0 && pitch <= prevPitch) octaveShift++;
+    prevPitch = pitch;
+    freqs.push(baseFreq * Math.pow(2, octaveShift));
+  }
+
+  return freqs;
 }
