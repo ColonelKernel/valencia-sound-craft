@@ -663,6 +663,16 @@ const DrumMachine = () => {
             />
           </div>
           <select
+            value={filterRegion || ''}
+            onChange={e => setFilterRegion(e.target.value || null)}
+            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+          >
+            <option value="">All Regions</option>
+            {regions.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          <select
             value={filterFeel || ''}
             onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
             className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
@@ -675,6 +685,17 @@ const DrumMachine = () => {
             <option value="polyrhythmic">Polyrhythmic</option>
           </select>
           <select
+            value={filterRhythmType || ''}
+            onChange={e => setFilterRhythmType((e.target.value || null) as RhythmType | null)}
+            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+          >
+            <option value="">All Types</option>
+            <option value="groove">Groove</option>
+            <option value="odd-meter">Odd Meter</option>
+            <option value="tala">Tala</option>
+            <option value="trance">Trance</option>
+          </select>
+          <select
             value={filterComplexity || ''}
             onChange={e => setFilterComplexity((e.target.value || null) as Complexity | null)}
             className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
@@ -685,6 +706,27 @@ const DrumMachine = () => {
             <option value="advanced">Advanced</option>
           </select>
           <span className="text-[9px] text-muted-foreground ml-auto">{filteredPresets.length} patterns</span>
+        </div>
+
+        {/* Konnakol + Complexity controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          {currentPreset?.konnakol && (
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" checked={showKonnakol}
+                onChange={e => setShowKonnakol(e.target.checked)}
+                className="accent-primary" />
+              <span className="text-[10px] text-muted-foreground">Konnakol</span>
+            </label>
+          )}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-muted-foreground">Complexity</span>
+            <input type="range" min={1} max={3} value={complexityLevel}
+              onChange={e => setComplexityLevel(Number(e.target.value))}
+              className="w-14 accent-primary" />
+            <span className="text-[9px] text-muted-foreground w-16">
+              {complexityLevel === 1 ? 'Simple' : complexityLevel === 2 ? 'Medium' : 'Full'}
+            </span>
+          </div>
         </div>
 
         {/* Category chips */}
