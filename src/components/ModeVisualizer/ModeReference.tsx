@@ -195,12 +195,21 @@ const ModeReference = ({ rootNote = 'C' }: ModeReferenceProps) => {
                                         {note}
                                       </span>
                                     ))
-                                  : displayIntervals.map((interval, i) => (
+                                  : showType === 'intervals'
+                                  ? displayIntervals.map((interval, i) => (
                                       <span
                                         key={i}
                                         className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-bold ${getIntervalStyle(interval)}`}
                                       >
                                         {interval}
+                                      </span>
+                                    ))
+                                  : getStepPattern(modeName).map((step, i) => (
+                                      <span
+                                        key={i}
+                                        className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[9px] md:text-[10px] font-bold ${getStepStyle(step)}`}
+                                      >
+                                        {step}
                                       </span>
                                     ))}
                               </div>
