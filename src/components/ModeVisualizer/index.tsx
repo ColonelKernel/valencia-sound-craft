@@ -116,13 +116,13 @@ const ModeVisualizer = () => {
         </div>
 
         {activeTab === 'metronome' && (
-          <div className="fade-up">
+          <div>
             <Metronome />
           </div>
         )}
 
         {activeTab === 'progression' && (
-          <div className="fade-up">
+          <div>
             <ChordProgressionBuilder
               chordSpellings={chordSpellings}
               root={root}
