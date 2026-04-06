@@ -413,10 +413,39 @@ const ChordProgressionBuilder = ({
     <div className="rounded-lg border border-border bg-card p-4 md:p-6">
       <h3 className="text-lg font-semibold mb-4">Chord Progression Builder</h3>
 
-      {/* Key context */}
-      <p className="text-xs text-muted-foreground mb-4">
-        Key: <span className="font-semibold text-foreground">{root} {mode}</span> — click chords to build your progression
-      </p>
+      {/* Key & Timbre controls */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Key</label>
+          <select
+            value={localRoot}
+            onChange={(e) => { setLocalRoot(e.target.value); setProgression([]); }}
+            className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {ALL_ROOTS.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Mode</label>
+          <select
+            value={localMode}
+            onChange={(e) => { setLocalMode(e.target.value); setProgression([]); }}
+            className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {allModes.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Sound</label>
+          <select
+            value={timbre}
+            onChange={(e) => setTimbre(e.target.value as InstrumentTimbre)}
+            className="bg-secondary border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            {INSTRUMENT_TIMBRES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+          </select>
+        </div>
+      </div>
 
       {/* ── Progression Timeline ─────────────────────────────── */}
       <div className="mb-6">
