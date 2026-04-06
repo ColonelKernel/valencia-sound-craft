@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useMemo } from "react";
-import { Play, Pause, Plus, X, Volume2, RotateCcw, Sparkles, ArrowRightLeft, Music2, ChevronDown, ChevronUp, Download } from "lucide-react";
-import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS } from "./scaleData";
+import { Play, Pause, Plus, X, Volume2, RotateCcw, Sparkles, ArrowRightLeft, Music2, ChevronDown, ChevronUp, Download, ArrowLeft, ArrowRight, GripVertical } from "lucide-react";
+import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
+import { type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 
 // ─── Constants ──────────────────────────────────────────────
 const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
