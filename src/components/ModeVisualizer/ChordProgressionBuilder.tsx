@@ -398,6 +398,9 @@ const ChordProgressionBuilder = ({
                         <span className="font-bold text-xs">{getChordLabel(pc, i)}</span>
                       </div>
                       <span className="text-[8px] text-muted-foreground leading-tight">{getSubLabel(pc)}</span>
+                      {showNoteSpelling && (
+                        <span className="text-[7px] text-muted-foreground/70 font-mono">{pc.chord.notes.join('–')}</span>
+                      )}
                       {pc.source !== 'diatonic' && <span className="text-[7px] text-muted-foreground/50 italic">{pc.sourceLabel}</span>}
                     </div>
                   );
