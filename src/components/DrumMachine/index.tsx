@@ -652,31 +652,36 @@ const DrumMachine = () => {
       <div className="rounded-lg border border-border bg-secondary/20">
         <button
           onClick={() => setShowBrowser(!showBrowser)}
-          className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground hover:bg-accent/50 transition-colors rounded-t-lg"
         >
-          <span className="flex items-center gap-1.5">
-            <Search size={12} />
+          <span className="flex items-center gap-2">
+            <Search size={14} />
             Rhythm Browser
-            <span className="text-[9px] text-muted-foreground/60">({filteredPresets.length} patterns)</span>
+            <span className="text-xs text-muted-foreground">({filteredPresets.length} patterns)</span>
           </span>
-          {showBrowser ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          {showBrowser ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         </button>
-        {showBrowser && <div className="px-3 pb-3 space-y-2">
+        {showBrowser && <div className="px-4 pb-4 space-y-3">
+        
+        {/* Search */}
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search rhythms by name, country, or style…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+
+        {/* Filters row */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[160px] max-w-xs">
-            <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search rhythms…"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-card border border-border rounded pl-6 pr-2 py-1 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
+          <Filter size={12} className="text-muted-foreground shrink-0" />
           <select
             value={filterRegion || ''}
             onChange={e => setFilterRegion(e.target.value || null)}
-            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+            className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Regions</option>
             {regions.map(r => (
@@ -686,7 +691,7 @@ const DrumMachine = () => {
           <select
             value={filterFeel || ''}
             onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
-            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+            className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Feels</option>
             <option value="straight">Straight</option>
@@ -698,7 +703,7 @@ const DrumMachine = () => {
           <select
             value={filterRhythmType || ''}
             onChange={e => setFilterRhythmType((e.target.value || null) as RhythmType | null)}
-            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+            className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Types</option>
             <option value="groove">Groove</option>
@@ -709,69 +714,60 @@ const DrumMachine = () => {
           <select
             value={filterComplexity || ''}
             onChange={e => setFilterComplexity((e.target.value || null) as Complexity | null)}
-            className="bg-card border border-border rounded px-1.5 py-1 text-[10px] text-foreground"
+            className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Levels</option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
           </select>
-          <span className="text-[9px] text-muted-foreground ml-auto">{filteredPresets.length} patterns</span>
-        </div>
-
-        {/* Konnakol + Complexity controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          {currentPreset?.konnakol && (
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" checked={showKonnakol}
-                onChange={e => setShowKonnakol(e.target.checked)}
-                className="accent-primary" />
-              <span className="text-[10px] text-muted-foreground">Konnakol</span>
-            </label>
+          {(filterRegion || filterFeel || filterRhythmType || filterComplexity || searchQuery) && (
+            <button
+              onClick={() => { setFilterRegion(null); setFilterFeel(null); setFilterRhythmType(null); setFilterComplexity(null); setSearchQuery(''); }}
+              className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border hover:bg-accent transition-colors"
+            >
+              Clear Filters
+            </button>
           )}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground">Complexity</span>
-            <input type="range" min={1} max={3} value={complexityLevel}
-              onChange={e => setComplexityLevel(Number(e.target.value))}
-              className="w-14 accent-primary" />
-            <span className="text-[9px] text-muted-foreground w-16">
-              {complexityLevel === 1 ? 'Simple' : complexityLevel === 2 ? 'Medium' : 'Full'}
-            </span>
-          </div>
         </div>
 
         {/* Category chips */}
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
+            className={`text-xs px-3 py-1 rounded-full transition-colors font-medium ${
               !selectedCategory ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
             }`}
           >All</button>
           {categories.map(r => (
             <button key={r}
               onClick={() => setSelectedCategory(selectedCategory === r ? null : r)}
-              className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
+              className={`text-xs px-3 py-1 rounded-full transition-colors ${
                 selectedCategory === r ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
               }`}
             >{r}</button>
           ))}
         </div>
 
-        {/* Compact preset list */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 max-h-[240px] overflow-y-auto">
+        {/* Preset list */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
           {filteredPresets.map(p => (
             <button key={p.name}
               onClick={() => loadPreset(p)}
-              className={`text-left px-2 py-1.5 rounded border transition-all ${
+              className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
                 activePreset === p.name
-                  ? 'border-primary bg-primary/5'
+                  ? 'border-primary bg-primary/10 shadow-sm'
                   : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
               }`}
             >
-              <div className="text-[11px] font-medium truncate">{p.name}</div>
-              <div className="text-[9px] text-muted-foreground truncate">
-                {p.country} · {p.bpm} · {p.timeSignature[0]}/{p.timeSignature[1]} · {p.timeFeel}
+              <div className="text-xs font-semibold truncate">{p.name}</div>
+              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                <span className="text-[10px] text-muted-foreground">{p.country}</span>
+                <span className="text-muted-foreground/30">·</span>
+                <span className="text-[10px] text-muted-foreground">{p.bpm} BPM</span>
+                <span className="text-muted-foreground/30">·</span>
+                <span className="text-[10px] text-muted-foreground">{p.timeSignature[0]}/{p.timeSignature[1]}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{p.timeFeel}</span>
               </div>
             </button>
           ))}
