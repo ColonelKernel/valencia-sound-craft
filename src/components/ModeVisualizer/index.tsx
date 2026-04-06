@@ -40,13 +40,18 @@ const ModeVisualizer = () => {
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
   const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference'>('visualizer');
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard'>('guitar');
+  const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
+  const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
   const chordSpellings = getChordSpellings(scaleNotes, mode);
   const tuning: TuningPreset = isCustomTuning
-    ? { label: 'Custom', guitar: customGuitar, bass: customBass }
+    ? { label: 'Custom', guitar: customGuitar, guitar7: customGuitar, guitar8: customGuitar, bass: customBass, bass5: customBass, bass6: customBass }
     : TUNING_PRESETS[tuningIdx];
+
+  const activeGuitarTuning = guitarStrings === 7 ? tuning.guitar7 : guitarStrings === 8 ? tuning.guitar8 : tuning.guitar;
+  const activeBassTuning = bassStrings === 5 ? tuning.bass5 : bassStrings === 6 ? tuning.bass6 : tuning.bass;
 
   // Active chord filter for fretboard
   const chordFilter = selectedChord ? selectedChord.notes : null;
