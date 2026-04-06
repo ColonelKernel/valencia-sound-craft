@@ -85,7 +85,7 @@ const StrudelEditor = () => {
   // Subscribe to engine state
   useEffect(() => {
     const unsub = strudelEngine.subscribe(setEngineState);
-    return unsub;
+    return () => { unsub(); };
   }, []);
 
   // Subscribe to incoming rhythm data from other tools
