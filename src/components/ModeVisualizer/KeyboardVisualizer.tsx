@@ -12,6 +12,7 @@ interface KeyboardVisualizerProps {
   chordFilter: string[] | null;
   showIntervals: boolean;
   intervals: string[];
+  timbre?: InstrumentTimbre;
 }
 
 // Normalize note for matching (e.g., Db -> C#)
