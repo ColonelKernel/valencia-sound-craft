@@ -1,22 +1,47 @@
 import { useState, useMemo } from "react";
 import { getScaleNotes, MODE_INTERVALS } from "./scaleData";
 
-// The 7 modes of the major scale in order of degrees
-const MAJOR_MODES = ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
-const DEGREE_LABELS = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
+// ─── Scale Families ──────────────────────────────────────────
+// "modal" families derive modes from a parent scale (each mode starts on a different degree).
+// "standalone" families list scales that all start from the selected root.
 
-// Mode families for the dropdown
-const MODE_FAMILIES: { label: string; modes: string[]; degrees: string[] }[] = [
-  { label: 'Major Modes', modes: MAJOR_MODES, degrees: DEGREE_LABELS },
+interface ScaleFamily {
+  label: string;
+  modes: string[];
+  degrees: string[];
+  type: 'modal' | 'standalone';
+}
+
+const SCALE_FAMILIES: ScaleFamily[] = [
+  {
+    label: 'Major Modes',
+    type: 'modal',
+    modes: ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'],
+    degrees: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'],
+  },
   {
     label: 'Melodic Minor Modes',
+    type: 'modal',
     modes: ['Melodic Minor', 'Dorian b2', 'Lydian Augmented', 'Lydian Dominant', 'Mixolydian b6', 'Aeolian b5 (Locrian #2)', 'Altered (Super Locrian)'],
     degrees: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii'],
   },
   {
     label: 'Harmonic Minor Modes',
+    type: 'modal',
     modes: ['Harmonic Minor', 'Locrian #6', 'Ionian #5', 'Dorian #4', 'Phrygian Dominant', 'Lydian #2', 'Ultra Locrian'],
     degrees: ['I', 'ii', 'III', 'iv', 'V', 'VI', 'vii°'],
+  },
+  {
+    label: 'Pentatonic & Blues',
+    type: 'standalone',
+    modes: ['Major Pentatonic', 'Minor Pentatonic', 'Blues'],
+    degrees: ['—', '—', '—'],
+  },
+  {
+    label: 'Symmetric & Other',
+    type: 'standalone',
+    modes: ['Whole Tone', 'Diminished (HW)', 'Diminished (WH)', 'Chromatic'],
+    degrees: ['—', '—', '—', '—'],
   },
 ];
 
@@ -70,10 +95,29 @@ const MasterScaleReference = () => {
   const [root, setRoot] = useState("C");
   const [familyIdx, setFamilyIdx] = useState(0);
 
-  const family = MODE_FAMILIES[familyIdx];
+  const family = SCALE_FAMILIES[familyIdx];
   const parentNotes = useMemo(() => getScaleNotes(root, family.modes[0]), [root, family]);
 
   const modeRows = useMemo(() => {
+    if (family.type === 'standalone') {
+      // Each scale starts from the selected root
+      return family.modes.map((modeName, i) => {
+        const notes = getScaleNotes(root, modeName);
+        const deviations = getDeviations(root, notes);
+        const devLabels = deviations
+          .map((d, idx) => getDeviationLabel(d, idx + 1))
+          .filter(Boolean);
+        return {
+          degree: family.degrees[i] || '—',
+          modeName,
+          root,
+          notes,
+          deviations,
+          devSummary: devLabels.length > 0 ? devLabels.join(' ') : 'no deviations',
+        };
+      });
+    }
+    // Modal: derive from parent scale degrees
     return family.modes.map((modeName, i) => {
       const modeRoot = parentNotes[i] || parentNotes[0];
       const notes = getScaleNotes(modeRoot, modeName);
@@ -90,7 +134,12 @@ const MasterScaleReference = () => {
         devSummary: devLabels.length > 0 ? devLabels.join(' ') : 'no deviations',
       };
     });
-  }, [parentNotes, family]);
+  }, [parentNotes, family, root]);
+
+  // Max note count for table columns
+  const maxNotes = useMemo(() => {
+    return Math.max(...modeRows.map(r => r.notes.length), 1);
+  }, [modeRows]);
 
   return (
     <div className="rounded-lg border border-border bg-card p-4 md:p-6 space-y-4">
@@ -123,7 +172,7 @@ const MasterScaleReference = () => {
             onChange={e => setFamilyIdx(Number(e.target.value))}
             className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
-            {MODE_FAMILIES.map((f, i) => (
+            {SCALE_FAMILIES.map((f, i) => (
               <option key={f.label} value={i}>{f.label}</option>
             ))}
           </select>
@@ -138,9 +187,9 @@ const MasterScaleReference = () => {
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-16">Mode</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-10">Deg</th>
               <th className="text-left text-xs text-muted-foreground font-medium px-2 py-2 w-24">vs Major</th>
-              {Array.from({ length: (parentNotes.length || 7) + 1 }).map((_, i) => (
+              {Array.from({ length: maxNotes + 1 }).map((_, i) => (
                 <th key={i} className="text-center text-[10px] text-muted-foreground font-medium px-1 py-2 w-9">
-                  {i < (parentNotes.length || 7) ? (i + 1) : '8'}
+                  {i < maxNotes ? (i + 1) : '8'}
                 </th>
               ))}
             </tr>
@@ -177,16 +226,27 @@ const MasterScaleReference = () => {
                     </span>
                   )}
                 </td>
-                {[...row.notes, row.notes[0]].map((note, i) => {
-                  const isRoot = i === 0 || i === row.notes.length;
-                  const dev = i < row.notes.length ? row.deviations[i] : 'root';
+                {Array.from({ length: maxNotes + 1 }).map((_, i) => {
+                  if (i > row.notes.length) {
+                    return <td key={i} className="px-1 py-2.5" />;
+                  }
+                  if (i === row.notes.length) {
+                    // Octave repeat
+                    const note = row.notes[0];
+                    return (
+                      <td key={i} className="px-1 py-2.5 text-center">
+                        <span className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${getNoteClass(note, true, 'root')}`}>
+                          {note}
+                        </span>
+                      </td>
+                    );
+                  }
+                  const note = row.notes[i];
+                  const isRoot = i === 0;
+                  const dev = row.deviations[i];
                   return (
                     <td key={i} className="px-1 py-2.5 text-center">
-                      <span
-                        className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${
-                          getNoteClass(note, isRoot, dev)
-                        }`}
-                      >
+                      <span className={`inline-flex w-8 h-8 rounded-full items-center justify-center text-[10px] font-bold ${getNoteClass(note, isRoot, dev)}`}>
                         {note}
                       </span>
                     </td>
