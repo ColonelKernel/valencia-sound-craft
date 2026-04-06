@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   Play, Square, RotateCcw, Download, ChevronDown, ChevronRight,
-  Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter
+  Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter, Send
 } from "lucide-react";
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
 import {
@@ -10,6 +10,8 @@ import {
   type PatternPreset, type TimeFeel, type Complexity, type RhythmType,
 } from "./drumPresets";
 import { generateMidiFile, downloadMidiFile, MIDI_MAPPINGS, type MidiMapping } from "./midiExport";
+import { drumTracksToPayload } from "@/lib/drumToStrudel";
+import { rhythmBus } from "@/lib/rhythmBus";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -333,6 +335,17 @@ const DrumMachine = () => {
         <button onClick={clearAll}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-border text-muted-foreground hover:bg-accent transition-colors">
           <RotateCcw size={14} /> <span className="hidden xs:inline">Clear</span>
+        </button>
+
+        <button
+          onClick={() => {
+            const payload = drumTracksToPayload(tracks, bpm, swing, activePreset || undefined);
+            rhythmBus.emit('PLAY_REQUESTED', payload);
+          }}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+          title="Send current pattern to Strudel editor"
+        >
+          <Send size={14} /> <span className="hidden xs:inline">Strudel</span>
         </button>
 
         {/* BPM */}
