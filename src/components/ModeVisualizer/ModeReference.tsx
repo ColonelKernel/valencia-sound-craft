@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getScaleNotes, isSharp, isFlat, MODE_INTERVAL_NAMES, MODE_CATEGORIES } from "./scaleData";
+import { getScaleNotes, isSharp, isFlat, MODE_INTERVAL_NAMES, MODE_CATEGORIES, MODE_INTERVALS } from "./scaleData";
 
 interface ModeReferenceProps {
   rootNote?: string;
