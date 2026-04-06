@@ -14,7 +14,267 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      drum_instruments: {
+        Row: {
+          category: string
+          color: string
+          created_at: string
+          default_decay: number
+          default_pitch: number
+          default_velocity: number
+          id: string
+          instrument_id: string
+          name: string
+          short_name: string
+        }
+        Insert: {
+          category: string
+          color: string
+          created_at?: string
+          default_decay?: number
+          default_pitch?: number
+          default_velocity?: number
+          id?: string
+          instrument_id: string
+          name: string
+          short_name: string
+        }
+        Update: {
+          category?: string
+          color?: string
+          created_at?: string
+          default_decay?: number
+          default_pitch?: number
+          default_velocity?: number
+          id?: string
+          instrument_id?: string
+          name?: string
+          short_name?: string
+        }
+        Relationships: []
+      }
+      drum_presets: {
+        Row: {
+          artists: string[] | null
+          bpm: number
+          category: string
+          clave_pattern: string | null
+          complexity: string
+          country: string
+          country_code: string
+          created_at: string
+          cultural_description: string | null
+          description: string
+          id: string
+          instrument_roles: Json | null
+          konnakol: boolean | null
+          name: string
+          pulse_grouping: number[]
+          region: string
+          rhythm_type: string | null
+          subdivision_type: string | null
+          swing: number
+          tala_structure: Json | null
+          tempo_range: number[]
+          time_feel: string
+          time_signature: number[]
+          tracks: Json
+          variation_tracks: Json | null
+        }
+        Insert: {
+          artists?: string[] | null
+          bpm?: number
+          category: string
+          clave_pattern?: string | null
+          complexity?: string
+          country: string
+          country_code: string
+          created_at?: string
+          cultural_description?: string | null
+          description?: string
+          id?: string
+          instrument_roles?: Json | null
+          konnakol?: boolean | null
+          name: string
+          pulse_grouping?: number[]
+          region: string
+          rhythm_type?: string | null
+          subdivision_type?: string | null
+          swing?: number
+          tala_structure?: Json | null
+          tempo_range?: number[]
+          time_feel?: string
+          time_signature?: number[]
+          tracks?: Json
+          variation_tracks?: Json | null
+        }
+        Update: {
+          artists?: string[] | null
+          bpm?: number
+          category?: string
+          clave_pattern?: string | null
+          complexity?: string
+          country?: string
+          country_code?: string
+          created_at?: string
+          cultural_description?: string | null
+          description?: string
+          id?: string
+          instrument_roles?: Json | null
+          konnakol?: boolean | null
+          name?: string
+          pulse_grouping?: number[]
+          region?: string
+          rhythm_type?: string | null
+          subdivision_type?: string | null
+          swing?: number
+          tala_structure?: Json | null
+          tempo_range?: number[]
+          time_feel?: string
+          time_signature?: number[]
+          tracks?: Json
+          variation_tracks?: Json | null
+        }
+        Relationships: []
+      }
+      fretted_instruments: {
+        Row: {
+          created_at: string
+          frets: number | null
+          id: string
+          key: string
+          label: string
+          tuning: Json
+        }
+        Insert: {
+          created_at?: string
+          frets?: number | null
+          id?: string
+          key: string
+          label: string
+          tuning: Json
+        }
+        Update: {
+          created_at?: string
+          frets?: number | null
+          id?: string
+          key?: string
+          label?: string
+          tuning?: Json
+        }
+        Relationships: []
+      }
+      progression_templates: {
+        Row: {
+          created_at: string
+          degrees: number[]
+          description: string
+          id: string
+          label: string
+        }
+        Insert: {
+          created_at?: string
+          degrees: number[]
+          description?: string
+          id?: string
+          label: string
+        }
+        Update: {
+          created_at?: string
+          degrees?: number[]
+          description?: string
+          id?: string
+          label?: string
+        }
+        Relationships: []
+      }
+      scales: {
+        Row: {
+          category: string
+          chords: string[]
+          created_at: string
+          id: string
+          interval_names: string[]
+          intervals: number[]
+          name: string
+        }
+        Insert: {
+          category: string
+          chords?: string[]
+          created_at?: string
+          id?: string
+          interval_names: string[]
+          intervals: number[]
+          name: string
+        }
+        Update: {
+          category?: string
+          chords?: string[]
+          created_at?: string
+          id?: string
+          interval_names?: string[]
+          intervals?: number[]
+          name?: string
+        }
+        Relationships: []
+      }
+      style_presets: {
+        Row: {
+          chord_tendencies: string
+          created_at: string
+          description: string
+          id: string
+          label: string
+          preferred_modes: string[]
+          rhythm_feel: string
+          style_id: string
+        }
+        Insert: {
+          chord_tendencies?: string
+          created_at?: string
+          description?: string
+          id?: string
+          label: string
+          preferred_modes?: string[]
+          rhythm_feel?: string
+          style_id: string
+        }
+        Update: {
+          chord_tendencies?: string
+          created_at?: string
+          description?: string
+          id?: string
+          label?: string
+          preferred_modes?: string[]
+          rhythm_feel?: string
+          style_id?: string
+        }
+        Relationships: []
+      }
+      tuning_presets: {
+        Row: {
+          created_at: string
+          id: string
+          instrument_type: string
+          label: string
+          tuning: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instrument_type: string
+          label: string
+          tuning: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instrument_type?: string
+          label?: string
+          tuning?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
