@@ -120,7 +120,8 @@ const ChordProgressionBuilder = ({
   const addChord = (pc: ProgressionChord) => {
     if (lockProgression) return;
     pushUndo();
-    setProgression(prev => [...prev, pc]);
+    const extChord = extensionLevel !== 'triad' ? applyExtensionLevel(pc.chord, extensionLevel, root) : pc.chord;
+    setProgression(prev => [...prev, { ...pc, chord: extChord }]);
   };
 
   const removeChord = (idx: number) => {
