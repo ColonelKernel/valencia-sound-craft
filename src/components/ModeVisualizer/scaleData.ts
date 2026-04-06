@@ -291,6 +291,33 @@ export const TUNING_PRESETS: TuningPreset[] = [
   },
 ];
 
+// ─── Other Fretted Instruments ──────────────────────────────
+export interface FrettedInstrument {
+  key: string;
+  label: string;
+  tuning: StringTuning[];
+  frets?: number;
+}
+
+export const FRETTED_INSTRUMENTS: FrettedInstrument[] = [
+  { key: 'mandolin', label: 'Mandolin', tuning: [{ note:'G',octave:3 },{ note:'D',octave:4 },{ note:'A',octave:4 },{ note:'E',octave:5 }] },
+  { key: 'mandola', label: 'Mandola', tuning: [{ note:'C',octave:3 },{ note:'G',octave:3 },{ note:'D',octave:4 },{ note:'A',octave:4 }] },
+  { key: 'mandocello', label: 'Mandocello', tuning: [{ note:'C',octave:2 },{ note:'G',octave:2 },{ note:'D',octave:3 },{ note:'A',octave:3 }] },
+  { key: 'ukulele', label: 'Ukulele', tuning: [{ note:'G',octave:4 },{ note:'C',octave:4 },{ note:'E',octave:4 },{ note:'A',octave:4 }], frets: 15 },
+  { key: 'baritone-uke', label: 'Baritone Ukulele', tuning: [{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }], frets: 18 },
+  { key: 'banjo', label: 'Banjo (5-str)', tuning: [{ note:'G',octave:4 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'D',octave:4 }] },
+  { key: 'tenor-banjo', label: 'Tenor Banjo', tuning: [{ note:'C',octave:3 },{ note:'G',octave:3 },{ note:'D',octave:4 },{ note:'A',octave:4 }], frets: 19 },
+  { key: 'bouzouki', label: 'Bouzouki', tuning: [{ note:'G',octave:3 },{ note:'D',octave:4 },{ note:'A',octave:4 },{ note:'D',octave:5 }] },
+  { key: 'charango', label: 'Charango', tuning: [{ note:'G',octave:4 },{ note:'C',octave:5 },{ note:'E',octave:5 },{ note:'A',octave:4 },{ note:'E',octave:5 }], frets: 17 },
+  { key: 'tenor-guitar', label: 'Tenor Guitar', tuning: [{ note:'C',octave:3 },{ note:'G',octave:3 },{ note:'D',octave:4 },{ note:'A',octave:4 }], frets: 19 },
+  { key: 'bajo-sexto', label: 'Bajo Sexto', tuning: [{ note:'E',octave:2 },{ note:'A',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }] },
+  { key: 'sitar', label: 'Sitar (main)', tuning: [{ note:'C',octave:3 },{ note:'G',octave:3 },{ note:'C',octave:4 },{ note:'F',octave:3 },{ note:'G',octave:3 },{ note:'C',octave:4 },{ note:'F',octave:4 }], frets: 20 },
+  { key: 'lap-steel', label: 'Lap Steel', tuning: [{ note:'E',octave:2 },{ note:'B',octave:2 },{ note:'E',octave:3 },{ note:'G#',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 }] },
+  { key: 'pedal-steel', label: 'Pedal Steel (E9)', tuning: [{ note:'B',octave:2 },{ note:'D',octave:3 },{ note:'E',octave:3 },{ note:'F#',octave:3 },{ note:'G#',octave:3 },{ note:'B',octave:3 },{ note:'E',octave:4 },{ note:'G#',octave:4 },{ note:'D#',octave:4 },{ note:'F#',octave:4 }] },
+  { key: 'dulcimer', label: 'Appalachian Dulcimer', tuning: [{ note:'D',octave:3 },{ note:'A',octave:3 },{ note:'D',octave:4 }], frets: 17 },
+  { key: 'cigar-box', label: 'Cigar Box Guitar', tuning: [{ note:'G',octave:2 },{ note:'D',octave:3 },{ note:'G',octave:3 }], frets: 18 },
+];
+
 // ─── Fretboard helpers ──────────────────────────────────────
 export function getNoteAtFret(openNote: string, fret: number): string {
   let idx = NOTES_SHARP.indexOf(openNote);

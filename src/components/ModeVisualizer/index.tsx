@@ -10,6 +10,7 @@ import {
   MODE_INTERVAL_NAMES,
   TUNING_PRESETS,
   getChordSpellings,
+  FRETTED_INSTRUMENTS,
   type ChordSpelling,
   type StringTuning,
   type TuningPreset,
@@ -39,9 +40,10 @@ const ModeVisualizer = () => {
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
   const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference'>('visualizer');
-  const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard'>('guitar');
+  const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
+  const [otherInstrument, setOtherInstrument] = useState(FRETTED_INSTRUMENTS[0].key);
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
@@ -450,10 +452,11 @@ const ModeVisualizer = () => {
 
         {/* Instrument Selector */}
         <div className="mb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {([
               { key: 'guitar' as const, label: 'Guitar', icon: <Guitar className="w-4 h-4" /> },
               { key: 'bass' as const, label: 'Bass', icon: <Guitar className="w-4 h-4" /> },
+              { key: 'other' as const, label: 'Other', icon: <Music className="w-4 h-4" /> },
               { key: 'keyboard' as const, label: 'Keyboard', icon: <Piano className="w-4 h-4" /> },
             ]).map((inst) => (
               <button
@@ -468,6 +471,17 @@ const ModeVisualizer = () => {
                 {inst.icon} {inst.label}
               </button>
             ))}
+            {instrument === 'other' && (
+              <select
+                value={otherInstrument}
+                onChange={(e) => setOtherInstrument(e.target.value)}
+                className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                {FRETTED_INSTRUMENTS.map((fi) => (
+                  <option key={fi.key} value={fi.key}>{fi.label}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -548,6 +562,33 @@ const ModeVisualizer = () => {
             />
           </div>
         )}
+
+        {/* Other Fretted Instruments */}
+        {instrument === 'other' && (() => {
+          const fi = FRETTED_INSTRUMENTS.find(f => f.key === otherInstrument) || FRETTED_INSTRUMENTS[0];
+          return (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Music className="w-5 h-5" /> {fi.label} ({tuningLabel(fi.tuning)})
+                {selectedChord && <span className="text-xs text-amber-400 font-normal ml-2">Showing: {selectedChord.name}</span>}
+              </h3>
+              <Fretboard
+                scaleNotes={scaleNotes}
+                root={root}
+                mode={mode}
+                tuning={fi.tuning}
+                label={fi.label}
+                lefty={lefty}
+                showIntervals={showIntervals}
+                showFingers={showFingers}
+                hoveredNote={hoveredNote}
+                onNoteHover={setHoveredNote}
+                chordFilter={chordFilter}
+                onNoteClick={handleNoteClick}
+              />
+            </div>
+          );
+        })()}
 
         {/* Keyboard */}
         {instrument === 'keyboard' && (
