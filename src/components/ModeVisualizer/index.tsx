@@ -134,6 +134,12 @@ const ModeVisualizer = () => {
           </div>
         )}
 
+        {activeTab === 'polyrhythm' && (
+          <div>
+            <PolyrhythmTool />
+          </div>
+        )}
+
         {activeTab === 'metronome' && (
           <div>
             <Metronome />
