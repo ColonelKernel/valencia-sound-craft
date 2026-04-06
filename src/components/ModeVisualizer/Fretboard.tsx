@@ -18,6 +18,8 @@ interface FretboardProps {
   showFingers: boolean;
   hoveredNote: string | null;
   onNoteHover: (note: string | null) => void;
+  chordFilter: string[] | null;
+  onNoteClick?: (note: string) => void;
 }
 
 const FRET_COUNT = 22;
@@ -80,6 +82,8 @@ const Fretboard = ({
   showFingers,
   hoveredNote,
   onNoteHover,
+  chordFilter,
+  onNoteClick,
 }: FretboardProps) => {
   const strings = lefty ? [...tuning].reverse() : tuning;
   const originalOrder = lefty ? [...tuning].reverse() : tuning;
