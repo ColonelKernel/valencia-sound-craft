@@ -80,7 +80,7 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
   const [rhythmList, setRhythmList] = useState<PatternPreset[]>(initialRhythmList);
   const [currentPresetId, setCurrentPresetId] = useState<string>(initialPreset.id);
   const [currentTimbres, setCurrentTimbres] = useState<Timbre[]>(initialPreset.instruments);
-  const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | 'blipblox' | null>('presets');
+  const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | 'blipblox' | null>('blipblox');
   const [showBrowser, setShowBrowser] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [midiMapping, setMidiMapping] = useState<MidiMapping>('general-midi');
@@ -414,6 +414,7 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
           </h3>
           <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 max-w-lg">
             {DRUM_PRESETS.length} culturally authentic patterns from {new Set(DRUM_PRESETS.filter(p => p.countryCode !== 'UN').map(p => p.country)).size} countries.
+            <span className="hidden sm:inline"> Atlas rhythms are surfaced in the Atlas panel below.</span>
             <span className="hidden sm:inline"> Click cells to cycle: off → hit → accent → ghost.</span>
             <span className="sm:hidden"> Tap cells to toggle.</span>
           </p>
@@ -504,7 +505,7 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
         {[
           { id: 'advanced' as const, label: 'Sound', icon: <Sliders className="w-3.5 h-3.5" /> },
           { id: 'midi' as const, label: 'MIDI Export', icon: <FileAudio className="w-3.5 h-3.5" /> },
-          { id: 'blipblox' as const, label: 'Blipblox', icon: <Zap className="w-3.5 h-3.5" /> },
+          { id: 'blipblox' as const, label: 'Atlas', icon: <Zap className="w-3.5 h-3.5" /> },
         ].map(tab => (
           <button
             key={tab.id}

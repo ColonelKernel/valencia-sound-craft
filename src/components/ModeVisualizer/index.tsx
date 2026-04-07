@@ -151,10 +151,10 @@ const ModeVisualizer = () => {
                 <option value="reference">📖 Scale Reference</option>
                 <option value="moderef">🎼 Mode Reference</option>
                 <option value="polyrhythm">🥁 Rhythm Engine</option>
-                <option value="rhythmmap">🌍 Rhythm Map</option>
+                <option value="rhythmmap">🌍 Rhythm Atlas</option>
                 <option value="tonnetz">🔷 Tonnetz</option>
                 <option value="circleof5">⭕ Circle of Fifths</option>
-                <option value="blipblox">⚡ Blipblox</option>
+                <option value="blipblox">📍 Rhythm Map (Classic)</option>
               </select>
             </div>
 
@@ -180,9 +180,12 @@ const ModeVisualizer = () => {
             )}
 
             {activeTab === 'blipblox' && (
-              <Suspense fallback={<div className="text-sm text-muted-foreground p-4">Loading Blipblox…</div>}>
-                <GlobalRhythmEngine root={root} mode={mode} />
-              </Suspense>
+              <div>
+                <RhythmMap onLoadPreset={(preset) => {
+                  setSelectedRhythmPreset(clonePreset(preset));
+                  setActiveTab('polyrhythm');
+                }} />
+              </div>
             )}
 
             {activeTab === 'reference' && (
@@ -198,12 +201,9 @@ const ModeVisualizer = () => {
             )}
 
             {activeTab === 'rhythmmap' && (
-              <div>
-                <RhythmMap onLoadPreset={(preset) => {
-                  setSelectedRhythmPreset(clonePreset(preset));
-                  setActiveTab('polyrhythm');
-                }} />
-              </div>
+              <Suspense fallback={<div className="text-sm text-muted-foreground p-4">Loading Rhythm Atlas…</div>}>
+                <GlobalRhythmEngine root={root} mode={mode} embeddedPreset={selectedRhythmPreset || undefined} />
+              </Suspense>
             )}
 
             {activeTab === 'metronome' && (
