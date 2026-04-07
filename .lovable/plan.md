@@ -1,88 +1,76 @@
 
 
-## Global Rhythm Engine + AI Mode — Enhancement Plan
+## Blipblox Global Rhythm Engine — Advanced Enhancement Plan
 
-### What We're Building
+### What We're Adding
 
-Enhance the Blipblox integration with three new capabilities:
-
-1. **AI Rhythm Generation Engine** — rule-based generative system that creates rhythms from cultural parameters (region, density, complexity, swing)
-2. **Adaptive Groove Engine** — reacts to user edits in real-time, adding ghost notes, syncopation, and variations
-3. **Integrated GlobalRhythmEngine component** — unified UI combining the sequencer, generation controls, adaptive mode, region selector, and Blipblox hardware output
+1. **Ableton Link sync indicator + external clock fallback** (UI-only — true Link requires native bridge, so we implement MIDI clock sync with Link-style UX)
+2. **Enhanced Adaptive Mode** with micro-timing shifts and region-aware variation constraints
+3. **Improved regional generators** with more authentic subdivision logic
+4. **UI polish**: Link status indicator, sync source toggle, validation step indicators
 
 ### Architecture
 
-```text
-src/components/Blipblox/
-├── (existing files unchanged)
-├── rhythmGenerator.ts       ← Rule-based rhythm generation by region
-├── adaptiveEngine.ts        ← Tracks user behavior, suggests variations
-├── harmonicEngine.ts        ← Maps rhythm to pitched MIDI (for SK2/After Dark)
-└── GlobalRhythmEngine.tsx   ← Unified UI component
-```
+No new files needed. All changes go into existing Blipblox modules.
+
+---
 
 ### File Changes
 
-**1. `src/components/Blipblox/rhythmGenerator.ts`** — New file
+**1. `src/components/Blipblox/blipbloxEngine.ts`** — Sync infrastructure
 
-Rule-based generator with region-specific logic:
-- `generateRhythm(options)` — takes `{ region, meter, density (0-1), complexity (0-1), swing (0-1) }` and returns a `{ midiPattern, velocityPattern, subdivision }` 
-- Region rules:
-  - **African**: 3:2 polyrhythmic layering, interlocking patterns
-  - **Balkan**: Asymmetric groupings (2+2+3, 3+2+2), irregular accents
-  - **Flamenco**: 12-beat compas cycle, accents on 3/6/8/10/12
-  - **Indian**: Subdivision logic (ta-ki-ta, ta-ka-di-mi), tala-aware
-  - **Latin**: Clave-based, son/rumba structures
-  - **General**: Density-weighted step placement with accent shaping
-- Output is a valid pattern compatible with existing `StepPattern` type
+- Add `SyncMode` type: `'internal' | 'midi-clock' | 'link'`
+- Add `setSyncMode(mode)` — switches between internal scheduler, incoming MIDI clock, and Link placeholder
+- Add `onTempoChange` callback for bidirectional BPM propagation
+- Add `setExternalTempo(bpm)` for receiving tempo from MIDI clock input
+- Add MIDI clock *input* listener: when `midiAccess.inputs` receives 0xF8 messages, derive BPM and sync step position
+- Add `getSyncStatus()` returning `{ mode, isLocked, drift, peerCount }` for UI display
+- Link mode: show "Link not available in browser" with fallback to MIDI clock; prepare the interface so a future WebSocket bridge can plug in
 
-**2. `src/components/Blipblox/adaptiveEngine.ts`** — New file
+**2. `src/components/Blipblox/adaptiveEngine.ts`** — Smarter evolution
 
-Tracks user interaction and applies intelligent variations:
-- `AdaptiveEngine` class with:
-  - `trackEdit(oldPattern, newPattern)` — records density/accent changes
-  - `suggestVariation(pattern, velocity)` — returns modified pattern based on behavior
-  - Rules: if density increases → add ghost notes; if tempo slows → increase subdivision complexity; if pattern repeated 4+ times → introduce syncopation
-  - `applyVariation(pattern, type)` — type = 'ghost-notes' | 'syncopation' | 'accent-shift' | 'fill'
+- Add `regionConstraints` parameter to `suggestVariation()` so variations respect the source region's rhythmic rules (e.g., never remove compás accents in Flamenco, preserve clave in Latin)
+- Add `'micro-timing'` variation type: shifts velocity timing feel (laid-back/ahead) by adjusting velocity emphasis on even vs odd steps
+- Add `'subdivision-swap'` variation type: replaces a beat group with a different subdivision (e.g., swap straight 4s for triplet feel within one beat)
+- Add `maxVariationStrength` parameter (0-1) to control how far variations can deviate from the original
+- Track loop count internally; increase variation subtlety on first 2 loops, allow more on loops 4+
 
-**3. `src/components/Blipblox/harmonicEngine.ts`** — New file
+**3. `src/components/Blipblox/rhythmGenerator.ts`** — Improved regional accuracy
 
-Links rhythm to pitched output for SK2/After Dark:
-- `generateHarmonic(pattern, velocity, key, mode)` — maps strong beats to chord tones, weak beats to passing tones, dense patterns to arpeggiation
-- Uses existing `SCALE_INTERVALS` from `deviceProfiles.ts`
-- Returns `{ notes: number[], velocities: number[] }` for MIDI output
+- **African**: Add explicit 3:2 cross-rhythm using Euclidean distribution (E(3, 8) over E(2, 8)); add call-and-response layer where second half echoes first with offset
+- **Balkan**: Add specific grouping presets for 5/8 (2+3), 7/8 (2+2+3 and 3+2+2), 9/8 (2+2+2+3), 11/8 (2+2+3+2+2); select based on meter input
+- **Flamenco**: Differentiate Bulería (accents 3,6,8,10,12) vs Soleá (accents 3,6,8,10,12 but slower, sparser); add `subStyle` option
+- **Indian**: Implement proper tala structures — Teentaal (4+4+4+4), Jhaptaal (2+3+2+3), Rupak (3+2+2); map subdivisions to syllabic density
+- **Latin**: Differentiate 2-3 vs 3-2 clave; add rumba clave variant; add tumbao bass pattern layer
 
-**4. `src/components/Blipblox/GlobalRhythmEngine.tsx`** — New file
+**4. `src/components/Blipblox/GlobalRhythmEngine.tsx`** — UI enhancements
 
-Unified component that combines everything:
-- **Region selector** (dropdown with all regions from drumPresets)
-- **Generate button** + density/complexity/swing sliders
-- **Integrated StepSequencer** (live-editable while playing)
-- **Morph slider** between current pattern and a secondary/generated one
-- **Adaptive Mode toggle** — when on, pattern auto-evolves after each loop
-- **Country-click hook**: `loadRhythmByCountry(country)` — pulls matching presets from `DRUM_PRESETS`
-- **Export section**: MIDI export button (reuses existing `generateMidiFile`), JSON export
-- **Blipblox send** section — embeds connection controls when a device is available
-- Wraps the existing `BlipbloxConnector` for hardware output
+- Add **Sync section** at top of transport bar:
+  - Sync mode selector: Internal / MIDI Clock / Link
+  - Status indicator: green dot = locked, amber = syncing, red = no sync
+  - "LINK ACTIVE" / "CLOCK IN" / "INTERNAL" label
+  - Tempo source label (shows "External: 120 BPM" when receiving clock)
+- Add **region sub-style selector** (e.g., Bulería vs Soleá for Flamenco)
+- Add **variation strength slider** (subtle → aggressive) for Adaptive Mode
+- Show **variation type badge** when adaptive mode applies a change (e.g., "Ghost Notes", "Syncopation")
+- Add **9/8 and 11/8** to meter options
 
-**5. Integration updates:**
+**5. `src/components/Blipblox/rhythmGenerator.ts`** — New meter options
 
-- **`src/components/ModeVisualizer/index.tsx`**: Replace the Blipblox tab render — show `<GlobalRhythmEngine />` instead of bare `<BlipbloxConnector />`, passing `root` and `mode`
-- **`src/components/DrumMachine/index.tsx`**: In the blipblox panel, render `<GlobalRhythmEngine embeddedPreset={currentPreset} />` instead of bare `<BlipbloxConnector />`
-
-**6. `src/components/Blipblox/blipbloxEngine.ts`** — Minor update
-
-Add `updatePattern(pattern)` method that hot-swaps the current pattern mid-loop without restarting (for live editing and adaptive mode):
-```typescript
-updatePattern(pattern: StepPattern) {
-  this.currentPattern = pattern; // takes effect on next scheduler tick
-}
-```
+- Add `[9, 8]` and `[11, 8]` to `METER_OPTIONS`
+- Add `[5, 8]` for completeness
 
 ### Key Design Decisions
 
-- **Rule-based, not ML** — all generation runs client-side in <50ms with deterministic seeded randomness
-- **Live editing** — pattern updates propagate to engine mid-loop via `updatePattern()`
-- **Reuses existing infrastructure** — `DRUM_PRESETS` for country/region data, `generateMidiFile` for export, `blipbloxEngine` for playback
-- **No new dependencies** needed
+- **Ableton Link**: Browser JS cannot natively run Link protocol. We implement MIDI clock input sync (which works with any DAW including Ableton) and add a Link UI placeholder that shows "requires Link bridge" — the architecture is ready for a future WebSocket-to-Link bridge.
+- **Region constraints in adaptive mode**: Stored as simple arrays of "protected step indices" per region, ensuring the adaptive engine never removes structurally critical hits.
+- **No new dependencies**: All changes use existing Web MIDI API and AudioContext.
+
+### Validation Points
+
+The implementation should be verified by:
+1. Opening Interactive Tools → Blipblox → confirming the sync mode selector and status indicator render
+2. Generating rhythms from each region and confirming distinct character
+3. Playing with Adaptive Mode on for 4+ loops and confirming subtle, musical evolution
+4. Switching sync mode to MIDI Clock and confirming the UI updates accordingly
 
