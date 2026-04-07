@@ -124,6 +124,46 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   const svgWidth = COLS * hexRadius * 1.85 + hexRadius + 20;
   const svgHeight = ROWS * hexRadius * 1.6 + hexRadius + 20;
 
+  // ─── Tonal Gravity ─────────────────────────────────────
+  // Compute centroid position on the grid for each chord in the progression
+  const gravityPath = useMemo(() => {
+    if (!showGravity || progression.length === 0) return [];
+    return progression.map(td => {
+      // Find all grid nodes matching this chord's pitch classes, pick the best cluster
+      const matchingNodes = nodes.filter(n => td.notes.includes(n.noteIdx));
+      if (matchingNodes.length === 0) return null;
+      // Average the positions of matching nodes, but cluster by proximity
+      // For a cleaner visualization, find the centroid of the 3 closest matching nodes
+      const rootNodes = matchingNodes.filter(n => n.noteIdx === td.root);
+      const anchor = rootNodes.length > 0 ? rootNodes[Math.floor(rootNodes.length / 2)] : matchingNodes[0];
+      // Find the 3 nearest nodes to anchor that match chord tones
+      const sorted = matchingNodes
+        .map(n => ({ ...n, dist: Math.hypot(n.x - anchor.x, n.y - anchor.y) }))
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 3);
+      const cx = sorted.reduce((s, n) => s + n.x, 0) / sorted.length;
+      const cy = sorted.reduce((s, n) => s + n.y, 0) / sorted.length;
+      return { cx, cy, label: triadLabel(td), type: td.type };
+    }).filter(Boolean) as { cx: number; cy: number; label: string; type: 'major' | 'minor' }[];
+  }, [showGravity, progression, nodes]);
+
+  // Running weighted tonal center (average of all chords up to currentIdx during playback)
+  const tonalCenter = useMemo(() => {
+    if (!showGravity || gravityPath.length === 0) return null;
+    const upTo = currentIdx >= 0 ? currentIdx + 1 : gravityPath.length;
+    const slice = gravityPath.slice(0, upTo);
+    if (slice.length === 0) return null;
+    // Weight more recent chords more heavily
+    let wx = 0, wy = 0, wt = 0;
+    slice.forEach((p, i) => {
+      const w = 1 + i * 0.5; // increasing weight
+      wx += p.cx * w;
+      wy += p.cy * w;
+      wt += w;
+    });
+    return { x: wx / wt, y: wy / wt };
+  }, [showGravity, gravityPath, currentIdx]);
+
   // ─── Helpers ────────────────────────────────────────────
   const isInScale = useCallback((idx: number) => scaleSet.has(idx), [scaleSet]);
 
