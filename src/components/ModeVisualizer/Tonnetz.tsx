@@ -600,6 +600,61 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
                     </div>
                   </div>
                 )}
+
+                {/* ═══ MIDI OUTPUT ═══ */}
+                <div className="pt-2 border-t border-border space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                      <Usb size={10} /> MIDI Output
+                    </p>
+                    {!midiEnabled ? (
+                      <button onClick={initMidi}
+                        className="flex items-center gap-1 text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:bg-accent transition-colors">
+                        <Radio size={10} /> Connect
+                      </button>
+                    ) : (
+                      <button onClick={handleMidiDisconnect}
+                        className="flex items-center gap-1 text-[10px] px-2 py-1 rounded border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+                        <Radio size={10} /> Connected
+                      </button>
+                    )}
+                  </div>
+                  {midiError && (
+                    <p className="text-[10px] text-destructive">{midiError}</p>
+                  )}
+                  {midiEnabled && midiDevices.length > 0 && (
+                    <div className="space-y-1.5">
+                      <select onChange={(e) => handleMidiDeviceChange(e.target.value)}
+                        defaultValue={midiDevices[0]?.id}
+                        className="w-full bg-secondary border border-border rounded px-2 py-1 text-[10px] text-foreground">
+                        {midiDevices.map(d => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-muted-foreground">Ch</span>
+                        <select value={midiChannel} onChange={(e) => setMidiChannel(Number(e.target.value))}
+                          className="bg-secondary border border-border rounded px-1.5 py-0.5 text-[10px] text-foreground w-12">
+                          {Array.from({ length: 16 }, (_, i) => (
+                            <option key={i} value={i}>{i + 1}</option>
+                          ))}
+                        </select>
+                        <button onClick={() => sendAllNotesOff(midiChannel)}
+                          className="ml-auto text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:text-destructive transition-colors">
+                          Panic
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-muted-foreground">
+                        Chords and notes are sent live to your DAW
+                      </p>
+                    </div>
+                  )}
+                  {!midiEnabled && !midiError && (
+                    <p className="text-[9px] text-muted-foreground">
+                      Connect a virtual MIDI port (e.g. IAC, loopMIDI) to send chords to Ableton, Logic, etc.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>
