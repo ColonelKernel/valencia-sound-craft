@@ -42,6 +42,7 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showTransforms, setShowTransforms] = useState(true);
   const [animatingTransform, setAnimatingTransform] = useState<{ from: TonnetzTriadData; to: TonnetzTriadData; type: TransformType } | null>(null);
+  const [showGravity, setShowGravity] = useState(true);
 
   // Progression sidebar
   const [progression, setProgression] = useState<TonnetzTriadData[]>([]);
