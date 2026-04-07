@@ -38,7 +38,7 @@ describe("AI rhythm generation", () => {
       pattern: {
         darbuka_tek: [1, 0, 0, 0, 0, 0, 0, 0, 0],
       },
-      feel: "asymmetric",
+      feel: "additive",
       tags: ["generated"],
     };
 
