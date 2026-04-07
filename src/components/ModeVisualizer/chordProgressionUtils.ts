@@ -136,12 +136,12 @@ export const functionDotColors: Record<ChordFunction, string> = {
 };
 
 // ─── Note Helpers ───────────────────────────────────────────
-export function useFlatsForKey(root: string): boolean {
+export function prefersFlatsForKey(root: string): boolean {
   return root.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(root);
 }
 
 export function getChromatic(root: string): string[] {
-  return useFlatsForKey(root) ? NOTES_FLAT : NOTES_SHARP;
+  return prefersFlatsForKey(root) ? NOTES_FLAT : NOTES_SHARP;
 }
 
 export function transposeNote(note: string, semitones: number, useFlats: boolean): string {
@@ -217,7 +217,7 @@ export function getSecondaryDominants(root: string, mode: string, diatonicChords
   if (!intervals || intervals.length < 7) return [];
   
   const results: ProgressionChord[] = [];
-  const flats = useFlatsForKey(root);
+  const flats = prefersFlatsForKey(root);
   const chromatic = getChromatic(root);
   const rootIdx = chromatic.indexOf(root);
   if (rootIdx === -1) return results;
@@ -264,7 +264,7 @@ export function getTritoneSubs(secondaryDoms: ProgressionChord[]): ProgressionCh
   const results: ProgressionChord[] = [];
   secondaryDoms.forEach(sd => {
     const domRoot = sd.chord.rootNote;
-    const flats = useFlatsForKey(domRoot);
+    const flats = prefersFlatsForKey(domRoot);
     const chromatic = getChromatic(domRoot);
     let idx = chromatic.indexOf(domRoot);
     if (idx === -1) {
@@ -319,9 +319,9 @@ export function getBorrowedChords(root: string, currentMode: string, diatonicCho
 
 // ─── Insert ii-V ────────────────────────────────────────────
 export function createIIV(targetRoot: string, root: string): ProgressionChord[] {
-  const flats = useFlatsForKey(root);
+  const flats = prefersFlatsForKey(root);
   const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
-  let targetIdx = chromatic.indexOf(targetRoot);
+  const targetIdx = chromatic.indexOf(targetRoot);
   if (targetIdx === -1) return [];
   
   // ii of target = 2 semitones above target's V = target - 5 semitones
@@ -356,7 +356,7 @@ export function transformProgression(
   chordSpellings: ChordSpelling[]
 ): ProgressionChord[] {
   if (progression.length === 0) return progression;
-  const flats = useFlatsForKey(root);
+  const flats = prefersFlatsForKey(root);
   const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
 
   switch (transform) {
@@ -503,7 +503,7 @@ export function getNextChordSuggestions(
   
   const lastChord = progression[progression.length - 1];
   const suggestions: ChordSuggestion[] = [];
-  const flats = useFlatsForKey(root);
+  const flats = prefersFlatsForKey(root);
   const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
   
   // Safe: diatonic chords that commonly follow
@@ -692,7 +692,7 @@ export const EXTENSION_LEVELS: { id: ExtensionLevel; label: string }[] = [
 ];
 
 export function applyExtensionLevel(chord: ChordSpelling, level: ExtensionLevel, root: string): ChordSpelling {
-  const flats = useFlatsForKey(root);
+  const flats = prefersFlatsForKey(root);
   const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
   const rootIdx = chromatic.indexOf(chord.rootNote);
   if (rootIdx === -1 || level === 'triad') {
@@ -708,7 +708,7 @@ export function applyExtensionLevel(chord: ChordSpelling, level: ExtensionLevel,
   const isMinor = chord.symbol.includes('m') && !chord.symbol.includes('maj');
   const isDim = chord.symbol.includes('dim') || chord.symbol.includes('°');
   const baseNotes = chord.notes.slice(0, 3);
-  let sym = chord.symbol.replace(/maj7|m7|7|9|11|13|add9|\(.*\)/g, '') || chord.rootNote;
+  const sym = chord.symbol.replace(/maj7|m7|7|9|11|13|add9|\(.*\)/g, '') || chord.rootNote;
 
   // triad already handled above
 

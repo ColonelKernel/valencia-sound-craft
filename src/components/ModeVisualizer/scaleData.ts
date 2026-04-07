@@ -169,7 +169,7 @@ const ENHARMONIC: Record<string, string> = {
   'C#':'Db','Db':'C#','D#':'Eb','Eb':'D#','F#':'Gb','Gb':'F#','G#':'Ab','Ab':'G#','A#':'Bb','Bb':'A#',
 };
 
-function useFlats(root: string): boolean {
+function prefersFlats(root: string): boolean {
   return FLAT_KEYS.includes(root) || root.includes('b');
 }
 
@@ -180,7 +180,7 @@ export function getScaleNotes(root: string, mode: string): string[] {
   // Try both sharp and flat spellings, pick the one with fewer accidentals
   // (or use flat-preference for flat keys)
   const trySpelling = (chromatic: string[]): string[] | null => {
-    let idx = chromatic.indexOf(root);
+    const idx = chromatic.indexOf(root);
     if (idx === -1) return null;
     return intervals.map(i => chromatic[(idx + i) % 12]);
   };
@@ -202,7 +202,7 @@ export function getScaleNotes(root: string, mode: string): string[] {
   }
 
   // Both exist — prefer flats for flat keys, otherwise count accidentals
-  if (useFlats(root)) return flatResult!;
+  if (prefersFlats(root)) return flatResult!;
 
   const countAccidentals = (notes: string[]) => notes.filter(n => n.includes('#') || n.includes('b')).length;
   const sharpCount = countAccidentals(sharpResult!);
@@ -364,7 +364,7 @@ export const FRETTED_INSTRUMENTS: FrettedInstrument[] = [
 
 // ─── Fretboard helpers ──────────────────────────────────────
 export function getNoteAtFret(openNote: string, fret: number): string {
-  let idx = NOTES_SHARP.indexOf(openNote);
+  const idx = NOTES_SHARP.indexOf(openNote);
   if (idx === -1) {
     const flatIdx = NOTES_FLAT.indexOf(openNote);
     if (flatIdx === -1) return '';
@@ -515,7 +515,7 @@ export interface ChordSpelling {
 export function getChordSpellings(scaleNotes: string[], mode: string): ChordSpelling[] {
   const chordSymbols = MODE_CHORDS[mode] || [];
   if (chordSymbols.length === 0 || scaleNotes.length === 0) return [];
-  const flats = useFlats(scaleNotes[0]);
+  const flats = prefersFlats(scaleNotes[0]);
   const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
 
   return chordSymbols.map((symbol) => {
@@ -543,4 +543,3 @@ export function getChordSpellings(scaleNotes: string[], mode: string): ChordSpel
     return { symbol, rootNote: chordRoot, name: chordRoot + quality, notes: chordNotes, intervals: formula.intervals };
   });
 }
-
