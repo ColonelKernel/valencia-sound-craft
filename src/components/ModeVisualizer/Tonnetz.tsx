@@ -1,5 +1,10 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { Play, Pause, X, Download, Sparkles, Sun, Moon, Maximize2, Minimize2, RotateCcw, Plus, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { Play, Pause, X, Download, Sparkles, Sun, Moon, Maximize2, Minimize2, RotateCcw, Plus, ChevronDown, ChevronUp, Zap, Usb, Radio } from "lucide-react";
+import {
+  requestMidiAccess, selectOutput, isConnected, getActiveOutput, disconnect as midiDisconnect,
+  sendChord as midiSendChord, sendSingleNote as midiSendNote, sendAllNotesOff,
+  type MidiOutputDevice,
+} from "./webMidiOut";
 import { playChord, playNote, type InstrumentTimbre } from "./audioSynth";
 import {
   ALL_NOTES, noteIndex, normalize,
