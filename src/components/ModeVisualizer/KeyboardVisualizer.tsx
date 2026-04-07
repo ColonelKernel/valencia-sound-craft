@@ -1,4 +1,4 @@
-import { playNote, type InstrumentTimbre } from "./audioSynth";
+import { playNoteAtOctave, type InstrumentTimbre } from "./audioSynth";
 
 const ALL_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const BLACK_KEYS = new Set([1, 3, 6, 8, 10]); // indices of sharps in ALL_NOTES
@@ -8,12 +8,15 @@ interface KeyboardVisualizerProps {
   root: string;
   hoveredNote: string | null;
   onNoteHover: (note: string | null) => void;
-  onNoteClick?: (note: string) => void;
+  onNoteClick?: (note: string, octave: number) => void;
   chordFilter: string[] | null;
   showIntervals: boolean;
   intervals: string[];
   timbre?: InstrumentTimbre;
 }
+
+const KEYBOARD_BASE_OCTAVE = 4;
+const KEYBOARD_OCTAVES = 2;
 
 // Normalize note for matching (e.g., Db -> C#)
 const ENHARMONIC: Record<string, string> = {
@@ -41,11 +44,10 @@ const KeyboardVisualizer = ({
   const normalizedRoot = normalize(root);
 
   // 2 octaves of keys
-  const octaves = 2;
   const keys: { note: string; isBlack: boolean; octave: number }[] = [];
-  for (let oct = 0; oct < octaves; oct++) {
+  for (let oct = 0; oct < KEYBOARD_OCTAVES; oct++) {
     ALL_NOTES.forEach((note, idx) => {
-      keys.push({ note, isBlack: BLACK_KEYS.has(idx), octave: oct });
+      keys.push({ note, isBlack: BLACK_KEYS.has(idx), octave: KEYBOARD_BASE_OCTAVE + oct });
     });
   }
 
@@ -128,8 +130,11 @@ const KeyboardVisualizer = ({
               onMouseLeave={() => onNoteHover(null)}
               onClick={() => {
                 if (inScale) {
-                  playNote(k.note, 0, 0.4, timbre);
-                  onNoteClick?.(displayNote(k.note));
+                  if (onNoteClick) {
+                    onNoteClick(displayNote(k.note), k.octave);
+                  } else {
+                    playNoteAtOctave(displayNote(k.note), k.octave, 0.4, timbre);
+                  }
                 }
               }}
             >
@@ -163,8 +168,11 @@ const KeyboardVisualizer = ({
             onMouseLeave={() => onNoteHover(null)}
             onClick={() => {
               if (inScale) {
-                playNote(k.note, 0, 0.4, timbre);
-                onNoteClick?.(displayNote(k.note));
+                if (onNoteClick) {
+                  onNoteClick(displayNote(k.note), k.octave);
+                } else {
+                  playNoteAtOctave(displayNote(k.note), k.octave, 0.4, timbre);
+                }
               }
             }}
           >
