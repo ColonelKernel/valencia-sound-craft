@@ -3,7 +3,7 @@ import {
   Play, Square, RotateCcw, Download, ChevronDown, ChevronRight,
   Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter
 } from "lucide-react";
-const BlipbloxConnector = lazy(() => import("../Blipblox/BlipbloxConnector"));
+const GlobalRhythmEngine = lazy(() => import("../Blipblox/GlobalRhythmEngine"));
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
 import {
   DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories, getAllRegions, getAllRhythmTypes,
@@ -570,10 +570,7 @@ const DrumMachine = () => {
       {/* Blipblox Panel */}
       {showPanel === 'blipblox' && (
         <Suspense fallback={<div className="text-xs text-muted-foreground p-3">Loading Blipblox…</div>}>
-          <BlipbloxConnector
-            embeddedPreset={currentPreset || undefined}
-            presets={DRUM_PRESETS}
-          />
+          <GlobalRhythmEngine embeddedPreset={currentPreset || undefined} />
         </Suspense>
       )}
 

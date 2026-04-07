@@ -29,7 +29,7 @@ import Tonnetz from "./Tonnetz";
 import CircleOfFifths from "./CircleOfFifths";
 import { lazy, Suspense } from "react";
 
-const BlipbloxConnector = lazy(() => import("../Blipblox/BlipbloxConnector"));
+const GlobalRhythmEngine = lazy(() => import("../Blipblox/GlobalRhythmEngine"));
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -162,7 +162,7 @@ const ModeVisualizer = () => {
 
             {activeTab === 'blipblox' && (
               <Suspense fallback={<div className="text-sm text-muted-foreground p-4">Loading Blipblox…</div>}>
-                <BlipbloxConnector root={root} mode={mode} />
+                <GlobalRhythmEngine root={root} mode={mode} />
               </Suspense>
             )}
 
