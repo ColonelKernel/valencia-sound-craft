@@ -771,23 +771,45 @@ const DrumMachine = () => {
 
         {/* Preset list */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
-          {filteredPresets.map(p => (
-            <button key={p.name}
-              onClick={() => loadPreset(p)}
-              className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
-                activePreset === p.name
-                  ? 'border-primary bg-primary/10 shadow-sm'
-                  : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
-              }`}
-            >
-              <div className="text-xs font-semibold truncate">{p.name}</div>
-              <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                <span className="text-[10px] text-muted-foreground">{p.country}</span>
-                <span className="text-muted-foreground/30">·</span>
-                <span className="text-[10px] text-muted-foreground">{p.bpm} BPM</span>
-                <span className="text-muted-foreground/30">·</span>
-                <span className="text-[10px] text-muted-foreground">{p.timeSignature[0]}/{p.timeSignature[1]}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{p.timeFeel}</span>
+          {filteredPresets.map(p => {
+            const grooveType = getGrooveType(p);
+            const validation = validateGroove(p);
+            return (
+              <button key={p.name}
+                onClick={() => loadPreset(p)}
+                className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
+                  activePreset === p.name
+                    ? 'border-primary bg-primary/10 shadow-sm'
+                    : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
+                } ${!validation.valid ? 'ring-1 ring-destructive/30' : ''}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold truncate">{p.name}</span>
+                  {!validation.valid && (
+                    <span className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive" title={validation.errors.join(', ')}>⚠</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-1 mt-1">
+                  <span className="text-[10px] text-muted-foreground">{p.region}</span>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-[10px] text-muted-foreground">{p.country}</span>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-[10px] text-muted-foreground">{p.timeSignature[0]}/{p.timeSignature[1]}</span>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-[10px] text-muted-foreground">{p.bpm} BPM</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{grooveType}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{p.timeFeel}</span>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                    p.complexity === 'beginner' ? 'bg-emerald-500/10 text-emerald-400' :
+                    p.complexity === 'intermediate' ? 'bg-amber-500/10 text-amber-400' :
+                    'bg-rose-500/10 text-rose-400'
+                  }`}>{p.complexity}</span>
+                </div>
+              </button>
+            );
+          })}
               </div>
             </button>
           ))}
