@@ -75,11 +75,11 @@ const NOTE_BASES: Record<string, number> = {
   B: 11,
 };
 const CIRCLE_KEY_ALIASES: Record<string, string> = {
-  C#: "Db",
-  D#: "Eb",
-  G#: "Ab",
-  A#: "Bb",
-  Gb: "F#",
+  "C#": "Db",
+  "D#": "Eb",
+  "G#": "Ab",
+  "A#": "Bb",
+  "Gb": "F#",
 };
 
 const MINOR_DISPLAY: Record<string, string> = {
