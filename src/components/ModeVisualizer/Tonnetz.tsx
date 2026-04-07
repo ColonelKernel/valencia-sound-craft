@@ -52,9 +52,40 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   const [showProgPanel, setShowProgPanel] = useState(true);
   const timeoutRef = useRef<number[]>([]);
 
+  // MIDI output
+  const [midiEnabled, setMidiEnabled] = useState(false);
+  const [midiDevices, setMidiDevices] = useState<MidiOutputDevice[]>([]);
+  const [midiChannel, setMidiChannel] = useState(0);
+  const [midiError, setMidiError] = useState<string | null>(null);
+
   const hexRadius = performanceMode ? HEX_RADIUS_PERF : HEX_RADIUS_NORMAL;
 
-  // ─── Derived ────────────────────────────────────────────
+  // ─── MIDI init ──────────────────────────────────────────
+  const initMidi = useCallback(async () => {
+    try {
+      setMidiError(null);
+      const devices = await requestMidiAccess();
+      setMidiDevices(devices);
+      if (devices.length > 0) {
+        selectOutput(devices[0].id);
+        setMidiEnabled(true);
+      } else {
+        setMidiError('No MIDI output devices found');
+      }
+    } catch (err) {
+      setMidiError(err instanceof Error ? err.message : 'MIDI not available');
+    }
+  }, []);
+
+  const handleMidiDeviceChange = useCallback((deviceId: string) => {
+    selectOutput(deviceId);
+  }, []);
+
+  const handleMidiDisconnect = useCallback(() => {
+    midiDisconnect();
+    setMidiEnabled(false);
+    setMidiDevices([]);
+  }, []);
   const rootIdx = noteIndex(root);
 
   const systemScale = useMemo(() => {
