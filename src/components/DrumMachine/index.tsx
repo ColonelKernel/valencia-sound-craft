@@ -6,7 +6,7 @@ import {
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
 import {
   DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories, getAllRegions, getAllRhythmTypes,
-  formatPulseGrouping,
+  formatPulseGrouping, validateGroove, getGrooveType,
   type PatternPreset, type TimeFeel, type Complexity, type RhythmType,
 } from "./drumPresets";
 import { generateMidiFile, downloadMidiFile, MIDI_MAPPINGS, type MidiMapping } from "./midiExport";
@@ -75,7 +75,7 @@ const DrumMachine = () => {
   const [groove, setGroove] = useState(50);
 
   // Filters
-  const [filterRegion, setFilterRegion] = useState<string | null>(null);
+  const [filterRegions, setFilterRegions] = useState<string[]>([]);
   const [filterFeel, setFilterFeel] = useState<TimeFeel | null>(null);
   const [filterComplexity, setFilterComplexity] = useState<Complexity | null>(null);
   const [filterRhythmType, setFilterRhythmType] = useState<RhythmType | null>(null);
@@ -107,13 +107,13 @@ const DrumMachine = () => {
   const filteredPresets = useMemo(() => {
     return filterPresets({
       category: selectedCategory,
-      region: filterRegion,
+      regions: filterRegions.length > 0 ? filterRegions : null,
       timeFeel: filterFeel,
       complexity: filterComplexity,
       rhythmType: filterRhythmType,
       search: searchQuery || undefined,
     });
-  }, [selectedCategory, filterRegion, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
+  }, [selectedCategory, filterRegions, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
 
   const hasSolo = tracks.some(t => t.solo);
 
@@ -678,16 +678,36 @@ const DrumMachine = () => {
         {/* Filters row */}
         <div className="flex flex-wrap items-center gap-2">
           <Filter size={12} className="text-muted-foreground shrink-0" />
-          <select
-            value={filterRegion || ''}
-            onChange={e => setFilterRegion(e.target.value || null)}
-            className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
-          >
-            <option value="">All Regions</option>
-            {regions.map(r => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
+          
+          {/* Multi-select region chips */}
+          <div className="flex flex-wrap gap-1">
+            <button
+              onClick={() => setFilterRegions([])}
+              className={`text-[10px] px-2 py-1 rounded-md transition-colors font-medium ${
+                filterRegions.length === 0
+                  ? 'bg-primary text-primary-foreground'
+                  : 'border border-border text-muted-foreground hover:bg-accent'
+              }`}
+            >All Regions</button>
+            {regions.map(r => {
+              const isActive = filterRegions.includes(r);
+              return (
+                <button key={r}
+                  onClick={() => {
+                    setFilterRegions(prev =>
+                      isActive ? prev.filter(x => x !== r) : [...prev, r]
+                    );
+                  }}
+                  className={`text-[10px] px-2 py-1 rounded-md transition-colors ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground ring-1 ring-primary/50'
+                      : 'border border-border text-muted-foreground hover:bg-accent'
+                  }`}
+                >{r} <span className="opacity-60">({DRUM_PRESETS.filter(p => p.region === r).length})</span></button>
+              );
+            })}
+          </div>
+          
           <select
             value={filterFeel || ''}
             onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
@@ -721,9 +741,9 @@ const DrumMachine = () => {
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
           </select>
-          {(filterRegion || filterFeel || filterRhythmType || filterComplexity || searchQuery) && (
+          {(filterRegions.length > 0 || filterFeel || filterRhythmType || filterComplexity || searchQuery) && (
             <button
-              onClick={() => { setFilterRegion(null); setFilterFeel(null); setFilterRhythmType(null); setFilterComplexity(null); setSearchQuery(''); }}
+              onClick={() => { setFilterRegions([]); setFilterFeel(null); setFilterRhythmType(null); setFilterComplexity(null); setSearchQuery(''); }}
               className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border hover:bg-accent transition-colors"
             >
               Clear Filters
@@ -751,26 +771,45 @@ const DrumMachine = () => {
 
         {/* Preset list */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
-          {filteredPresets.map(p => (
-            <button key={p.name}
-              onClick={() => loadPreset(p)}
-              className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
-                activePreset === p.name
-                  ? 'border-primary bg-primary/10 shadow-sm'
-                  : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
-              }`}
-            >
-              <div className="text-xs font-semibold truncate">{p.name}</div>
-              <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                <span className="text-[10px] text-muted-foreground">{p.country}</span>
-                <span className="text-muted-foreground/30">·</span>
-                <span className="text-[10px] text-muted-foreground">{p.bpm} BPM</span>
-                <span className="text-muted-foreground/30">·</span>
-                <span className="text-[10px] text-muted-foreground">{p.timeSignature[0]}/{p.timeSignature[1]}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{p.timeFeel}</span>
-              </div>
-            </button>
-          ))}
+          {filteredPresets.map(p => {
+            const grooveType = getGrooveType(p);
+            const validation = validateGroove(p);
+            return (
+              <button key={p.name}
+                onClick={() => loadPreset(p)}
+                className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
+                  activePreset === p.name
+                    ? 'border-primary bg-primary/10 shadow-sm'
+                    : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
+                } ${!validation.valid ? 'ring-1 ring-destructive/30' : ''}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold truncate">{p.name}</span>
+                  {!validation.valid && (
+                    <span className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive" title={validation.errors.join(', ')}>⚠</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-1 mt-1">
+                  <span className="text-[10px] text-muted-foreground">{p.region}</span>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-[10px] text-muted-foreground">{p.country}</span>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-[10px] text-muted-foreground">{p.timeSignature[0]}/{p.timeSignature[1]}</span>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-[10px] text-muted-foreground">{p.bpm} BPM</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{grooveType}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{p.timeFeel}</span>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                    p.complexity === 'beginner' ? 'bg-emerald-500/10 text-emerald-400' :
+                    p.complexity === 'intermediate' ? 'bg-amber-500/10 text-amber-400' :
+                    'bg-rose-500/10 text-rose-400'
+                  }`}>{p.complexity}</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {/* Active preset info */}

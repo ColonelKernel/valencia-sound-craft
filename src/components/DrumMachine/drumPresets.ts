@@ -5935,6 +5935,7 @@ export function getAllRhythmTypes(): RhythmType[] {
 
 export function filterPresets(opts: {
   category?: string | null;
+  regions?: string[] | null;
   region?: string | null;
   timeFeel?: TimeFeel | null;
   complexity?: Complexity | null;
@@ -5945,7 +5946,12 @@ export function filterPresets(opts: {
 }): PatternPreset[] {
   return DRUM_PRESETS.filter(p => {
     if (opts.category && p.category !== opts.category) return false;
-    if (opts.region && p.region !== opts.region) return false;
+    // Multi-region support
+    if (opts.regions && opts.regions.length > 0) {
+      if (!opts.regions.includes(p.region)) return false;
+    } else if (opts.region && p.region !== opts.region) {
+      return false;
+    }
     if (opts.timeFeel && p.timeFeel !== opts.timeFeel) return false;
     if (opts.complexity && p.complexity !== opts.complexity) return false;
     if (opts.rhythmType && p.rhythmType !== opts.rhythmType) return false;
@@ -5966,6 +5972,69 @@ export function filterPresets(opts: {
     }
     return true;
   });
+}
+
+// ─── Groove Validation ─────────────────────────────────────────────────────
+
+export interface GrooveValidation {
+  valid: boolean;
+  warnings: string[];
+  errors: string[];
+}
+
+export function validateGroove(preset: PatternPreset): GrooveValidation {
+  const warnings: string[] = [];
+  const errors: string[] = [];
+
+  // Check that all tracks have steps matching their subdivision count
+  preset.tracks.forEach((track, i) => {
+    if (track.steps.length !== track.subdivisions) {
+      errors.push(`Track ${i} (${track.instrumentId}): ${track.steps.length} steps but subdivisions=${track.subdivisions}`);
+    }
+  });
+
+  // Check pulse grouping sums to a valid cycle
+  const pulseSum = preset.pulseGrouping.reduce((a, b) => a + b, 0);
+  const expectedSubdivisions = preset.tracks[0]?.subdivisions || 16;
+  if (pulseSum !== expectedSubdivisions && pulseSum !== expectedSubdivisions / 2) {
+    warnings.push(`Pulse grouping sums to ${pulseSum}, expected ${expectedSubdivisions}`);
+  }
+
+  // Check for overlapping instruments on same step (not necessarily an error)
+  const stepMap = new Map<number, string[]>();
+  preset.tracks.forEach(track => {
+    track.steps.forEach((vel, i) => {
+      if (vel > 0) {
+        const existing = stepMap.get(i) || [];
+        existing.push(track.instrumentId);
+        stepMap.set(i, existing);
+      }
+    });
+  });
+
+  // Check tempo range includes default BPM
+  if (preset.bpm < preset.tempoRange[0] || preset.bpm > preset.tempoRange[1]) {
+    warnings.push(`Default BPM ${preset.bpm} outside tempo range [${preset.tempoRange[0]}-${preset.tempoRange[1]}]`);
+  }
+
+  return {
+    valid: errors.length === 0,
+    warnings,
+    errors,
+  };
+}
+
+// ─── Groove type classification ─────────────────────────────────────────────
+
+export function getGrooveType(preset: PatternPreset): string {
+  if (preset.clavePattern) return `Clave (${preset.clavePattern})`;
+  if (preset.timeFeel === 'polyrhythmic') return 'Polyrhythm';
+  if (preset.timeFeel === 'asymmetric') return 'Odd Meter';
+  if (preset.talaStructure) return `Tala (${preset.talaStructure.name})`;
+  const ts = preset.timeSignature;
+  if (ts[1] === 8 && (ts[0] === 6 || ts[0] === 12)) return 'Compás';
+  if (ts[0] % 2 !== 0 && ts[0] > 4) return 'Odd Meter';
+  return preset.timeFeel === 'swing' ? 'Groove (Swing)' : 'Groove';
 }
 
 export function formatPulseGrouping(grouping: number[]): string {

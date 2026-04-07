@@ -595,15 +595,41 @@ export function generateMidiFile(
           tick += Math.round(ticksPerStep * swing / 100);
         }
 
-        // Humanization: slight random timing offset
+        // Humanization: velocity-aware timing offsets
         if (includeHumanization) {
-          tick += Math.round((Math.random() - 0.5) * ticksPerStep * 0.08);
+          // Ghost notes get more timing variation (feels more human)
+          const timingAmount = velocity < 0.5 ? 0.15 : velocity < 0.8 ? 0.08 : 0.04;
+          tick += Math.round((Math.random() - 0.5) * ticksPerStep * timingAmount);
+          // Slight push/pull based on position in beat (rushing tendency on upbeats)
+          if (stepIdx % 2 === 1) {
+            tick += Math.round(ticksPerStep * 0.02 * (Math.random() - 0.3));
+          }
         }
 
-        const midiVel = Math.max(1, Math.min(127, Math.round(velocity * 127)));
+        // Velocity mapping: accents get boosted, ghosts get compressed
+        let midiVel: number;
+        if (velocity >= 0.9) {
+          // Accent: 100-127 range
+          midiVel = Math.round(100 + velocity * 27);
+        } else if (velocity < 0.5) {
+          // Ghost note: 30-60 range
+          midiVel = Math.round(30 + velocity * 60);
+        } else {
+          // Normal hit: 70-100 range
+          midiVel = Math.round(70 + (velocity - 0.5) * 75);
+        }
+        midiVel = Math.max(1, Math.min(127, midiVel));
+
+        // Add velocity humanization
+        if (includeHumanization) {
+          midiVel += Math.round((Math.random() - 0.5) * 8);
+          midiVel = Math.max(1, Math.min(127, midiVel));
+        }
 
         events.push({ tick, type: 'noteOn', note: midiNote, velocity: midiVel, channel });
-        events.push({ tick: tick + Math.round(ticksPerStep * 0.5), type: 'noteOff', note: midiNote, velocity: 0, channel });
+        // Note-off duration varies by instrument role
+        const noteLen = velocity >= 0.9 ? 0.6 : velocity < 0.5 ? 0.3 : 0.5;
+        events.push({ tick: tick + Math.round(ticksPerStep * noteLen), type: 'noteOff', note: midiNote, velocity: 0, channel });
       });
     });
   }
