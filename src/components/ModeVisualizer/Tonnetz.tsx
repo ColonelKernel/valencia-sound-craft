@@ -825,18 +825,18 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center text-xs text-muted-foreground">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-center text-xs text-muted-foreground">
         <div className="bg-secondary/50 rounded-lg p-2">
           <div className="font-medium text-foreground">→ Horizontal</div>
-          <div>Perfect 5th (+7)</div>
+          <div>Perfect 5th ascending (+7)</div>
         </div>
         <div className="bg-secondary/50 rounded-lg p-2">
           <div className="font-medium text-foreground">↗ Diagonal</div>
-          <div>Major 3rd (+4)</div>
+          <div>Major 3rd ascending (+4)</div>
         </div>
         <div className="bg-secondary/50 rounded-lg p-2">
           <div className="font-medium text-foreground">↖ Diagonal</div>
-          <div>Minor 3rd (+3)</div>
+          <div>Minor 3rd descending (−3) / Major 6th ascending (+9)</div>
         </div>
       </div>
     </div>
