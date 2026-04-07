@@ -226,7 +226,8 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
     timeoutRef.current = [];
     setPlaying(false);
     setCurrentIdx(-1);
-  }, []);
+    if (midiEnabled && isConnected()) sendAllNotesOff(midiChannel);
+  }, [midiEnabled, midiChannel]);
 
   const playProgression = useCallback(() => {
     if (progression.length === 0) return;
