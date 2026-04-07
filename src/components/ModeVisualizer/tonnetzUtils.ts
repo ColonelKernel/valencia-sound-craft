@@ -225,7 +225,12 @@ export function buildGrid(cols: number, rows: number, hexRadius: number): Tonnet
   const dy = hexRadius * 1.6;
   for (let r = 0; r < rows; r++) {
     for (let q = 0; q < cols; q++) {
-      const noteIdx = ((7 * q + 4 * r) % 12 + 12) % 12;
+      // Convert offset hex coords to axial so diagonals stay consistent:
+      // Horizontal (axial q) = Perfect 5th (+7)
+      // Diagonal (axial r)   = Major 3rd (+4)
+      // Derived diagonal     = Minor 3rd (+3) via P5 − M3
+      const axialQ = q - Math.floor(r / 2);
+      const noteIdx = ((7 * axialQ + 4 * r) % 12 + 12) % 12;
       const x = q * dx + (r % 2 === 1 ? dx / 2 : 0) + hexRadius + 10;
       const y = (rows - 1 - r) * dy + hexRadius + 10;
       nodes.push({ q, r, noteIdx, note: ALL_NOTES[noteIdx], x, y });
