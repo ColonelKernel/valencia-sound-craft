@@ -699,7 +699,7 @@ function generateTrack(
     timbrePattern(secondary, timbre, targetLength) ??
     rolePattern(secondary, timbre.role, targetLength) ??
     basePattern;
-  let next = blendPatterns(basePattern, alternatePattern, timbre.role, rng);
+  let next: number[] = blendPatterns(basePattern, alternatePattern, timbre.role, rng);
   next = nudgeDensity(
     next,
     getDensityTarget(rules, timbre.role),
