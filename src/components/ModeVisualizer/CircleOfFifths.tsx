@@ -145,6 +145,7 @@ const HARMONIC_COLORS = {
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const NODE_TRANSITION = `transform 220ms ${EASE}, opacity 220ms ${EASE}, filter 220ms ${EASE}, fill 220ms ${EASE}, stroke 220ms ${EASE}`;
+const CIRCLE_FONT_FAMILY = '"DM Sans", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", system-ui, sans-serif';
 
 const CX = 300;
 const CY = 300;
@@ -555,6 +556,8 @@ const CircleOfFifths = ({
   const dimFontSize = isMobile ? 10 : 8;
   const keySigFontSize = isMobile ? 11 : 9;
   const centerFontSize = isMobile ? 24 : 20;
+  const svgTextAnchor = "middle" as const;
+  const svgTextBaseline = "middle" as const;
 
   function triggerRipple(pos: { x: number; y: number }, color: string) {
     const id = rippleIdRef.current++;
@@ -1023,7 +1026,11 @@ const CircleOfFifths = ({
               </div>
             )}
 
-            <svg viewBox="0 0 600 600" className="w-full" style={{ touchAction: "manipulation" }}>
+            <svg
+              viewBox="0 0 600 600"
+              className="w-full"
+              style={{ touchAction: "manipulation", fontFamily: CIRCLE_FONT_FAMILY }}
+            >
               <defs>
                 <radialGradient id="circle-idle-gradient">
                   <stop offset="0%" stopColor="hsl(208 90% 62% / 0.36)" />
@@ -1124,6 +1131,9 @@ const CircleOfFifths = ({
               {majorNodes.map((node) => {
                 const nodeStyle = getMajorNodeStyle(node.key, node.index);
                 const active = isActiveKey(node.key);
+                const majorLabelSize = active ? majorActiveFontSize : majorFontSize;
+                const majorLabelOffsetY = showKeySig ? -(keySigFontSize * 0.58) : 0;
+                const majorKeySigOffsetY = showKeySig ? majorLabelSize * 0.74 : 0;
 
                 return (
                   <g
@@ -1155,10 +1165,11 @@ const CircleOfFifths = ({
                     />
                     <text
                       x={node.pos.x}
-                      y={node.pos.y}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fontSize={active ? majorActiveFontSize : majorFontSize}
+                      y={node.pos.y + majorLabelOffsetY}
+                      textAnchor={svgTextAnchor}
+                      dominantBaseline={svgTextBaseline}
+                      alignmentBaseline={svgTextBaseline}
+                      fontSize={majorLabelSize}
                       fontWeight={active ? 700 : 520}
                       fill={nodeStyle.textFill}
                       className="pointer-events-none select-none"
@@ -1168,9 +1179,10 @@ const CircleOfFifths = ({
                     {showKeySig && (
                       <text
                         x={node.pos.x}
-                        y={node.pos.y + (isMobile ? 16 : 14)}
-                        textAnchor="middle"
-                        dominantBaseline="central"
+                        y={node.pos.y + majorKeySigOffsetY}
+                        textAnchor={svgTextAnchor}
+                        dominantBaseline={svgTextBaseline}
+                        alignmentBaseline={svgTextBaseline}
                         fontSize={keySigFontSize}
                         fill={active ? "hsl(215 100% 94% / 0.92)" : HARMONIC_COLORS.mutedForeground}
                         opacity={0.78}
@@ -1218,8 +1230,9 @@ const CircleOfFifths = ({
                     <text
                       x={node.pos.x}
                       y={node.pos.y}
-                      textAnchor="middle"
-                      dominantBaseline="central"
+                      textAnchor={svgTextAnchor}
+                      dominantBaseline={svgTextBaseline}
+                      alignmentBaseline={svgTextBaseline}
                       fontSize={minorFontSize}
                       fontWeight={active ? 700 : 450}
                       fill={nodeStyle.textFill}
@@ -1265,8 +1278,9 @@ const CircleOfFifths = ({
                       <text
                         x={node.pos.x}
                         y={node.pos.y}
-                        textAnchor="middle"
-                        dominantBaseline="central"
+                        textAnchor={svgTextAnchor}
+                        dominantBaseline={svgTextBaseline}
+                        alignmentBaseline={svgTextBaseline}
                         fontSize={dimFontSize}
                         fontWeight={450}
                         fill={HARMONIC_COLORS.mutedForeground}
@@ -1331,8 +1345,9 @@ const CircleOfFifths = ({
               <text
                 x={CX}
                 y={CY - 16}
-                textAnchor="middle"
-                dominantBaseline="central"
+                textAnchor={svgTextAnchor}
+                dominantBaseline={svgTextBaseline}
+                alignmentBaseline={svgTextBaseline}
                 fontSize={centerFontSize}
                 fontWeight={700}
                 fill={HARMONIC_COLORS.foreground}
@@ -1343,8 +1358,9 @@ const CircleOfFifths = ({
               <text
                 x={CX}
                 y={CY + 8}
-                textAnchor="middle"
-                dominantBaseline="central"
+                textAnchor={svgTextAnchor}
+                dominantBaseline={svgTextBaseline}
+                alignmentBaseline={svgTextBaseline}
                 fontSize={isMobile ? 12 : 10}
                 fill={HARMONIC_COLORS.mutedForeground}
                 className="select-none"
@@ -1355,8 +1371,9 @@ const CircleOfFifths = ({
                 <text
                   x={CX}
                   y={CY + (isMobile ? 28 : 24)}
-                  textAnchor="middle"
-                  dominantBaseline="central"
+                  textAnchor={svgTextAnchor}
+                  dominantBaseline={svgTextBaseline}
+                  alignmentBaseline={svgTextBaseline}
                   fontSize={isMobile ? 13 : 11}
                   fill={HARMONIC_COLORS.tonic}
                   fontWeight={600}
