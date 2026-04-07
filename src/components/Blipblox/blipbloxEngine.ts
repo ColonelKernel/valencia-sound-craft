@@ -59,6 +59,7 @@ class BlipbloxEngine {
   private currentChannel = 0;
   private currentNote = 36; // default kick
   private onStepCallback: ((step: number) => void) | null = null;
+  private stepCallbackTimers: number[] = [];
   public cache = new PatternCache();
 
   // ─── Sync state ─────────────────────────────────────────────
@@ -130,13 +131,13 @@ class BlipbloxEngine {
   }
 
   // ─── Note sending ──────────────────────────────────────────
-  sendNote(note: number, velocity: number, channel: number, durationMs = 100) {
+  sendNote(note: number, velocity: number, channel: number, durationMs = 100, whenMs = performance.now()) {
     if (!this.output) return;
     const on = 0x90 | (channel & 0x0F);
     const off = 0x80 | (channel & 0x0F);
     const vel = Math.max(0, Math.min(127, Math.round(velocity)));
-    this.output.send([on, note, vel]);
-    setTimeout(() => this.output?.send([off, note, 0]), durationMs);
+    this.output.send([on, note, vel], whenMs);
+    this.output.send([off, note, 0], whenMs + durationMs);
   }
 
   sendCC(cc: number, value: number, channel: number) {
@@ -320,19 +321,26 @@ class BlipbloxEngine {
     const stepDuration = 60 / activeBpm / 4;
 
     while (this.nextStepTime < ctx.currentTime + lookAhead) {
+      const scheduledStep = this.stepIndex;
       const step = pattern.midiPattern[this.stepIndex];
       const velocity = pattern.velocityPattern?.[this.stepIndex] ?? 100;
 
       if (step === 1 && velocity > 0) {
         const offset = (Math.random() - 0.5) * 0.01;
         const time = Math.max(ctx.currentTime, this.nextStepTime + offset);
-        const delayMs = Math.max(0, (time - ctx.currentTime) * 1000);
-        setTimeout(() => {
-          this.sendNote(this.currentNote, velocity, this.currentChannel, stepDuration * 800);
-        }, delayMs);
+        const whenMs = performance.now() + Math.max(0, (time - ctx.currentTime) * 1000);
+        this.sendNote(this.currentNote, velocity, this.currentChannel, stepDuration * 800, whenMs);
       }
 
-      this.onStepCallback?.(this.stepIndex);
+      if (this.onStepCallback) {
+        const callbackDelayMs = Math.max(0, (this.nextStepTime - ctx.currentTime) * 1000);
+        const timerId = window.setTimeout(() => {
+          this.onStepCallback?.(scheduledStep);
+          this.stepCallbackTimers = this.stepCallbackTimers.filter(id => id !== timerId);
+        }, callbackDelayMs);
+        this.stepCallbackTimers.push(timerId);
+      }
+
       this.stepIndex = (this.stepIndex + 1) % pattern.midiPattern.length;
       this.nextStepTime += stepDuration;
     }
@@ -346,6 +354,8 @@ class BlipbloxEngine {
       clearTimeout(this.timerHandle);
       this.timerHandle = null;
     }
+    this.stepCallbackTimers.forEach(clearTimeout);
+    this.stepCallbackTimers = [];
     this.sendAllNotesOff(this.currentChannel);
   }
 

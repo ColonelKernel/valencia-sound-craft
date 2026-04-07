@@ -3,10 +3,26 @@ import { RotateCcw, Eye, EyeOff, ChevronDown, ChevronUp } from "lucide-react";
 import { playChord, type InstrumentTimbre } from "./audioSynth";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const ALL_NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const FIFTHS_ORDER = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
 const MINOR_ORDER = ['Am','Em','Bm','F#m','C#m','G#m','Ebm','Bbm','Fm','Cm','Gm','Dm'];
 const DIMINISHED_ORDER = ['Bdim','F#dim','C#dim','G#dim','D#dim','A#dim','Fdim','Cdim','Gdim','Ddim','Adim','Edim'];
+const LETTER_ORDER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'] as const;
+const NOTE_BASES: Record<string, number> = {
+  C: 0,
+  D: 2,
+  E: 4,
+  F: 5,
+  G: 7,
+  A: 9,
+  B: 11,
+};
+const CIRCLE_KEY_ALIASES: Record<string, string> = {
+  'C#': 'Db',
+  'D#': 'Eb',
+  'G#': 'Ab',
+  'A#': 'Bb',
+  'Gb': 'F#',
+};
 
 const MINOR_DISPLAY: Record<string, string> = {
   'Am': 'Am', 'Em': 'Em', 'Bm': 'Bm', 'F#m': 'F#m', 'C#m': 'C#m',
@@ -23,30 +39,61 @@ const MINOR_KEY_SIGNATURES: Record<string, string> = {
   'G#m': '5♯', 'Ebm': '6♭', 'Bbm': '5♭', 'Fm': '4♭', 'Cm': '3♭', 'Gm': '2♭', 'Dm': '1♭',
 };
 
+function parseRootSymbol(symbol: string): string {
+  return symbol.replace(/m$/, '').replace(/dim$/, '');
+}
+
+function getSemitone(note: string): number {
+  const letter = note[0];
+  const accidental = note.slice(1);
+  const base = NOTE_BASES[letter];
+  const accidentalOffset = accidental.split('').reduce((sum, char) => {
+    if (char === '#') return sum + 1;
+    if (char === 'b') return sum - 1;
+    return sum;
+  }, 0);
+  return (base + accidentalOffset + 120) % 12;
+}
+
+function spellChordTone(root: string, semitoneOffset: number, letterOffset: number): string {
+  const cleanRoot = parseRootSymbol(root);
+  const rootLetter = cleanRoot[0] as typeof LETTER_ORDER[number];
+  const rootLetterIndex = LETTER_ORDER.indexOf(rootLetter);
+  const targetLetter = LETTER_ORDER[(rootLetterIndex + letterOffset) % LETTER_ORDER.length];
+  const targetSemitone = (getSemitone(cleanRoot) + semitoneOffset) % 12;
+  const naturalSemitone = NOTE_BASES[targetLetter];
+  const diff = (targetSemitone - naturalSemitone + 12) % 12;
+
+  if (diff === 0) return targetLetter;
+  if (diff === 1) return `${targetLetter}#`;
+  if (diff === 2) return `${targetLetter}##`;
+  if (diff === 11) return `${targetLetter}b`;
+  if (diff === 10) return `${targetLetter}bb`;
+
+  return cleanRoot;
+}
+
+function buildTriad(root: string, quality: 'major' | 'minor' | 'dim'): string[] {
+  const intervals =
+    quality === 'major'
+      ? [0, 4, 7]
+      : quality === 'minor'
+        ? [0, 3, 7]
+        : [0, 3, 6];
+
+  return intervals.map((interval, index) => spellChordTone(root, interval, index * 2));
+}
+
 function majorTriad(root: string): string[] {
-  const flatMap: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Ab': 'G#', 'Bb': 'A#' };
-  const mapped = flatMap[root] || root;
-  const i = ALL_NOTES.indexOf(mapped);
-  if (i < 0) return [root];
-  return [ALL_NOTES[i], ALL_NOTES[(i + 4) % 12], ALL_NOTES[(i + 7) % 12]];
+  return buildTriad(root, 'major');
 }
 
 function minorTriad(root: string): string[] {
-  const clean = root.replace('m', '').replace('dim', '');
-  const flatMap: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Ab': 'G#', 'Bb': 'A#' };
-  const mapped = flatMap[clean] || clean;
-  const i = ALL_NOTES.indexOf(mapped);
-  if (i < 0) return [clean];
-  return [ALL_NOTES[i], ALL_NOTES[(i + 3) % 12], ALL_NOTES[(i + 7) % 12]];
+  return buildTriad(root, 'minor');
 }
 
 function dimTriad(root: string): string[] {
-  const clean = root.replace('dim', '');
-  const flatMap: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Ab': 'G#', 'Bb': 'A#' };
-  const mapped = flatMap[clean] || clean;
-  const i = ALL_NOTES.indexOf(mapped);
-  if (i < 0) return [clean];
-  return [ALL_NOTES[i], ALL_NOTES[(i + 3) % 12], ALL_NOTES[(i + 6) % 12]];
+  return buildTriad(root, 'dim');
 }
 
 function getRelatedKeysMajor(key: string) {
@@ -76,9 +123,10 @@ interface CircleOfFifthsProps {
   root?: string;
   timbre?: InstrumentTimbre;
   onAddToProgression?: (notes: string[], symbol: string) => void;
+  onSelectKey?: (root: string, mode: string) => void;
 }
 
-const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgression }: CircleOfFifthsProps) => {
+const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgression, onSelectKey }: CircleOfFifthsProps) => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [selectedMinor, setSelectedMinor] = useState<string | null>(null);
   const [hoveredSegment, setHoveredSegment] = useState<{ ring: 'major' | 'minor' | 'dim'; index: number } | null>(null);
@@ -94,7 +142,7 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
   const SEGMENT_ANGLE = (2 * Math.PI) / 12;
   const OFFSET = -Math.PI / 2;
 
-  const rootKeyIdx = useMemo(() => FIFTHS_ORDER.indexOf(root), [root]);
+  const defaultMajorKey = useMemo(() => CIRCLE_KEY_ALIASES[root] || root, [root]);
 
   const arcPath = useCallback((innerR: number, outerR: number, startAngle: number, endAngle: number) => {
     const x1 = CX + outerR * Math.cos(startAngle);
@@ -116,8 +164,8 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
   // No rotation — keep all labels horizontal for readability
 
   const isActiveKey = useCallback((key: string) => {
-    return selectedKey === key || (selectedKey === null && !selectedMinor && FIFTHS_ORDER[rootKeyIdx] === key);
-  }, [selectedKey, selectedMinor, rootKeyIdx]);
+    return selectedKey === key || (selectedKey === null && !selectedMinor && defaultMajorKey === key);
+  }, [selectedKey, selectedMinor, defaultMajorKey]);
 
   const isActiveMinor = useCallback((key: string) => {
     return selectedMinor === key;
@@ -126,9 +174,9 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
   // Related keys for both major and minor selections
   const majorRelated = useMemo(() => {
     if (selectedMinor) return null;
-    const key = selectedKey || FIFTHS_ORDER[rootKeyIdx] || 'C';
+    const key = selectedKey || defaultMajorKey || 'C';
     return getRelatedKeysMajor(key);
-  }, [selectedKey, selectedMinor, rootKeyIdx]);
+  }, [selectedKey, selectedMinor, defaultMajorKey]);
 
   const minorRelated = useMemo(() => {
     if (!selectedMinor) return null;
@@ -141,7 +189,8 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
     const notes = majorTriad(key);
     playChord(notes, 0.6, timbre);
     if (onAddToProgression) onAddToProgression(notes, key);
-  }, [timbre, onAddToProgression]);
+    onSelectKey?.(key, 'Ionian');
+  }, [timbre, onAddToProgression, onSelectKey]);
 
   const handleMinorClick = useCallback((key: string, idx: number) => {
     setSelectedMinor(prev => prev === key ? null : key);
@@ -149,7 +198,8 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
     const notes = minorTriad(key);
     playChord(notes, 0.6, timbre);
     if (onAddToProgression) onAddToProgression(notes, key);
-  }, [timbre, onAddToProgression]);
+    onSelectKey?.(parseRootSymbol(key), 'Aeolian');
+  }, [timbre, onAddToProgression, onSelectKey]);
 
   const handleDimClick = useCallback((key: string) => {
     const notes = dimTriad(key);
@@ -196,7 +246,7 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
     return 'hsl(var(--secondary))';
   }, [hoveredSegment, isActiveMinor, showRelated, majorRelated, minorRelated]);
 
-  const activeKey = selectedKey || FIFTHS_ORDER[rootKeyIdx] || 'C';
+  const activeKey = selectedKey || defaultMajorKey || 'C';
   const activeDisplay = selectedMinor || (activeKey + ' major');
   const activeKeySig = selectedMinor
     ? MINOR_KEY_SIGNATURES[selectedMinor] || ''
@@ -371,7 +421,7 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
             <circle cx={CX} cy={CY} r={showDiminished ? R_DIM : R_MINOR} fill="hsl(var(--background))" stroke="hsl(var(--border))" strokeWidth={1} />
             <text x={CX} y={CY - 14} textAnchor="middle" dominantBaseline="central"
               fontSize={centerFontSize} fontWeight={700} fill="hsl(var(--foreground))" className="select-none">
-              {selectedKey || selectedMinor || FIFTHS_ORDER[rootKeyIdx] || 'C'}
+              {selectedKey || selectedMinor || defaultMajorKey || 'C'}
             </text>
             <text x={CX} y={CY + 8} textAnchor="middle" dominantBaseline="central"
               fontSize={isMobile ? 12 : 10} fill="hsl(var(--muted-foreground))" className="select-none">
@@ -421,7 +471,7 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
                 );
               } else {
                 // Major key relationships on the major ring
-                const aKey = selectedKey || FIFTHS_ORDER[rootKeyIdx] || 'C';
+                const aKey = selectedKey || defaultMajorKey || 'C';
                 const activeIdx = FIFTHS_ORDER.indexOf(aKey);
                 if (activeIdx < 0) return null;
                 const domIdx = (activeIdx + 1) % 12;

@@ -56,7 +56,11 @@ function createTrackFromPreset(
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-const DrumMachine = () => {
+interface DrumMachineProps {
+  embeddedPreset?: PatternPreset;
+}
+
+const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
   // State
   const [bpm, setBpm] = useState(120);
   const [swing, setSwing] = useState(0);
@@ -90,6 +94,7 @@ const DrumMachine = () => {
   const nextNoteTimeRef = useRef(0);
   const playingRef = useRef(false);
   const stepRef = useRef<Record<string, number>>({});
+  const trackNextTimeRef = useRef<Record<string, number>>({});
   const tracksRef = useRef(tracks);
   tracksRef.current = tracks;
 
@@ -124,20 +129,21 @@ const DrumMachine = () => {
     const ctx = getCtx();
     const lookAhead = 0.1;
     const currentTracks = tracksRef.current;
+    const nextSteps: Record<string, number> = { ...stepRef.current };
 
-    while (nextNoteTimeRef.current < ctx.currentTime + lookAhead) {
-      currentTracks.forEach(track => {
-        const shouldPlay = hasSolo ? track.solo : !track.muted;
-        if (!shouldPlay) return;
+    currentTracks.forEach(track => {
+      const shouldPlay = hasSolo ? track.solo : !track.muted;
+      const stepDuration = (60 / bpm) * (4 / track.subdivisions);
+      let trackTime = trackNextTimeRef.current[track.id] ?? nextNoteTimeRef.current;
+      let currentStep = stepRef.current[track.id] ?? 0;
 
-        const stepDuration = (60 / bpm) * (4 / track.subdivisions);
-        const currentStep = stepRef.current[track.id] ?? 0;
+      while (trackTime < ctx.currentTime + lookAhead) {
         const velocity = track.steps[currentStep];
 
-        if (velocity > 0 && (track.probability >= 100 || Math.random() * 100 < track.probability)) {
+        if (shouldPlay && velocity > 0 && (track.probability >= 100 || Math.random() * 100 < track.probability)) {
           const inst = getInstrument(track.instrumentId);
           if (inst) {
-            let time = nextNoteTimeRef.current;
+            let time = trackTime;
             // Per-track swing overrides global
             const effectiveSwing = track.swing !== null ? track.swing : swing;
             if (effectiveSwing > 0 && currentStep % 2 === 1) {
@@ -152,18 +158,22 @@ const DrumMachine = () => {
           }
         }
 
-        stepRef.current[track.id] = (currentStep + 1) % track.subdivisions;
-      });
+        currentStep = (currentStep + 1) % track.subdivisions;
+        trackTime += stepDuration;
+      }
 
-      let minStep = Infinity;
-      currentTracks.forEach(track => {
-        const sd = (60 / bpm) * (4 / track.subdivisions);
-        if (sd < minStep) minStep = sd;
-      });
+      nextSteps[track.id] = currentStep;
+      trackNextTimeRef.current[track.id] = trackTime;
+    });
 
-      nextNoteTimeRef.current += minStep;
-      setCurrentSteps({ ...stepRef.current });
+    if (currentTracks.length > 0) {
+      nextNoteTimeRef.current = Math.min(
+        ...currentTracks.map(track => trackNextTimeRef.current[track.id] ?? Number.POSITIVE_INFINITY)
+      );
     }
+
+    stepRef.current = nextSteps;
+    setCurrentSteps(nextSteps);
   }, [bpm, swing, groove, hasSolo, getCtx]);
 
   useEffect(() => {
@@ -172,7 +182,11 @@ const DrumMachine = () => {
       const ctx = getCtx();
       nextNoteTimeRef.current = ctx.currentTime;
       stepRef.current = {};
-      tracks.forEach(t => { stepRef.current[t.id] = 0; });
+      trackNextTimeRef.current = {};
+      tracks.forEach(t => {
+        stepRef.current[t.id] = 0;
+        trackNextTimeRef.current[t.id] = ctx.currentTime;
+      });
 
       const loop = () => {
         if (!playingRef.current) return;
@@ -184,6 +198,7 @@ const DrumMachine = () => {
       playingRef.current = false;
       if (timerRef.current) clearTimeout(timerRef.current);
       stepRef.current = {};
+      trackNextTimeRef.current = {};
       setCurrentSteps({});
     }
     return () => {
@@ -241,13 +256,19 @@ const DrumMachine = () => {
     }));
   };
 
-  const loadPreset = (preset: PatternPreset) => {
+  const loadPreset = useCallback((preset: PatternPreset) => {
     setPlaying(false);
     setBpm(preset.bpm);
     setSwing(preset.swing);
     setActivePreset(preset.name);
     setTracks(preset.tracks.map(t => createTrackFromPreset(t.instrumentId, t.steps, t.subdivisions)));
-  };
+  }, []);
+
+  useEffect(() => {
+    if (embeddedPreset) {
+      loadPreset(embeddedPreset);
+    }
+  }, [embeddedPreset, loadPreset]);
 
   const clearAll = () => {
     setPlaying(false);

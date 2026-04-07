@@ -25,6 +25,7 @@ import KeyboardVisualizer from "./KeyboardVisualizer";
 import MasterScaleReference from "./MasterScaleReference";
 import DrumMachine from "../DrumMachine";
 import RhythmMap from "../DrumMachine/RhythmMap";
+import type { PatternPreset } from "../DrumMachine/drumPresets";
 import Tonnetz from "./Tonnetz";
 import CircleOfFifths from "./CircleOfFifths";
 import { lazy, Suspense } from "react";
@@ -53,6 +54,7 @@ const ModeVisualizer = () => {
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
   const [otherInstrument, setOtherInstrument] = useState(FRETTED_INSTRUMENTS[0].key);
   const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
+  const [selectedRhythmPreset, setSelectedRhythmPreset] = useState<PatternPreset | null>(null);
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
@@ -97,6 +99,14 @@ const ModeVisualizer = () => {
   const handlePlayScale = () => {
     playScale([...scaleNotes, scaleNotes[0]], 200, timbre);
   };
+
+  const clonePreset = (preset: PatternPreset): PatternPreset => ({
+    ...preset,
+    tracks: preset.tracks.map(track => ({
+      ...track,
+      steps: [...track.steps],
+    })),
+  });
 
   // Clear selected chord when mode/root changes
   const handleRootChange = (r: string) => { setRoot(r); setSelectedChord(null); };
@@ -156,7 +166,16 @@ const ModeVisualizer = () => {
 
             {activeTab === 'circleof5' && (
               <div>
-                <CircleOfFifths scaleNotes={scaleNotes} root={root} timbre={timbre} />
+                <CircleOfFifths
+                  scaleNotes={scaleNotes}
+                  root={root}
+                  timbre={timbre}
+                  onSelectKey={(nextRoot, nextMode) => {
+                    setRoot(nextRoot);
+                    setMode(nextMode);
+                    setSelectedChord(null);
+                  }}
+                />
               </div>
             )}
 
@@ -174,13 +193,14 @@ const ModeVisualizer = () => {
 
             {activeTab === 'polyrhythm' && (
               <div>
-                <DrumMachine />
+                <DrumMachine embeddedPreset={selectedRhythmPreset || undefined} />
               </div>
             )}
 
             {activeTab === 'rhythmmap' && (
               <div>
                 <RhythmMap onLoadPreset={(preset) => {
+                  setSelectedRhythmPreset(clonePreset(preset));
                   setActiveTab('polyrhythm');
                 }} />
               </div>
