@@ -43,11 +43,17 @@ interface RelationshipLine {
   strength: number;
 }
 
+interface CircleNodePosition {
+  x: number;
+  y: number;
+  angleDeg: number;
+}
+
 interface CircleNode {
   key: string;
   index: number;
   path: string;
-  pos: { x: number; y: number };
+  pos: CircleNodePosition;
 }
 
 interface ModulationState {
@@ -145,6 +151,8 @@ const HARMONIC_COLORS = {
 
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const NODE_TRANSITION = `transform 220ms ${EASE}, opacity 220ms ${EASE}, filter 220ms ${EASE}, fill 220ms ${EASE}, stroke 220ms ${EASE}`;
+const CIRCLE_FONT_FAMILY = '"DM Sans", "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", system-ui, sans-serif';
+const LABEL_TEXT_STROKE = "hsl(222 24% 6% / 0.92)";
 
 const CX = 300;
 const CY = 300;
@@ -245,11 +253,21 @@ function lerp(start: number, end: number, amount: number): number {
 }
 
 function getNodePoint(radius: number, index: number) {
-  const angle = OFFSET + index * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
+  // Each segment is built from OFFSET - angle/2 to OFFSET + angle/2, so the
+  // visual center of segment `index` sits exactly on OFFSET + index * angle.
+  const angle = OFFSET + index * SEGMENT_ANGLE;
   return {
     x: CX + radius * Math.cos(angle),
     y: CY + radius * Math.sin(angle),
     angleDeg: (angle * 180) / Math.PI,
+  };
+}
+
+function offsetPointAlongAngle(point: CircleNodePosition, distance: number) {
+  const angle = (point.angleDeg * Math.PI) / 180;
+  return {
+    x: point.x + Math.cos(angle) * distance,
+    y: point.y + Math.sin(angle) * distance,
   };
 }
 
@@ -555,6 +573,8 @@ const CircleOfFifths = ({
   const dimFontSize = isMobile ? 10 : 8;
   const keySigFontSize = isMobile ? 11 : 9;
   const centerFontSize = isMobile ? 24 : 20;
+  const majorLabelOffset = isMobile ? 9 : 7;
+  const majorKeySigOffset = isMobile ? -11 : -9;
 
   function triggerRipple(pos: { x: number; y: number }, color: string) {
     const id = rippleIdRef.current++;
@@ -1023,7 +1043,11 @@ const CircleOfFifths = ({
               </div>
             )}
 
-            <svg viewBox="0 0 600 600" className="w-full" style={{ touchAction: "manipulation" }}>
+            <svg
+              viewBox="0 0 600 600"
+              className="w-full"
+              style={{ touchAction: "manipulation", fontFamily: CIRCLE_FONT_FAMILY }}
+            >
               <defs>
                 <radialGradient id="circle-idle-gradient">
                   <stop offset="0%" stopColor="hsl(208 90% 62% / 0.36)" />
@@ -1124,6 +1148,8 @@ const CircleOfFifths = ({
               {majorNodes.map((node) => {
                 const nodeStyle = getMajorNodeStyle(node.key, node.index);
                 const active = isActiveKey(node.key);
+                const majorLabelPos = showKeySig ? offsetPointAlongAngle(node.pos, majorLabelOffset) : node.pos;
+                const majorKeySigPos = showKeySig ? offsetPointAlongAngle(node.pos, majorKeySigOffset) : node.pos;
 
                 return (
                   <g
@@ -1154,25 +1180,35 @@ const CircleOfFifths = ({
                       onClick={() => handleMajorClick(node.key, node.index)}
                     />
                     <text
-                      x={node.pos.x}
-                      y={node.pos.y}
+                      x={majorLabelPos.x}
+                      y={majorLabelPos.y}
                       textAnchor="middle"
-                      dominantBaseline="central"
+                      dominantBaseline="middle"
+                      alignmentBaseline="middle"
                       fontSize={active ? majorActiveFontSize : majorFontSize}
                       fontWeight={active ? 700 : 520}
                       fill={nodeStyle.textFill}
+                      stroke={LABEL_TEXT_STROKE}
+                      strokeWidth={active ? 2.4 : 2}
+                      strokeLinejoin="round"
+                      paintOrder="stroke"
                       className="pointer-events-none select-none"
                     >
                       {node.key}
                     </text>
                     {showKeySig && (
                       <text
-                        x={node.pos.x}
-                        y={node.pos.y + (isMobile ? 16 : 14)}
+                        x={majorKeySigPos.x}
+                        y={majorKeySigPos.y}
                         textAnchor="middle"
-                        dominantBaseline="central"
+                        dominantBaseline="middle"
+                        alignmentBaseline="middle"
                         fontSize={keySigFontSize}
                         fill={active ? "hsl(215 100% 94% / 0.92)" : HARMONIC_COLORS.mutedForeground}
+                        stroke={LABEL_TEXT_STROKE}
+                        strokeWidth={1.6}
+                        strokeLinejoin="round"
+                        paintOrder="stroke"
                         opacity={0.78}
                         className="pointer-events-none select-none"
                       >
@@ -1219,10 +1255,15 @@ const CircleOfFifths = ({
                       x={node.pos.x}
                       y={node.pos.y}
                       textAnchor="middle"
-                      dominantBaseline="central"
+                      dominantBaseline="middle"
+                      alignmentBaseline="middle"
                       fontSize={minorFontSize}
                       fontWeight={active ? 700 : 450}
                       fill={nodeStyle.textFill}
+                      stroke={LABEL_TEXT_STROKE}
+                      strokeWidth={active ? 2 : 1.6}
+                      strokeLinejoin="round"
+                      paintOrder="stroke"
                       className="pointer-events-none select-none"
                     >
                       {MINOR_DISPLAY[node.key] || node.key}
@@ -1266,10 +1307,15 @@ const CircleOfFifths = ({
                         x={node.pos.x}
                         y={node.pos.y}
                         textAnchor="middle"
-                        dominantBaseline="central"
+                        dominantBaseline="middle"
+                        alignmentBaseline="middle"
                         fontSize={dimFontSize}
                         fontWeight={450}
                         fill={HARMONIC_COLORS.mutedForeground}
+                        stroke={LABEL_TEXT_STROKE}
+                        strokeWidth={1.25}
+                        strokeLinejoin="round"
+                        paintOrder="stroke"
                         className="pointer-events-none select-none"
                       >
                         {node.key.replace("dim", "°")}
@@ -1332,10 +1378,15 @@ const CircleOfFifths = ({
                 x={CX}
                 y={CY - 16}
                 textAnchor="middle"
-                dominantBaseline="central"
+                dominantBaseline="middle"
+                alignmentBaseline="middle"
                 fontSize={centerFontSize}
                 fontWeight={700}
                 fill={HARMONIC_COLORS.foreground}
+                stroke={LABEL_TEXT_STROKE}
+                strokeWidth={2.6}
+                strokeLinejoin="round"
+                paintOrder="stroke"
                 className="select-none"
               >
                 {selectedKey || selectedMinor || defaultMajorKey || "C"}
@@ -1344,9 +1395,14 @@ const CircleOfFifths = ({
                 x={CX}
                 y={CY + 8}
                 textAnchor="middle"
-                dominantBaseline="central"
+                dominantBaseline="middle"
+                alignmentBaseline="middle"
                 fontSize={isMobile ? 12 : 10}
                 fill={HARMONIC_COLORS.mutedForeground}
+                stroke={LABEL_TEXT_STROKE}
+                strokeWidth={1.4}
+                strokeLinejoin="round"
+                paintOrder="stroke"
                 className="select-none"
               >
                 {selectedMinor ? "minor" : "major"}
@@ -1356,10 +1412,15 @@ const CircleOfFifths = ({
                   x={CX}
                   y={CY + (isMobile ? 28 : 24)}
                   textAnchor="middle"
-                  dominantBaseline="central"
+                  dominantBaseline="middle"
+                  alignmentBaseline="middle"
                   fontSize={isMobile ? 13 : 11}
                   fill={HARMONIC_COLORS.tonic}
                   fontWeight={600}
+                  stroke={LABEL_TEXT_STROKE}
+                  strokeWidth={1.6}
+                  strokeLinejoin="round"
+                  paintOrder="stroke"
                   className="select-none"
                 >
                   {activeKeySig}
