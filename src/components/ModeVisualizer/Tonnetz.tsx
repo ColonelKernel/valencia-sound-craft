@@ -42,6 +42,7 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showTransforms, setShowTransforms] = useState(true);
   const [animatingTransform, setAnimatingTransform] = useState<{ from: TonnetzTriadData; to: TonnetzTriadData; type: TransformType } | null>(null);
+  const [showGravity, setShowGravity] = useState(true);
 
   // Progression sidebar
   const [progression, setProgression] = useState<TonnetzTriadData[]>([]);
@@ -122,6 +123,46 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
 
   const svgWidth = COLS * hexRadius * 1.85 + hexRadius + 20;
   const svgHeight = ROWS * hexRadius * 1.6 + hexRadius + 20;
+
+  // ─── Tonal Gravity ─────────────────────────────────────
+  // Compute centroid position on the grid for each chord in the progression
+  const gravityPath = useMemo(() => {
+    if (!showGravity || progression.length === 0) return [];
+    return progression.map(td => {
+      // Find all grid nodes matching this chord's pitch classes, pick the best cluster
+      const matchingNodes = nodes.filter(n => td.notes.includes(n.noteIdx));
+      if (matchingNodes.length === 0) return null;
+      // Average the positions of matching nodes, but cluster by proximity
+      // For a cleaner visualization, find the centroid of the 3 closest matching nodes
+      const rootNodes = matchingNodes.filter(n => n.noteIdx === td.root);
+      const anchor = rootNodes.length > 0 ? rootNodes[Math.floor(rootNodes.length / 2)] : matchingNodes[0];
+      // Find the 3 nearest nodes to anchor that match chord tones
+      const sorted = matchingNodes
+        .map(n => ({ ...n, dist: Math.hypot(n.x - anchor.x, n.y - anchor.y) }))
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 3);
+      const cx = sorted.reduce((s, n) => s + n.x, 0) / sorted.length;
+      const cy = sorted.reduce((s, n) => s + n.y, 0) / sorted.length;
+      return { cx, cy, label: triadLabel(td), type: td.type };
+    }).filter(Boolean) as { cx: number; cy: number; label: string; type: 'major' | 'minor' }[];
+  }, [showGravity, progression, nodes]);
+
+  // Running weighted tonal center (average of all chords up to currentIdx during playback)
+  const tonalCenter = useMemo(() => {
+    if (!showGravity || gravityPath.length === 0) return null;
+    const upTo = currentIdx >= 0 ? currentIdx + 1 : gravityPath.length;
+    const slice = gravityPath.slice(0, upTo);
+    if (slice.length === 0) return null;
+    // Weight more recent chords more heavily
+    let wx = 0, wy = 0, wt = 0;
+    slice.forEach((p, i) => {
+      const w = 1 + i * 0.5; // increasing weight
+      wx += p.cx * w;
+      wy += p.cy * w;
+      wt += w;
+    });
+    return { x: wx / wt, y: wy / wt };
+  }, [showGravity, gravityPath, currentIdx]);
 
   // ─── Helpers ────────────────────────────────────────────
   const isInScale = useCallback((idx: number) => scaleSet.has(idx), [scaleSet]);
@@ -331,6 +372,13 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
             ))}
           </select>
         </div>
+
+        <div className="h-4 w-px bg-border" />
+
+        <label className="flex items-center gap-1.5 text-muted-foreground cursor-pointer">
+          <input type="checkbox" checked={showGravity} onChange={(e) => setShowGravity(e.target.checked)} className="rounded border-border" />
+          Gravity
+        </label>
       </div>
 
       {/* ═══ MAIN LAYOUT: SVG + Sidebar ═══ */}
@@ -433,6 +481,101 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
                   </g>
                 );
               })}
+
+              {/* ═══ TONAL GRAVITY OVERLAY ═══ */}
+              {showGravity && gravityPath.length >= 2 && (
+                <g className="pointer-events-none">
+                  <defs>
+                    <marker id="gravity-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                      <path d="M0,0 L6,3 L0,6 Z" fill="hsl(45,90%,60%)" fillOpacity="0.8" />
+                    </marker>
+                    <filter id="gravity-glow">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                  </defs>
+
+                  {/* Trail lines between chord centroids */}
+                  {gravityPath.map((p, i) => {
+                    if (i === 0) return null;
+                    const prev = gravityPath[i - 1];
+                    const isPlayed = currentIdx >= 0 && i <= currentIdx;
+                    const isCurrent = currentIdx === i;
+                    return (
+                      <line key={`gp-${i}`}
+                        x1={prev.cx} y1={prev.cy} x2={p.cx} y2={p.cy}
+                        stroke={isPlayed ? 'hsl(45,90%,60%)' : 'hsl(var(--muted-foreground))'}
+                        strokeWidth={isCurrent ? 3 : isPlayed ? 2 : 1}
+                        strokeDasharray={isPlayed ? 'none' : '4,4'}
+                        opacity={isPlayed ? 0.9 : 0.3}
+                        markerEnd={isPlayed ? 'url(#gravity-arrow)' : undefined}
+                        className="transition-all duration-300"
+                      />
+                    );
+                  })}
+
+                  {/* Chord position dots with labels */}
+                  {gravityPath.map((p, i) => {
+                    const isPlayed = currentIdx >= 0 && i <= currentIdx;
+                    const isCurrent = currentIdx === i;
+                    return (
+                      <g key={`gd-${i}`}>
+                        <circle cx={p.cx} cy={p.cy}
+                          r={isCurrent ? 8 : isPlayed ? 5 : 3.5}
+                          fill={isCurrent ? 'hsl(45,90%,60%)' : isPlayed ? 'hsl(45,80%,50%)' : 'hsl(var(--muted-foreground))'}
+                          opacity={isPlayed ? 1 : 0.4}
+                          filter={isCurrent ? 'url(#gravity-glow)' : undefined}
+                          className="transition-all duration-300"
+                        />
+                        {(isCurrent || !playing) && (
+                          <text x={p.cx} y={p.cy - (isCurrent ? 13 : 8)}
+                            textAnchor="middle" fontSize="8" fontWeight="600"
+                            fill={isPlayed ? 'hsl(45,90%,70%)' : 'hsl(var(--muted-foreground))'}
+                            opacity={isPlayed ? 1 : 0.5}
+                            className="select-none">
+                            {p.label}
+                          </text>
+                        )}
+                        <text x={p.cx} y={p.cy + 3.5}
+                          textAnchor="middle" fontSize="7" fontWeight="700"
+                          fill={isCurrent ? '#000' : isPlayed ? '#000' : 'hsl(var(--muted-foreground))'}
+                          opacity={isPlayed ? 0.8 : 0.3}
+                          className="select-none pointer-events-none">
+                          {i + 1}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Weighted tonal center of gravity indicator */}
+                  {tonalCenter && (
+                    <g>
+                      <circle cx={tonalCenter.x} cy={tonalCenter.y} r={14}
+                        fill="none" stroke="hsl(45,90%,60%)" strokeWidth={2}
+                        strokeDasharray="3,3" opacity={0.6}
+                        filter="url(#gravity-glow)">
+                        <animateTransform attributeName="transform" type="rotate"
+                          from={`0 ${tonalCenter.x} ${tonalCenter.y}`}
+                          to={`360 ${tonalCenter.x} ${tonalCenter.y}`}
+                          dur="8s" repeatCount="indefinite" />
+                      </circle>
+                      <circle cx={tonalCenter.x} cy={tonalCenter.y} r={4}
+                        fill="hsl(45,90%,60%)" opacity={0.8}
+                        filter="url(#gravity-glow)">
+                        {playing && (
+                          <animate attributeName="r" values="4;6;4" dur="1s" repeatCount="indefinite" />
+                        )}
+                      </circle>
+                      <text x={tonalCenter.x} y={tonalCenter.y - 20}
+                        textAnchor="middle" fontSize="8" fontWeight="600"
+                        fill="hsl(45,90%,70%)" opacity={0.7}
+                        className="select-none">
+                        ⊕ center
+                      </text>
+                    </g>
+                  )}
+                </g>
+              )}
             </svg>
           </div>
 
