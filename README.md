@@ -86,3 +86,40 @@ Each rhythm is represented as structured data:
   "feel": "Polyrhythmic",
   "instruments": ["Djembe", "Dunun"]
 }
+```
+
+## Lovable Preview Sync
+
+Lovable is connected to `main`, so preview-bound changes need to land on `main` before the UI can update.
+
+Use the local dev server for fast iteration:
+
+```bash
+npm run dev
+```
+
+Use the guarded sync command when you want Lovable to pick up the latest edits:
+
+```bash
+npm run lovable:sync -- --message "Describe the change"
+```
+
+What this does:
+
+- Verifies the current branch is `main`
+- Runs `npm run build`
+- Stages all changes with `git add -A`
+- Commits with your message
+- Pushes to `origin/main`
+
+If Lovable looks stale and there are no code changes to push, force a rebuild with an empty commit:
+
+```bash
+npm run lovable:rebuild -- --message "trigger rebuild"
+```
+
+Quick checks:
+
+- `npm run lovable:status` shows whether the current checkout is aligned with `main`
+- GitHub Actions will show the build result and upload the build log artifact for every push to `main`
+- If the deploy is green but the preview still looks old, hard refresh the Lovable preview

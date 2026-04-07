@@ -9,6 +9,9 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "lovable:status": "node scripts/lovable-preview.mjs status",
+    "lovable:sync": "node scripts/lovable-preview.mjs sync",
+    "lovable:rebuild": "node scripts/lovable-preview.mjs rebuild",
     "test": "vitest run",
     "test:watch": "vitest"
   },
