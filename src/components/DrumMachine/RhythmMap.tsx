@@ -4,32 +4,31 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaf
 import "leaflet/dist/leaflet.css";
 import {
   DRUM_PRESETS,
+  formatRegion,
   getCountryMapData,
   type PatternPreset,
   type CountryMapData,
+  type Region,
 } from "../DrumMachine/drumPresets";
 import { getInstrument } from "../DrumMachine/drumSoundEngine";
+import { getStepDurationSeconds } from "../DrumMachine/rhythmUtils";
 
 interface RhythmMapProps {
   onLoadPreset?: (preset: PatternPreset) => void;
 }
 
-const regionColors: Record<string, string> = {
-  'Caribbean': '#f59e0b',
-  'Latin America': '#f97316',
-  'Europe': '#3b82f6',
-  'Africa': '#eab308',
-  'Middle East': '#ef4444',
-  'South Asia': '#a855f7',
-  'East Asia': '#ec4899',
-  'Southeast Asia': '#14b8a6',
-  'Central America': '#8b5cf6',
-  'Pacific': '#06b6d4',
-  'North America': '#6366f1',
-  'Universal': '#6b7280',
+const regionColors: Record<Region, string> = {
+  west_africa: '#eab308',
+  balkans: '#3b82f6',
+  flamenco: '#f97316',
+  afro_cuban: '#f59e0b',
+  brazil: '#22c55e',
+  india: '#a855f7',
+  middle_east: '#ef4444',
+  argentina: '#06b6d4',
 };
 
-const getColor = (region: string) => regionColors[region] || '#f59e0b';
+const getColor = (region: Region) => regionColors[region];
 
 // Sub-component to fit bounds
 const FitBounds = ({ countries }: { countries: CountryMapData[] }) => {
@@ -64,22 +63,26 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
     const ctx = audioCtxRef.current;
     if (ctx.state === 'suspended') ctx.resume();
 
-    setPreviewingPreset(preset.name);
-    const stepDuration = 60 / preset.bpm / 4;
+    setPreviewingPreset(preset.id);
+    const previewDuration = getStepDurationSeconds(
+      preset.bpm,
+      preset.timeSignature,
+      preset.tracks[0]?.subdivisions || 1
+    );
 
     preset.tracks.forEach(track => {
       const inst = getInstrument(track.instrumentId);
       if (!inst) return;
-      const stepsToPlay = Math.min(8, track.steps.length);
+      const stepsToPlay = track.steps.length;
       for (let i = 0; i < stepsToPlay; i++) {
         const vel = track.steps[i];
         if (vel > 0) {
-          inst.play(ctx, ctx.currentTime + i * stepDuration, vel * 0.7, 1, 0.3);
+          inst.play(ctx, ctx.currentTime + i * previewDuration, vel * 0.7, 1, 0.3);
         }
       }
     });
 
-    setTimeout(() => setPreviewingPreset(null), 8 * stepDuration * 1000);
+    setTimeout(() => setPreviewingPreset(null), (preset.tracks[0]?.steps.length || 1) * previewDuration * 1000);
   }, []);
 
   const countryPresets = selectedCountry ? (presetsByCountry[selectedCountry.code] || []) : [];
@@ -98,10 +101,10 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-[10px] text-muted-foreground">
-          {Object.entries(regionColors).filter(([k]) => k !== 'Universal').map(([region, color]) => (
+          {Object.entries(regionColors).map(([region, color]) => (
             <span key={region} className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-              {region}
+              {formatRegion(region as Region)}
             </span>
           ))}
         </div>
@@ -147,7 +150,7 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
                 <Popup>
                   <div style={{ minWidth: 120 }}>
                     <p style={{ fontWeight: 'bold', margin: 0 }}>{country.name}</p>
-                    <p style={{ fontSize: 11, color: '#888', margin: 0 }}>{country.region}</p>
+                    <p style={{ fontSize: 11, color: '#888', margin: 0 }}>{formatRegion(country.region)}</p>
                     <p style={{ fontSize: 11, color: color, margin: '4px 0 0' }}>
                       {country.rhythmCount} rhythm{country.rhythmCount > 1 ? 's' : ''}
                     </p>
@@ -168,7 +171,7 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: getColor(selectedCountry.region) }} />
                 {selectedCountry.name}
               </h4>
-              <p className="text-[10px] text-muted-foreground">{selectedCountry.region} · {countryPresets.length} rhythms</p>
+              <p className="text-[10px] text-muted-foreground">{formatRegion(selectedCountry.region)} · {countryPresets.length} rhythms</p>
             </div>
             <button
               onClick={() => setSelectedCountry(null)}
@@ -181,7 +184,7 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
           <div className="grid gap-1.5">
             {countryPresets.map(preset => (
               <div
-                key={preset.name}
+                key={preset.id}
                 className="flex items-center justify-between gap-2 p-2 rounded-lg border border-border bg-card hover:border-primary/30 transition-all"
               >
                 <div className="min-w-0">
@@ -202,13 +205,13 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
                   <button
                     onClick={() => previewRhythm(preset)}
                     className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-all ${
-                      previewingPreset === preset.name
+                      previewingPreset === preset.id
                         ? 'bg-primary text-primary-foreground'
                         : 'border border-border text-muted-foreground hover:bg-accent'
                     }`}
                   >
                     <Play size={9} />
-                    {previewingPreset === preset.name ? '…' : '▸'}
+                    {previewingPreset === preset.id ? '…' : '▸'}
                   </button>
                   {onLoadPreset && (
                     <button

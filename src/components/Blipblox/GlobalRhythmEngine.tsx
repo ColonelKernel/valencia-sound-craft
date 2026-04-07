@@ -285,7 +285,7 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
       steps: effectivePattern.map((s, i) => s === 1 ? (effectiveVelocity[i] / 127) : 0),
       subdivisions: effectivePattern.length,
     }];
-    const data = generateMidiFile(exportTracks, activeBpm, 'general-midi', 0, false, 4);
+    const data = generateMidiFile(exportTracks, activeBpm, 'general-midi', 0, false, 4, genMeter);
     downloadMidiFile(data, `rhythm_${genRegion}_${activeBpm}bpm.mid`);
   }, [effectivePattern, effectiveVelocity, activeBpm, genRegion]);
 

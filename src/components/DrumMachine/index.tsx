@@ -4,13 +4,14 @@ import {
   Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter
 } from "lucide-react";
 const GlobalRhythmEngine = lazy(() => import("../Blipblox/GlobalRhythmEngine"));
-import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
+import { DRUM_INSTRUMENTS, getInstrument } from "./drumSoundEngine";
 import {
-  DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories, getAllRegions, getAllRhythmTypes,
-  formatPulseGrouping, validateGroove, getGrooveType,
-  type PatternPreset, type TimeFeel, type Complexity, type RhythmType,
+  DRUM_PRESETS, filterPresets, filterRhythms, formatPulseGrouping, formatRegion,
+  getAllCategories, getAllRegions, getAllRhythmTypes, validateGroove, getGrooveType,
+  type PatternPreset, type Region, type TimeFeel, type Complexity, type RhythmType, type Timbre,
 } from "./drumPresets";
 import { generateMidiFile, downloadMidiFile, MIDI_MAPPINGS, type MidiMapping } from "./midiExport";
+import { getStepDurationSeconds, getSubdivisionBoundaries, sanitizeFileStem } from "./rhythmUtils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ function createTrackFromPreset(
   return {
     id: uid(),
     instrumentId,
-    steps,
+    steps: [...steps],
     subdivisions,
     volume: inst?.defaultVelocity ?? 0.8,
     pitch: inst?.defaultPitch ?? 1,
@@ -61,16 +62,24 @@ interface DrumMachineProps {
 }
 
 const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
+  const initialPreset = embeddedPreset || DRUM_PRESETS[0];
+  const initialRegion = initialPreset.region;
+  const initialRhythmList = filterPresets({ region: initialRegion });
+
   // State
-  const [bpm, setBpm] = useState(120);
-  const [swing, setSwing] = useState(0);
+  const [bpm, setBpm] = useState(initialPreset.bpm);
+  const [swing, setSwing] = useState(initialPreset.swing);
   const [playing, setPlaying] = useState(false);
   const [tracks, setTracks] = useState<TrackState[]>(() => {
-    const preset = DRUM_PRESETS.find(p => p.name === 'Basic Rock')!;
-    return preset.tracks.map(t => createTrackFromPreset(t.instrumentId, t.steps, t.subdivisions));
+    return initialPreset.tracks.map((track) =>
+      createTrackFromPreset(track.instrumentId, track.steps, track.subdivisions)
+    );
   });
   const [currentSteps, setCurrentSteps] = useState<Record<string, number>>({});
-  const [activePreset, setActivePreset] = useState<string>('Basic Rock');
+  const [selectedRegion, setSelectedRegion] = useState<Region>(initialRegion);
+  const [rhythmList, setRhythmList] = useState<PatternPreset[]>(initialRhythmList);
+  const [currentPresetId, setCurrentPresetId] = useState<string>(initialPreset.id);
+  const [currentTimbres, setCurrentTimbres] = useState<Timbre[]>(initialPreset.instruments);
   const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | 'blipblox' | null>('presets');
   const [showBrowser, setShowBrowser] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -80,13 +89,11 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
   const [groove, setGroove] = useState(50);
 
   // Filters
-  const [filterRegions, setFilterRegions] = useState<string[]>([]);
   const [filterFeel, setFilterFeel] = useState<TimeFeel | null>(null);
   const [filterComplexity, setFilterComplexity] = useState<Complexity | null>(null);
   const [filterRhythmType, setFilterRhythmType] = useState<RhythmType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showKonnakol, setShowKonnakol] = useState(false);
-  const [complexityLevel, setComplexityLevel] = useState<number>(2); // 1=beginner, 2=intermediate, 3=advanced
 
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -105,23 +112,82 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
   }, []);
 
   // Computed
-  const categories = useMemo(() => getAllCategories(), []);
+  const categories = useMemo(() => getAllCategories(selectedRegion), [selectedRegion]);
   const regions = useMemo(() => getAllRegions(), []);
   const rhythmTypes = useMemo(() => getAllRhythmTypes(), []);
-  const presetsByCategory = useMemo(() => getPresetsByRegion(), []);
-
   const filteredPresets = useMemo(() => {
     return filterPresets({
       category: selectedCategory,
-      regions: filterRegions.length > 0 ? filterRegions : null,
+      region: selectedRegion,
       timeFeel: filterFeel,
       complexity: filterComplexity,
       rhythmType: filterRhythmType,
       search: searchQuery || undefined,
     });
-  }, [selectedCategory, filterRegions, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
+  }, [selectedCategory, selectedRegion, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
 
+  const presetById = useMemo(() => {
+    return new Map(DRUM_PRESETS.map((preset) => [preset.id, preset]));
+  }, []);
+  const currentPreset = useMemo(() => {
+    return rhythmList.find((preset) => preset.id === currentPresetId)
+      || presetById.get(currentPresetId)
+      || null;
+  }, [rhythmList, currentPresetId, presetById]);
+  const currentTimeSignature = currentPreset?.timeSignature || ([4, 4] as [number, number]);
+  const subdivisionBoundaries = useMemo(() => {
+    if (currentPreset) {
+      return getSubdivisionBoundaries(currentPreset.pulseGrouping);
+    }
+
+    return new Set<number>([0]);
+  }, [currentPreset]);
   const hasSolo = tracks.some(t => t.solo);
+
+  const loadPattern = useCallback((preset: PatternPreset) => {
+    setTracks(preset.tracks.map((track) =>
+      createTrackFromPreset(track.instrumentId, track.steps, track.subdivisions)
+    ));
+  }, []);
+
+  const loadTimbres = useCallback((preset: PatternPreset) => {
+    setCurrentTimbres(preset.instruments);
+  }, []);
+
+  const applyPresetSelection = useCallback((preset: PatternPreset) => {
+    setPlaying(false);
+    setCurrentPresetId(preset.id);
+    setBpm(preset.bpm);
+    setSwing(preset.swing);
+    loadPattern(preset);
+    loadTimbres(preset);
+  }, [loadPattern, loadTimbres]);
+
+  const handleRegionSelect = useCallback((region: Region) => {
+    const regionRhythms = filterRhythms({ region });
+    const regionPresets = regionRhythms
+      .map((rhythm) => presetById.get(rhythm.id))
+      .filter((preset): preset is PatternPreset => Boolean(preset));
+
+    setSelectedCategory(null);
+    setFilterFeel(null);
+    setFilterComplexity(null);
+    setFilterRhythmType(null);
+    setSearchQuery("");
+    setSelectedRegion(region);
+    setRhythmList(regionPresets);
+
+    const nextPreset = regionPresets[0] || null;
+    if (!nextPreset) {
+      setCurrentPresetId("");
+      setTracks([]);
+      setCurrentTimbres([]);
+      setPlaying(false);
+      return;
+    }
+
+    applyPresetSelection(nextPreset);
+  }, [applyPresetSelection, presetById]);
 
   // ─── Scheduler ──────────────────────────────────────────────────────────────
 
@@ -133,7 +199,7 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
 
     currentTracks.forEach(track => {
       const shouldPlay = hasSolo ? track.solo : !track.muted;
-      const stepDuration = (60 / bpm) * (4 / track.subdivisions);
+      const stepDuration = getStepDurationSeconds(bpm, currentTimeSignature, track.subdivisions);
       let trackTime = trackNextTimeRef.current[track.id] ?? nextNoteTimeRef.current;
       let currentStep = stepRef.current[track.id] ?? 0;
 
@@ -174,7 +240,7 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
 
     stepRef.current = nextSteps;
     setCurrentSteps(nextSteps);
-  }, [bpm, swing, groove, hasSolo, getCtx]);
+  }, [bpm, swing, groove, hasSolo, getCtx, currentTimeSignature]);
 
   useEffect(() => {
     if (playing) {
@@ -222,9 +288,9 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
   };
 
   const addTrack = (instrumentId?: string) => {
-    const instId = instrumentId || 'kick';
+    const instId = instrumentId || currentTimbres[0]?.id || 'kick';
     const inst = getInstrument(instId);
-    const subs = 16;
+    const subs = currentPreset?.tracks[0]?.subdivisions || 16;
     setTracks(prev => [...prev, {
       id: uid(),
       instrumentId: instId,
@@ -256,19 +322,44 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
     }));
   };
 
-  const loadPreset = useCallback((preset: PatternPreset) => {
-    setPlaying(false);
-    setBpm(preset.bpm);
-    setSwing(preset.swing);
-    setActivePreset(preset.name);
-    setTracks(preset.tracks.map(t => createTrackFromPreset(t.instrumentId, t.steps, t.subdivisions)));
-  }, []);
+  useEffect(() => {
+    setRhythmList(filteredPresets);
+
+    if (filteredPresets.length === 0) {
+      setCurrentPresetId("");
+      setTracks([]);
+      setCurrentTimbres([]);
+      setPlaying(false);
+      return;
+    }
+
+    const matchingPreset = filteredPresets.find((preset) => preset.id === currentPresetId);
+
+    if (!matchingPreset) {
+      applyPresetSelection(filteredPresets[0]);
+    }
+  }, [filteredPresets, currentPresetId, applyPresetSelection]);
 
   useEffect(() => {
-    if (embeddedPreset) {
-      loadPreset(embeddedPreset);
+    if (!embeddedPreset) {
+      return;
     }
-  }, [embeddedPreset, loadPreset]);
+
+    const nextPreset = presetById.get(embeddedPreset.id) || embeddedPreset;
+    const regionRhythms = filterRhythms({ region: nextPreset.region });
+    const regionPresets = regionRhythms
+      .map((rhythm) => presetById.get(rhythm.id))
+      .filter((preset): preset is PatternPreset => Boolean(preset));
+
+    setSelectedCategory(null);
+    setFilterFeel(null);
+    setFilterComplexity(null);
+    setFilterRhythmType(null);
+    setSearchQuery("");
+    setSelectedRegion(nextPreset.region);
+    setRhythmList(regionPresets);
+    applyPresetSelection(nextPreset);
+  }, [embeddedPreset, applyPresetSelection, presetById]);
 
   const clearAll = () => {
     setPlaying(false);
@@ -283,8 +374,16 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
       steps: t.steps,
       subdivisions: t.subdivisions,
     }));
-    const data = generateMidiFile(exportTracks, bpm, midiMapping, swing, humanize, exportBars);
-    const safeName = activePreset.replace(/[^a-zA-Z0-9]/g, '_');
+    const data = generateMidiFile(
+      exportTracks,
+      bpm,
+      midiMapping,
+      swing,
+      humanize,
+      exportBars,
+      currentTimeSignature
+    );
+    const safeName = sanitizeFileStem(currentPreset?.name || "rhythm");
     downloadMidiFile(data, `${safeName}_${bpm}bpm.mid`);
   };
 
@@ -300,7 +399,6 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
 
   // ─── Clave overlay ─────────────────────────────────────────────────────────
 
-  const currentPreset = DRUM_PRESETS.find(p => p.name === activePreset);
   const claveInfo = currentPreset?.clavePattern;
 
   // ─── Render ─────────────────────────────────────────────────────────────────
@@ -627,10 +725,9 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
               <div className="flex gap-[2px]">
                 {track.steps.map((vel, i) => {
                   const isCurrent = playing && prev === i;
-                  const isDownbeat = track.subdivisions >= 8
-                    ? i % (track.subdivisions >= 16 ? 4 : track.subdivisions >= 12 ? 3 : 2) === 0
-                    : i === 0;
-                  const isBeatBoundary = track.subdivisions >= 16 && i % 4 === 0;
+                  const usesPresetGrid = currentPreset?.tracks[0]?.subdivisions === track.subdivisions;
+                  const isDownbeat = usesPresetGrid ? subdivisionBoundaries.has(i) : i === 0;
+                  const isBeatBoundary = usesPresetGrid ? subdivisionBoundaries.has(i) : i === 0;
 
                   return (
                     <button key={i} onClick={() => toggleStep(track.id, i)}
@@ -665,11 +762,11 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
           <Plus size={12} /> Add Track
         </button>
 
-        {['kick', 'snare', 'hh-closed', 'clave', 'conga-low', 'cowbell', 'cajon', 'shaker'].map(instId => {
-          const inst = getInstrument(instId);
+        {currentTimbres.map((timbre) => {
+          const inst = getInstrument(timbre.id);
           if (!inst) return null;
           return (
-            <button key={instId} onClick={() => addTrack(instId)}
+            <button key={timbre.id} onClick={() => addTrack(timbre.id)}
               className="text-[10px] px-2 py-1 rounded border border-border hover:bg-accent transition-colors text-muted-foreground"
               title={`Add ${inst.name}`}>
               + {inst.name}
@@ -709,31 +806,19 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
         <div className="flex flex-wrap items-center gap-2">
           <Filter size={12} className="text-muted-foreground shrink-0" />
           
-          {/* Multi-select region chips */}
+          {/* Region chips */}
           <div className="flex flex-wrap gap-1">
-            <button
-              onClick={() => setFilterRegions([])}
-              className={`text-[10px] px-2 py-1 rounded-md transition-colors font-medium ${
-                filterRegions.length === 0
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border text-muted-foreground hover:bg-accent'
-              }`}
-            >All Regions</button>
             {regions.map(r => {
-              const isActive = filterRegions.includes(r);
+              const isActive = selectedRegion === r;
               return (
                 <button key={r}
-                  onClick={() => {
-                    setFilterRegions(prev =>
-                      isActive ? prev.filter(x => x !== r) : [...prev, r]
-                    );
-                  }}
+                  onClick={() => handleRegionSelect(r)}
                   className={`text-[10px] px-2 py-1 rounded-md transition-colors ${
                     isActive
                       ? 'bg-primary text-primary-foreground ring-1 ring-primary/50'
                       : 'border border-border text-muted-foreground hover:bg-accent'
                   }`}
-                >{r} <span className="opacity-60">({DRUM_PRESETS.filter(p => p.region === r).length})</span></button>
+                >{formatRegion(r)} <span className="opacity-60">({filterRhythms({ region: r }).length})</span></button>
               );
             })}
           </div>
@@ -756,10 +841,11 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
             className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Types</option>
-            <option value="groove">Groove</option>
-            <option value="odd-meter">Odd Meter</option>
-            <option value="tala">Tala</option>
-            <option value="trance">Trance</option>
+            {rhythmTypes.map((type) => (
+              <option key={type} value={type}>
+                {type === 'odd-meter' ? 'Odd Meter' : type === 'tala' ? 'Tala' : type === 'trance' ? 'Trance' : 'Groove'}
+              </option>
+            ))}
           </select>
           <select
             value={filterComplexity || ''}
@@ -771,9 +857,15 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
           </select>
-          {(filterRegions.length > 0 || filterFeel || filterRhythmType || filterComplexity || searchQuery) && (
+          {(filterFeel || filterRhythmType || filterComplexity || searchQuery || selectedCategory) && (
             <button
-              onClick={() => { setFilterRegions([]); setFilterFeel(null); setFilterRhythmType(null); setFilterComplexity(null); setSearchQuery(''); }}
+              onClick={() => {
+                setSelectedCategory(null);
+                setFilterFeel(null);
+                setFilterRhythmType(null);
+                setFilterComplexity(null);
+                setSearchQuery('');
+              }}
               className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border hover:bg-accent transition-colors"
             >
               Clear Filters
@@ -805,10 +897,10 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
             const grooveType = getGrooveType(p);
             const validation = validateGroove(p);
             return (
-              <button key={p.name}
-                onClick={() => loadPreset(p)}
+              <button key={p.id}
+                onClick={() => applyPresetSelection(p)}
                 className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
-                  activePreset === p.name
+                  currentPresetId === p.id
                     ? 'border-primary bg-primary/10 shadow-sm'
                     : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
                 } ${!validation.valid ? 'ring-1 ring-destructive/30' : ''}`}
@@ -820,7 +912,7 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-1 mt-1">
-                  <span className="text-[10px] text-muted-foreground">{p.region}</span>
+                  <span className="text-[10px] text-muted-foreground">{formatRegion(p.region)}</span>
                   <span className="text-muted-foreground/30">·</span>
                   <span className="text-[10px] text-muted-foreground">{p.country}</span>
                   <span className="text-muted-foreground/30">·</span>

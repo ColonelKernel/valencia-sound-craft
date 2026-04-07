@@ -428,6 +428,116 @@ function playRepique(ctx: AudioContext, time: number, vel: number, pitch: number
   osc.stop(time + 0.13);
 }
 
+function withTuning(
+  play: (ctx: AudioContext, time: number, velocity: number, pitch: number, decay: number) => void,
+  pitchMultiplier: number,
+  decayMultiplier: number
+) {
+  return (ctx: AudioContext, time: number, velocity: number, pitch: number, decay: number) =>
+    play(ctx, time, velocity, pitch * pitchMultiplier, Math.max(0.05, decay * decayMultiplier));
+}
+
+function playPalmas(ctx: AudioContext, time: number, vel: number, _p: number, _d: number) {
+  for (let burst = 0; burst < 2; burst++) {
+    const start = time + burst * 0.012;
+    const len = Math.max(1, Math.round(ctx.sampleRate * 0.028));
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+
+    for (let i = 0; i < len; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    }
+
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1800;
+    filter.Q.value = 0.7;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(vel * 0.25, start);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.05);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start(start);
+    noise.stop(start + 0.06);
+  }
+}
+
+function playTriangle(ctx: AudioContext, time: number, vel: number, pitch: number, decay: number) {
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+
+  osc1.type = 'triangle';
+  osc2.type = 'sine';
+  osc1.frequency.setValueAtTime(1600 * pitch, time);
+  osc2.frequency.setValueAtTime(2275 * pitch, time);
+  filter.type = 'bandpass';
+  filter.frequency.value = 2200;
+  filter.Q.value = 5;
+  gain.gain.setValueAtTime(vel * 0.22, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + Math.max(0.12, decay * 0.7));
+
+  osc1.connect(filter);
+  osc2.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc1.start(time);
+  osc2.start(time);
+  osc1.stop(time + Math.max(0.14, decay * 0.75));
+  osc2.stop(time + Math.max(0.14, decay * 0.75));
+}
+
+function playKonnakol(ctx: AudioContext, time: number, vel: number, pitch: number, decay: number) {
+  const osc = ctx.createOscillator();
+  const formant = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(280 * pitch, time);
+  osc.frequency.exponentialRampToValueAtTime(210 * pitch, time + 0.04);
+  formant.type = 'bandpass';
+  formant.frequency.value = 1100;
+  formant.Q.value = 4;
+  gain.gain.setValueAtTime(vel * 0.24, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + Math.max(0.08, decay * 0.35));
+
+  osc.connect(formant);
+  formant.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(time);
+  osc.stop(time + Math.max(0.09, decay * 0.4));
+}
+
+function playRiq(ctx: AudioContext, time: number, vel: number, pitch: number, decay: number) {
+  playShaker(ctx, time, vel, pitch, decay);
+  playTriangle(ctx, time, vel * 0.6, pitch * 0.9, Math.max(0.1, decay * 0.4));
+}
+
+const playCajonLow = withTuning(playCajon, 0.9, 1.2);
+const playCajonHigh = withTuning(playCongaSlap, 1.15, 0.8);
+const playCampana = withTuning(playCowbell, 1.05, 1);
+const playDjembeBass = withTuning(playCongaLow, 0.85, 1.15);
+const playDjembeSlap = withTuning(playCongaSlap, 1.1, 0.9);
+const playDununBell = withTuning(playCowbell, 0.95, 1);
+const playTupanLow = withTuning(playSurdo, 0.9, 1.15);
+const playTupanHigh = withTuning(playSnare, 0.95, 0.85);
+const playZabumbaLow = withTuning(playSurdo, 0.88, 1.1);
+const playZabumbaHigh = withTuning(playRimshot, 0.92, 1);
+const playTablaBayan = withTuning(playCongaLow, 0.8, 1.1);
+const playTablaDayan = withTuning(playBongo, 0.95, 0.9);
+const playDarbukaDum = withTuning(playCongaLow, 0.9, 1);
+const playDarbukaTek = withTuning(playCongaSlap, 1.18, 0.8);
+const playFrameDrum = withTuning(playCajon, 0.82, 1.05);
+const playBomboLegueroLow = withTuning(playSurdo, 0.78, 1.2);
+const playBomboLegueroHigh = withTuning(playRimshot, 0.82, 1);
+const playBomboLegueroRim = withTuning(playRimshot, 1.02, 1);
+
 function play808Kick(ctx: AudioContext, time: number, vel: number, pitch: number, decay: number) {
   const osc = ctx.createOscillator();
   const g = ctx.createGain();
@@ -509,6 +619,36 @@ export const DRUM_INSTRUMENTS: DrumInstrument[] = [
   { id: 'agogo', name: 'Agogô', shortName: 'AG', category: 'latin', defaultVelocity: 0.5, defaultPitch: 1, defaultDecay: 0.2, color: 'bg-teal-400', play: playAgogo },
   { id: 'surdo', name: 'Surdo', shortName: 'SD', category: 'latin', defaultVelocity: 0.8, defaultPitch: 1, defaultDecay: 0.6, color: 'bg-violet-500', play: playSurdo },
   { id: 'repique', name: 'Repique', shortName: 'RP', category: 'latin', defaultVelocity: 0.7, defaultPitch: 1, defaultDecay: 0.2, color: 'bg-violet-400', play: playRepique },
+  // Region-specific timbres and compatibility aliases
+  { id: 'hihat', name: 'Hi-Hat', shortName: 'HH', category: 'hihat', defaultVelocity: 0.6, defaultPitch: 1, defaultDecay: 0.1, color: 'bg-yellow-300', play: playHiHatClosed },
+  { id: 'tambourine', name: 'Tambourine', shortName: 'TB', category: 'percussion', defaultVelocity: 0.55, defaultPitch: 1.15, defaultDecay: 0.12, color: 'bg-amber-300', play: playShaker },
+  { id: 'guiro', name: 'Guiro', shortName: 'GR', category: 'percussion', defaultVelocity: 0.45, defaultPitch: 1, defaultDecay: 0.1, color: 'bg-lime-500', play: playShaker },
+  { id: 'conga_high', name: 'Conga High', shortName: 'CH', category: 'latin', defaultVelocity: 0.7, defaultPitch: 1, defaultDecay: 0.3, color: 'bg-red-400', play: playCongaHigh },
+  { id: 'palmas', name: 'Palmas', shortName: 'PA', category: 'percussion', defaultVelocity: 0.7, defaultPitch: 1, defaultDecay: 0.15, color: 'bg-orange-300', play: playPalmas },
+  { id: 'cajon_low', name: 'Cajón Low', shortName: 'CL', category: 'latin', defaultVelocity: 0.82, defaultPitch: 1, defaultDecay: 0.42, color: 'bg-stone-600', play: playCajonLow },
+  { id: 'cajon_high', name: 'Cajón High', shortName: 'CH', category: 'latin', defaultVelocity: 0.76, defaultPitch: 1, defaultDecay: 0.18, color: 'bg-stone-400', play: playCajonHigh },
+  { id: 'campana', name: 'Campana', shortName: 'CA', category: 'latin', defaultVelocity: 0.62, defaultPitch: 1, defaultDecay: 0.22, color: 'bg-amber-300', play: playCampana },
+  { id: 'djembe_bass', name: 'Djembe Bass', shortName: 'DB', category: 'percussion', defaultVelocity: 0.8, defaultPitch: 1, defaultDecay: 0.38, color: 'bg-orange-500', play: playDjembeBass },
+  { id: 'djembe_tone', name: 'Djembe Tone', shortName: 'DT', category: 'percussion', defaultVelocity: 0.72, defaultPitch: 1.05, defaultDecay: 0.3, color: 'bg-orange-400', play: playCongaHigh },
+  { id: 'djembe_slap', name: 'Djembe Slap', shortName: 'DS', category: 'percussion', defaultVelocity: 0.78, defaultPitch: 1, defaultDecay: 0.18, color: 'bg-orange-300', play: playDjembeSlap },
+  { id: 'dunun_bell', name: 'Dunun Bell', shortName: 'DL', category: 'percussion', defaultVelocity: 0.58, defaultPitch: 1, defaultDecay: 0.22, color: 'bg-yellow-300', play: playDununBell },
+  { id: 'tupan_low', name: 'Tupan Low', shortName: 'TL', category: 'percussion', defaultVelocity: 0.86, defaultPitch: 1, defaultDecay: 0.5, color: 'bg-sky-600', play: playTupanLow },
+  { id: 'tupan_high', name: 'Tupan High', shortName: 'TH', category: 'percussion', defaultVelocity: 0.74, defaultPitch: 1, defaultDecay: 0.24, color: 'bg-sky-400', play: playTupanHigh },
+  { id: 'zabumba_low', name: 'Zabumba Low', shortName: 'ZL', category: 'percussion', defaultVelocity: 0.84, defaultPitch: 1, defaultDecay: 0.52, color: 'bg-emerald-600', play: playZabumbaLow },
+  { id: 'zabumba_high', name: 'Zabumba High', shortName: 'ZH', category: 'percussion', defaultVelocity: 0.72, defaultPitch: 1, defaultDecay: 0.18, color: 'bg-emerald-400', play: playZabumbaHigh },
+  { id: 'triangle', name: 'Triangle', shortName: 'TR', category: 'percussion', defaultVelocity: 0.5, defaultPitch: 1, defaultDecay: 0.35, color: 'bg-cyan-300', play: playTriangle },
+  { id: 'tabla_bayan', name: 'Tabla Bayan', shortName: 'TB', category: 'percussion', defaultVelocity: 0.78, defaultPitch: 1, defaultDecay: 0.32, color: 'bg-indigo-500', play: playTablaBayan },
+  { id: 'tabla_dayan', name: 'Tabla Dayan', shortName: 'TD', category: 'percussion', defaultVelocity: 0.72, defaultPitch: 1, defaultDecay: 0.18, color: 'bg-indigo-300', play: playTablaDayan },
+  { id: 'tabla_ge', name: 'Tabla Ge', shortName: 'TG', category: 'percussion', defaultVelocity: 0.7, defaultPitch: 1, defaultDecay: 0.28, color: 'bg-fuchsia-300', play: playTablaBayan },
+  { id: 'tabla_na', name: 'Tabla Na', shortName: 'TN', category: 'percussion', defaultVelocity: 0.68, defaultPitch: 1.2, defaultDecay: 0.2, color: 'bg-fuchsia-200', play: playTablaDayan },
+  { id: 'konnakol', name: 'Konnakol', shortName: 'KO', category: 'percussion', defaultVelocity: 0.5, defaultPitch: 1, defaultDecay: 0.16, color: 'bg-fuchsia-300', play: playKonnakol },
+  { id: 'darbuka_dum', name: 'Darbuka Dum', shortName: 'DD', category: 'percussion', defaultVelocity: 0.78, defaultPitch: 1, defaultDecay: 0.3, color: 'bg-cyan-300', play: playDarbukaDum },
+  { id: 'darbuka_tek', name: 'Darbuka Tek', shortName: 'DK', category: 'percussion', defaultVelocity: 0.72, defaultPitch: 1, defaultDecay: 0.14, color: 'bg-cyan-200', play: playDarbukaTek },
+  { id: 'riq', name: 'Riq', shortName: 'RQ', category: 'percussion', defaultVelocity: 0.58, defaultPitch: 1, defaultDecay: 0.18, color: 'bg-pink-300', play: playRiq },
+  { id: 'frame_drum', name: 'Frame Drum', shortName: 'FD', category: 'percussion', defaultVelocity: 0.74, defaultPitch: 1, defaultDecay: 0.34, color: 'bg-stone-400', play: playFrameDrum },
+  { id: 'bombo_leguero_low', name: 'Bombo Legüero Low', shortName: 'BL', category: 'percussion', defaultVelocity: 0.86, defaultPitch: 1, defaultDecay: 0.56, color: 'bg-lime-600', play: playBomboLegueroLow },
+  { id: 'bombo_leguero_high', name: 'Bombo Legüero High', shortName: 'BH', category: 'percussion', defaultVelocity: 0.74, defaultPitch: 1, defaultDecay: 0.18, color: 'bg-lime-400', play: playBomboLegueroHigh },
+  { id: 'bombo_leguero_rim', name: 'Bombo Legüero Rim', shortName: 'BR', category: 'percussion', defaultVelocity: 0.68, defaultPitch: 1, defaultDecay: 0.12, color: 'bg-lime-300', play: playBomboLegueroRim },
   // 808
   { id: '808-kick', name: '808 Kick', shortName: '8K', category: 'kick', defaultVelocity: 0.9, defaultPitch: 1, defaultDecay: 0.8, color: 'bg-red-600', play: play808Kick },
   { id: '808-snare', name: '808 Snare', shortName: '8S', category: 'snare', defaultVelocity: 0.8, defaultPitch: 1, defaultDecay: 0.35, color: 'bg-red-400', play: play808Snare },

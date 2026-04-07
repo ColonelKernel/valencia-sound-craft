@@ -2,6 +2,8 @@
 // Generates Standard MIDI File (SMF) format 0
 // Comprehensive VST drum mappings for professional production workflows
 
+import { getTimeSignatureMetaValue, type TimeSignature } from "./rhythmUtils";
+
 export type MidiMapping =
   | 'general-midi'
   | 'ableton'
@@ -38,26 +40,38 @@ const GM_MAP: Record<string, number> = {
   'kick':         36,  // C1 - Bass Drum 1
   '808-kick':     36,
   'cajon':        36,
+  'cajon_low':    36,
   'surdo':        35,  // B0 - Acoustic Bass Drum (lower)
+  'zabumba_low':  36,
+  'tupan_low':    36,
+  'bombo_leguero_low': 36,
   'djembe_bass':  36,
   'darbuka_dum':  36,
   'frame_drum':   36,
   'riq_dum':      36,
   'dhol_bass':    36,
   'cajon_bass':   36,
+  'tabla_bayan':  36,
   // Snares / Rimshots
   'snare':        38,  // D1 - Acoustic Snare
   '808-snare':    40,  // E1 - Electric Snare
   'rimshot':      37,  // C#1 - Side Stick
   'repique':      50,  // D2 - High Tom
   'cajon_slap':   38,
+  'cajon_high':   38,
   'cajon_ghost':  38,
   'djembe_slap':  39,
   'djembe_tone':  38,
+  'tupan_high':   38,
+  'zabumba_high': 37,
+  'bombo_leguero_high': 38,
+  'bombo_leguero_rim': 37,
   'dhol_tilli':   38,
   'repinique':    50,
   // Claps
   'clap':         39,  // D#1 - Hand Clap
+  'palmas':       39,
+  'konnakol':     39,
   // Hi-hats
   'hh-closed':    42,  // F#1 - Closed Hi-Hat
   'hh-open':      46,  // A#1 - Open Hi-Hat
@@ -77,12 +91,16 @@ const GM_MAP: Record<string, number> = {
   // Percussion
   'cowbell':      56,  // G#2
   'clave':        75,  // D#4 - Claves
+  'campana':      56,
+  'dunun_bell':   56,
   'tambourine':   54,  // F#2
   'shaker':       70,  // A#3 - Maracas
   'guiro':        73,  // C#4 - Short Guiro
   'agogo':        67,  // G3 - High Agogo
   'agogo_high':   67,
   'agogo_low':    68,  // G#3 - Low Agogo
+  'triangle':     81,
+  'riq':          54,
   // Congas
   'conga-low':    64,  // E3 - Low Conga
   'conga-high':   63,  // D#3 - Open High Conga
@@ -99,6 +117,7 @@ const GM_MAP: Record<string, number> = {
   'timbale_low':  66,  // F#3 - Low Timbale
   // World percussion
   'tabla_na':     67,
+  'tabla_dayan':  68,
   'tabla_tin':    68,
   'tabla_tun':    64,
   'tabla_ge':     36,
@@ -572,18 +591,21 @@ export function generateMidiFile(
   mapping: MidiMapping,
   swing: number = 0,
   includeHumanization: boolean = false,
-  bars: number = 4
+  bars: number = 4,
+  timeSignature: TimeSignature = [4, 4]
 ): Uint8Array {
   const ppq = 480; // pulses per quarter note
   const channel = 9; // MIDI channel 10 (0-indexed = 9) for drums
+  const [numerator, denominator] = timeSignature;
+  const barTicks = Math.round((ppq * numerator * 4) / denominator);
 
   const events: MidiEvent[] = [];
 
   for (let bar = 0; bar < bars; bar++) {
     tracks.forEach(track => {
       const midiNote = getMidiNote(track.instrumentId, mapping);
-      const ticksPerStep = (ppq * 4) / track.subdivisions; // 4 = beats per bar
-      const barOffset = bar * ppq * 4;
+      const ticksPerStep = barTicks / Math.max(1, track.subdivisions);
+      const barOffset = bar * barTicks;
 
       track.steps.forEach((velocity, stepIdx) => {
         if (velocity <= 0) return;
@@ -648,8 +670,17 @@ export function generateMidiFile(
     microsecondsPerBeat & 0xFF
   );
 
-  // Time signature meta event (4/4)
-  trackData.push(0x00, 0xFF, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08);
+  // Time signature meta event
+  trackData.push(
+    0x00,
+    0xFF,
+    0x58,
+    0x04,
+    numerator & 0xFF,
+    getTimeSignatureMetaValue(denominator) & 0xFF,
+    0x18,
+    0x08
+  );
 
   // Track name
   const name = 'Drum Machine Export';

@@ -6,7 +6,7 @@ import { translateForMyTracks, translateForSK2, translateForAfterDark, getDevice
 import { mapGroove, normalizeMeter, splitPolyrhythm } from './rhythmTranslator';
 import StepSequencer from './StepSequencer';
 import PatternMorpher from './PatternMorpher';
-import type { PatternPreset } from '../DrumMachine/drumPresets';
+import { formatRegion, type PatternPreset } from '../DrumMachine/drumPresets';
 
 interface BlipbloxConnectorProps {
   /** Current root note from ModeVisualizer (for SK2 scale awareness) */
@@ -444,7 +444,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
           {embeddedPreset && (
             <div className="p-2 rounded-md bg-secondary/20 border border-border/50 text-[10px] text-muted-foreground space-y-0.5">
               <div className="font-medium text-foreground">{embeddedPreset.name}</div>
-              <div>{embeddedPreset.region} · {embeddedPreset.country} · {embeddedPreset.timeSignature[0]}/{embeddedPreset.timeSignature[1]}</div>
+              <div>{formatRegion(embeddedPreset.region)} · {embeddedPreset.country} · {embeddedPreset.timeSignature[0]}/{embeddedPreset.timeSignature[1]}</div>
               <div className="italic">{embeddedPreset.description}</div>
               {embeddedPreset.culturalDescription && (
                 <div className="text-primary/70">{embeddedPreset.culturalDescription}</div>
