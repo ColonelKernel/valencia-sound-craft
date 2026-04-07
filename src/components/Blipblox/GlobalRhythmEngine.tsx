@@ -32,14 +32,14 @@ const VARIATION_LABELS: Record<VariationType, string> = {
   'subdivision-swap': '🔄 Subdivision Swap',
 };
 
-const EXTENDED_STEP_OPTIONS = [16, 32, 64, 128] as const;
-type StepResolution = typeof EXTENDED_STEP_OPTIONS[number];
+const BASE_STEP_OPTIONS = [16, 32, 64, 128] as const;
 
-function normalizeStepResolution(steps: number): StepResolution {
-  if (steps >= 128) return 128;
-  if (steps >= 64) return 64;
-  if (steps >= 32) return 32;
-  return 16;
+function normalizeStepResolution(steps: number): number {
+  if (!Number.isFinite(steps) || steps <= 0) {
+    return 16;
+  }
+
+  return Math.max(1, Math.round(steps));
 }
 
 function resizeStepSequence(values: number[], targetLength: number): number[] {
@@ -72,6 +72,16 @@ function inferPhraseBars(stepCount: number, meter: [number, number]): number {
   return Math.max(1, Math.ceil(stepCount / stepsPerBar));
 }
 
+function parseTimeSignature(signature: string): [number, number] {
+  const [numerator, denominator] = signature.split('/').map(Number);
+
+  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) {
+    return [4, 4];
+  }
+
+  return [numerator, denominator];
+}
+
 const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: GlobalRhythmEngineProps) => {
   // Pattern state
   const [pattern, setPattern] = useState<number[]>(new Array(16).fill(0));
@@ -79,7 +89,7 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
   const [bpm, setBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
-  const [stepMode, setStepMode] = useState<StepResolution>(16);
+  const [stepMode, setStepMode] = useState<number>(16);
 
   // Generation controls
   const [genRegion, setGenRegion] = useState<GenerateOptions['region']>('west_africa');
@@ -130,6 +140,19 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
     () => IMPORTED_MIDI_LOOP_MAP[selectedImportedLoopId] || null,
     [selectedImportedLoopId],
   );
+  const availableStepOptions = useMemo(() => {
+    const options = new Set<number>(BASE_STEP_OPTIONS);
+
+    IMPORTED_MIDI_LOOP_PACKS.forEach((pack) => {
+      pack.loops.forEach((loop) => {
+        options.add(loop.steps);
+      });
+    });
+
+    options.add(stepMode);
+
+    return Array.from(options).sort((left, right) => left - right);
+  }, [stepMode]);
 
   // Sub-styles for current region
   const currentSubStyles = useMemo(() => REGION_SUB_STYLES[genRegion] || [], [genRegion]);
@@ -345,12 +368,11 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
       return;
     }
 
-    const nextMode = normalizeStepResolution(loop.steps);
-    setStepMode(nextMode);
+    setStepMode(loop.steps);
     setPattern([...loop.midiPattern]);
     setVelocityPattern([...loop.velocityPattern]);
     setBpm(loop.bpm);
-    setGenMeter([4, 4]);
+    setGenMeter(parseTimeSignature(loop.timeSignature));
     setGenRegion('general');
     adaptiveEngine.reset();
     setLastVariationType(null);
@@ -579,12 +601,12 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
                 }}
                 className="bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground max-w-[180px]"
               >
-                <option value="">Nate Smith loops…</option>
+                <option value="">Imported drum loops…</option>
                 {IMPORTED_MIDI_LOOP_PACKS.map((pack) => (
                   <optgroup key={pack.id} label={`${pack.label} - ${pack.loops.length} loops`}>
                     {pack.loops.map(loop => (
                       <option key={loop.id} value={loop.id}>
-                        {loop.sectionLabel} · {loop.bars} bar{loop.bars > 1 ? 's' : ''}
+                        {loop.sectionLabel} · {loop.timeSignature} · {loop.bars} bar{loop.bars > 1 ? 's' : ''}
                       </option>
                     ))}
                   </optgroup>
@@ -693,7 +715,7 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
           onChange={handlePatternChange}
           stepMode={stepMode}
           onStepModeChange={handleStepModeChange}
-          stepOptions={[...EXTENDED_STEP_OPTIONS]}
+          stepOptions={availableStepOptions}
           currentStep={currentStep}
         />
       </div>

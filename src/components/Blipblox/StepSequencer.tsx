@@ -98,7 +98,7 @@ const StepSequencer = ({
   return (
     <div className="space-y-2" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
       {onStepModeChange && stepOptions.length > 0 && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Steps:</span>
           {stepOptions.map(mode => (
             <button
