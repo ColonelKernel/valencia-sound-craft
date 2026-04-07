@@ -372,6 +372,13 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
             ))}
           </select>
         </div>
+
+        <div className="h-4 w-px bg-border" />
+
+        <label className="flex items-center gap-1.5 text-muted-foreground cursor-pointer">
+          <input type="checkbox" checked={showGravity} onChange={(e) => setShowGravity(e.target.checked)} className="rounded border-border" />
+          Gravity
+        </label>
       </div>
 
       {/* ═══ MAIN LAYOUT: SVG + Sidebar ═══ */}
