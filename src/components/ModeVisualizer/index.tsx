@@ -42,7 +42,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz'>('visualizer');
   const [expanded, setExpanded] = useState(false);
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
@@ -138,8 +138,15 @@ const ModeVisualizer = () => {
                 <option value="moderef">🎼 Mode Reference</option>
                 <option value="polyrhythm">🥁 Rhythm Engine</option>
                 <option value="rhythmmap">🌍 Rhythm Map</option>
+                <option value="tonnetz">🔷 Tonnetz</option>
               </select>
             </div>
+
+            {activeTab === 'tonnetz' && (
+              <div>
+                <Tonnetz scaleNotes={scaleNotes} root={root} timbre={timbre} />
+              </div>
+            )}
 
             {activeTab === 'reference' && (
               <div>
