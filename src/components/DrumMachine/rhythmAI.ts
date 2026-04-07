@@ -160,6 +160,42 @@ function uniq(values: number[]) {
   return [...new Set(values)].sort((left, right) => left - right);
 }
 
+function normalizeFeel(
+  feel: RhythmPattern["feel"] | string,
+  subdivision: number[],
+  region: Region
+): RhythmPattern["feel"] {
+  if (feel === "binary" || feel === "ternary" || feel === "swing" || feel === "additive") {
+    return feel;
+  }
+
+  if (feel === "asymmetric") {
+    return "additive";
+  }
+
+  if (feel === "compound" || feel === "triplet") {
+    return "ternary";
+  }
+
+  if (feel === "straight") {
+    return "binary";
+  }
+
+  if (region === "flamenco" || region === "middle_east") {
+    return "additive";
+  }
+
+  if (subdivision.every((value) => value === 3)) {
+    return "ternary";
+  }
+
+  if (subdivision.some((value, index) => value !== subdivision[0] || index === subdivision.length - 1 && value > 2)) {
+    return "additive";
+  }
+
+  return "binary";
+}
+
 function shuffle<T>(values: T[], rng: SeededRandom) {
   const next = values.slice();
   for (let index = next.length - 1; index > 0; index -= 1) {
@@ -925,6 +961,7 @@ export function correctRhythm(
 
   next.subdivision = subdivision;
   next.clave = clave;
+  next.feel = normalizeFeel(next.feel as RhythmPattern["feel"] | string, subdivision, next.region);
 
   const ensured = ensureRequiredRoles(next, subdivision, clave, rng);
   const rules = RHYTHM_RULES[next.region];
