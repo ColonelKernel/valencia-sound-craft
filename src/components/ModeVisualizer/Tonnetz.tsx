@@ -202,22 +202,23 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
     if (!activeTriad) return;
     const result = applyTransform(activeTriad, type);
     setAnimatingTransform({ from: activeTriad, to: result, type });
-    // Play the result
     const chordNotes = result.notes.map(i => ALL_NOTES[i]);
     playChord(chordNotes, 0.6, timbre);
+    if (midiEnabled && isConnected()) midiSendChord(chordNotes, 600, 100, midiChannel);
     setTimeout(() => {
       setActiveTriad(result);
       setAnimatingTransform(null);
     }, 400);
-  }, [activeTriad, timbre]);
+  }, [activeTriad, timbre, midiEnabled, midiChannel]);
 
   const handleModulate = useCallback((direction: 'darker' | 'brighter' | 'distant') => {
     if (!activeTriad) return;
     const result = modulateTo(activeTriad, direction);
     const chordNotes = result.notes.map(i => ALL_NOTES[i]);
     playChord(chordNotes, 0.6, timbre);
+    if (midiEnabled && isConnected()) midiSendChord(chordNotes, 600, 100, midiChannel);
     setActiveTriad(result);
-  }, [activeTriad, timbre]);
+  }, [activeTriad, timbre, midiEnabled, midiChannel]);
 
   // ─── Playback ─────────────────────────────────────────
   const stop = useCallback(() => {
