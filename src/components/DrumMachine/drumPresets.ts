@@ -9,6 +9,13 @@ import {
   type RhythmPattern,
   type Timbre,
 } from "./rhythmData";
+import {
+  getLessonsByIds,
+  getPatternResearchIds,
+  getSourcesByIds,
+  type RhythmLessonMaterial,
+  type RhythmReferenceSource,
+} from "./rhythmResearch";
 import { parseMeter, type TimeSignature } from "./rhythmUtils";
 
 export type { InstrumentRole, Region, RhythmPattern, Timbre } from "./rhythmData";
@@ -41,6 +48,7 @@ export interface TalaStructure {
 }
 
 export interface PatternPreset extends RhythmPattern {
+  presetKey: string;
   country: string;
   category: string;
   description: string;
@@ -69,6 +77,10 @@ export interface PatternPreset extends RhythmPattern {
   regional?: boolean;
   konnakol?: boolean;
   talaStructure?: TalaStructure;
+  lessonIds: string[];
+  referenceSourceIds: string[];
+  lessons: RhythmLessonMaterial[];
+  referenceSources: RhythmReferenceSource[];
 }
 
 export interface CountryMapData {
@@ -78,6 +90,10 @@ export interface CountryMapData {
   lng: number;
   region: Region;
   rhythmCount: number;
+  lessonCount: number;
+  sourceCount: number;
+  lessonIds: string[];
+  referenceSourceIds: string[];
 }
 
 const COUNTRY_CODES: Record<string, string> = {
@@ -87,18 +103,23 @@ const COUNTRY_CODES: Record<string, string> = {
   "North Macedonia": "MK",
   Spain: "ES",
   Cuba: "CU",
+  "Puerto Rico": "PR",
   Brazil: "BR",
   India: "IN",
   Egypt: "EG",
   Lebanon: "LB",
   Turkey: "TR",
   Argentina: "AR",
+  Peru: "PE",
+  Uruguay: "UY",
 };
 
 const TALA_STRUCTURES: Record<string, TalaStructure> = {
   india_teentaal: { name: "Teentaal", beats: 16, vibhags: [4, 4, 4, 4], sam: 1, khali: 9 },
   india_keharwa: { name: "Keharwa", beats: 8, vibhags: [4, 4], sam: 1, khali: 5 },
   india_rupak: { name: "Rupak", beats: 7, vibhags: [3, 2, 2], sam: 1, khali: 1 },
+  india_jhaptaal: { name: "Jhaptaal", beats: 10, vibhags: [2, 3, 2, 3], sam: 1, khali: 6 },
+  india_adi_tala: { name: "Adi Tala", beats: 8, vibhags: [4, 2, 2], sam: 1, khali: 5 },
 };
 
 function sum(values: number[]): number {
@@ -232,16 +253,9 @@ function validateRhythmPattern(pattern: RhythmPattern): string[] {
 
 function validateDataset(patterns: RhythmPattern[]): string[] {
   const errors: string[] = [];
-  const counts: Record<Region, number> = {
-    west_africa: 0,
-    balkans: 0,
-    flamenco: 0,
-    afro_cuban: 0,
-    brazil: 0,
-    india: 0,
-    middle_east: 0,
-    argentina: 0,
-  };
+  const counts = Object.fromEntries(
+    REGIONS.map((region) => [region, 0])
+  ) as Record<Region, number>;
 
   for (const pattern of patterns) {
     counts[pattern.region] += 1;
@@ -281,9 +295,13 @@ function createPatternPreset(pattern: RhythmPattern): PatternPreset {
   const timeSignature = parseMeter(pattern.meter);
   const country = pattern.country || formatRegion(pattern.region);
   const rhythmType = inferRhythmType(pattern);
+  const research = getPatternResearchIds(pattern.id);
+  const lessons = getLessonsByIds(research.lessonIds);
+  const referenceSources = getSourcesByIds(research.sourceIds);
 
   return {
     ...pattern,
+    presetKey: pattern.id,
     country,
     category: country,
     description: pattern.source || `${formatRegion(pattern.region)} rhythm`,
@@ -301,6 +319,10 @@ function createPatternPreset(pattern: RhythmPattern): PatternPreset {
     instrumentRoles: buildInstrumentRoles(pattern.instruments),
     konnakol: pattern.instruments.some((instrument) => instrument.id === "konnakol"),
     talaStructure: TALA_STRUCTURES[pattern.id],
+    lessonIds: research.lessonIds,
+    referenceSourceIds: research.sourceIds,
+    lessons,
+    referenceSources,
   };
 }
 
@@ -314,16 +336,9 @@ export const DRUM_PRESETS: PatternPreset[] = RHYTHM_PATTERNS.map(createPatternPr
 export const rhythmDataset: PatternPreset[] = DRUM_PRESETS;
 
 export function getPresetsByRegion(): Record<Region, PatternPreset[]> {
-  const grouped = {
-    west_africa: [],
-    balkans: [],
-    flamenco: [],
-    afro_cuban: [],
-    brazil: [],
-    india: [],
-    middle_east: [],
-    argentina: [],
-  } as Record<Region, PatternPreset[]>;
+  const grouped = Object.fromEntries(
+    REGIONS.map((region) => [region, []])
+  ) as Record<Region, PatternPreset[]>;
 
   for (const preset of DRUM_PRESETS) {
     grouped[preset.region].push(preset);
@@ -475,7 +490,16 @@ export function filterPresets(opts: {
 }
 
 export function getCountryMapData(): CountryMapData[] {
-  const countryMap = new Map<string, { name: string; region: Region; count: number }>();
+  const countryMap = new Map<
+    string,
+    {
+      name: string;
+      region: Region;
+      count: number;
+      lessonIds: Set<string>;
+      referenceSourceIds: Set<string>;
+    }
+  >();
 
   for (const preset of DRUM_PRESETS) {
     const code = preset.countryCode;
@@ -486,6 +510,8 @@ export function getCountryMapData(): CountryMapData[] {
     const existing = countryMap.get(code);
     if (existing) {
       existing.count += 1;
+      preset.lessonIds.forEach((lessonId) => existing.lessonIds.add(lessonId));
+      preset.referenceSourceIds.forEach((sourceId) => existing.referenceSourceIds.add(sourceId));
       continue;
     }
 
@@ -493,6 +519,8 @@ export function getCountryMapData(): CountryMapData[] {
       name: preset.country || preset.regionLabel,
       region: preset.region,
       count: 1,
+      lessonIds: new Set(preset.lessonIds),
+      referenceSourceIds: new Set(preset.referenceSourceIds),
     });
   }
 
@@ -509,6 +537,9 @@ export function getCountryMapData(): CountryMapData[] {
     LB: [33.9, 35.8],
     TR: [39.0, 35.2],
     AR: [-38.4, -63.6],
+    PR: [18.2, -66.5],
+    PE: [-9.2, -75.0],
+    UY: [-32.5, -55.8],
   };
 
   const countries: CountryMapData[] = [];
@@ -522,6 +553,10 @@ export function getCountryMapData(): CountryMapData[] {
       lng: position[1],
       region: value.region,
       rhythmCount: value.count,
+      lessonCount: value.lessonIds.size,
+      sourceCount: value.referenceSourceIds.size,
+      lessonIds: [...value.lessonIds],
+      referenceSourceIds: [...value.referenceSourceIds],
     });
   });
 

@@ -91,6 +91,21 @@ export const RHYTHM_RULES: Record<Region, RhythmRules> = {
     syncopationBias: 0.6,
     allowedSubdivisions: [[3, 3, 2]],
   },
+  afro_peruvian: {
+    requiredRoles: ["timeline", "bass"],
+    maxDensity: 0.7,
+    minDensity: 0.3,
+    syncopationBias: 0.75,
+    allowedSubdivisions: [[3, 3], [3, 3, 3, 3]],
+  },
+  uruguay: {
+    requiredRoles: ["timeline", "bass"],
+    maxDensity: 0.7,
+    minDensity: 0.3,
+    syncopationBias: 0.8,
+    allowedSubdivisions: [[4, 4, 4, 4]],
+    claveRequired: true,
+  },
   middle_east: {
     requiredRoles: ["timeline"],
     maxDensity: 0.7,
@@ -330,6 +345,10 @@ function fallbackTimeline(
 ) {
   if (region === "afro_cuban") {
     return positionsToPattern(CLAVE_PATTERNS[clave ?? "2-3"], 16, length);
+  }
+
+  if (region === "uruguay") {
+    return positionsToPattern(CLAVE_PATTERNS[clave ?? "3-2"], 16, length);
   }
 
   if (region === "flamenco") {
@@ -957,7 +976,11 @@ export function correctRhythm(
     ? next.subdivision.slice()
     : closestAllowedSubdivision(next.region, next.subdivision);
   const clave =
-    next.region === "afro_cuban" ? next.clave ?? (rng.next() < 0.5 ? "2-3" : "3-2") : next.clave ?? null;
+    next.region === "afro_cuban"
+      ? next.clave ?? (rng.next() < 0.5 ? "2-3" : "3-2")
+      : next.region === "uruguay"
+        ? next.clave ?? "3-2"
+        : next.clave ?? null;
 
   next.subdivision = subdivision;
   next.clave = clave;
@@ -1030,6 +1053,8 @@ export function generateRhythm(
   const clave =
     region === "afro_cuban"
       ? primary.clave ?? secondary.clave ?? (rng.next() < 0.5 ? "2-3" : "3-2")
+      : region === "uruguay"
+        ? primary.clave ?? secondary.clave ?? "3-2"
       : null;
   const instruments = primary.instruments.map((timbre) => ({ ...timbre }));
   const pattern = Object.fromEntries(

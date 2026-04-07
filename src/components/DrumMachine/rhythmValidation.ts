@@ -12,6 +12,8 @@ export const RegionEnum = z.enum([
   "india",
   "middle_east",
   "argentina",
+  "afro_peruvian",
+  "uruguay",
 ]);
 
 export const InstrumentRoleEnum = z.enum([

@@ -5,8 +5,9 @@ interface StepSequencerProps {
   pattern: number[];
   velocityPattern?: number[];
   onChange?: (pattern: number[], velocity: number[]) => void;
-  stepMode?: 16 | 32;
-  onStepModeChange?: (mode: 16 | 32) => void;
+  stepMode?: number;
+  onStepModeChange?: (mode: number) => void;
+  stepOptions?: number[];
   currentStep?: number;
   readOnly?: boolean;
 }
@@ -17,6 +18,7 @@ const StepSequencer = ({
   onChange,
   stepMode = 16,
   onStepModeChange,
+  stepOptions = [16, 32],
   currentStep = -1,
   readOnly = false,
 }: StepSequencerProps) => {
@@ -87,14 +89,18 @@ const StepSequencer = ({
     return cn('bg-primary/40 text-primary-foreground', isCurrent && 'ring-1 ring-primary/40');
   };
 
-  const cols = stepMode === 32 ? 'grid-cols-[repeat(32,1fr)]' : 'grid-cols-[repeat(16,1fr)]';
+  const totalSteps = pattern.length;
+  const minCellWidth = totalSteps >= 128 ? 10 : totalSteps >= 64 ? 12 : totalSteps >= 32 ? 14 : 20;
+  const gridStyle = {
+    gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(${minCellWidth}px, 1fr))`,
+  };
 
   return (
     <div className="space-y-2" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
-      {onStepModeChange && (
+      {onStepModeChange && stepOptions.length > 0 && (
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">Steps:</span>
-          {([16, 32] as const).map(mode => (
+          {stepOptions.map(mode => (
             <button
               key={mode}
               onClick={() => onStepModeChange(mode)}
@@ -111,41 +117,45 @@ const StepSequencer = ({
         </div>
       )}
 
-      <div className={cn('grid gap-[2px]', cols)}>
-        {pattern.map((step, i) => (
-          <div
-            key={i}
-            onClick={() => toggleStep(i)}
-            onMouseDown={() => handleMouseDown(i)}
-            onMouseEnter={() => handleMouseEnter(i)}
-            className={cn(
-              'aspect-square rounded-sm cursor-pointer transition-all select-none flex items-center justify-center',
-              stepMode === 32 ? 'min-w-[12px]' : 'min-w-[20px]',
-              getStepColor(step, velocity[i], i)
-            )}
-          >
-            {step === 1 && velocity[i] >= 90 && (
-              <span className="text-[6px] font-bold">▉</span>
-            )}
-            {step === 1 && velocity[i] >= 50 && velocity[i] < 90 && (
-              <span className="text-[6px]">●</span>
-            )}
-            {step === 1 && velocity[i] > 0 && velocity[i] < 50 && (
-              <span className="text-[6px] opacity-60">·</span>
-            )}
-          </div>
-        ))}
+      <div className="overflow-x-auto pb-1">
+        <div className="grid gap-[2px] min-w-max" style={gridStyle}>
+          {pattern.map((step, i) => (
+            <div
+              key={i}
+              onClick={() => toggleStep(i)}
+              onMouseDown={() => handleMouseDown(i)}
+              onMouseEnter={() => handleMouseEnter(i)}
+              className={cn(
+                'aspect-square rounded-sm transition-all select-none flex items-center justify-center',
+                readOnly ? 'cursor-default' : 'cursor-pointer',
+                getStepColor(step, velocity[i], i)
+              )}
+            >
+              {step === 1 && velocity[i] >= 90 && (
+                <span className="text-[6px] font-bold">▉</span>
+              )}
+              {step === 1 && velocity[i] >= 50 && velocity[i] < 90 && (
+                <span className="text-[6px]">●</span>
+              )}
+              {step === 1 && velocity[i] > 0 && velocity[i] < 50 && (
+                <span className="text-[6px] opacity-60">·</span>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Beat markers */}
-      <div className={cn('grid gap-[2px]', cols)}>
-        {pattern.map((_, i) => (
-          <div key={i} className="flex justify-center">
-            {i % 4 === 0 && (
-              <span className="text-[7px] text-muted-foreground">{Math.floor(i / 4) + 1}</span>
-            )}
-          </div>
-        ))}
+      <div className="overflow-x-auto">
+        <div className="grid gap-[2px] min-w-max" style={gridStyle}>
+          {pattern.map((_, i) => (
+            <div key={i} className="flex justify-center">
+              {i % 4 === 0 && (
+                <span className="text-[7px] text-muted-foreground">{Math.floor(i / 4) + 1}</span>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

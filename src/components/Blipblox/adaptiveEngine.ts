@@ -3,16 +3,32 @@
 
 export type VariationType = 'ghost-notes' | 'syncopation' | 'accent-shift' | 'fill' | 'micro-timing' | 'subdivision-swap';
 
-export type RegionId = 'african' | 'balkan' | 'flamenco' | 'indian' | 'latin' | 'general';
+export type RegionId =
+  | 'west_africa'
+  | 'balkans'
+  | 'flamenco'
+  | 'afro_cuban'
+  | 'brazil'
+  | 'india'
+  | 'middle_east'
+  | 'argentina'
+  | 'afro_peruvian'
+  | 'uruguay'
+  | 'general';
 
 // Protected step indices per region — adaptive engine will never remove these
 const REGION_CONSTRAINTS: Record<RegionId, number[]> = {
-  african: [0, 4, 8, 12],                 // Main pulse anchors
-  balkan: [0, 2, 4, 7, 9, 11, 14],        // Asymmetric group starts
-  flamenco: [2, 5, 7, 9, 11],             // Compás accents (0-indexed for 12-beat)
-  indian: [0],                              // Sam (beat 1) is sacred
-  latin: [0, 3, 6, 10, 12],               // Clave positions
-  general: [0],                             // At least keep the downbeat
+  west_africa: [0, 3, 6, 9],
+  balkans: [0, 2, 4, 7, 9, 11, 14],
+  flamenco: [0, 3, 6, 8, 10],
+  afro_cuban: [0, 3, 7, 10, 12],
+  brazil: [0, 4, 8, 12],
+  india: [0],
+  middle_east: [0, 4, 8, 12],
+  argentina: [0, 3, 6, 9],
+  afro_peruvian: [0, 3, 6, 9],
+  uruguay: [0, 3, 7, 10, 12],
+  general: [0],
 };
 
 interface EditHistory {

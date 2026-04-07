@@ -592,7 +592,8 @@ export function generateMidiFile(
   swing: number = 0,
   includeHumanization: boolean = false,
   bars: number = 4,
-  timeSignature: TimeSignature = [4, 4]
+  timeSignature: TimeSignature = [4, 4],
+  phraseMode: boolean = false,
 ): Uint8Array {
   const ppq = 480; // pulses per quarter note
   const channel = 9; // MIDI channel 10 (0-indexed = 9) for drums
@@ -601,11 +602,14 @@ export function generateMidiFile(
 
   const events: MidiEvent[] = [];
 
-  for (let bar = 0; bar < bars; bar++) {
-    tracks.forEach(track => {
-      const midiNote = getMidiNote(track.instrumentId, mapping);
-      const ticksPerStep = barTicks / Math.max(1, track.subdivisions);
-      const barOffset = bar * barTicks;
+  tracks.forEach(track => {
+    const midiNote = getMidiNote(track.instrumentId, mapping);
+    const phraseTicks = phraseMode ? barTicks * Math.max(1, bars) : barTicks;
+    const ticksPerStep = phraseTicks / Math.max(1, track.subdivisions);
+    const repetitions = phraseMode ? 1 : Math.max(1, bars);
+
+    for (let bar = 0; bar < repetitions; bar += 1) {
+      const barOffset = phraseMode ? 0 : bar * barTicks;
 
       track.steps.forEach((velocity, stepIdx) => {
         if (velocity <= 0) return;
@@ -653,8 +657,8 @@ export function generateMidiFile(
         const noteLen = velocity >= 0.9 ? 0.6 : velocity < 0.5 ? 0.3 : 0.5;
         events.push({ tick: tick + Math.round(ticksPerStep * noteLen), type: 'noteOff', note: midiNote, velocity: 0, channel });
       });
-    });
-  }
+    }
+  });
 
   // Sort by tick
   events.sort((a, b) => a.tick - b.tick || (a.type === 'noteOff' ? -1 : 1));

@@ -12,6 +12,12 @@ import {
 } from "../DrumMachine/drumPresets";
 import { getInstrument } from "../DrumMachine/drumSoundEngine";
 import { getStepDurationSeconds } from "../DrumMachine/rhythmUtils";
+import {
+  getLessonsByIds,
+  getSourcesByIds,
+  RHYTHM_LESSONS,
+  RHYTHM_WEB_SOURCES,
+} from "../DrumMachine/rhythmResearch";
 
 interface RhythmMapProps {
   onLoadPreset?: (preset: PatternPreset) => void;
@@ -26,6 +32,8 @@ const regionColors: Record<Region, string> = {
   india: '#a855f7',
   middle_east: '#ef4444',
   argentina: '#06b6d4',
+  afro_peruvian: '#14b8a6',
+  uruguay: '#8b5cf6',
 };
 
 const getColor = (region: Region) => regionColors[region];
@@ -86,6 +94,8 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
   }, []);
 
   const countryPresets = selectedCountry ? (presetsByCountry[selectedCountry.code] || []) : [];
+  const countryLessons = selectedCountry ? getLessonsByIds(selectedCountry.lessonIds) : [];
+  const countrySources = selectedCountry ? getSourcesByIds(selectedCountry.referenceSourceIds) : [];
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 md:p-6 space-y-4">
@@ -154,6 +164,9 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
                     <p style={{ fontSize: 11, color: color, margin: '4px 0 0' }}>
                       {country.rhythmCount} rhythm{country.rhythmCount > 1 ? 's' : ''}
                     </p>
+                    <p style={{ fontSize: 11, color: '#888', margin: '2px 0 0' }}>
+                      {country.lessonCount} lessons · {country.sourceCount} refs
+                    </p>
                   </div>
                 </Popup>
               </CircleMarker>
@@ -171,7 +184,9 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: getColor(selectedCountry.region) }} />
                 {selectedCountry.name}
               </h4>
-              <p className="text-[10px] text-muted-foreground">{formatRegion(selectedCountry.region)} · {countryPresets.length} rhythms</p>
+              <p className="text-[10px] text-muted-foreground">
+                {formatRegion(selectedCountry.region)} · {countryPresets.length} rhythms · {countryLessons.length} lessons · {countrySources.length} refs
+              </p>
             </div>
             <button
               onClick={() => setSelectedCountry(null)}
@@ -225,6 +240,43 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
               </div>
             ))}
           </div>
+
+          {(countryLessons.length > 0 || countrySources.length > 0) && (
+            <div className="space-y-2 pt-2 border-t border-border">
+              {countryLessons.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Lesson Materials
+                  </p>
+                  {countryLessons.slice(0, 4).map((lesson) => (
+                    <div key={lesson.id} className="text-[10px] text-muted-foreground leading-relaxed">
+                      <span className="text-foreground">{lesson.title}</span>
+                      <span className="text-muted-foreground/70"> · {lesson.fileName}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {countrySources.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Web References
+                  </p>
+                  {countrySources.slice(0, 3).map((source) => (
+                    <a
+                      key={source.id}
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block text-[10px] text-primary hover:underline"
+                    >
+                      {source.title} · {source.publisher}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -232,6 +284,8 @@ const RhythmMap = ({ onLoadPreset }: RhythmMapProps) => {
       <div className="flex items-center gap-4 text-[10px] text-muted-foreground pt-2 border-t border-border">
         <span>{countries.length} countries</span>
         <span>{DRUM_PRESETS.filter(p => p.countryCode !== 'UN').length} rhythms</span>
+        <span>{RHYTHM_LESSONS.length} lessons</span>
+        <span>{RHYTHM_WEB_SOURCES.length} refs</span>
         <span>{new Set(DRUM_PRESETS.map(p => p.region)).size} regions</span>
         <span className="ml-auto text-muted-foreground/50">Data expanding · Contributions welcome</span>
       </div>

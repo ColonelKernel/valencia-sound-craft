@@ -21,6 +21,30 @@ interface BlipbloxConnectorProps {
 
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'sending';
 
+function resizeStepSequence(values: number[], targetLength: number): number[] {
+  if (targetLength <= 0) {
+    return [];
+  }
+
+  if (values.length === 0) {
+    return new Array(targetLength).fill(0);
+  }
+
+  if (values.length === targetLength) {
+    return [...values];
+  }
+
+  const resized = new Array(targetLength).fill(0);
+  const ratio = values.length / targetLength;
+
+  for (let index = 0; index < targetLength; index += 1) {
+    const sourceIndex = Math.min(values.length - 1, Math.floor(index * ratio));
+    resized[index] = values[sourceIndex] ?? 0;
+  }
+
+  return resized;
+}
+
 const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets = [] }: BlipbloxConnectorProps) => {
   const [outputs, setOutputs] = useState<BlipbloxMidiDevice[]>([]);
   const [selectedOutputId, setSelectedOutputId] = useState<string>('');
@@ -134,6 +158,13 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
   const handlePatternChange = useCallback((p: number[], v: number[]) => {
     setPattern(p);
     setVelocityPattern(v);
+  }, []);
+
+  const handleStepModeChange = useCallback((mode: number) => {
+    const nextMode = mode === 32 ? 32 : 16;
+    setStepMode(nextMode);
+    setPattern((current) => resizeStepSequence(current, nextMode));
+    setVelocityPattern((current) => resizeStepSequence(current, nextMode));
   }, []);
 
   const refreshDevices = useCallback(async () => {
@@ -279,7 +310,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
                     {([16, 32] as const).map(m => (
                       <button
                         key={m}
-                        onClick={() => setStepMode(m)}
+                        onClick={() => handleStepModeChange(m)}
                         className={cn(
                           'text-[10px] px-2 py-0.5 rounded',
                           stepMode === m ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground'
@@ -375,7 +406,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
               velocityPattern={velocityPattern}
               onChange={handlePatternChange}
               stepMode={stepMode}
-              onStepModeChange={setStepMode}
+              onStepModeChange={handleStepModeChange}
               currentStep={currentStep}
             />
           </div>

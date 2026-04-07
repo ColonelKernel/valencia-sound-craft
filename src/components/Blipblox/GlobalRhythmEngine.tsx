@@ -11,7 +11,9 @@ import { adaptiveEngine, type RegionId, type VariationType } from './adaptiveEng
 import { generateHarmonic } from './harmonicEngine';
 import { generateMidiFile, downloadMidiFile } from '../DrumMachine/midiExport';
 import { DRUM_PRESETS, type PatternPreset } from '../DrumMachine/drumPresets';
+import { buildCompositeGroove, resamplePatternValues } from '../DrumMachine/rhythmComposition';
 import { lazy, Suspense } from 'react';
+import { IMPORTED_MIDI_LOOP_MAP, IMPORTED_MIDI_LOOP_PACKS } from './midiLoopLibrary';
 
 const BlipbloxConnector = lazy(() => import('./BlipbloxConnector'));
 
@@ -30,6 +32,46 @@ const VARIATION_LABELS: Record<VariationType, string> = {
   'subdivision-swap': '🔄 Subdivision Swap',
 };
 
+const EXTENDED_STEP_OPTIONS = [16, 32, 64, 128] as const;
+type StepResolution = typeof EXTENDED_STEP_OPTIONS[number];
+
+function normalizeStepResolution(steps: number): StepResolution {
+  if (steps >= 128) return 128;
+  if (steps >= 64) return 64;
+  if (steps >= 32) return 32;
+  return 16;
+}
+
+function resizeStepSequence(values: number[], targetLength: number): number[] {
+  if (targetLength <= 0) {
+    return [];
+  }
+
+  if (values.length === 0) {
+    return new Array(targetLength).fill(0);
+  }
+
+  if (values.length === targetLength) {
+    return [...values];
+  }
+
+  const resized = new Array(targetLength).fill(0);
+  const ratio = values.length / targetLength;
+
+  for (let index = 0; index < targetLength; index += 1) {
+    const sourceIndex = Math.min(values.length - 1, Math.floor(index * ratio));
+    resized[index] = values[sourceIndex] ?? 0;
+  }
+
+  return resized;
+}
+
+function inferPhraseBars(stepCount: number, meter: [number, number]): number {
+  const [numerator, denominator] = meter;
+  const stepsPerBar = Math.max(1, Math.round((numerator * 16) / denominator));
+  return Math.max(1, Math.ceil(stepCount / stepsPerBar));
+}
+
 const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: GlobalRhythmEngineProps) => {
   // Pattern state
   const [pattern, setPattern] = useState<number[]>(new Array(16).fill(0));
@@ -37,10 +79,10 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
   const [bpm, setBpm] = useState(120);
   const [playing, setPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
-  const [stepMode, setStepMode] = useState<16 | 32>(16);
+  const [stepMode, setStepMode] = useState<StepResolution>(16);
 
   // Generation controls
-  const [genRegion, setGenRegion] = useState<GenerateOptions['region']>('african');
+  const [genRegion, setGenRegion] = useState<GenerateOptions['region']>('west_africa');
   const [genMeter, setGenMeter] = useState<[number, number]>([4, 4]);
   const [density, setDensity] = useState(0.5);
   const [complexity, setComplexity] = useState(0.5);
@@ -69,6 +111,7 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
   const [showBlipblox, setShowBlipblox] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedImportedLoopId, setSelectedImportedLoopId] = useState('');
 
   // Audio playback
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -83,12 +126,24 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
     const set = new Set(DRUM_PRESETS.filter(p => p.countryCode !== 'UN').map(p => p.country));
     return Array.from(set).sort();
   }, []);
+  const selectedImportedLoop = useMemo(
+    () => IMPORTED_MIDI_LOOP_MAP[selectedImportedLoopId] || null,
+    [selectedImportedLoopId],
+  );
 
   // Sub-styles for current region
   const currentSubStyles = useMemo(() => REGION_SUB_STYLES[genRegion] || [], [genRegion]);
 
-  // Reset sub-style when region changes
-  useEffect(() => { setSubStyle(''); }, [genRegion]);
+  useEffect(() => {
+    if (!subStyle) {
+      return;
+    }
+
+    const stillAvailable = currentSubStyles.some((style) => style.value === subStyle);
+    if (!stillAvailable) {
+      setSubStyle('');
+    }
+  }, [currentSubStyles, subStyle]);
 
   // Sync mode management
   useEffect(() => {
@@ -115,12 +170,12 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
   useEffect(() => {
     if (embeddedPreset) {
       setBpm(embeddedPreset.bpm);
-      const track = embeddedPreset.tracks[0];
-      if (track) {
-        const groove = mapGroove(track.steps);
-        setPattern(groove.midiPattern);
-        setVelocityPattern(groove.velocityPattern);
-      }
+      setGenRegion(embeddedPreset.region);
+      setGenMeter(embeddedPreset.timeSignature);
+      setSubStyle(embeddedPreset.presetKey);
+      const groove = buildCompositeGroove(embeddedPreset);
+      setPattern(groove.midiPattern);
+      setVelocityPattern(groove.velocityPattern);
     }
   }, [embeddedPreset]);
 
@@ -251,6 +306,7 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
     setVelocityPattern(result.velocityPattern);
     adaptiveEngine.reset();
     setLastVariationType(null);
+    setSelectedImportedLoopId('');
   }, [genRegion, genMeter, density, complexity, swingAmount, stepMode, subStyle]);
 
   const handlePatternChange = useCallback((p: number[], v: number[]) => {
@@ -259,35 +315,58 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
     setVelocityPattern(v);
   }, [pattern]);
 
+  const handleStepModeChange = useCallback((mode: number) => {
+    const nextMode = normalizeStepResolution(mode);
+    setStepMode(nextMode);
+    setPattern((current) => resizeStepSequence(current, nextMode));
+    setVelocityPattern((current) => resizeStepSequence(current, nextMode));
+  }, []);
+
   const loadRhythmByCountry = useCallback((country: string) => {
     const rhythms = DRUM_PRESETS.filter(p => p.country === country);
     if (rhythms.length > 0) {
       const preset = rhythms[0];
       setBpm(preset.bpm);
-      const track = preset.tracks[0];
-      if (track) {
-        const groove = mapGroove(track.steps);
-        const resized = groove.midiPattern.length > stepMode
-          ? groove.midiPattern.slice(0, stepMode)
-          : [...groove.midiPattern, ...new Array(Math.max(0, stepMode - groove.midiPattern.length)).fill(0)];
-        const resizedVel = groove.velocityPattern.length > stepMode
-          ? groove.velocityPattern.slice(0, stepMode)
-          : [...groove.velocityPattern, ...new Array(Math.max(0, stepMode - groove.velocityPattern.length)).fill(0)];
-        setPattern(resized);
-        setVelocityPattern(resizedVel);
-      }
+      setGenRegion(preset.region);
+      setGenMeter(preset.timeSignature);
+      setSubStyle(preset.presetKey);
+      const groove = buildCompositeGroove(preset);
+      const resizedRaw = resamplePatternValues(groove.rawPattern, stepMode);
+      const resizedGroove = mapGroove(resizedRaw);
+      setPattern(resizedGroove.midiPattern);
+      setVelocityPattern(resizedGroove.velocityPattern);
+      setSelectedImportedLoopId('');
     }
   }, [stepMode]);
 
+  const loadImportedLoop = useCallback((loopId: string) => {
+    const loop = IMPORTED_MIDI_LOOP_MAP[loopId];
+    if (!loop) {
+      return;
+    }
+
+    const nextMode = normalizeStepResolution(loop.steps);
+    setStepMode(nextMode);
+    setPattern([...loop.midiPattern]);
+    setVelocityPattern([...loop.velocityPattern]);
+    setBpm(loop.bpm);
+    setGenMeter([4, 4]);
+    setGenRegion('general');
+    adaptiveEngine.reset();
+    setLastVariationType(null);
+  }, []);
+
   const handleExportMidi = useCallback(() => {
+    const phraseBars = inferPhraseBars(effectivePattern.length, genMeter);
     const exportTracks = [{
       instrumentId: 'kick',
       steps: effectivePattern.map((s, i) => s === 1 ? (effectiveVelocity[i] / 127) : 0),
       subdivisions: effectivePattern.length,
     }];
-    const data = generateMidiFile(exportTracks, activeBpm, 'general-midi', 0, false, 4, genMeter);
-    downloadMidiFile(data, `rhythm_${genRegion}_${activeBpm}bpm.mid`);
-  }, [effectivePattern, effectiveVelocity, activeBpm, genRegion]);
+    const data = generateMidiFile(exportTracks, activeBpm, 'general-midi', 0, false, phraseBars, genMeter, true);
+    const exportStem = selectedImportedLoop?.id || `rhythm_${genRegion}`;
+    downloadMidiFile(data, `${exportStem}_${activeBpm}bpm.mid`);
+  }, [effectivePattern, effectiveVelocity, activeBpm, genMeter, genRegion, selectedImportedLoop]);
 
   const handleExportJson = useCallback(() => {
     const data = {
@@ -311,8 +390,8 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
   const morphSources = useMemo(() =>
     DRUM_PRESETS.slice(0, 10).map(p => ({
       name: p.name,
-      midiPattern: mapGroove(p.tracks[0]?.steps || []).midiPattern,
-      velocityPattern: mapGroove(p.tracks[0]?.steps || []).velocityPattern,
+      midiPattern: buildCompositeGroove(p).midiPattern,
+      velocityPattern: buildCompositeGroove(p).velocityPattern,
     })), []);
 
   // Sync status indicator
@@ -473,13 +552,42 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
                 value={selectedCountry}
                 onChange={e => {
                   setSelectedCountry(e.target.value);
-                  if (e.target.value) loadRhythmByCountry(e.target.value);
+                  if (e.target.value) {
+                    setSelectedImportedLoopId('');
+                    loadRhythmByCountry(e.target.value);
+                  }
                 }}
                 className="bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground max-w-[140px]"
               >
                 <option value="">From preset…</option>
                 {countries.map(c => (
                   <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-[10px] text-muted-foreground block mb-1">MIDI Loop</label>
+              <select
+                value={selectedImportedLoopId}
+                onChange={e => {
+                  setSelectedImportedLoopId(e.target.value);
+                  setSelectedCountry('');
+                  if (e.target.value) {
+                    loadImportedLoop(e.target.value);
+                  }
+                }}
+                className="bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground max-w-[180px]"
+              >
+                <option value="">Nate Smith loops…</option>
+                {IMPORTED_MIDI_LOOP_PACKS.map((pack) => (
+                  <optgroup key={pack.id} label={`${pack.label} - ${pack.loops.length} loops`}>
+                    {pack.loops.map(loop => (
+                      <option key={loop.id} value={loop.id}>
+                        {loop.sectionLabel} · {loop.bars} bar{loop.bars > 1 ? 's' : ''}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
@@ -584,7 +692,8 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
           velocityPattern={effectiveVelocity}
           onChange={handlePatternChange}
           stepMode={stepMode}
-          onStepModeChange={setStepMode}
+          onStepModeChange={handleStepModeChange}
+          stepOptions={[...EXTENDED_STEP_OPTIONS]}
           currentStep={currentStep}
         />
       </div>
