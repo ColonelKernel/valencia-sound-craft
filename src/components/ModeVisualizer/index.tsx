@@ -27,6 +27,9 @@ import DrumMachine from "../DrumMachine";
 import RhythmMap from "../DrumMachine/RhythmMap";
 import Tonnetz from "./Tonnetz";
 import CircleOfFifths from "./CircleOfFifths";
+import { lazy, Suspense } from "react";
+
+const BlipbloxConnector = lazy(() => import("../Blipblox/BlipbloxConnector"));
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -43,7 +46,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz' | 'circleof5'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz' | 'circleof5' | 'blipblox'>('visualizer');
   const [expanded, setExpanded] = useState(false);
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
@@ -141,6 +144,7 @@ const ModeVisualizer = () => {
                 <option value="rhythmmap">🌍 Rhythm Map</option>
                 <option value="tonnetz">🔷 Tonnetz</option>
                 <option value="circleof5">⭕ Circle of Fifths</option>
+                <option value="blipblox">⚡ Blipblox</option>
               </select>
             </div>
 
@@ -154,6 +158,12 @@ const ModeVisualizer = () => {
               <div>
                 <CircleOfFifths scaleNotes={scaleNotes} root={root} timbre={timbre} />
               </div>
+            )}
+
+            {activeTab === 'blipblox' && (
+              <Suspense fallback={<div className="text-sm text-muted-foreground p-4">Loading Blipblox…</div>}>
+                <BlipbloxConnector root={root} mode={mode} />
+              </Suspense>
             )}
 
             {activeTab === 'reference' && (

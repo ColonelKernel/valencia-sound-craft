@@ -1,8 +1,9 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo, lazy, Suspense } from "react";
 import {
   Play, Square, RotateCcw, Download, ChevronDown, ChevronRight,
   Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter
 } from "lucide-react";
+const BlipbloxConnector = lazy(() => import("../Blipblox/BlipbloxConnector"));
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
 import {
   DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories, getAllRegions, getAllRhythmTypes,
@@ -66,7 +67,7 @@ const DrumMachine = () => {
   });
   const [currentSteps, setCurrentSteps] = useState<Record<string, number>>({});
   const [activePreset, setActivePreset] = useState<string>('Basic Rock');
-  const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | null>('presets');
+  const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | 'blipblox' | null>('presets');
   const [showBrowser, setShowBrowser] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [midiMapping, setMidiMapping] = useState<MidiMapping>('general-midi');
@@ -384,6 +385,7 @@ const DrumMachine = () => {
         {[
           { id: 'advanced' as const, label: 'Sound', icon: <Sliders className="w-3.5 h-3.5" /> },
           { id: 'midi' as const, label: 'MIDI Export', icon: <FileAudio className="w-3.5 h-3.5" /> },
+          { id: 'blipblox' as const, label: 'Blipblox', icon: <Zap className="w-3.5 h-3.5" /> },
         ].map(tab => (
           <button
             key={tab.id}
@@ -563,6 +565,16 @@ const DrumMachine = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Blipblox Panel */}
+      {showPanel === 'blipblox' && (
+        <Suspense fallback={<div className="text-xs text-muted-foreground p-3">Loading Blipblox…</div>}>
+          <BlipbloxConnector
+            embeddedPreset={currentPreset || undefined}
+            presets={DRUM_PRESETS}
+          />
+        </Suspense>
       )}
 
       {/* Step Sequencer Grid */}
