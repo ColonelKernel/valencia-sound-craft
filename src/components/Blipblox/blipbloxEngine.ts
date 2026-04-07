@@ -239,6 +239,10 @@ class BlipbloxEngine {
     this.sendAllNotesOff(this.currentChannel);
   }
 
+  updatePattern(pattern: StepPattern) {
+    this.currentPattern = pattern;
+  }
+
   getIsPlaying() { return this.isPlaying; }
   getCurrentStep() { return this.stepIndex; }
 }
