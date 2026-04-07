@@ -385,6 +385,7 @@ const DrumMachine = () => {
         {[
           { id: 'advanced' as const, label: 'Sound', icon: <Sliders className="w-3.5 h-3.5" /> },
           { id: 'midi' as const, label: 'MIDI Export', icon: <FileAudio className="w-3.5 h-3.5" /> },
+          { id: 'blipblox' as const, label: 'Blipblox', icon: <Zap className="w-3.5 h-3.5" /> },
         ].map(tab => (
           <button
             key={tab.id}
@@ -564,6 +565,16 @@ const DrumMachine = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Blipblox Panel */}
+      {showPanel === 'blipblox' && (
+        <Suspense fallback={<div className="text-xs text-muted-foreground p-3">Loading Blipblox…</div>}>
+          <BlipbloxConnector
+            embeddedPreset={currentPreset || undefined}
+            presets={DRUM_PRESETS}
+          />
+        </Suspense>
       )}
 
       {/* Step Sequencer Grid */}
