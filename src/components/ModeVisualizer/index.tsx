@@ -25,7 +25,7 @@ import KeyboardVisualizer from "./KeyboardVisualizer";
 import MasterScaleReference from "./MasterScaleReference";
 import DrumMachine from "../DrumMachine";
 import RhythmMap from "../DrumMachine/RhythmMap";
-
+import Tonnetz from "./Tonnetz";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
