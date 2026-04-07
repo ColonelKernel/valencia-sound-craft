@@ -6,7 +6,7 @@ import {
 import { DRUM_INSTRUMENTS, getInstrument, type DrumInstrument } from "./drumSoundEngine";
 import {
   DRUM_PRESETS, getPresetsByRegion, filterPresets, getAllCategories, getAllRegions, getAllRhythmTypes,
-  formatPulseGrouping,
+  formatPulseGrouping, validateGroove, getGrooveType,
   type PatternPreset, type TimeFeel, type Complexity, type RhythmType,
 } from "./drumPresets";
 import { generateMidiFile, downloadMidiFile, MIDI_MAPPINGS, type MidiMapping } from "./midiExport";
@@ -75,7 +75,7 @@ const DrumMachine = () => {
   const [groove, setGroove] = useState(50);
 
   // Filters
-  const [filterRegion, setFilterRegion] = useState<string | null>(null);
+  const [filterRegions, setFilterRegions] = useState<string[]>([]);
   const [filterFeel, setFilterFeel] = useState<TimeFeel | null>(null);
   const [filterComplexity, setFilterComplexity] = useState<Complexity | null>(null);
   const [filterRhythmType, setFilterRhythmType] = useState<RhythmType | null>(null);
@@ -107,13 +107,13 @@ const DrumMachine = () => {
   const filteredPresets = useMemo(() => {
     return filterPresets({
       category: selectedCategory,
-      region: filterRegion,
+      regions: filterRegions.length > 0 ? filterRegions : null,
       timeFeel: filterFeel,
       complexity: filterComplexity,
       rhythmType: filterRhythmType,
       search: searchQuery || undefined,
     });
-  }, [selectedCategory, filterRegion, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
+  }, [selectedCategory, filterRegions, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
 
   const hasSolo = tracks.some(t => t.solo);
 
