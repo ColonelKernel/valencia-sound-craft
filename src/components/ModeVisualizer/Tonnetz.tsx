@@ -240,6 +240,7 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
         setCurrentIdx(i);
         const notes = td.notes.map(n => ALL_NOTES[n]);
         playChord(notes, (chordDuration / 1000) * 0.9, timbre);
+        if (midiEnabled && isConnected()) midiSendChord(notes, chordDuration * 0.9, 100, midiChannel);
       }, i * chordDuration));
     });
     ids.push(window.setTimeout(() => {
