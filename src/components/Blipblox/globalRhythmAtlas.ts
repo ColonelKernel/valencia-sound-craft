@@ -3,7 +3,7 @@ export type Rhythm = {
   name: string;
   country: string;
   region: string;
-  continent: string;
+  continent: RhythmContinent;
   tradition: string;
   meter: string;
   subdivision: number[];

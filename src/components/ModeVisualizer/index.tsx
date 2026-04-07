@@ -24,8 +24,6 @@ import ChordProgressionBuilder from "./ChordProgressionBuilder";
 import KeyboardVisualizer from "./KeyboardVisualizer";
 import MasterScaleReference from "./MasterScaleReference";
 import DrumMachine from "../DrumMachine";
-import RhythmMap from "../DrumMachine/RhythmMap";
-import type { PatternPreset } from "../DrumMachine/drumPresets";
 import Tonnetz from "./Tonnetz";
 import CircleOfFifths from "./CircleOfFifths";
 import { lazy, Suspense } from "react";
@@ -47,14 +45,13 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz' | 'circleof5' | 'blipblox'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz' | 'circleof5'>('visualizer');
   const [expanded, setExpanded] = useState(false);
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
   const [otherInstrument, setOtherInstrument] = useState(FRETTED_INSTRUMENTS[0].key);
   const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
-  const [selectedRhythmPreset, setSelectedRhythmPreset] = useState<PatternPreset | null>(null);
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
@@ -100,14 +97,6 @@ const ModeVisualizer = () => {
     playScale([...scaleNotes, scaleNotes[0]], 200, timbre);
   };
 
-  const clonePreset = (preset: PatternPreset): PatternPreset => ({
-    ...preset,
-    tracks: preset.tracks.map(track => ({
-      ...track,
-      steps: [...track.steps],
-    })),
-  });
-
   // Clear selected chord when mode/root changes
   const handleRootChange = (r: string) => { setRoot(r); setSelectedChord(null); };
   const handleModeChange = (m: string) => { setMode(m); setSelectedChord(null); };
@@ -151,10 +140,9 @@ const ModeVisualizer = () => {
                 <option value="reference">📖 Scale Reference</option>
                 <option value="moderef">🎼 Mode Reference</option>
                 <option value="polyrhythm">🥁 Rhythm Engine</option>
-                <option value="rhythmmap">🌍 Rhythm Atlas</option>
+                <option value="rhythmmap">🌍 Rhythm Atlas Map</option>
                 <option value="tonnetz">🔷 Tonnetz</option>
                 <option value="circleof5">⭕ Circle of Fifths</option>
-                <option value="blipblox">📍 Rhythm Map (Classic)</option>
               </select>
             </div>
 
@@ -179,15 +167,6 @@ const ModeVisualizer = () => {
               </div>
             )}
 
-            {activeTab === 'blipblox' && (
-              <div>
-                <RhythmMap onLoadPreset={(preset) => {
-                  setSelectedRhythmPreset(clonePreset(preset));
-                  setActiveTab('polyrhythm');
-                }} />
-              </div>
-            )}
-
             {activeTab === 'reference' && (
               <div>
                 <MasterScaleReference />
@@ -196,13 +175,13 @@ const ModeVisualizer = () => {
 
             {activeTab === 'polyrhythm' && (
               <div>
-                <DrumMachine embeddedPreset={selectedRhythmPreset || undefined} />
+                <DrumMachine />
               </div>
             )}
 
             {activeTab === 'rhythmmap' && (
-              <Suspense fallback={<div className="text-sm text-muted-foreground p-4">Loading Rhythm Atlas…</div>}>
-                <GlobalRhythmEngine root={root} mode={mode} embeddedPreset={selectedRhythmPreset || undefined} />
+              <Suspense fallback={<div className="text-sm text-muted-foreground p-4">Loading Rhythm Atlas Map…</div>}>
+                <GlobalRhythmEngine root={root} mode={mode} />
               </Suspense>
             )}
 

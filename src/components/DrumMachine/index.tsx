@@ -29,6 +29,14 @@ interface TrackState {
   solo: boolean;
 }
 
+type BrowserSort = "country" | "name" | "tempo" | "complexity";
+
+const COMPLEXITY_SORT_ORDER: Record<Complexity, number> = {
+  beginner: 0,
+  intermediate: 1,
+  advanced: 2,
+};
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 let _uid = 0;
@@ -93,6 +101,7 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
   const [filterComplexity, setFilterComplexity] = useState<Complexity | null>(null);
   const [filterRhythmType, setFilterRhythmType] = useState<RhythmType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [browserSort, setBrowserSort] = useState<BrowserSort>("country");
   const [showKonnakol, setShowKonnakol] = useState(false);
 
   // Audio refs
@@ -125,6 +134,72 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
       search: searchQuery || undefined,
     });
   }, [selectedCategory, selectedRegion, filterFeel, filterComplexity, filterRhythmType, searchQuery]);
+  const sortedPresets = useMemo(() => {
+    const presets = [...filteredPresets];
+
+    presets.sort((left, right) => {
+      if (browserSort === "tempo" && left.bpm !== right.bpm) {
+        return left.bpm - right.bpm;
+      }
+
+      if (browserSort === "complexity") {
+        const complexityDelta =
+          COMPLEXITY_SORT_ORDER[left.complexity] - COMPLEXITY_SORT_ORDER[right.complexity];
+
+        if (complexityDelta !== 0) {
+          return complexityDelta;
+        }
+      }
+
+      if (browserSort === "name") {
+        const nameDelta = left.name.localeCompare(right.name);
+
+        if (nameDelta !== 0) {
+          return nameDelta;
+        }
+      }
+
+      const countryDelta = left.country.localeCompare(right.country);
+
+      if (countryDelta !== 0) {
+        return countryDelta;
+      }
+
+      const nameDelta = left.name.localeCompare(right.name);
+
+      if (nameDelta !== 0) {
+        return nameDelta;
+      }
+
+      return left.bpm - right.bpm;
+    });
+
+    return presets;
+  }, [browserSort, filteredPresets]);
+  const groupedBrowserPresets = useMemo(() => {
+    const grouped = sortedPresets.reduce<Record<string, PatternPreset[]>>((accumulator, preset) => {
+      const country = preset.country || preset.regionLabel;
+
+      if (!accumulator[country]) {
+        accumulator[country] = [];
+      }
+
+      accumulator[country].push(preset);
+      return accumulator;
+    }, {});
+
+    return Object.entries(grouped).sort(([leftCountry], [rightCountry]) => {
+      if (leftCountry === currentPreset?.country && rightCountry !== currentPreset?.country) {
+        return -1;
+      }
+
+      if (rightCountry === currentPreset?.country && leftCountry !== currentPreset?.country) {
+        return 1;
+      }
+
+      return leftCountry.localeCompare(rightCountry);
+    });
+  }, [currentPreset?.country, sortedPresets]);
 
   const presetById = useMemo(() => {
     return new Map(DRUM_PRESETS.map((preset) => [preset.id, preset]));
@@ -796,18 +871,16 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search rhythms by name, country, or style…"
+            placeholder="Search by rhythm, country, source, or tag…"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
-        {/* Filters row */}
+        {/* Region row */}
         <div className="flex flex-wrap items-center gap-2">
           <Filter size={12} className="text-muted-foreground shrink-0" />
-          
-          {/* Region chips */}
           <div className="flex flex-wrap gap-1">
             {regions.map(r => {
               const isActive = selectedRegion === r;
@@ -823,7 +896,20 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
               );
             })}
           </div>
-          
+        </div>
+
+        {/* Compact filters */}
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+          <select
+            value={selectedCategory || ''}
+            onChange={e => setSelectedCategory(e.target.value || null)}
+            className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
+          >
+            <option value="">All Countries</option>
+            {categories.map(country => (
+              <option key={country} value={country}>{country}</option>
+            ))}
+          </select>
           <select
             value={filterFeel || ''}
             onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
@@ -858,6 +944,23 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
           </select>
+          <select
+            value={browserSort}
+            onChange={e => setBrowserSort(e.target.value as BrowserSort)}
+            className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
+          >
+            <option value="country">Sort: Country</option>
+            <option value="name">Sort: Name</option>
+            <option value="tempo">Sort: Tempo</option>
+            <option value="complexity">Sort: Complexity</option>
+          </select>
+          <div className="flex items-center justify-between rounded-md border border-border bg-card px-2.5 py-1.5 text-[10px] text-muted-foreground sm:col-span-2 xl:col-span-1">
+            <span>{groupedBrowserPresets.length} countries</span>
+            <span>{sortedPresets.length} patterns</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
           {(filterFeel || filterRhythmType || filterComplexity || searchQuery || selectedCategory) && (
             <button
               onClick={() => {
@@ -874,65 +977,78 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
           )}
         </div>
 
-        {/* Category chips */}
-        <div className="flex flex-wrap gap-1.5">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`text-xs px-3 py-1 rounded-full transition-colors font-medium ${
-              !selectedCategory ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
-            }`}
-          >All</button>
-          {categories.map(r => (
-            <button key={r}
-              onClick={() => setSelectedCategory(selectedCategory === r ? null : r)}
-              className={`text-xs px-3 py-1 rounded-full transition-colors ${
-                selectedCategory === r ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
-              }`}
-            >{r}</button>
-          ))}
-        </div>
-
         {/* Preset list */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
-          {filteredPresets.map(p => {
-            const grooveType = getGrooveType(p);
-            const validation = validateGroove(p);
-            return (
-              <button key={p.id}
-                onClick={() => applyPresetSelection(p)}
-                className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
-                  currentPresetId === p.id
-                    ? 'border-primary bg-primary/10 shadow-sm'
-                    : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
-                } ${!validation.valid ? 'ring-1 ring-destructive/30' : ''}`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-semibold truncate">{p.name}</span>
-                  {!validation.valid && (
-                    <span className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive" title={validation.errors.join(', ')}>⚠</span>
-                  )}
+        <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+          {groupedBrowserPresets.length === 0 && (
+            <div className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-xs text-muted-foreground">
+              No rhythms match the current filters.
+            </div>
+          )}
+
+          {groupedBrowserPresets.map(([country, presets]) => (
+            <section key={country} className="rounded-lg border border-border/60 bg-card/70">
+              <div className="flex items-center justify-between gap-3 border-b border-border/60 px-3 py-2">
+                <div>
+                  <p className="text-xs font-semibold text-foreground">{country}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {formatRegion(presets[0].region)} · {presets.length} pattern{presets.length === 1 ? "" : "s"}
+                  </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-1 mt-1">
-                  <span className="text-[10px] text-muted-foreground">{formatRegion(p.region)}</span>
-                  <span className="text-muted-foreground/30">·</span>
-                  <span className="text-[10px] text-muted-foreground">{p.country}</span>
-                  <span className="text-muted-foreground/30">·</span>
-                  <span className="text-[10px] text-muted-foreground">{p.timeSignature[0]}/{p.timeSignature[1]}</span>
-                  <span className="text-muted-foreground/30">·</span>
-                  <span className="text-[10px] text-muted-foreground">{p.bpm} BPM</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-1 mt-0.5">
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{grooveType}</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{p.timeFeel}</span>
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
-                    p.complexity === 'beginner' ? 'bg-emerald-500/10 text-emerald-400' :
-                    p.complexity === 'intermediate' ? 'bg-amber-500/10 text-amber-400' :
-                    'bg-rose-500/10 text-rose-400'
-                  }`}>{p.complexity}</span>
-                </div>
-              </button>
-            );
-          })}
+                {currentPreset?.country === country && (
+                  <span className="rounded-full bg-primary/10 px-2 py-1 text-[9px] font-medium text-primary">
+                    Active Country
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 gap-1.5 p-2 sm:grid-cols-2 xl:grid-cols-3">
+                {presets.map((p) => {
+                  const grooveType = getGrooveType(p);
+                  const validation = validateGroove(p);
+
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => applyPresetSelection(p)}
+                      className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
+                        currentPresetId === p.id
+                          ? 'border-primary bg-primary/10 shadow-sm'
+                          : 'border-border/50 hover:border-foreground/20 hover:bg-accent'
+                      } ${!validation.valid ? 'ring-1 ring-destructive/30' : ''}`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-semibold truncate">{p.name}</span>
+                        {!validation.valid && (
+                          <span
+                            className="text-[8px] px-1 py-0.5 rounded bg-destructive/10 text-destructive"
+                            title={validation.errors.join(', ')}
+                          >
+                            ⚠
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1 mt-1">
+                        <span className="text-[10px] text-muted-foreground">{p.timeSignature[0]}/{p.timeSignature[1]}</span>
+                        <span className="text-muted-foreground/30">·</span>
+                        <span className="text-[10px] text-muted-foreground">{p.bpm} BPM</span>
+                        <span className="text-muted-foreground/30">·</span>
+                        <span className="text-[10px] text-muted-foreground">{formatRegion(p.region)}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{grooveType}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{p.timeFeel}</span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                          p.complexity === 'beginner' ? 'bg-emerald-500/10 text-emerald-400' :
+                          p.complexity === 'intermediate' ? 'bg-amber-500/10 text-amber-400' :
+                          'bg-rose-500/10 text-rose-400'
+                        }`}>{p.complexity}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </div>
 
         {/* Active preset info */}
