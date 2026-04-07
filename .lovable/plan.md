@@ -1,77 +1,88 @@
 
 
-## Blipblox Integration Engine — Implementation Plan
+## Global Rhythm Engine + AI Mode — Enhancement Plan
 
-### Overview
-Add a modular Blipblox MIDI integration that connects to MyTracks, SK2, and After Dark devices via Web MIDI (with SysEx). It translates existing rhythm presets and harmony data into device-specific sequences. Available both as a standalone tool tab and embedded in the Rhythm Engine.
+### What We're Building
+
+Enhance the Blipblox integration with three new capabilities:
+
+1. **AI Rhythm Generation Engine** — rule-based generative system that creates rhythms from cultural parameters (region, density, complexity, swing)
+2. **Adaptive Groove Engine** — reacts to user edits in real-time, adding ghost notes, syncopation, and variations
+3. **Integrated GlobalRhythmEngine component** — unified UI combining the sequencer, generation controls, adaptive mode, region selector, and Blipblox hardware output
 
 ### Architecture
 
 ```text
 src/components/Blipblox/
-├── blipbloxEngine.ts        ← Core MIDI engine (connect, clock, pattern send, SysEx)
-├── rhythmTranslator.ts      ← Meter normalization, groove mapping, polyrhythm splitting
-├── deviceProfiles.ts         ← Device-specific logic (MyTracks/SK2/AfterDark)
-├── BlipbloxConnector.tsx     ← Main UI component
-├── StepSequencer.tsx         ← Visual step grid with velocity
-└── PatternMorpher.tsx        ← Morph/fuse UI between two patterns
+├── (existing files unchanged)
+├── rhythmGenerator.ts       ← Rule-based rhythm generation by region
+├── adaptiveEngine.ts        ← Tracks user behavior, suggests variations
+├── harmonicEngine.ts        ← Maps rhythm to pitched MIDI (for SK2/After Dark)
+└── GlobalRhythmEngine.tsx   ← Unified UI component
 ```
 
 ### File Changes
 
-**1. `src/components/Blipblox/blipbloxEngine.ts`** — Core engine class
-- Wraps existing `webMidiOut.ts` patterns but requests SysEx access (`sysex: true`)
-- Device detection with name-matching for Blipblox variants
-- MIDI clock send/stop (0xF8 / 0xFC) synced to BPM
-- `sendPattern()` — loops a step pattern with velocity + microtiming on a given channel
-- `sendSysex()` — raw SysEx passthrough for preset switching / .syx loading
-- `sendCC()` — for After Dark modulation triggers
-- Internal scheduler using `AudioContext` timing (not `setInterval`) for sub-ms accuracy
+**1. `src/components/Blipblox/rhythmGenerator.ts`** — New file
 
-**2. `src/components/Blipblox/deviceProfiles.ts`** — Device-specific translators
-- `MyTracksProfile`: Converts rhythm → 16/32 step note-on sequences (drum MIDI notes)
-- `SK2Profile`: Maps rhythm + scale/key → melodic arpeggiated patterns; accepts chord progression injection from ChordProgressionBuilder
-- `AfterDarkProfile`: Maps rhythm accents → MIDI CC messages for modulation/expression; supports evolving pattern generation
+Rule-based generator with region-specific logic:
+- `generateRhythm(options)` — takes `{ region, meter, density (0-1), complexity (0-1), swing (0-1) }` and returns a `{ midiPattern, velocityPattern, subdivision }` 
+- Region rules:
+  - **African**: 3:2 polyrhythmic layering, interlocking patterns
+  - **Balkan**: Asymmetric groupings (2+2+3, 3+2+2), irregular accents
+  - **Flamenco**: 12-beat compas cycle, accents on 3/6/8/10/12
+  - **Indian**: Subdivision logic (ta-ki-ta, ta-ka-di-mi), tala-aware
+  - **Latin**: Clave-based, son/rumba structures
+  - **General**: Density-weighted step placement with accent shaping
+- Output is a valid pattern compatible with existing `StepPattern` type
 
-**3. `src/components/Blipblox/rhythmTranslator.ts`** — Translation layer
-- `normalizeMeter()`: Converts any meter to step grid (7/8→14, 6/8→12, 12-beat→16 approx)
-- `mapGroove()`: Accents→velocity (100-120 high, 30-60 ghost), subdivision→step placement, optional swing/humanize
-- `splitPolyrhythm()`: Splits polyrhythmic layers into separate MIDI channels (3:2, 4:3, etc.)
-- `morphPatterns()` / `fuseRhythms()`: Cross-blend two patterns
+**2. `src/components/Blipblox/adaptiveEngine.ts`** — New file
 
-**4. `src/components/Blipblox/BlipbloxConnector.tsx`** — Main UI
-- Device selector dropdown (auto-populated from Web MIDI outputs)
-- Device type picker (MyTracks / SK2 / After Dark)
-- MIDI channel selector (1-16)
-- Connection status indicator (disconnected/connected/sending)
-- BPM control (synced with global BPM from DrumMachine)
-- Pattern preview (mini step sequencer view, read-only)
-- "Send to Device" / "Start Loop" / "Stop" buttons
-- .syx file upload for SysEx presets
-- Hover info cards for selected rhythms (origin, meter, groove breakdown)
+Tracks user interaction and applies intelligent variations:
+- `AdaptiveEngine` class with:
+  - `trackEdit(oldPattern, newPattern)` — records density/accent changes
+  - `suggestVariation(pattern, velocity)` — returns modified pattern based on behavior
+  - Rules: if density increases → add ghost notes; if tempo slows → increase subdivision complexity; if pattern repeated 4+ times → introduce syncopation
+  - `applyVariation(pattern, type)` — type = 'ghost-notes' | 'syncopation' | 'accent-shift' | 'fill'
 
-**5. `src/components/Blipblox/StepSequencer.tsx`** — Editable step grid
-- 16/32 step toggle
-- Click to toggle steps, drag for velocity
-- Visual velocity gradient per step
+**3. `src/components/Blipblox/harmonicEngine.ts`** — New file
 
-**6. `src/components/Blipblox/PatternMorpher.tsx`** — Pattern blend UI
-- Select two rhythms, blend slider, preview result
+Links rhythm to pitched output for SK2/After Dark:
+- `generateHarmonic(pattern, velocity, key, mode)` — maps strong beats to chord tones, weak beats to passing tones, dense patterns to arpeggiation
+- Uses existing `SCALE_INTERVALS` from `deviceProfiles.ts`
+- Returns `{ notes: number[], velocities: number[] }` for MIDI output
 
-**7. Integrate into existing tools:**
+**4. `src/components/Blipblox/GlobalRhythmEngine.tsx`** — New file
 
-- **`src/components/ModeVisualizer/index.tsx`**: Add `'blipblox'` to `activeTab` union; add tab entry in dropdown; render `<BlipbloxConnector />` with current `root`/`mode` passed for SK2 scale awareness
-- **`src/components/DrumMachine/index.tsx`**: Add "Send to Blipblox" button in the MIDI panel that passes the current preset/tracks to BlipbloxConnector as an embedded mini-panel
+Unified component that combines everything:
+- **Region selector** (dropdown with all regions from drumPresets)
+- **Generate button** + density/complexity/swing sliders
+- **Integrated StepSequencer** (live-editable while playing)
+- **Morph slider** between current pattern and a secondary/generated one
+- **Adaptive Mode toggle** — when on, pattern auto-evolves after each loop
+- **Country-click hook**: `loadRhythmByCountry(country)` — pulls matching presets from `DRUM_PRESETS`
+- **Export section**: MIDI export button (reuses existing `generateMidiFile`), JSON export
+- **Blipblox send** section — embeds connection controls when a device is available
+- Wraps the existing `BlipbloxConnector` for hardware output
 
-### Key Technical Decisions
+**5. Integration updates:**
 
-- **Reuse `webMidiOut.ts` patterns** but create a separate engine instance since Blipblox needs SysEx access and device-specific logic
-- **AudioContext-based scheduling** (like existing DrumMachine scheduler) instead of `setInterval` for accurate timing
-- **Lazy loading**: `BlipbloxConnector` dynamically imported to avoid loading MIDI code on every page visit
-- **Pattern caching**: LRU cache (Map with max 20 entries) for recently translated patterns
-- **No backend needed** — all MIDI communication is client-side via Web MIDI API
+- **`src/components/ModeVisualizer/index.tsx`**: Replace the Blipblox tab render — show `<GlobalRhythmEngine />` instead of bare `<BlipbloxConnector />`, passing `root` and `mode`
+- **`src/components/DrumMachine/index.tsx`**: In the blipblox panel, render `<GlobalRhythmEngine embeddedPreset={currentPreset} />` instead of bare `<BlipbloxConnector />`
 
-### Validation
-- `validateGroove()` from `drumPresets.ts` reused before sending any pattern
-- Additional check: ensure step count matches device's supported grid sizes
+**6. `src/components/Blipblox/blipbloxEngine.ts`** — Minor update
+
+Add `updatePattern(pattern)` method that hot-swaps the current pattern mid-loop without restarting (for live editing and adaptive mode):
+```typescript
+updatePattern(pattern: StepPattern) {
+  this.currentPattern = pattern; // takes effect on next scheduler tick
+}
+```
+
+### Key Design Decisions
+
+- **Rule-based, not ML** — all generation runs client-side in <50ms with deterministic seeded randomness
+- **Live editing** — pattern updates propagate to engine mid-loop via `updatePattern()`
+- **Reuses existing infrastructure** — `DRUM_PRESETS` for country/region data, `generateMidiFile` for export, `blipbloxEngine` for playback
+- **No new dependencies** needed
 
