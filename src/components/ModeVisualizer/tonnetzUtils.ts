@@ -267,14 +267,16 @@ export function findGridTriads(nodes: TonnetzNode[]): GridTriad[] {
     const upLeftKey = n.r % 2 === 0 ? `${n.q - 1},${n.r + 1}` : `${n.q},${n.r + 1}`;
     const upLeft = nodeMap.get(upLeftKey);
     if (up && upLeft) {
-      const rootIdx = n.noteIdx;
-      const idx1 = upLeft.noteIdx;
-      const idx2 = up.noteIdx;
-      const i1 = ((idx1 - rootIdx) % 12 + 12) % 12;
-      const i2 = ((idx2 - rootIdx) % 12 + 12) % 12;
+      // Downward-pointing triangle: upLeft is the root of the minor triad
+      // upLeft → n = +3 (minor 3rd), upLeft → up = +7 (perfect 5th)
+      const rootIdx = upLeft.noteIdx;
+      const thirdIdx = n.noteIdx;
+      const fifthIdx = up.noteIdx;
+      const i1 = ((thirdIdx - rootIdx) % 12 + 12) % 12;
+      const i2 = ((fifthIdx - rootIdx) % 12 + 12) % 12;
 
-      if (i1 === 3 && i2 === 4) {
-        triads.push({ notes: [rootIdx, idx1, idx2], nodes: [n, upLeft, up], type: 'minor', root: rootIdx, label: `${ALL_NOTES[rootIdx]}m` });
+      if (i1 === 3 && i2 === 7) {
+        triads.push({ notes: [rootIdx, thirdIdx, fifthIdx], nodes: [upLeft, n, up], type: 'minor', root: rootIdx, label: `${ALL_NOTES[rootIdx]}m` });
       }
     }
   }
