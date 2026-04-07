@@ -140,6 +140,7 @@ const ModeVisualizer = () => {
                 <option value="polyrhythm">🥁 Rhythm Engine</option>
                 <option value="rhythmmap">🌍 Rhythm Map</option>
                 <option value="tonnetz">🔷 Tonnetz</option>
+                <option value="circleof5">⭕ Circle of Fifths</option>
               </select>
             </div>
 
