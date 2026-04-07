@@ -1,14 +1,19 @@
 // Rule-based Rhythm Generation Engine
 // Generates culturally-informed rhythms from parameters
 
+export type RegionType = 'african' | 'balkan' | 'flamenco' | 'indian' | 'latin' | 'general';
+export type FlamencoSubStyle = 'buleria' | 'solea';
+export type LatinClaveType = '2-3' | '3-2' | 'rumba';
+
 export interface GenerateOptions {
-  region: 'african' | 'balkan' | 'flamenco' | 'indian' | 'latin' | 'general';
-  meter: [number, number]; // e.g. [4,4], [7,8], [6,8]
-  density: number;    // 0-1
-  complexity: number; // 0-1
-  swing: number;      // 0-1
-  steps?: number;     // override step count (default: derived from meter)
-  seed?: number;      // for reproducibility
+  region: RegionType;
+  meter: [number, number];
+  density: number;
+  complexity: number;
+  swing: number;
+  steps?: number;
+  seed?: number;
+  subStyle?: string; // e.g. 'buleria', 'solea', '2-3', '3-2', 'rumba', 'teentaal', 'jhaptaal', 'rupak'
 }
 
 export interface GeneratedRhythm {
@@ -36,33 +41,63 @@ function getStepCount(meter: [number, number], override?: number): number {
   return num * 4;
 }
 
+// Euclidean rhythm distribution — E(k, n)
+function euclidean(hits: number, steps: number): number[] {
+  const pattern = new Array(steps).fill(0);
+  if (hits <= 0) return pattern;
+  if (hits >= steps) return new Array(steps).fill(1);
+  for (let i = 0; i < hits; i++) {
+    pattern[Math.floor((i * steps) / hits)] = 1;
+  }
+  return pattern;
+}
+
 // ─── Region-Specific Generators ──────────────────────────────────────────
 
 function generateAfrican(steps: number, density: number, complexity: number, rng: SeededRandom): { midi: number[]; vel: number[] } {
   const midi = new Array(steps).fill(0);
   const vel = new Array(steps).fill(0);
 
-  // 3:2 polyrhythmic base
-  const layer1Interval = Math.max(2, Math.round(steps / 4));
-  const layer2Interval = Math.max(3, Math.round(steps / 3));
+  // Layer 1: 3:2 polyrhythm using Euclidean distribution
+  const layer1 = euclidean(3, Math.min(steps, 8));
+  const layer2 = euclidean(2, Math.min(steps, 8));
 
-  // Layer 1: main pulse
-  for (let i = 0; i < steps; i += layer1Interval) {
-    midi[i] = 1;
-    vel[i] = 100 + Math.round(rng.next() * 27);
+  // Apply layer 1 across full pattern
+  for (let i = 0; i < steps; i++) {
+    const l1idx = i % layer1.length;
+    if (layer1[l1idx] === 1) {
+      midi[i] = 1;
+      vel[i] = 100 + Math.round(rng.next() * 27);
+    }
   }
 
-  // Layer 2: interlocking
-  for (let i = Math.round(layer2Interval / 2); i < steps; i += layer2Interval) {
-    if (midi[i] === 0 || rng.next() < 0.3) {
+  // Layer 2: interlocking pattern offset by half
+  const offset = Math.floor(layer2.length / 2);
+  for (let i = 0; i < steps; i++) {
+    const l2idx = (i + offset) % layer2.length;
+    if (layer2[l2idx] === 1 && (midi[i] === 0 || rng.next() < 0.3)) {
       midi[i] = 1;
       vel[i] = 80 + Math.round(rng.next() * 20);
     }
   }
 
-  // Add density-based fills
+  // Call-and-response: second half echoes first with offset
+  if (complexity > 0.4 && steps >= 8) {
+    const half = Math.floor(steps / 2);
+    const responseOffset = 1 + Math.floor(rng.next() * 2);
+    for (let i = 0; i < half; i++) {
+      const src = i;
+      const dst = half + ((i + responseOffset) % half);
+      if (midi[src] === 1 && midi[dst] === 0 && rng.next() < complexity * 0.5) {
+        midi[dst] = 1;
+        vel[dst] = Math.max(40, vel[src] - 15 - Math.round(rng.next() * 10));
+      }
+    }
+  }
+
+  // Density-based fills
   for (let i = 0; i < steps; i++) {
-    if (midi[i] === 0 && rng.next() < density * 0.6) {
+    if (midi[i] === 0 && rng.next() < density * 0.5) {
       midi[i] = 1;
       vel[i] = complexity > 0.5 ? 40 + Math.round(rng.next() * 30) : 60 + Math.round(rng.next() * 20);
     }
@@ -71,14 +106,31 @@ function generateAfrican(steps: number, density: number, complexity: number, rng
   return { midi, vel };
 }
 
-function generateBalkan(steps: number, density: number, complexity: number, rng: SeededRandom): { midi: number[]; vel: number[] } {
+// Balkan grouping presets by meter
+const BALKAN_GROUPINGS: Record<string, number[][]> = {
+  '5/8':  [[2, 3], [3, 2]],
+  '7/8':  [[2, 2, 3], [3, 2, 2], [2, 3, 2]],
+  '9/8':  [[2, 2, 2, 3], [3, 2, 2, 2], [2, 3, 2, 2]],
+  '11/8': [[2, 2, 3, 2, 2], [3, 2, 2, 2, 2], [2, 3, 2, 2, 2]],
+};
+
+function generateBalkan(steps: number, density: number, complexity: number, rng: SeededRandom, meter?: [number, number]): { midi: number[]; vel: number[] } {
   const midi = new Array(steps).fill(0);
   const vel = new Array(steps).fill(0);
 
-  // Asymmetric groupings
-  const groupings = steps <= 14
-    ? [2, 2, 3, 2, 2, 3] // 7/8-style
-    : [3, 2, 2, 3, 2, 2, 2]; // generic asymmetric
+  // Select grouping based on meter
+  const meterKey = meter ? `${meter[0]}/${meter[1]}` : '';
+  const groupOptions = BALKAN_GROUPINGS[meterKey];
+  let groupings: number[];
+
+  if (groupOptions && groupOptions.length > 0) {
+    // Pick a grouping variant based on complexity
+    const idx = Math.min(groupOptions.length - 1, Math.floor(complexity * groupOptions.length));
+    groupings = groupOptions[idx];
+  } else {
+    // Fallback asymmetric groupings
+    groupings = steps <= 14 ? [2, 2, 3, 2, 2, 3] : [3, 2, 2, 3, 2, 2, 2];
+  }
 
   let pos = 0;
   for (const group of groupings) {
@@ -87,7 +139,7 @@ function generateBalkan(steps: number, density: number, complexity: number, rng:
     midi[pos] = 1;
     vel[pos] = 110 + Math.round(rng.next() * 17);
 
-    // Add subdivisions based on density
+    // Inner subdivisions based on density
     for (let j = 1; j < group && pos + j < steps; j++) {
       if (rng.next() < density * 0.5) {
         midi[pos + j] = 1;
@@ -97,26 +149,41 @@ function generateBalkan(steps: number, density: number, complexity: number, rng:
     pos += group;
   }
 
+  // Fill remaining steps if groupings didn't cover all
+  while (pos < steps) {
+    if (rng.next() < density * 0.3) {
+      midi[pos] = 1;
+      vel[pos] = 45 + Math.round(rng.next() * 25);
+    }
+    pos++;
+  }
+
   return { midi, vel };
 }
 
-function generateFlamenco(steps: number, density: number, _complexity: number, rng: SeededRandom): { midi: number[]; vel: number[] } {
+// Flamenco compás patterns
+const FLAMENCO_ACCENTS: Record<string, { accents: number[]; density_mod: number }> = {
+  buleria: { accents: [2, 5, 7, 9, 11], density_mod: 1.0 },
+  solea:   { accents: [2, 5, 7, 9, 11], density_mod: 0.6 },
+};
+
+function generateFlamenco(steps: number, density: number, _complexity: number, rng: SeededRandom, subStyle?: string): { midi: number[]; vel: number[] } {
   const midi = new Array(steps).fill(0);
   const vel = new Array(steps).fill(0);
 
-  // 12-beat compás accents: 3, 6, 8, 10, 12 (0-indexed: 2, 5, 7, 9, 11)
-  const compasAccents = [2, 5, 7, 9, 11];
+  const style = FLAMENCO_ACCENTS[subStyle || 'buleria'] || FLAMENCO_ACCENTS.buleria;
   const ratio = steps / 12;
 
-  for (const accent of compasAccents) {
+  for (const accent of style.accents) {
     const idx = Math.min(steps - 1, Math.round(accent * ratio));
     midi[idx] = 1;
     vel[idx] = 110 + Math.round(rng.next() * 17);
   }
 
-  // Fill based on density
+  // Fill based on density (modulated by sub-style)
+  const effectiveDensity = density * style.density_mod;
   for (let i = 0; i < steps; i++) {
-    if (midi[i] === 0 && rng.next() < density * 0.4) {
+    if (midi[i] === 0 && rng.next() < effectiveDensity * 0.4) {
       midi[i] = 1;
       vel[i] = 60 + Math.round(rng.next() * 25);
     }
@@ -125,27 +192,63 @@ function generateFlamenco(steps: number, density: number, _complexity: number, r
   return { midi, vel };
 }
 
-function generateIndian(steps: number, density: number, complexity: number, rng: SeededRandom): { midi: number[]; vel: number[] } {
+// Indian tala structures
+const TALA_STRUCTURES: Record<string, number[]> = {
+  teentaal: [4, 4, 4, 4],      // 16 beats
+  jhaptaal: [2, 3, 2, 3],      // 10 beats
+  rupak:    [3, 2, 2],          // 7 beats
+};
+
+function generateIndian(steps: number, density: number, complexity: number, rng: SeededRandom, subStyle?: string): { midi: number[]; vel: number[] } {
   const midi = new Array(steps).fill(0);
   const vel = new Array(steps).fill(0);
 
-  // Subdivision patterns: ta-ki-ta (3), ta-ka-di-mi (4), ta-din-gi-na-tom (5)
-  const subdivs = complexity > 0.7 ? 5 : complexity > 0.4 ? 4 : 3;
-  const groupSize = Math.max(2, Math.round(steps / subdivs));
+  const tala = TALA_STRUCTURES[subStyle || ''] || null;
 
-  for (let g = 0; g < subdivs; g++) {
-    const start = g * groupSize;
-    if (start >= steps) break;
+  if (tala) {
+    // Use tala structure
+    let pos = 0;
+    const totalBeats = tala.reduce((a, b) => a + b, 0);
+    const scale = steps / totalBeats;
 
-    // Sam (first beat) is strongest
-    midi[start] = 1;
-    vel[start] = g === 0 ? 127 : 100 + Math.round(rng.next() * 20);
+    for (let vibhag = 0; vibhag < tala.length; vibhag++) {
+      const beatCount = tala[vibhag];
+      const startStep = Math.round(pos * scale);
 
-    // Inner subdivisions
-    for (let j = 1; j < groupSize && start + j < steps; j++) {
-      if (rng.next() < density * 0.5) {
-        midi[start + j] = 1;
-        vel[start + j] = 40 + Math.round(rng.next() * 40);
+      // Sam (first beat of first vibhag) is strongest
+      if (startStep < steps) {
+        midi[startStep] = 1;
+        vel[startStep] = vibhag === 0 ? 127 : 100 + Math.round(rng.next() * 20);
+      }
+
+      // Subdivisions within vibhag
+      for (let b = 1; b < beatCount; b++) {
+        const subStep = Math.round((pos + b) * scale);
+        if (subStep < steps && rng.next() < density * 0.6) {
+          midi[subStep] = 1;
+          // Map syllabic density to velocity variation
+          const syllables = complexity > 0.7 ? 5 : complexity > 0.4 ? 4 : 3;
+          vel[subStep] = 40 + Math.round(rng.next() * (syllables * 8));
+        }
+      }
+      pos += beatCount;
+    }
+  } else {
+    // Generic Indian subdivision
+    const subdivs = complexity > 0.7 ? 5 : complexity > 0.4 ? 4 : 3;
+    const groupSize = Math.max(2, Math.round(steps / subdivs));
+
+    for (let g = 0; g < subdivs; g++) {
+      const start = g * groupSize;
+      if (start >= steps) break;
+      midi[start] = 1;
+      vel[start] = g === 0 ? 127 : 100 + Math.round(rng.next() * 20);
+
+      for (let j = 1; j < groupSize && start + j < steps; j++) {
+        if (rng.next() < density * 0.5) {
+          midi[start + j] = 1;
+          vel[start + j] = 40 + Math.round(rng.next() * 40);
+        }
       }
     }
   }
@@ -153,14 +256,24 @@ function generateIndian(steps: number, density: number, complexity: number, rng:
   return { midi, vel };
 }
 
-function generateLatin(steps: number, density: number, _complexity: number, rng: SeededRandom): { midi: number[]; vel: number[] } {
+// Latin clave variants
+const CLAVE_PATTERNS: Record<string, number[]> = {
+  '2-3': [0, 3, 7, 10, 12],   // 2-3 son clave (16th note positions)
+  '3-2': [0, 3, 6, 10, 12],   // 3-2 son clave
+  'rumba': [0, 3, 7, 10, 13], // Rumba clave
+};
+
+function generateLatin(steps: number, density: number, _complexity: number, rng: SeededRandom, subStyle?: string): { midi: number[]; vel: number[] } {
   const midi = new Array(steps).fill(0);
   const vel = new Array(steps).fill(0);
 
-  // Son clave 3:2 base
+  const claveType = subStyle || '2-3';
+  const claveBase = CLAVE_PATTERNS[claveType] || CLAVE_PATTERNS['2-3'];
+
+  // Scale clave positions to current step count
   const clavePositions = steps === 16
-    ? [0, 3, 6, 10, 12]  // 3:2 son clave
-    : [0, Math.round(steps * 0.2), Math.round(steps * 0.375), Math.round(steps * 0.625), Math.round(steps * 0.75)];
+    ? claveBase
+    : claveBase.map(p => Math.min(steps - 1, Math.round(p * steps / 16)));
 
   for (const pos of clavePositions) {
     if (pos < steps) {
@@ -169,9 +282,19 @@ function generateLatin(steps: number, density: number, _complexity: number, rng:
     }
   }
 
+  // Tumbao bass layer (on the "and" beats)
+  if (density > 0.3) {
+    for (let i = 2; i < steps; i += 4) {
+      if (midi[i] === 0 && rng.next() < 0.5) {
+        midi[i] = 1;
+        vel[i] = 70 + Math.round(rng.next() * 20);
+      }
+    }
+  }
+
   // Density fills
   for (let i = 0; i < steps; i++) {
-    if (midi[i] === 0 && rng.next() < density * 0.45) {
+    if (midi[i] === 0 && rng.next() < density * 0.35) {
       midi[i] = 1;
       vel[i] = 55 + Math.round(rng.next() * 30);
     }
@@ -184,14 +307,12 @@ function generateGeneral(steps: number, density: number, complexity: number, rng
   const midi = new Array(steps).fill(0);
   const vel = new Array(steps).fill(0);
 
-  // Downbeats
   const beatInterval = Math.max(2, Math.round(steps / 4));
   for (let i = 0; i < steps; i += beatInterval) {
     midi[i] = 1;
     vel[i] = 100 + Math.round(rng.next() * 27);
   }
 
-  // Density-weighted fills
   for (let i = 0; i < steps; i++) {
     if (midi[i] === 0 && rng.next() < density) {
       midi[i] = 1;
@@ -207,24 +328,45 @@ function generateGeneral(steps: number, density: number, complexity: number, rng
 
 // ─── Main Generator ──────────────────────────────────────────────────────
 
-const generators: Record<string, typeof generateAfrican> = {
-  african: generateAfrican,
-  balkan: generateBalkan,
-  flamenco: generateFlamenco,
-  indian: generateIndian,
-  latin: generateLatin,
-  general: generateGeneral,
+type GenFn = (steps: number, density: number, complexity: number, rng: SeededRandom, extra?: string, meter?: [number, number]) => { midi: number[]; vel: number[] };
+
+function wrappedBalkan(steps: number, density: number, complexity: number, rng: SeededRandom, _sub?: string, meter?: [number, number]) {
+  return generateBalkan(steps, density, complexity, rng, meter);
+}
+function wrappedFlamenco(steps: number, density: number, complexity: number, rng: SeededRandom, sub?: string) {
+  return generateFlamenco(steps, density, complexity, rng, sub);
+}
+function wrappedIndian(steps: number, density: number, complexity: number, rng: SeededRandom, sub?: string) {
+  return generateIndian(steps, density, complexity, rng, sub);
+}
+function wrappedLatin(steps: number, density: number, complexity: number, rng: SeededRandom, sub?: string) {
+  return generateLatin(steps, density, complexity, rng, sub);
+}
+function wrappedAfrican(steps: number, density: number, complexity: number, rng: SeededRandom) {
+  return generateAfrican(steps, density, complexity, rng);
+}
+function wrappedGeneral(steps: number, density: number, complexity: number, rng: SeededRandom) {
+  return generateGeneral(steps, density, complexity, rng);
+}
+
+const generators: Record<string, GenFn> = {
+  african: wrappedAfrican,
+  balkan: wrappedBalkan,
+  flamenco: wrappedFlamenco,
+  indian: wrappedIndian,
+  latin: wrappedLatin,
+  general: wrappedGeneral,
 };
 
 export function generateRhythm(options: GenerateOptions): GeneratedRhythm {
-  const { region, meter, density, complexity, swing, seed } = options;
+  const { region, meter, density, complexity, swing, seed, subStyle } = options;
   const rng = new SeededRandom(seed ?? Date.now());
   const steps = getStepCount(meter, options.steps);
 
   const gen = generators[region] || generators.general;
-  const { midi, vel } = gen(steps, density, complexity, rng);
+  const { midi, vel } = gen(steps, density, complexity, rng, subStyle, meter);
 
-  // Apply swing to velocity (shift offbeats slightly louder/softer)
+  // Apply swing to velocity
   if (swing > 0) {
     for (let i = 1; i < steps; i += 2) {
       if (vel[i] > 0) {
@@ -233,7 +375,6 @@ export function generateRhythm(options: GenerateOptions): GeneratedRhythm {
     }
   }
 
-  // Build subdivision array
   const subdivision = Array.from({ length: steps }, (_, i) => i % Math.max(1, Math.round(steps / meter[0])) === 0 ? 1 : 0);
 
   return {
@@ -244,6 +385,28 @@ export function generateRhythm(options: GenerateOptions): GeneratedRhythm {
     meter: `${meter[0]}/${meter[1]}`,
   };
 }
+
+// ─── Sub-style options per region ────────────────────────────────────────
+
+export const REGION_SUB_STYLES: Record<string, { value: string; label: string }[]> = {
+  african: [],
+  balkan: [],
+  flamenco: [
+    { value: 'buleria', label: 'Bulería' },
+    { value: 'solea', label: 'Soleá' },
+  ],
+  indian: [
+    { value: 'teentaal', label: 'Teentaal (4+4+4+4)' },
+    { value: 'jhaptaal', label: 'Jhaptaal (2+3+2+3)' },
+    { value: 'rupak', label: 'Rupak (3+2+2)' },
+  ],
+  latin: [
+    { value: '2-3', label: '2-3 Son Clave' },
+    { value: '3-2', label: '3-2 Son Clave' },
+    { value: 'rumba', label: 'Rumba Clave' },
+  ],
+  general: [],
+};
 
 export const REGION_OPTIONS: { value: GenerateOptions['region']; label: string }[] = [
   { value: 'african', label: 'African' },
@@ -257,8 +420,11 @@ export const REGION_OPTIONS: { value: GenerateOptions['region']; label: string }
 export const METER_OPTIONS: { value: [number, number]; label: string }[] = [
   { value: [4, 4], label: '4/4' },
   { value: [3, 4], label: '3/4' },
+  { value: [5, 8], label: '5/8' },
   { value: [6, 8], label: '6/8' },
   { value: [7, 8], label: '7/8' },
+  { value: [9, 8], label: '9/8' },
+  { value: [11, 8], label: '11/8' },
   { value: [5, 4], label: '5/4' },
   { value: [12, 8], label: '12/8' },
 ];

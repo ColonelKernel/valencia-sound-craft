@@ -1,13 +1,26 @@
 // Adaptive Groove Engine
 // Tracks user behavior and suggests intelligent variations
 
-export type VariationType = 'ghost-notes' | 'syncopation' | 'accent-shift' | 'fill';
+export type VariationType = 'ghost-notes' | 'syncopation' | 'accent-shift' | 'fill' | 'micro-timing' | 'subdivision-swap';
+
+export type RegionId = 'african' | 'balkan' | 'flamenco' | 'indian' | 'latin' | 'general';
+
+// Protected step indices per region — adaptive engine will never remove these
+const REGION_CONSTRAINTS: Record<RegionId, number[]> = {
+  african: [0, 4, 8, 12],                 // Main pulse anchors
+  balkan: [0, 2, 4, 7, 9, 11, 14],        // Asymmetric group starts
+  flamenco: [2, 5, 7, 9, 11],             // Compás accents (0-indexed for 12-beat)
+  indian: [0],                              // Sam (beat 1) is sacred
+  latin: [0, 3, 6, 10, 12],               // Clave positions
+  general: [0],                             // At least keep the downbeat
+};
 
 interface EditHistory {
-  densityTrend: number; // positive = increasing, negative = decreasing
+  densityTrend: number;
   editCount: number;
   repeatCount: number;
   lastPattern: string;
+  loopCount: number;
 }
 
 export class AdaptiveEngine {
@@ -16,6 +29,7 @@ export class AdaptiveEngine {
     editCount: 0,
     repeatCount: 0,
     lastPattern: '',
+    loopCount: 0,
   };
 
   trackEdit(oldPattern: number[], newPattern: number[]) {
@@ -33,45 +47,65 @@ export class AdaptiveEngine {
     }
   }
 
-  suggestVariation(pattern: number[], velocity: number[]): { pattern: number[]; velocity: number[]; type: VariationType } {
-    // Choose variation based on user behavior
+  incrementLoop() {
+    this.history.loopCount++;
+  }
+
+  suggestVariation(
+    pattern: number[],
+    velocity: number[],
+    region: RegionId = 'general',
+    maxStrength: number = 0.5
+  ): { pattern: number[]; velocity: number[]; type: VariationType } {
+    this.history.loopCount++;
     let type: VariationType;
 
+    // Early loops = subtle, later loops = more adventurous
+    const maturity = Math.min(1, this.history.loopCount / 8);
+
     if (this.history.repeatCount >= 4) {
-      type = 'syncopation';
+      type = maturity > 0.5 ? 'syncopation' : 'micro-timing';
     } else if (this.history.densityTrend > 0.05) {
       type = 'ghost-notes';
     } else if (this.history.densityTrend < -0.05) {
       type = 'accent-shift';
+    } else if (maturity > 0.6 && Math.random() < 0.3) {
+      type = 'subdivision-swap';
     } else {
       type = this.history.editCount % 3 === 0 ? 'fill' : 'ghost-notes';
     }
 
-    const result = this.applyVariation(pattern, velocity, type);
+    const result = this.applyVariation(pattern, velocity, type, region, maxStrength);
     return { ...result, type };
   }
 
   applyVariation(
     pattern: number[],
     velocity: number[],
-    type: VariationType
+    type: VariationType,
+    region: RegionId = 'general',
+    maxStrength: number = 0.5
   ): { pattern: number[]; velocity: number[] } {
     const newPattern = [...pattern];
     const newVelocity = [...velocity];
     const len = pattern.length;
+    const protectedSteps = new Set(
+      REGION_CONSTRAINTS[region]?.filter(s => s < len) ?? []
+    );
+    // Scale probability by strength
+    const prob = (base: number) => base * maxStrength;
 
     switch (type) {
       case 'ghost-notes': {
-        // Add ghost notes before/after accents
         for (let i = 0; i < len; i++) {
           if (pattern[i] === 1 && velocity[i] >= 90) {
             const before = (i - 1 + len) % len;
             const after = (i + 1) % len;
-            if (pattern[before] === 0 && Math.random() < 0.4) {
+            if (pattern[before] === 0 && Math.random() < prob(0.4)) {
               newPattern[before] = 1;
               newVelocity[before] = 30 + Math.round(Math.random() * 15);
             }
-            if (pattern[after] === 0 && Math.random() < 0.3) {
+            if (pattern[after] === 0 && Math.random() < prob(0.3)) {
               newPattern[after] = 1;
               newVelocity[after] = 25 + Math.round(Math.random() * 15);
             }
@@ -80,11 +114,10 @@ export class AdaptiveEngine {
         break;
       }
       case 'syncopation': {
-        // Shift some hits by one step
         for (let i = 0; i < len; i++) {
-          if (pattern[i] === 1 && i % 4 !== 0 && Math.random() < 0.35) {
+          if (pattern[i] === 1 && i % 4 !== 0 && !protectedSteps.has(i) && Math.random() < prob(0.35)) {
             const target = (i + 1) % len;
-            if (pattern[target] === 0) {
+            if (pattern[target] === 0 && !protectedSteps.has(target)) {
               newPattern[i] = 0;
               newVelocity[i] = 0;
               newPattern[target] = 1;
@@ -95,12 +128,11 @@ export class AdaptiveEngine {
         break;
       }
       case 'accent-shift': {
-        // Redistribute accents
         for (let i = 0; i < len; i++) {
-          if (newPattern[i] === 1) {
-            if (newVelocity[i] >= 90 && Math.random() < 0.3) {
+          if (newPattern[i] === 1 && !protectedSteps.has(i)) {
+            if (newVelocity[i] >= 90 && Math.random() < prob(0.3)) {
               newVelocity[i] = 60 + Math.round(Math.random() * 20);
-            } else if (newVelocity[i] < 70 && Math.random() < 0.25) {
+            } else if (newVelocity[i] < 70 && Math.random() < prob(0.25)) {
               newVelocity[i] = 100 + Math.round(Math.random() * 27);
             }
           }
@@ -108,12 +140,52 @@ export class AdaptiveEngine {
         break;
       }
       case 'fill': {
-        // Add a fill in the last quarter
         const fillStart = Math.floor(len * 0.75);
         for (let i = fillStart; i < len; i++) {
-          if (Math.random() < 0.6) {
+          if (!protectedSteps.has(i) && Math.random() < prob(0.6)) {
             newPattern[i] = 1;
             newVelocity[i] = 80 + Math.round(Math.random() * 40);
+          }
+        }
+        break;
+      }
+      case 'micro-timing': {
+        // Simulate laid-back/ahead feel by shifting velocity emphasis
+        // Even steps get louder (ahead), odd steps get softer (laid-back), or vice versa
+        const laidBack = Math.random() < 0.5;
+        for (let i = 0; i < len; i++) {
+          if (newPattern[i] === 1 && !protectedSteps.has(i)) {
+            const isEven = i % 2 === 0;
+            const shift = Math.round(maxStrength * 15);
+            if (laidBack) {
+              newVelocity[i] = isEven
+                ? Math.min(127, newVelocity[i] + shift)
+                : Math.max(20, newVelocity[i] - shift);
+            } else {
+              newVelocity[i] = isEven
+                ? Math.max(20, newVelocity[i] - shift)
+                : Math.min(127, newVelocity[i] + shift);
+            }
+          }
+        }
+        break;
+      }
+      case 'subdivision-swap': {
+        // Replace a beat group with different subdivision feel
+        // Pick a random beat boundary and toggle neighboring steps
+        const beatSize = Math.max(2, Math.floor(len / 4));
+        const startBeat = Math.floor(Math.random() * 4) * beatSize;
+        for (let i = startBeat; i < Math.min(startBeat + beatSize, len); i++) {
+          if (protectedSteps.has(i)) continue;
+          if (Math.random() < prob(0.5)) {
+            // Toggle step
+            if (newPattern[i] === 0) {
+              newPattern[i] = 1;
+              newVelocity[i] = 50 + Math.round(Math.random() * 30);
+            } else {
+              newPattern[i] = 0;
+              newVelocity[i] = 0;
+            }
           }
         }
         break;
@@ -124,7 +196,7 @@ export class AdaptiveEngine {
   }
 
   reset() {
-    this.history = { densityTrend: 0, editCount: 0, repeatCount: 0, lastPattern: '' };
+    this.history = { densityTrend: 0, editCount: 0, repeatCount: 0, lastPattern: '', loopCount: 0 };
   }
 }
 
