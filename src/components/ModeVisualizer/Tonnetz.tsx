@@ -178,7 +178,8 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   // ─── Interactions ──────────────────────────────────────
   const handleNodeClick = useCallback((node: TonnetzNode) => {
     playNote(node.note, 0, 0.5, timbre);
-  }, [timbre]);
+    if (midiEnabled && isConnected()) midiSendNote(node.note, 500, 100, midiChannel);
+  }, [timbre, midiEnabled, midiChannel]);
 
   const handleTriadClick = useCallback((triad: GridTriad) => {
     const chordNotes = triad.notes.map(i => ALL_NOTES[i]);
