@@ -113,14 +113,7 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
     return { x: CX + r * Math.cos(angle), y: CY + r * Math.sin(angle), angleDeg: (angle * 180) / Math.PI };
   }, []);
 
-  // Radial rotation: text reads outward from center, flipping for bottom half
-  const radialRotation = useCallback((index: number) => {
-    const angleDeg = -90 + index * 30 + 15; // each segment = 30°, offset to center
-    // For segments in the bottom half (90° < angle < 270°), flip 180° so text isn't upside down
-    const normalized = ((angleDeg % 360) + 360) % 360;
-    if (normalized > 90 && normalized < 270) return angleDeg + 180;
-    return angleDeg;
-  }, []);
+  // No rotation — keep all labels horizontal for readability
 
   const isActiveKey = useCallback((key: string) => {
     return selectedKey === key || (selectedKey === null && !selectedMinor && FIFTHS_ORDER[rootKeyIdx] === key);
