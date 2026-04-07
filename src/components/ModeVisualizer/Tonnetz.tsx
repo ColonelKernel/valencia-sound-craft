@@ -1,5 +1,10 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { Play, Pause, X, Download, Sparkles, Sun, Moon, Maximize2, Minimize2, RotateCcw, Plus, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { Play, Pause, X, Download, Sparkles, Sun, Moon, Maximize2, Minimize2, RotateCcw, Plus, ChevronDown, ChevronUp, Zap, Usb, Radio } from "lucide-react";
+import {
+  requestMidiAccess, selectOutput, isConnected, getActiveOutput, disconnect as midiDisconnect,
+  sendChord as midiSendChord, sendSingleNote as midiSendNote, sendAllNotesOff,
+  type MidiOutputDevice,
+} from "./webMidiOut";
 import { playChord, playNote, type InstrumentTimbre } from "./audioSynth";
 import {
   ALL_NOTES, noteIndex, normalize,
@@ -47,9 +52,40 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   const [showProgPanel, setShowProgPanel] = useState(true);
   const timeoutRef = useRef<number[]>([]);
 
+  // MIDI output
+  const [midiEnabled, setMidiEnabled] = useState(false);
+  const [midiDevices, setMidiDevices] = useState<MidiOutputDevice[]>([]);
+  const [midiChannel, setMidiChannel] = useState(0);
+  const [midiError, setMidiError] = useState<string | null>(null);
+
   const hexRadius = performanceMode ? HEX_RADIUS_PERF : HEX_RADIUS_NORMAL;
 
-  // ─── Derived ────────────────────────────────────────────
+  // ─── MIDI init ──────────────────────────────────────────
+  const initMidi = useCallback(async () => {
+    try {
+      setMidiError(null);
+      const devices = await requestMidiAccess();
+      setMidiDevices(devices);
+      if (devices.length > 0) {
+        selectOutput(devices[0].id);
+        setMidiEnabled(true);
+      } else {
+        setMidiError('No MIDI output devices found');
+      }
+    } catch (err) {
+      setMidiError(err instanceof Error ? err.message : 'MIDI not available');
+    }
+  }, []);
+
+  const handleMidiDeviceChange = useCallback((deviceId: string) => {
+    selectOutput(deviceId);
+  }, []);
+
+  const handleMidiDisconnect = useCallback(() => {
+    midiDisconnect();
+    setMidiEnabled(false);
+    setMidiDevices([]);
+  }, []);
   const rootIdx = noteIndex(root);
 
   const systemScale = useMemo(() => {
@@ -142,14 +178,16 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   // ─── Interactions ──────────────────────────────────────
   const handleNodeClick = useCallback((node: TonnetzNode) => {
     playNote(node.note, 0, 0.5, timbre);
-  }, [timbre]);
+    if (midiEnabled && isConnected()) midiSendNote(node.note, 500, 100, midiChannel);
+  }, [timbre, midiEnabled, midiChannel]);
 
   const handleTriadClick = useCallback((triad: GridTriad) => {
     const chordNotes = triad.notes.map(i => ALL_NOTES[i]);
     playChord(chordNotes, 0.6, timbre);
+    if (midiEnabled && isConnected()) midiSendChord(chordNotes, 600, 100, midiChannel);
     const td: TonnetzTriadData = { root: triad.root, type: triad.type, notes: triad.notes };
     setActiveTriad(td);
-  }, [timbre]);
+  }, [timbre, midiEnabled, midiChannel]);
 
   const addTriadToProgression = useCallback((td: TonnetzTriadData) => {
     setProgression(prev => [...prev, td]);
@@ -164,22 +202,23 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
     if (!activeTriad) return;
     const result = applyTransform(activeTriad, type);
     setAnimatingTransform({ from: activeTriad, to: result, type });
-    // Play the result
     const chordNotes = result.notes.map(i => ALL_NOTES[i]);
     playChord(chordNotes, 0.6, timbre);
+    if (midiEnabled && isConnected()) midiSendChord(chordNotes, 600, 100, midiChannel);
     setTimeout(() => {
       setActiveTriad(result);
       setAnimatingTransform(null);
     }, 400);
-  }, [activeTriad, timbre]);
+  }, [activeTriad, timbre, midiEnabled, midiChannel]);
 
   const handleModulate = useCallback((direction: 'darker' | 'brighter' | 'distant') => {
     if (!activeTriad) return;
     const result = modulateTo(activeTriad, direction);
     const chordNotes = result.notes.map(i => ALL_NOTES[i]);
     playChord(chordNotes, 0.6, timbre);
+    if (midiEnabled && isConnected()) midiSendChord(chordNotes, 600, 100, midiChannel);
     setActiveTriad(result);
-  }, [activeTriad, timbre]);
+  }, [activeTriad, timbre, midiEnabled, midiChannel]);
 
   // ─── Playback ─────────────────────────────────────────
   const stop = useCallback(() => {
@@ -187,7 +226,8 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
     timeoutRef.current = [];
     setPlaying(false);
     setCurrentIdx(-1);
-  }, []);
+    if (midiEnabled && isConnected()) sendAllNotesOff(midiChannel);
+  }, [midiEnabled, midiChannel]);
 
   const playProgression = useCallback(() => {
     if (progression.length === 0) return;
@@ -200,6 +240,7 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
         setCurrentIdx(i);
         const notes = td.notes.map(n => ALL_NOTES[n]);
         playChord(notes, (chordDuration / 1000) * 0.9, timbre);
+        if (midiEnabled && isConnected()) midiSendChord(notes, chordDuration * 0.9, 100, midiChannel);
       }, i * chordDuration));
     });
     ids.push(window.setTimeout(() => {
@@ -559,6 +600,61 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
                     </div>
                   </div>
                 )}
+
+                {/* ═══ MIDI OUTPUT ═══ */}
+                <div className="pt-2 border-t border-border space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                      <Usb size={10} /> MIDI Output
+                    </p>
+                    {!midiEnabled ? (
+                      <button onClick={initMidi}
+                        className="flex items-center gap-1 text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:bg-accent transition-colors">
+                        <Radio size={10} /> Connect
+                      </button>
+                    ) : (
+                      <button onClick={handleMidiDisconnect}
+                        className="flex items-center gap-1 text-[10px] px-2 py-1 rounded border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+                        <Radio size={10} /> Connected
+                      </button>
+                    )}
+                  </div>
+                  {midiError && (
+                    <p className="text-[10px] text-destructive">{midiError}</p>
+                  )}
+                  {midiEnabled && midiDevices.length > 0 && (
+                    <div className="space-y-1.5">
+                      <select onChange={(e) => handleMidiDeviceChange(e.target.value)}
+                        defaultValue={midiDevices[0]?.id}
+                        className="w-full bg-secondary border border-border rounded px-2 py-1 text-[10px] text-foreground">
+                        {midiDevices.map(d => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-muted-foreground">Ch</span>
+                        <select value={midiChannel} onChange={(e) => setMidiChannel(Number(e.target.value))}
+                          className="bg-secondary border border-border rounded px-1.5 py-0.5 text-[10px] text-foreground w-12">
+                          {Array.from({ length: 16 }, (_, i) => (
+                            <option key={i} value={i}>{i + 1}</option>
+                          ))}
+                        </select>
+                        <button onClick={() => sendAllNotesOff(midiChannel)}
+                          className="ml-auto text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:text-destructive transition-colors">
+                          Panic
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-muted-foreground">
+                        Chords and notes are sent live to your DAW
+                      </p>
+                    </div>
+                  )}
+                  {!midiEnabled && !midiError && (
+                    <p className="text-[9px] text-muted-foreground">
+                      Connect a virtual MIDI port (e.g. IAC, loopMIDI) to send chords to Ableton, Logic, etc.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>
