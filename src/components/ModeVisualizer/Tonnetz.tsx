@@ -221,7 +221,7 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
       intervals: [],
     }));
     const progChords = chords.map(c => ({ chord: c, source: 'diatonic' as const }));
-    downloadMidi(progChords, bpm, 4);
+    downloadMidi(progChords, bpm, 4, ALL_NOTES[rootIdx], 'tonnetz');
   }, [progression, bpm]);
 
   const loadPreset = useCallback((triads: TonnetzTriadData[]) => {
