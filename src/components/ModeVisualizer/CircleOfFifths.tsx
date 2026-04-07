@@ -280,7 +280,6 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
               const startAngle = OFFSET + i * SEGMENT_ANGLE - SEGMENT_ANGLE / 2;
               const endAngle = startAngle + SEGMENT_ANGLE;
               const pos = textPos((R_OUTER + R_MAJOR) / 2, i);
-              const rot = radialRotation(i);
               const active = isActiveKey(key);
 
               return (
@@ -298,14 +297,12 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
                     fontSize={active ? majorActiveFontSize : majorFontSize}
                     fontWeight={active ? 700 : 500}
                     fill={active ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'}
-                    transform={`rotate(${rot}, ${pos.x}, ${pos.y})`}
                     className="pointer-events-none select-none">
                     {key}
                   </text>
                   {showKeySig && (
                     <text x={pos.x} y={pos.y + (isMobile ? 16 : 14)} textAnchor="middle" dominantBaseline="central"
                       fontSize={keySigFontSize} fill="hsl(var(--muted-foreground))" opacity={0.7}
-                      transform={`rotate(${rot}, ${pos.x}, ${pos.y + (isMobile ? 16 : 14)})`}
                       className="pointer-events-none select-none">
                       {KEY_SIGNATURES[key]}
                     </text>
@@ -319,7 +316,6 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
               const startAngle = OFFSET + i * SEGMENT_ANGLE - SEGMENT_ANGLE / 2;
               const endAngle = startAngle + SEGMENT_ANGLE;
               const pos = textPos((R_MAJOR + R_MINOR) / 2, i);
-              const rot = radialRotation(i);
               const active = isActiveMinor(key);
 
               return (
@@ -336,7 +332,6 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
                   <text x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="central"
                     fontSize={minorFontSize} fontWeight={active ? 700 : 400}
                     fill={active ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))'}
-                    transform={`rotate(${rot}, ${pos.x}, ${pos.y})`}
                     className="pointer-events-none select-none">
                     {MINOR_DISPLAY[key] || key}
                   </text>
@@ -349,7 +344,6 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
               const startAngle = OFFSET + i * SEGMENT_ANGLE - SEGMENT_ANGLE / 2;
               const endAngle = startAngle + SEGMENT_ANGLE;
               const pos = textPos((R_MINOR + R_DIM) / 2, i);
-              const rot = radialRotation(i);
               const isHovered = hoveredSegment?.ring === 'dim' && hoveredSegment.index === i;
 
               return (
@@ -366,7 +360,6 @@ const CircleOfFifths = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddTo
                   <text x={pos.x} y={pos.y} textAnchor="middle" dominantBaseline="central"
                     fontSize={dimFontSize} fontWeight={400}
                     fill="hsl(var(--muted-foreground))"
-                    transform={`rotate(${rot}, ${pos.x}, ${pos.y})`}
                     className="pointer-events-none select-none">
                     {key.replace('dim', '°')}
                   </text>
