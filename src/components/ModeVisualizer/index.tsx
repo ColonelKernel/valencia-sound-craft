@@ -26,6 +26,7 @@ import MasterScaleReference from "./MasterScaleReference";
 import DrumMachine from "../DrumMachine";
 import RhythmMap from "../DrumMachine/RhythmMap";
 import Tonnetz from "./Tonnetz";
+import CircleOfFifths from "./CircleOfFifths";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
