@@ -678,16 +678,36 @@ const DrumMachine = () => {
         {/* Filters row */}
         <div className="flex flex-wrap items-center gap-2">
           <Filter size={12} className="text-muted-foreground shrink-0" />
-          <select
-            value={filterRegion || ''}
-            onChange={e => setFilterRegion(e.target.value || null)}
-            className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
-          >
-            <option value="">All Regions</option>
-            {regions.map(r => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
+          
+          {/* Multi-select region chips */}
+          <div className="flex flex-wrap gap-1">
+            <button
+              onClick={() => setFilterRegions([])}
+              className={`text-[10px] px-2 py-1 rounded-md transition-colors font-medium ${
+                filterRegions.length === 0
+                  ? 'bg-primary text-primary-foreground'
+                  : 'border border-border text-muted-foreground hover:bg-accent'
+              }`}
+            >All Regions</button>
+            {regions.map(r => {
+              const isActive = filterRegions.includes(r);
+              return (
+                <button key={r}
+                  onClick={() => {
+                    setFilterRegions(prev =>
+                      isActive ? prev.filter(x => x !== r) : [...prev, r]
+                    );
+                  }}
+                  className={`text-[10px] px-2 py-1 rounded-md transition-colors ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground ring-1 ring-primary/50'
+                      : 'border border-border text-muted-foreground hover:bg-accent'
+                  }`}
+                >{r} <span className="opacity-60">({DRUM_PRESETS.filter(p => p.region === r).length})</span></button>
+              );
+            })}
+          </div>
+          
           <select
             value={filterFeel || ''}
             onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
@@ -721,9 +741,9 @@ const DrumMachine = () => {
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
           </select>
-          {(filterRegion || filterFeel || filterRhythmType || filterComplexity || searchQuery) && (
+          {(filterRegions.length > 0 || filterFeel || filterRhythmType || filterComplexity || searchQuery) && (
             <button
-              onClick={() => { setFilterRegion(null); setFilterFeel(null); setFilterRhythmType(null); setFilterComplexity(null); setSearchQuery(''); }}
+              onClick={() => { setFilterRegions([]); setFilterFeel(null); setFilterRhythmType(null); setFilterComplexity(null); setSearchQuery(''); }}
               className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border hover:bg-accent transition-colors"
             >
               Clear Filters
