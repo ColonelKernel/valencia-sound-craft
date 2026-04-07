@@ -150,6 +150,12 @@ const ModeVisualizer = () => {
               </div>
             )}
 
+            {activeTab === 'circleof5' && (
+              <div>
+                <CircleOfFifths scaleNotes={scaleNotes} root={root} timbre={timbre} />
+              </div>
+            )}
+
             {activeTab === 'reference' && (
               <div>
                 <MasterScaleReference />
