@@ -210,8 +210,11 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
                             onMouseEnter={() => onNoteHover(displayNote)}
                             onMouseLeave={() => onNoteHover(null)}
                             onClick={() => {
-                              onNoteClick?.(displayNote, noteOctave);
-                              playNoteAtOctave(displayNote, noteOctave, 0.4, timbre);
+                              if (onNoteClick) {
+                                onNoteClick(displayNote, noteOctave);
+                              } else {
+                                playNoteAtOctave(displayNote, noteOctave, 0.4, timbre);
+                              }
                             }}
                           >
                             {displayLabel}

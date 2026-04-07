@@ -114,23 +114,22 @@ const BALKAN_GROUPINGS: Record<string, number[][]> = {
   '11/8': [[2, 2, 3, 2, 2], [3, 2, 2, 2, 2], [2, 3, 2, 2, 2]],
 };
 
+function getBalkanGrouping(meter: [number, number] | undefined, steps: number, complexity: number): number[] {
+  const meterKey = meter ? `${meter[0]}/${meter[1]}` : '';
+  const groupOptions = BALKAN_GROUPINGS[meterKey];
+
+  if (groupOptions && groupOptions.length > 0) {
+    const idx = Math.min(groupOptions.length - 1, Math.floor(complexity * groupOptions.length));
+    return groupOptions[idx];
+  }
+
+  return steps <= 14 ? [2, 2, 3, 2, 2, 3] : [3, 2, 2, 3, 2, 2, 2];
+}
+
 function generateBalkan(steps: number, density: number, complexity: number, rng: SeededRandom, meter?: [number, number]): { midi: number[]; vel: number[] } {
   const midi = new Array(steps).fill(0);
   const vel = new Array(steps).fill(0);
-
-  // Select grouping based on meter
-  const meterKey = meter ? `${meter[0]}/${meter[1]}` : '';
-  const groupOptions = BALKAN_GROUPINGS[meterKey];
-  let groupings: number[];
-
-  if (groupOptions && groupOptions.length > 0) {
-    // Pick a grouping variant based on complexity
-    const idx = Math.min(groupOptions.length - 1, Math.floor(complexity * groupOptions.length));
-    groupings = groupOptions[idx];
-  } else {
-    // Fallback asymmetric groupings
-    groupings = steps <= 14 ? [2, 2, 3, 2, 2, 3] : [3, 2, 2, 3, 2, 2, 2];
-  }
+  const groupings = getBalkanGrouping(meter, steps, complexity);
 
   let pos = 0;
   for (const group of groupings) {
@@ -163,8 +162,8 @@ function generateBalkan(steps: number, density: number, complexity: number, rng:
 
 // Flamenco compás patterns
 const FLAMENCO_ACCENTS: Record<string, { accents: number[]; density_mod: number }> = {
-  buleria: { accents: [2, 5, 7, 9, 11], density_mod: 1.0 },
-  solea:   { accents: [2, 5, 7, 9, 11], density_mod: 0.6 },
+  buleria: { accents: [0, 3, 6, 8, 10], density_mod: 1.0 },
+  solea:   { accents: [0, 3, 6, 8, 10], density_mod: 0.6 },
 };
 
 function generateFlamenco(steps: number, density: number, _complexity: number, rng: SeededRandom, subStyle?: string): { midi: number[]; vel: number[] } {
@@ -349,6 +348,49 @@ function wrappedGeneral(steps: number, density: number, complexity: number, rng:
   return generateGeneral(steps, density, complexity, rng);
 }
 
+function buildSubdivisionFromGroups(steps: number, groups: number[]): number[] {
+  const subdivision = new Array(steps).fill(0);
+  const totalUnits = groups.reduce((sum, group) => sum + group, 0);
+
+  if (steps === 0) return subdivision;
+  if (totalUnits <= 0) {
+    subdivision[0] = 1;
+    return subdivision;
+  }
+
+  let position = 0;
+  groups.forEach((group) => {
+    const index = Math.min(steps - 1, Math.round((position / totalUnits) * steps));
+    subdivision[index] = 1;
+    position += group;
+  });
+
+  return subdivision;
+}
+
+function getSubdivisionPattern(
+  region: RegionType,
+  meter: [number, number],
+  steps: number,
+  subStyle: string | undefined,
+  complexity: number
+): number[] {
+  if (region === 'balkan') {
+    return buildSubdivisionFromGroups(steps, getBalkanGrouping(meter, steps, complexity));
+  }
+
+  if (region === 'flamenco') {
+    return buildSubdivisionFromGroups(steps, [3, 3, 2, 2, 2]);
+  }
+
+  if (region === 'indian' && subStyle && TALA_STRUCTURES[subStyle]) {
+    return buildSubdivisionFromGroups(steps, TALA_STRUCTURES[subStyle]);
+  }
+
+  const beatGroups = new Array(Math.max(1, meter[0])).fill(1);
+  return buildSubdivisionFromGroups(steps, beatGroups);
+}
+
 const generators: Record<string, GenFn> = {
   african: wrappedAfrican,
   balkan: wrappedBalkan,
@@ -375,7 +417,7 @@ export function generateRhythm(options: GenerateOptions): GeneratedRhythm {
     }
   }
 
-  const subdivision = Array.from({ length: steps }, (_, i) => i % Math.max(1, Math.round(steps / meter[0])) === 0 ? 1 : 0);
+  const subdivision = getSubdivisionPattern(region, meter, steps, subStyle, complexity);
 
   return {
     midiPattern: midi,

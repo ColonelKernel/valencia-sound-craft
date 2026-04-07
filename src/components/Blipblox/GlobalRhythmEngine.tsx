@@ -76,6 +76,7 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
   const playingRef = useRef(false);
   const stepRef = useRef(0);
   const nextTimeRef = useRef(0);
+  const stepTimeoutsRef = useRef<number[]>([]);
 
   // Get unique countries from presets
   const countries = useMemo(() => {
@@ -147,17 +148,24 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
     return audioCtxRef.current;
   }, []);
 
+  const clearStepTimeouts = useCallback(() => {
+    stepTimeoutsRef.current.forEach(clearTimeout);
+    stepTimeoutsRef.current = [];
+  }, []);
+
   const scheduler = useCallback(() => {
     if (!playingRef.current) return;
     const ctx = getCtx();
     const stepDuration = 60 / activeBpm / 4;
 
     while (nextTimeRef.current < ctx.currentTime + 0.1) {
-      const step = effectivePattern[stepRef.current];
-      const vel = effectiveVelocity[stepRef.current] ?? 100;
+      const scheduledStep = stepRef.current;
+      const scheduledTime = nextTimeRef.current;
+      const step = effectivePattern[scheduledStep];
+      const vel = effectiveVelocity[scheduledStep] ?? 100;
 
       if (step === 1 && vel > 0) {
-        const time = Math.max(ctx.currentTime, nextTimeRef.current);
+        const time = Math.max(ctx.currentTime, scheduledTime);
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
@@ -169,8 +177,16 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
         osc.stop(time + 0.05);
       }
 
-      setCurrentStep(stepRef.current);
-      stepRef.current = (stepRef.current + 1) % effectivePattern.length;
+      const stepDelayMs = Math.max(0, (scheduledTime - ctx.currentTime) * 1000);
+      const stepTimerId = window.setTimeout(() => {
+        if (playingRef.current) {
+          setCurrentStep(scheduledStep);
+        }
+        stepTimeoutsRef.current = stepTimeoutsRef.current.filter(id => id !== stepTimerId);
+      }, stepDelayMs);
+      stepTimeoutsRef.current.push(stepTimerId);
+
+      stepRef.current = (scheduledStep + 1) % effectivePattern.length;
 
       // Adaptive: trigger variation after each full loop
       if (stepRef.current === 0) {
@@ -204,18 +220,21 @@ const GlobalRhythmEngine = ({ root = 'C', mode = 'major', embeddedPreset }: Glob
       nextTimeRef.current = ctx.currentTime + 0.05;
       stepRef.current = 0;
       loopCountRef.current = 0;
+      clearStepTimeouts();
       scheduler();
     } else {
       playingRef.current = false;
       if (timerRef.current) clearTimeout(timerRef.current);
+      clearStepTimeouts();
       setCurrentStep(-1);
       setLastVariationType(null);
     }
     return () => {
       playingRef.current = false;
       if (timerRef.current) clearTimeout(timerRef.current);
+      clearStepTimeouts();
     };
-  }, [playing, scheduler, getCtx]);
+  }, [playing, scheduler, getCtx, clearStepTimeouts]);
 
   // ─── Actions ───────────────────────────────────────────────
   const handleGenerate = useCallback(() => {
