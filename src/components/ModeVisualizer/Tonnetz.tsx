@@ -184,9 +184,10 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   const handleTriadClick = useCallback((triad: GridTriad) => {
     const chordNotes = triad.notes.map(i => ALL_NOTES[i]);
     playChord(chordNotes, 0.6, timbre);
+    if (midiEnabled && isConnected()) midiSendChord(chordNotes, 600, 100, midiChannel);
     const td: TonnetzTriadData = { root: triad.root, type: triad.type, notes: triad.notes };
     setActiveTriad(td);
-  }, [timbre]);
+  }, [timbre, midiEnabled, midiChannel]);
 
   const addTriadToProgression = useCallback((td: TonnetzTriadData) => {
     setProgression(prev => [...prev, td]);
