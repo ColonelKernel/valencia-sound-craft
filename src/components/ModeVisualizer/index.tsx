@@ -26,6 +26,7 @@ import MasterScaleReference from "./MasterScaleReference";
 import DrumMachine from "../DrumMachine";
 import RhythmMap from "../DrumMachine/RhythmMap";
 import Tonnetz from "./Tonnetz";
+import CircleOfFifths from "./CircleOfFifths";
 
 const ModeVisualizer = () => {
   const ref = useFadeIn();
@@ -42,7 +43,7 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz' | 'circleof5'>('visualizer');
   const [expanded, setExpanded] = useState(false);
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
@@ -139,12 +140,19 @@ const ModeVisualizer = () => {
                 <option value="polyrhythm">🥁 Rhythm Engine</option>
                 <option value="rhythmmap">🌍 Rhythm Map</option>
                 <option value="tonnetz">🔷 Tonnetz</option>
+                <option value="circleof5">⭕ Circle of Fifths</option>
               </select>
             </div>
 
             {activeTab === 'tonnetz' && (
               <div>
                 <Tonnetz scaleNotes={scaleNotes} root={root} timbre={timbre} />
+              </div>
+            )}
+
+            {activeTab === 'circleof5' && (
+              <div>
+                <CircleOfFifths scaleNotes={scaleNotes} root={root} timbre={timbre} />
               </div>
             )}
 
