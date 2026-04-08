@@ -15,8 +15,8 @@ const Contact = () => {
     <section id="contact" className="section-padding bg-background" ref={ref}>
       <div className="container mx-auto max-w-2xl">
         <div className="fade-up text-center mb-12">
-          <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">Get in Touch</p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Start a Project</h2>
+          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">Get in Touch</p>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">Start a Project</h2>
           <p className="text-muted-foreground">
             Tell me what you're working on — I'll get back to you within 24–48 hours.
           </p>

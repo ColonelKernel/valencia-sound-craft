@@ -8,8 +8,8 @@ const About = () => {
       <div className="container mx-auto">
         <div className="grid md:grid-cols-2 gap-16 items-start">
           <div className="fade-up">
-            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">About</p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-8">
+            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">About</p>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
               Sound, Performance &amp; Production
             </h2>
 

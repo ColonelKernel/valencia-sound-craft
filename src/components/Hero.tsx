@@ -1,65 +1,83 @@
 import heroImage from "@/assets/hero-photo.jpg";
 import { ArrowRight, Headphones } from "lucide-react";
 
+import HeroRhythmPreview from "@/components/HeroRhythmPreview";
+
 const Hero = () => {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Background image */}
+    <section
+      id="hero"
+      className="relative flex min-h-screen items-center overflow-hidden scroll-mt-24"
+    >
       <div className="absolute inset-0">
         <img
           src={heroImage}
           alt="Music production studio"
           width={1920}
           height={1080}
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/70 to-foreground/40" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(10,10,10,0.94)_0%,rgba(10,10,10,0.78)_45%,rgba(10,10,10,0.38)_100%)]" />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-6 py-32">
-        <div className="max-w-2xl space-y-6">
-          <p className="text-primary-foreground/60 font-body text-sm tracking-widest uppercase">
-            Based in Valencia, Spain
-          </p>
+      <div className="relative z-10 container mx-auto px-6 py-28 md:py-32">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,420px)] lg:gap-14">
+          <div className="max-w-3xl space-y-7">
+            <p className="text-sm font-medium uppercase tracking-[0.34em] text-primary-foreground/60">
+              Valencia, Spain • Music • Systems • Production
+            </p>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-[1.1] text-primary-foreground">
-            Music Producer, Guitarist &amp; Creative Technologist
-          </h1>
+            <div className="space-y-5">
+              <h1 className="max-w-3xl text-5xl font-bold leading-[0.98] text-primary-foreground md:text-6xl lg:text-7xl">
+                Music producer, guitarist, and creative technologist for records that move.
+              </h1>
 
-          <p className="text-lg md:text-xl text-primary-foreground/70 font-body leading-relaxed max-w-lg">
-            I help artists turn ideas into finished records — blending live instruments, modern production, and global influences.
-          </p>
+              <p className="max-w-2xl text-base leading-relaxed text-primary-foreground/72 md:text-lg">
+                I build finished records, live session workflows, and playable music systems that
+                make rhythm, harmony, and experimentation feel immediate.
+              </p>
+            </div>
 
-          <p className="text-sm text-primary-foreground/50 font-body">
-            Based in Valencia, working with artists locally and worldwide.
-          </p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+              <a
+                href="#contact"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_18px_40px_-24px_rgba(255,255,255,0.55)] hover:bg-primary/90"
+              >
+                Start a Project <ArrowRight size={16} />
+              </a>
+              <a
+                href="#portfolio"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-foreground/28 px-6 py-3.5 text-sm font-medium text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                <Headphones size={16} /> Listen to Work
+              </a>
+              <a
+                href="#mode-visualizer"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-foreground/12 bg-primary-foreground/6 px-6 py-3.5 text-sm font-medium text-primary-foreground/82 hover:bg-primary-foreground/12 hover:text-primary-foreground"
+              >
+                Try the Rhythm Engine
+              </a>
+            </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <a
-              href="#contact"
-              className="inline-flex items-center justify-center gap-2 bg-primary-foreground text-primary px-6 py-3 text-sm font-medium rounded-sm hover:bg-primary-foreground/90 transition-colors"
-            >
-              Start a Project <ArrowRight size={16} />
-            </a>
-            <a
-              href="#portfolio"
-              className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-6 py-3 text-sm font-medium rounded-sm hover:bg-primary-foreground/10 transition-colors"
-            >
-              <Headphones size={16} /> Listen to Work
-            </a>
+            <p className="max-w-xl text-sm text-primary-foreground/52">
+              Based in Valencia and working with artists locally and worldwide across production,
+              live instrumentation, and interactive tool design.
+            </p>
+          </div>
+
+          <div className="lg:justify-self-end">
+            <HeroRhythmPreview />
           </div>
         </div>
       </div>
 
-      {/* Waveform decoration */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center gap-[2px] opacity-20 overflow-hidden">
-        {Array.from({ length: 80 }).map((_, i) => (
+      <div className="absolute bottom-0 left-0 right-0 flex h-24 items-end justify-center gap-[2px] overflow-hidden opacity-25">
+        {Array.from({ length: 80 }).map((_, index) => (
           <div
-            key={i}
-            className="bg-primary-foreground/50 w-[3px] rounded-t-full"
+            key={index}
+            className="w-[3px] rounded-t-full bg-primary-foreground/55"
             style={{
-              height: `${Math.sin(i * 0.2) * 40 + Math.random() * 30 + 10}%`,
+              height: `${Math.sin(index * 0.2) * 40 + Math.random() * 30 + 10}%`,
             }}
           />
         ))}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum, Globe, ChevronDown, ChevronUp } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
@@ -16,18 +16,17 @@ import {
   type TuningPreset,
 } from "./scaleData";
 import { playNote, playChord, playScale, playNoteAtOctave, type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
-import Fretboard from "./Fretboard";
-import SheetMusic from "./SheetMusic";
-import ModeReference from "./ModeReference";
-import Metronome from "./Metronome";
-import ChordProgressionBuilder from "./ChordProgressionBuilder";
-import KeyboardVisualizer from "./KeyboardVisualizer";
-import MasterScaleReference from "./MasterScaleReference";
-import DrumMachine from "../DrumMachine";
-import Tonnetz from "./Tonnetz";
-import CircleOfFifths from "./CircleOfFifths";
-import { lazy, Suspense } from "react";
 
+const Fretboard = lazy(() => import("./Fretboard"));
+const SheetMusic = lazy(() => import("./SheetMusic"));
+const ModeReference = lazy(() => import("./ModeReference"));
+const Metronome = lazy(() => import("./Metronome"));
+const ChordProgressionBuilder = lazy(() => import("./ChordProgressionBuilder"));
+const KeyboardVisualizer = lazy(() => import("./KeyboardVisualizer"));
+const MasterScaleReference = lazy(() => import("./MasterScaleReference"));
+const DrumMachine = lazy(() => import("../DrumMachine"));
+const Tonnetz = lazy(() => import("./Tonnetz"));
+const CircleOfFifths = lazy(() => import("./CircleOfFifths"));
 const GlobalRhythmEngine = lazy(() => import("../Blipblox/GlobalRhythmEngine"));
 
 const ModeVisualizer = () => {
@@ -45,8 +44,8 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz' | 'circleof5'>('visualizer');
-  const [expanded, setExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz' | 'circleof5'>('rhythmmap');
+  const [expanded, setExpanded] = useState(true);
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
@@ -100,26 +99,31 @@ const ModeVisualizer = () => {
   // Clear selected chord when mode/root changes
   const handleRootChange = (r: string) => { setRoot(r); setSelectedChord(null); };
   const handleModeChange = (m: string) => { setMode(m); setSelectedChord(null); };
+  const toolFallback = <div className="rounded-2xl border border-border/70 bg-card/60 p-4 text-sm text-muted-foreground">Loading system…</div>;
+
+  useEffect(() => {
+    void import("../Blipblox/GlobalRhythmEngine");
+  }, []);
 
   return (
-    <section id="mode-visualizer" className="section-padding !pb-8 bg-secondary/50" ref={ref}>
+    <section id="mode-visualizer" className="section-padding !pb-8 bg-secondary/50 scroll-mt-24" ref={ref}>
       <div className="container mx-auto">
         <button
           onClick={() => setExpanded(prev => !prev)}
-          className="fade-up mb-6 w-full flex items-center justify-between group"
+          className="fade-up mb-6 w-full flex items-center justify-between gap-6 rounded-[1.75rem] border border-border/70 bg-card/75 px-5 py-5 text-left shadow-[0_18px_50px_-34px_rgba(0,0,0,0.75)] backdrop-blur-sm group sm:px-6"
         >
           <div className="text-left">
-            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
-              Interactive Tools
+            <p className="text-xs tracking-[0.32em] uppercase text-muted-foreground mb-3">
+              Systems
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Interactive Tools
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+              Interactive Systems
             </h2>
-            <p className="text-muted-foreground mt-2 max-w-xl">
-              Scales, chords, rhythm engines, metronomes, and more — everything you need to create, practice, and produce.
+            <p className="text-sm md:text-base text-muted-foreground mt-3 max-w-2xl">
+              Start with the rhythm engine, then move into harmony, practice, and production tools without leaving the page.
             </p>
           </div>
-          <div className="shrink-0 ml-4 w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:bg-accent transition-colors">
+          <div className="shrink-0 ml-4 flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground group-hover:bg-accent">
             {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </div>
         </button>
@@ -127,81 +131,109 @@ const ModeVisualizer = () => {
         {expanded && (
           <>
             {/* Tool Selector Dropdown */}
-            <div className="mb-6">
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Select Tool</label>
+            <div className="mb-6 rounded-[1.5rem] border border-border/70 bg-card/70 p-4 shadow-[0_18px_45px_-36px_rgba(0,0,0,0.75)]">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <label className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground mb-2 block">
+                    Start Here
+                  </label>
+                  <p className="max-w-2xl text-sm text-muted-foreground">
+                    The rhythm engine opens first so you can hear and shape the system immediately.
+                  </p>
+                </div>
+                {activeTab === "rhythmmap" && (
+                  <span className="inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-foreground">
+                    Featured System
+                  </span>
+                )}
+              </div>
+
               <select
                 value={activeTab}
                 onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
-                className="w-full sm:w-auto min-w-[220px] bg-card border border-border rounded-lg px-4 py-2.5 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="mt-4 w-full sm:w-auto min-w-[260px] bg-background border border-border rounded-2xl px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
+                <option value="rhythmmap">🌍 Rhythm Atlas Engine</option>
+                <option value="polyrhythm">🥁 Rhythm Engine</option>
                 <option value="visualizer">🎸 Mode Visualizer</option>
                 <option value="progression">🎵 Chord Progressions</option>
                 <option value="metronome">⏱ Metronome</option>
                 <option value="reference">📖 Scale Reference</option>
                 <option value="moderef">🎼 Mode Reference</option>
-                <option value="polyrhythm">🥁 Rhythm Engine</option>
-                <option value="rhythmmap">🌍 Rhythm Atlas Map</option>
                 <option value="tonnetz">🔷 Tonnetz</option>
                 <option value="circleof5">⭕ Circle of Fifths</option>
               </select>
             </div>
 
             {activeTab === 'tonnetz' && (
-              <div>
-                <Tonnetz scaleNotes={scaleNotes} root={root} timbre={timbre} />
-              </div>
+              <Suspense fallback={toolFallback}>
+                <div>
+                  <Tonnetz scaleNotes={scaleNotes} root={root} timbre={timbre} />
+                </div>
+              </Suspense>
             )}
 
             {activeTab === 'circleof5' && (
-              <div>
-                <CircleOfFifths
-                  scaleNotes={scaleNotes}
-                  root={root}
-                  timbre={timbre}
-                  onSelectKey={(nextRoot, nextMode) => {
-                    setRoot(nextRoot);
-                    setMode(nextMode);
-                    setSelectedChord(null);
-                  }}
-                />
-              </div>
+              <Suspense fallback={toolFallback}>
+                <div>
+                  <CircleOfFifths
+                    scaleNotes={scaleNotes}
+                    root={root}
+                    timbre={timbre}
+                    onSelectKey={(nextRoot, nextMode) => {
+                      setRoot(nextRoot);
+                      setMode(nextMode);
+                      setSelectedChord(null);
+                    }}
+                  />
+                </div>
+              </Suspense>
             )}
 
             {activeTab === 'reference' && (
-              <div>
-                <MasterScaleReference />
-              </div>
+              <Suspense fallback={toolFallback}>
+                <div>
+                  <MasterScaleReference />
+                </div>
+              </Suspense>
             )}
 
             {activeTab === 'polyrhythm' && (
-              <div>
-                <DrumMachine />
-              </div>
+              <Suspense fallback={toolFallback}>
+                <div>
+                  <DrumMachine />
+                </div>
+              </Suspense>
             )}
 
             {activeTab === 'rhythmmap' && (
-              <Suspense fallback={<div className="text-sm text-muted-foreground p-4">Loading Rhythm Atlas Map…</div>}>
+              <Suspense fallback={toolFallback}>
                 <GlobalRhythmEngine root={root} mode={mode} />
               </Suspense>
             )}
 
             {activeTab === 'metronome' && (
-              <div>
-                <Metronome />
-              </div>
+              <Suspense fallback={toolFallback}>
+                <div>
+                  <Metronome />
+                </div>
+              </Suspense>
             )}
 
             {activeTab === 'progression' && (
-              <div>
-                <ChordProgressionBuilder
-                  chordSpellings={chordSpellings}
-                  root={root}
-                  mode={mode}
-                />
-              </div>
+              <Suspense fallback={toolFallback}>
+                <div>
+                  <ChordProgressionBuilder
+                    chordSpellings={chordSpellings}
+                    root={root}
+                    mode={mode}
+                  />
+                </div>
+              </Suspense>
             )}
 
             {activeTab === 'visualizer' && (
+            <Suspense fallback={toolFallback}>
             <>
         {/* Control Panel */}
         <div className="flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg border border-border bg-card">
@@ -680,12 +712,15 @@ const ModeVisualizer = () => {
           </div>
         )}
         </>
-        )}
+            </Suspense>
+            )}
 
             {activeTab === 'moderef' && (
-              <div>
-                <ModeReference rootNote={root} timbre={timbre} />
-              </div>
+              <Suspense fallback={toolFallback}>
+                <div>
+                  <ModeReference rootNote={root} timbre={timbre} />
+                </div>
+              </Suspense>
             )}
         </>
         )}

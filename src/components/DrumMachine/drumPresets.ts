@@ -17,6 +17,10 @@ import {
   type RhythmReferenceSource,
 } from "./rhythmResearch";
 import { parseMeter, type TimeSignature } from "./rhythmUtils";
+import {
+  ATLAS_COUNTRY_CENTROIDS,
+  type CountryCentroid,
+} from "../Blipblox/atlasCountryCentroids";
 
 export type { InstrumentRole, Region, RhythmPattern, Timbre } from "./rhythmData";
 
@@ -112,6 +116,10 @@ const COUNTRY_CODES: Record<string, string> = {
   Argentina: "AR",
   Peru: "PE",
   Uruguay: "UY",
+};
+
+const COUNTRY_CENTROID_FALLBACKS: Partial<Record<string, CountryCentroid>> = {
+  "Puerto Rico": { lat: 18.220833, lng: -66.590149 },
 };
 
 const TALA_STRUCTURES: Record<string, TalaStructure> = {
@@ -524,33 +532,17 @@ export function getCountryMapData(): CountryMapData[] {
     });
   }
 
-  const positions: Record<string, [number, number]> = {
-    GN: [9.9, -11.6],
-    GH: [7.9, -1.0],
-    BG: [42.7, 25.5],
-    MK: [41.6, 21.7],
-    ES: [40.5, -3.7],
-    CU: [21.5, -80.0],
-    BR: [-14.2, -51.9],
-    IN: [20.6, 79.0],
-    EG: [26.8, 30.8],
-    LB: [33.9, 35.8],
-    TR: [39.0, 35.2],
-    AR: [-38.4, -63.6],
-    PR: [18.2, -66.5],
-    PE: [-9.2, -75.0],
-    UY: [-32.5, -55.8],
-  };
-
   const countries: CountryMapData[] = [];
 
   countryMap.forEach((value, code) => {
-    const position = positions[code] || [0, 0];
+    const position = ATLAS_COUNTRY_CENTROIDS[value.name]
+      ?? COUNTRY_CENTROID_FALLBACKS[value.name]
+      ?? { lat: 0, lng: 0 };
     countries.push({
       code,
       name: value.name,
-      lat: position[0],
-      lng: position[1],
+      lat: position.lat,
+      lng: position.lng,
       region: value.region,
       rhythmCount: value.count,
       lessonCount: value.lessonIds.size,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { ATLAS_COUNTRY_CENTROIDS } from "./atlasCountryCentroids";
 import {
   CANONICAL_COUNTRY_LIST,
   filterAtlasRhythms,
@@ -65,6 +66,14 @@ describe("globalRhythmAtlas", () => {
     GLOBAL_RHYTHM_ATLAS.forEach((rhythm) => {
       expect(rhythm.midiPattern).toHaveLength(32);
       expect(rhythm.accents).toHaveLength(32);
+    });
+  });
+
+  it("has a real centroid for every atlas country", () => {
+    expect(Object.keys(ATLAS_COUNTRY_CENTROIDS)).toHaveLength(195);
+
+    GLOBAL_RHYTHM_ATLAS.forEach((rhythm) => {
+      expect(ATLAS_COUNTRY_CENTROIDS[rhythm.country]).toBeDefined();
     });
   });
 });

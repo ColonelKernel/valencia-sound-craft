@@ -5,11 +5,8 @@ import "leaflet/dist/leaflet.css";
 
 import { cn } from "@/lib/utils";
 
-import {
-  GLOBAL_RHYTHM_ATLAS,
-  type Rhythm,
-  type RhythmContinent,
-} from "./globalRhythmAtlas";
+import { ATLAS_COUNTRY_CENTROIDS } from "./atlasCountryCentroids";
+import { type Rhythm, type RhythmContinent } from "./globalRhythmAtlas";
 
 interface GlobalRhythmMapProps {
   rhythms: Rhythm[];
@@ -23,7 +20,12 @@ type RegionAnchor = {
   lng: number;
 };
 
-type PositionedRhythm = Rhythm & RegionAnchor;
+type CountryRhythmMarker = RegionAnchor & {
+  country: string;
+  continent: RhythmContinent;
+  rhythmCount: number;
+  rhythm: Rhythm;
+};
 
 const CONTINENT_ANCHORS: Record<RhythmContinent, RegionAnchor> = {
   "North America": { lat: 38, lng: -100 },
@@ -32,43 +34,6 @@ const CONTINENT_ANCHORS: Record<RhythmContinent, RegionAnchor> = {
   Africa: { lat: 7, lng: 20 },
   Asia: { lat: 31, lng: 85 },
   Oceania: { lat: -16, lng: 150 },
-};
-
-const REGION_ANCHORS: Record<string, RegionAnchor> = {
-  Anatolia: { lat: 39, lng: 35 },
-  Andes: { lat: -13, lng: -73 },
-  "Arabian Peninsula": { lat: 22, lng: 45 },
-  "Australia and New Zealand": { lat: -28, lng: 145 },
-  Balkans: { lat: 42, lng: 22 },
-  Caribbean: { lat: 20, lng: -74 },
-  Caucasus: { lat: 42, lng: 44 },
-  "Central Africa": { lat: 1, lng: 20 },
-  "Central America": { lat: 14, lng: -90 },
-  "Central Asia": { lat: 43, lng: 68 },
-  "Central Europe": { lat: 48, lng: 14 },
-  "East Africa": { lat: 2, lng: 37 },
-  "East Asia": { lat: 35, lng: 104 },
-  "Eastern Europe": { lat: 49, lng: 31 },
-  "Eastern Mediterranean": { lat: 35, lng: 35 },
-  Guianas: { lat: 5, lng: -58 },
-  "Indian Ocean": { lat: -19, lng: 57 },
-  Melanesia: { lat: -8, lng: 158 },
-  Micronesia: { lat: 7, lng: 154 },
-  "Middle East": { lat: 31, lng: 45 },
-  "North Africa": { lat: 27, lng: 10 },
-  "North America": { lat: 44, lng: -103 },
-  "Northern Europe": { lat: 59, lng: 15 },
-  "Northern South America": { lat: 7, lng: -66 },
-  Polynesia: { lat: -17, lng: -150 },
-  "South America": { lat: -18, lng: -60 },
-  "South Asia": { lat: 21, lng: 78 },
-  "Southeast Asia": { lat: 12, lng: 105 },
-  "Southern Africa": { lat: -24, lng: 26 },
-  "Southern Cone": { lat: -33, lng: -64 },
-  "Southern Europe": { lat: 41, lng: 14 },
-  "West Africa": { lat: 9, lng: -7 },
-  "West Asia": { lat: 37, lng: 58 },
-  "Western Europe": { lat: 47, lng: 2 },
 };
 
 const CONTINENT_FILL_COLORS: Record<RhythmContinent, string> = {
@@ -101,75 +66,17 @@ const CLASSIFICATION_BADGES: Record<Rhythm["classification"], string> = {
   proxy: "border-slate-500/40 bg-slate-500/10 text-slate-100",
 };
 
-const CONTINENT_SPACING: Record<RhythmContinent, { lat: number; lng: number }> = {
-  "North America": { lat: 3.1, lng: 4.5 },
-  "South America": { lat: 3.1, lng: 4.3 },
-  Europe: { lat: 2.0, lng: 3.2 },
-  Africa: { lat: 2.8, lng: 4.0 },
-  Asia: { lat: 2.6, lng: 4.2 },
-  Oceania: { lat: 3.2, lng: 4.8 },
+const CLASSIFICATION_PRIORITY: Record<Rhythm["classification"], number> = {
+  documented: 0,
+  regional: 1,
+  proxy: 2,
 };
 
-const MARKER_RADIUS: Record<Rhythm["classification"], number> = {
-  documented: 5.6,
-  regional: 5,
-  proxy: 4.5,
+const CONFIDENCE_PRIORITY: Record<Rhythm["confidence"], number> = {
+  high: 0,
+  medium: 1,
+  low: 2,
 };
-
-function clamp(value: number, minimum: number, maximum: number) {
-  return Math.min(maximum, Math.max(minimum, value));
-}
-
-function normalizeLongitude(value: number) {
-  if (value > 180) {
-    return value - 360;
-  }
-
-  if (value < -180) {
-    return value + 360;
-  }
-
-  return value;
-}
-
-function buildAtlasPositionMap() {
-  const groupedByRegion = GLOBAL_RHYTHM_ATLAS.reduce<Record<string, Rhythm[]>>((accumulator, rhythm) => {
-    if (!accumulator[rhythm.region]) {
-      accumulator[rhythm.region] = [];
-    }
-
-    accumulator[rhythm.region].push(rhythm);
-    return accumulator;
-  }, {});
-
-  return Object.fromEntries(
-    Object.entries(groupedByRegion).flatMap(([region, regionRhythms]) => {
-      const sortedRhythms = [...regionRhythms].sort((left, right) => left.country.localeCompare(right.country));
-      const baseAnchor =
-        REGION_ANCHORS[region] ?? CONTINENT_ANCHORS[sortedRhythms[0]?.continent as RhythmContinent];
-      const spacing = CONTINENT_SPACING[sortedRhythms[0]?.continent as RhythmContinent];
-      const columns = Math.max(1, Math.ceil(Math.sqrt(sortedRhythms.length)));
-      const rows = Math.ceil(sortedRhythms.length / columns);
-
-      return sortedRhythms.map((rhythm, index) => {
-        const column = index % columns;
-        const row = Math.floor(index / columns);
-        const lngOffset = (column - (columns - 1) / 2) * spacing.lng + (row % 2 === 0 ? 0 : spacing.lng * 0.2);
-        const latOffset = (row - (rows - 1) / 2) * spacing.lat;
-
-        return [
-          rhythm.country,
-          {
-            lat: clamp(baseAnchor.lat - latOffset, -55, 72),
-            lng: normalizeLongitude(baseAnchor.lng + lngOffset),
-          },
-        ];
-      });
-    }),
-  ) as Record<string, RegionAnchor>;
-}
-
-const ATLAS_POSITION_MAP = buildAtlasPositionMap();
 
 function getPreviewRhythm(hovered: Rhythm | null, selectedCountry: string | undefined, rhythms: Rhythm[]) {
   if (hovered) {
@@ -183,18 +90,48 @@ function getPreviewRhythm(hovered: Rhythm | null, selectedCountry: string | unde
   return rhythms.find((rhythm) => rhythm.country === selectedCountry) || null;
 }
 
-const FocusSelectedCountry = ({ rhythm }: { rhythm: PositionedRhythm | null }) => {
+function getRepresentativeRhythm(rhythms: Rhythm[]) {
+  return [...rhythms].sort((left, right) => {
+    const classificationDelta =
+      CLASSIFICATION_PRIORITY[left.classification] - CLASSIFICATION_PRIORITY[right.classification];
+
+    if (classificationDelta !== 0) {
+      return classificationDelta;
+    }
+
+    const confidenceDelta = CONFIDENCE_PRIORITY[left.confidence] - CONFIDENCE_PRIORITY[right.confidence];
+
+    if (confidenceDelta !== 0) {
+      return confidenceDelta;
+    }
+
+    return left.name.localeCompare(right.name);
+  })[0];
+}
+
+function getMarkerRadius(rhythmCount: number, maxRhythmCount: number, isSelected: boolean) {
+  const minRadius = 5;
+  const maxRadius = 12;
+  const scaledCount = Math.sqrt(Math.max(1, rhythmCount));
+  const scaledMax = Math.sqrt(Math.max(1, maxRhythmCount));
+  const normalized = scaledMax === 1 ? 0.5 : (scaledCount - 1) / (scaledMax - 1);
+  const baseRadius = minRadius + normalized * (maxRadius - minRadius);
+
+  return isSelected ? baseRadius + 1.5 : baseRadius;
+}
+
+const FocusSelectedCountry = ({ marker }: { marker: CountryRhythmMarker | null }) => {
   const map = useMap();
 
   useEffect(() => {
-    if (!rhythm) {
+    if (!marker) {
       return;
     }
 
-    map.flyTo([rhythm.lat, rhythm.lng], Math.max(map.getZoom(), rhythm.continent === "Oceania" ? 3 : 4), {
+    map.flyTo([marker.lat, marker.lng], Math.max(map.getZoom(), marker.continent === "Oceania" ? 3 : 4), {
       duration: 0.6,
     });
-  }, [map, rhythm]);
+  }, [map, marker]);
 
   return null;
 };
@@ -207,20 +144,54 @@ const GlobalRhythmMap = ({
 }: GlobalRhythmMapProps) => {
   const [hoveredRhythm, setHoveredRhythm] = useState<Rhythm | null>(null);
 
-  const positionedRhythms = useMemo(() => {
-    return rhythms
-      .map((rhythm) => ({
-        ...rhythm,
-        ...(ATLAS_POSITION_MAP[rhythm.country] ?? CONTINENT_ANCHORS[rhythm.continent]),
-      }))
+  const countryMarkers = useMemo(() => {
+    const rhythmsByCountry = rhythms.reduce<Map<string, Rhythm[]>>((countryMap, rhythm) => {
+      const countryRhythms = countryMap.get(rhythm.country);
+
+      if (countryRhythms) {
+        countryRhythms.push(rhythm);
+      } else {
+        countryMap.set(rhythm.country, [rhythm]);
+      }
+
+      return countryMap;
+    }, new Map());
+
+    return [...rhythmsByCountry.entries()]
+      .map(([country, countryRhythms]) => {
+        const representativeRhythm = getRepresentativeRhythm(countryRhythms);
+        const { continent } = representativeRhythm;
+        const anchor = ATLAS_COUNTRY_CENTROIDS[country] ?? CONTINENT_ANCHORS[continent];
+
+        return {
+          country,
+          continent,
+          lat: anchor.lat,
+          lng: anchor.lng,
+          rhythmCount: countryRhythms.length,
+          rhythm: representativeRhythm,
+        };
+      })
       .sort((left, right) => left.country.localeCompare(right.country));
   }, [rhythms]);
-  const selectedRhythm = useMemo(
-    () => positionedRhythms.find((rhythm) => rhythm.country === selectedCountry) || null,
-    [positionedRhythms, selectedCountry],
+  const representativeRhythms = useMemo(
+    () => countryMarkers.map((marker) => marker.rhythm),
+    [countryMarkers],
+  );
+  const selectedMarker = useMemo(
+    () => countryMarkers.find((marker) => marker.country === selectedCountry) || null,
+    [countryMarkers, selectedCountry],
+  );
+  const previewRhythm = getPreviewRhythm(hoveredRhythm, selectedCountry, representativeRhythms);
+  const previewMarker = useMemo(
+    () => countryMarkers.find((marker) => marker.country === previewRhythm?.country) || null,
+    [countryMarkers, previewRhythm],
+  );
+  const maxRhythmCount = useMemo(
+    () => countryMarkers.reduce((maxCount, marker) => Math.max(maxCount, marker.rhythmCount), 1),
+    [countryMarkers],
   );
 
-  const previewRhythm = getPreviewRhythm(hoveredRhythm, selectedCountry, positionedRhythms);
 
   return (
     <div className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-5 space-y-4">
@@ -237,7 +208,10 @@ const GlobalRhythmMap = ({
         <div className="flex flex-wrap gap-2 text-[10px]">
           <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/80 px-2 py-1 text-muted-foreground">
             <MousePointerClick className="w-3 h-3" />
-            {positionedRhythms.length} visible countries
+            {countryMarkers.length} visible countries
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/80 px-2 py-1 text-muted-foreground">
+            Marker size = rhythm count
           </span>
           <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-emerald-100">
             Documented
@@ -269,6 +243,11 @@ const GlobalRhythmMap = ({
                 )}>
                   {previewRhythm.classification}
                 </span>
+                {previewMarker && (
+                  <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                    {previewMarker.rhythmCount} rhythm{previewMarker.rhythmCount === 1 ? "" : "s"}
+                  </span>
+                )}
                 <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
                   {previewRhythm.meter}
                 </span>
@@ -303,15 +282,16 @@ const GlobalRhythmMap = ({
           attributionControl={false}
         >
           <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-          <FocusSelectedCountry rhythm={selectedRhythm} />
-          {positionedRhythms.map((rhythm) => {
-            const isSelected = selectedCountry === rhythm.country;
+          <FocusSelectedCountry marker={selectedMarker} />
+          {countryMarkers.map((marker) => {
+            const { rhythm } = marker;
+            const isSelected = selectedCountry === marker.country;
 
             return (
               <CircleMarker
-                key={rhythm.country}
-                center={[rhythm.lat, rhythm.lng]}
-                radius={isSelected ? 7.5 : MARKER_RADIUS[rhythm.classification]}
+                key={marker.country}
+                center={[marker.lat, marker.lng]}
+                radius={getMarkerRadius(marker.rhythmCount, maxRhythmCount, isSelected)}
                 pathOptions={{
                   fillColor: CONTINENT_FILL_COLORS[rhythm.continent],
                   fillOpacity: isSelected ? 0.96 : 0.82,
@@ -332,13 +312,16 @@ const GlobalRhythmMap = ({
               >
                 <Popup>
                   <div className="min-w-[180px] text-[11px]">
-                    <p className="font-semibold text-slate-900">{rhythm.country}</p>
+                    <p className="font-semibold text-slate-900">{marker.country}</p>
                     <p className="text-slate-600">{rhythm.name}</p>
                     <p className="mt-1 text-slate-500">
                       {rhythm.continent} · {rhythm.region}
                     </p>
                     <p className="text-slate-500">
                       {rhythm.meter} · {rhythm.classification} · {rhythm.confidence}
+                    </p>
+                    <p className="text-slate-500">
+                      {marker.rhythmCount} rhythm{marker.rhythmCount === 1 ? "" : "s"} in dataset
                     </p>
                   </div>
                 </Popup>
