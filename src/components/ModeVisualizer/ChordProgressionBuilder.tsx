@@ -18,7 +18,7 @@ import {
   getSecondaryDominants, getTritoneSubs, getBorrowedChords, createIIV,
   transformProgression, getNextChordSuggestions,
   getRomanNumeral, getNashvilleNumber, getChordFunction,
-  transposeChord, useFlatsForKey, applyExtensionLevel,
+  transposeChord, shouldUseFlatsForKey, applyExtensionLevel,
   playChordTonesExpressive, downloadMidi, getStyleSuggestions,
   NOTES_SHARP, NOTES_FLAT,
 } from "./chordProgressionUtils";
@@ -163,7 +163,7 @@ const ChordProgressionBuilder = ({
       const oldIdx = NOTES_SHARP.indexOf(localRoot) !== -1 ? NOTES_SHARP.indexOf(localRoot) : NOTES_FLAT.indexOf(localRoot);
       const newIdx = NOTES_SHARP.indexOf(newRoot) !== -1 ? NOTES_SHARP.indexOf(newRoot) : NOTES_FLAT.indexOf(newRoot);
       const semitones = ((newIdx - oldIdx) % 12 + 12) % 12;
-      const flats = useFlatsForKey(newRoot);
+      const flats = shouldUseFlatsForKey(newRoot);
       pushUndo();
       stop();
       setProgression(prev => prev.map(pc => ({ ...pc, chord: transposeChord(pc.chord, semitones, flats) })));
