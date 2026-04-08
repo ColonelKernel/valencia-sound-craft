@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, Square } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import StepSequencer from "@/components/Blipblox/StepSequencer";
 import { cn } from "@/lib/utils";
@@ -167,6 +168,7 @@ const HeroRhythmPreview = () => {
         <StepSequencer
           pattern={pattern}
           velocityPattern={velocity}
+          layout="compact"
           onChange={handlePatternChange}
           onStepPreview={playPreviewTone}
           pulseSteps={showPulse ? [0, 3] : []}
@@ -195,12 +197,12 @@ const HeroRhythmPreview = () => {
           {playing ? "Stop Preview" : "Play Rhythm"}
         </button>
 
-        <a
-          href="#mode-visualizer"
+        <Link
+          to="/tools/rhythm"
           className="inline-flex items-center justify-center rounded-2xl border border-primary-foreground/18 px-4 py-3 text-sm font-medium text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
         >
           Open the full rhythm system
-        </a>
+        </Link>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Play, Square } from "lucide-react";
 import { getScaleNotes, isSharp, isFlat, MODE_INTERVAL_NAMES, MODE_CATEGORIES, MODE_INTERVALS } from "./scaleData";
-import { playScale, type InstrumentTimbre } from "./audioSynth";
+import { playNoteAtOctave, type InstrumentTimbre } from "./audioSynth";
+import { buildModeReferenceSequence } from "./modeReferencePlayback";
 
 interface ModeReferenceProps {
   rootNote?: string;
@@ -111,10 +112,16 @@ const ModeReference = ({ rootNote = 'C', timbre = 'piano' }: ModeReferenceProps)
     });
   };
 
-  const handlePlayScale = (modeName: string) => {
-    // Stop any currently playing
+  const clearPlayback = () => {
     playTimeouts.current.forEach(clearTimeout);
     playTimeouts.current = [];
+  };
+
+  useEffect(() => clearPlayback, []);
+
+  const handlePlayScale = (modeName: string) => {
+    // Stop any currently playing
+    clearPlayback();
     
     if (playingMode === modeName) {
       setPlayingMode(null);
@@ -122,15 +129,18 @@ const ModeReference = ({ rootNote = 'C', timbre = 'piano' }: ModeReferenceProps)
     }
     
     const notes = getScaleNotes(selectedRoot, modeName);
-    // Ascending + descending + final root
-    const ascending = [...notes, notes[0]];
-    const descending = [...notes].reverse();
-    const fullScale = [...ascending, ...descending.slice(1)];
+    const fullScale = buildModeReferenceSequence(notes);
+    if (fullScale.length === 0) return;
     
     setPlayingMode(modeName);
-    playScale(fullScale, 180, timbre);
+    fullScale.forEach((step, index) => {
+      const noteTimeout = window.setTimeout(() => {
+        playNoteAtOctave(step.note, step.octave, 0.35, timbre);
+      }, index * 180);
+      playTimeouts.current.push(noteTimeout);
+    });
     
-    const totalDuration = fullScale.length * 180;
+    const totalDuration = fullScale.length * 180 + 350;
     const endTimeout = window.setTimeout(() => {
       setPlayingMode(null);
     }, totalDuration);

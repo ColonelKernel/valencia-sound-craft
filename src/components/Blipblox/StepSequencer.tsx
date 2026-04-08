@@ -9,6 +9,7 @@ interface StepSequencerProps {
   velocityPattern?: number[];
   layers?: SequencerLayer[];
   grouping?: number[];
+  layout?: "default" | "compact";
   onChange?: (pattern: number[], velocity: number[]) => void;
   onLayersChange?: (layers: SequencerLayer[]) => void;
   onStepPreview?: (index: number, step: number, velocity: number, layerId?: string) => void;
@@ -170,6 +171,8 @@ function StepCell({
   velocity,
   isCurrent,
   isAccent,
+  shouldPulse,
+  compact,
   isPressed,
   isAnimated,
   readOnly,
@@ -185,6 +188,8 @@ function StepCell({
   velocity: number;
   isCurrent: boolean;
   isAccent: boolean;
+  shouldPulse: boolean;
+  compact: boolean;
   isPressed: boolean;
   isAnimated: boolean;
   readOnly: boolean;
@@ -227,12 +232,14 @@ function StepCell({
       onKeyDown={onKeyDown}
       className={cn(
         "relative flex aspect-square min-h-[clamp(1.75rem,5vw,3rem)] w-full items-center justify-center rounded-xl border text-[9px] font-semibold transition-[transform,background-color,border-color,box-shadow,filter] duration-150 ease-out select-none",
+        compact && "min-h-[clamp(2.35rem,10vw,3.25rem)] rounded-2xl text-[10px]",
         isLocked ? "cursor-default opacity-95" : "cursor-pointer",
         activeTone,
         meta.isGroupStart && "ring-1 ring-white/6 ring-inset",
         meta.isPulse && !isActive && "border-border/70",
         isAccent && "after:absolute after:inset-x-[18%] after:top-[10%] after:h-1 after:rounded-full after:bg-white/70",
         isCurrent && "ring-2 ring-white/70 ring-offset-2 ring-offset-card",
+        shouldPulse && "sequencer-step-pulse",
         isPressed && "scale-[0.97]",
         isAnimated && "sequencer-step-press",
         !isLocked && "hover:brightness-110",
@@ -252,6 +259,7 @@ const StepSequencer = ({
   velocityPattern,
   layers,
   grouping,
+  layout = "default",
   onChange,
   onLayersChange,
   onStepPreview,
@@ -265,6 +273,7 @@ const StepSequencer = ({
 }: StepSequencerProps) => {
   const [pressedCell, setPressedCell] = useState<string | null>(null);
   const [animatedKey, setAnimatedKey] = useState<string | null>(null);
+  const isCompact = layout === "compact";
 
   const animationTimerRef = useRef<number | null>(null);
   const dragSessionRef = useRef<DragSession | null>(null);
@@ -308,6 +317,12 @@ const StepSequencer = ({
     [resolvedGrouping, resolvedPulseSteps, totalSteps],
   );
   const accentSet = useMemo(() => new Set(accentSteps), [accentSteps]);
+  const showLaneColumn = !isCompact || resolvedLayers.length > 1;
+
+  const stepGridStyle = useMemo(
+    () => ({ gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(0, 1fr))` }),
+    [totalSteps],
+  );
 
   const emitLayers = useCallback((nextLayers: DisplayLayer[]) => {
     latestLayersRef.current = cloneDisplayLayers(nextLayers);
@@ -479,8 +494,66 @@ const StepSequencer = ({
     applyStepUpdate(rowIndex, index, isActive && !event.shiftKey ? 0 : 1, nextVelocity);
   }, [applyStepUpdate, readOnly]);
 
+  const renderStepGrid = useCallback((layer: DisplayLayer, rowIndex: number) => (
+    <div className="grid gap-0" style={stepGridStyle}>
+      {stepMeta.map((meta) => {
+        const key = `${layer.id}:${meta.index}`;
+        const velocity = layer.velocity[meta.index] ?? 0;
+        const isActive = layer.pattern[meta.index] === 1;
+
+        return (
+          <div
+            key={key}
+            className={cn(
+              "relative px-[1px] py-[1px]",
+              meta.isGroupStart && meta.index !== 0 && "pl-2",
+            )}
+          >
+            {meta.isGroupStart && meta.index !== 0 && (
+              <span className="absolute inset-y-1 left-0 w-px rounded-full bg-white/10" aria-hidden />
+            )}
+
+            <MemoStepCell
+              layer={layer}
+              meta={meta}
+              isActive={isActive}
+              velocity={velocity}
+              isCurrent={currentStep === meta.index}
+              isAccent={accentSet.has(meta.index)}
+              shouldPulse={currentStep === -1 && resolvedPulseSteps.includes(meta.index) && isActive}
+              compact={isCompact}
+              isPressed={pressedCell === key}
+              isAnimated={animatedKey === key}
+              readOnly={readOnly}
+              onMouseDown={(event) => handleMouseDown(layer, rowIndex, meta.index, event)}
+              onMouseEnter={() => handleMouseEnter(layer, rowIndex, meta.index)}
+              onMouseMove={(event) => handleMouseMove(layer, rowIndex, meta.index, event)}
+              onMouseUp={resetDragSession}
+              onKeyDown={(event) => handleKeyDown(layer, rowIndex, meta.index, event)}
+            />
+          </div>
+        );
+      })}
+    </div>
+  ), [
+    accentSet,
+    animatedKey,
+    currentStep,
+    handleKeyDown,
+    handleMouseDown,
+    handleMouseEnter,
+    handleMouseMove,
+    isCompact,
+    pressedCell,
+    readOnly,
+    resetDragSession,
+    resolvedPulseSteps,
+    stepGridStyle,
+    stepMeta,
+  ]);
+
   return (
-    <div className="space-y-4" onMouseLeave={resetDragSession}>
+    <div className={cn("space-y-4", isCompact && "space-y-3")} onMouseLeave={resetDragSession}>
       {onStepModeChange && stepOptions.length > 1 && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Resolution</span>
@@ -502,39 +575,48 @@ const StepSequencer = ({
         </div>
       )}
 
-      <div className="rounded-3xl border border-border/70 bg-card/70 p-3 sm:p-4">
+      <div className={cn(
+        "space-y-3",
+        !isCompact && "rounded-3xl border border-border/70 bg-card/70 p-3 sm:p-4",
+      )}>
         <div className="space-y-3">
-          <div className="rounded-2xl border border-white/8 bg-secondary/35 px-3 py-2">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
-                Cycle Grouping
-              </div>
-              <div className="text-[11px] text-muted-foreground">
-                {resolvedGrouping.join(" + ")}
-              </div>
-            </div>
-            <div className="mt-2 flex gap-2">
-              {resolvedGrouping.map((groupSize, index) => (
-                <div
-                  key={`${groupSize}-${index}`}
-                  className="flex min-h-9 items-center justify-between rounded-xl border border-white/8 bg-black/20 px-3 text-xs text-foreground"
-                  style={{ flex: `${groupSize} 1 0` }}
-                >
-                  <span className="font-medium">{groupSize}</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {resolvedGrouping.slice(0, index).reduce((total, value) => total + value, 0) + 1}
-                  </span>
+          {!isCompact && (
+            <div className="rounded-2xl border border-white/8 bg-secondary/35 px-3 py-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+                  Cycle Grouping
                 </div>
-              ))}
+                <div className="text-[11px] text-muted-foreground">
+                  {resolvedGrouping.join(" + ")}
+                </div>
+              </div>
+              <div className="mt-2 flex gap-2">
+                {resolvedGrouping.map((groupSize, index) => (
+                  <div
+                    key={`${groupSize}-${index}`}
+                    className="flex min-h-9 items-center justify-between rounded-xl border border-white/8 bg-black/20 px-3 text-xs text-foreground"
+                    style={{ flex: `${groupSize} 1 0` }}
+                  >
+                    <span className="font-medium">{groupSize}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {resolvedGrouping.slice(0, index).reduce((total, value) => total + value, 0) + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)] gap-2 px-1 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-            <div className="flex items-center">Lane</div>
-            <div
-              className="grid gap-0"
-              style={{ gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(0, 1fr))` }}
-            >
+          <div
+            className={cn(
+              "gap-2 px-1 text-[10px] uppercase tracking-[0.24em] text-muted-foreground",
+              showLaneColumn
+                ? "grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)]"
+                : "space-y-2",
+            )}
+          >
+            {showLaneColumn && <div className="flex items-center">Lane</div>}
+            <div className="grid gap-0" style={stepGridStyle}>
               {stepMeta.map((meta) => (
                 <div
                   key={`step-label-${meta.index}`}
@@ -558,67 +640,32 @@ const StepSequencer = ({
           </div>
 
           {resolvedLayers.map((layer, rowIndex) => (
-            <div
-              key={layer.id}
-              className="grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)] items-center gap-2"
-            >
-              <div className="space-y-1">
-                <span className={cn(
-                  "inline-flex min-h-9 w-full items-center justify-center rounded-2xl border px-3 text-[11px] font-medium",
-                  LAYER_BADGES[layer.band],
-                )}>
-                  {layer.label}
-                </span>
-                <p className="truncate px-1 text-[10px] text-muted-foreground">{layer.instrument}</p>
-              </div>
-
+            showLaneColumn ? (
               <div
-                className="grid gap-0"
-                style={{ gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(0, 1fr))` }}
+                key={layer.id}
+                className="grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)] items-center gap-2"
               >
-                {stepMeta.map((meta) => {
-                  const key = `${layer.id}:${meta.index}`;
-                  const velocity = layer.velocity[meta.index] ?? 0;
-                  const isActive = layer.pattern[meta.index] === 1;
-
-                  return (
-                    <div
-                      key={key}
-                      className={cn(
-                        "relative px-[1px] py-[1px]",
-                        meta.isGroupStart && meta.index !== 0 && "pl-2",
-                      )}
-                    >
-                      {meta.isGroupStart && meta.index !== 0 && (
-                        <span className="absolute inset-y-1 left-0 w-px rounded-full bg-white/10" aria-hidden />
-                      )}
-
-                      <MemoStepCell
-                        layer={layer}
-                        meta={meta}
-                        isActive={isActive}
-                        velocity={velocity}
-                        isCurrent={currentStep === meta.index}
-                        isAccent={accentSet.has(meta.index)}
-                        isPressed={pressedCell === key}
-                        isAnimated={animatedKey === key}
-                        readOnly={readOnly}
-                        onMouseDown={(event) => handleMouseDown(layer, rowIndex, meta.index, event)}
-                        onMouseEnter={() => handleMouseEnter(layer, rowIndex, meta.index)}
-                        onMouseMove={(event) => handleMouseMove(layer, rowIndex, meta.index, event)}
-                        onMouseUp={resetDragSession}
-                        onKeyDown={(event) => handleKeyDown(layer, rowIndex, meta.index, event)}
-                      />
-                    </div>
-                  );
-                })}
+                <div className="space-y-1">
+                  <span className={cn(
+                    "inline-flex min-h-9 w-full items-center justify-center rounded-2xl border px-3 text-[11px] font-medium",
+                    LAYER_BADGES[layer.band],
+                  )}>
+                    {layer.label}
+                  </span>
+                  <p className="truncate px-1 text-[10px] text-muted-foreground">{layer.instrument}</p>
+                </div>
+                {renderStepGrid(layer, rowIndex)}
               </div>
-            </div>
+            ) : (
+              <div key={layer.id}>
+                {renderStepGrid(layer, rowIndex)}
+              </div>
+            )
           ))}
         </div>
       </div>
 
-      {!readOnly && (
+      {!readOnly && !isCompact && (
         <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
           <span className="rounded-full border border-border bg-card/70 px-3 py-1">
             Click or drag to paint
