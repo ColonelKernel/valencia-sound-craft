@@ -317,7 +317,8 @@ const StepSequencer = ({
     [resolvedGrouping, resolvedPulseSteps, totalSteps],
   );
   const accentSet = useMemo(() => new Set(accentSteps), [accentSteps]);
-  const showLaneColumn = !isCompact || resolvedLayers.length > 1;
+  const showHeader = !isCompact;
+  const showCompactTrackLabels = isCompact && resolvedLayers.length > 1;
 
   const stepGridStyle = useMemo(
     () => ({ gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(0, 1fr))` }),
@@ -607,40 +608,57 @@ const StepSequencer = ({
             </div>
           )}
 
-          <div
-            className={cn(
-              "gap-2 px-1 text-[10px] uppercase tracking-[0.24em] text-muted-foreground",
-              showLaneColumn
-                ? "grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)]"
-                : "space-y-2",
-            )}
-          >
-            {showLaneColumn && <div className="flex items-center">Lane</div>}
-            <div className="grid gap-0" style={stepGridStyle}>
-              {stepMeta.map((meta) => (
-                <div
-                  key={`step-label-${meta.index}`}
-                  className={cn(
-                    "flex justify-center px-[1px] py-1",
-                    meta.isGroupStart && meta.index !== 0 && "pl-2",
-                  )}
-                >
-                  <span
+          {showHeader && (
+            <div className="grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)] gap-2 px-1 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+              <div className="flex items-center">Lane</div>
+              <div className="grid gap-0" style={stepGridStyle}>
+                {stepMeta.map((meta) => (
+                  <div
+                    key={`step-label-${meta.index}`}
                     className={cn(
-                      "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1",
-                      currentStep === meta.index && "bg-primary text-primary-foreground",
-                      meta.isPulse && currentStep !== meta.index && "bg-white/6 text-foreground",
+                      "flex justify-center px-[1px] py-1",
+                      meta.isGroupStart && meta.index !== 0 && "pl-2",
                     )}
                   >
-                    {meta.index + 1}
-                  </span>
-                </div>
-              ))}
+                    <span
+                      className={cn(
+                        "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1",
+                        currentStep === meta.index && "bg-primary text-primary-foreground",
+                        meta.isPulse && currentStep !== meta.index && "bg-white/6 text-foreground",
+                      )}
+                    >
+                      {meta.index + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {resolvedLayers.map((layer, rowIndex) => (
-            showLaneColumn ? (
+            isCompact ? (
+              <div
+                key={layer.id}
+                className={cn(
+                  "items-center gap-3",
+                  showCompactTrackLabels
+                    ? "grid grid-cols-[minmax(3.25rem,4.5rem)_minmax(0,1fr)]"
+                    : "block",
+                )}
+              >
+                {showCompactTrackLabels && (
+                  <div className="space-y-1">
+                    <span className={cn(
+                      "inline-flex min-h-8 w-full items-center justify-center rounded-xl border px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                      LAYER_BADGES[layer.band],
+                    )}>
+                      {layer.label}
+                    </span>
+                  </div>
+                )}
+                {renderStepGrid(layer, rowIndex)}
+              </div>
+            ) : (
               <div
                 key={layer.id}
                 className="grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)] items-center gap-2"
@@ -654,10 +672,6 @@ const StepSequencer = ({
                   </span>
                   <p className="truncate px-1 text-[10px] text-muted-foreground">{layer.instrument}</p>
                 </div>
-                {renderStepGrid(layer, rowIndex)}
-              </div>
-            ) : (
-              <div key={layer.id}>
                 {renderStepGrid(layer, rowIndex)}
               </div>
             )
