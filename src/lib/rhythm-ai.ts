@@ -1,1 +1,1 @@
-export * from "@/components/DrumMachine/rhythmAI";
+export * from "./rhythmAI";

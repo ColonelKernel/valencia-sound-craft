@@ -27,11 +27,25 @@ interface TonnetzProps {
   scaleNotes?: string[];
   root?: string;
   timbre?: InstrumentTimbre;
+  tempo?: number;
+  playing?: boolean;
+  onTempoChange?: (tempo: number) => void;
+  onPlayingChange?: (playing: boolean) => void;
   onAddToProgression?: (notes: string[], symbol: string) => void;
   highlightedChordNotes?: number[] | null;
 }
 
-const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgression, highlightedChordNotes }: TonnetzProps) => {
+const Tonnetz = ({
+  scaleNotes = [],
+  root = 'C',
+  timbre = 'piano',
+  tempo: controlledTempo,
+  playing: controlledPlaying,
+  onTempoChange,
+  onPlayingChange,
+  onAddToProgression,
+  highlightedChordNotes,
+}: TonnetzProps) => {
   // ─── State ──────────────────────────────────────────────
   const [hoveredTriad, setHoveredTriad] = useState<GridTriad | null>(null);
   const [activeTriad, setActiveTriad] = useState<TonnetzTriadData | null>(null);
@@ -49,7 +63,7 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   const [playing, setPlaying] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(-1);
   const [looping, setLooping] = useState(false);
-  const [bpm, setBpm] = useState(100);
+  const [bpm, setBpm] = useState(controlledTempo ?? 100);
   const [showProgPanel, setShowProgPanel] = useState(true);
   const timeoutRef = useRef<number[]>([]);
 
@@ -292,6 +306,32 @@ const Tonnetz = ({ scaleNotes = [], root = 'C', timbre = 'piano', onAddToProgres
   }, [progression, bpm, stop, timbre, looping]);
 
   useEffect(() => { return () => { timeoutRef.current.forEach(clearTimeout); }; }, []);
+
+  useEffect(() => {
+    if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
+      setBpm(controlledTempo);
+    }
+  }, [bpm, controlledTempo]);
+
+  useEffect(() => {
+    onTempoChange?.(bpm);
+  }, [bpm, onTempoChange]);
+
+  useEffect(() => {
+    onPlayingChange?.(playing);
+  }, [onPlayingChange, playing]);
+
+  useEffect(() => {
+    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
+      return;
+    }
+
+    if (controlledPlaying) {
+      playProgression();
+    } else {
+      stop();
+    }
+  }, [controlledPlaying, playProgression, playing, stop]);
 
   const handleExportMidi = useCallback(() => {
     if (progression.length === 0) return;

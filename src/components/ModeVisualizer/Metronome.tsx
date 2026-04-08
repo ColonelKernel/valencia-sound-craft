@@ -5,6 +5,13 @@ import {
   Volume2, VolumeX, SkipForward, Eye, EyeOff
 } from "lucide-react";
 
+interface MetronomeProps {
+  tempo?: number;
+  playing?: boolean;
+  onTempoChange?: (tempo: number) => void;
+  onPlayingChange?: (playing: boolean) => void;
+}
+
 // ─── Types ──────────────────────────────────────────────────
 type MetronomeMode = 'practice' | 'performance' | 'flow';
 type SoundType = 'click' | 'woodblock' | 'kick' | 'soft' | 'hihat';
@@ -128,9 +135,14 @@ function saveSetlist(items: SetlistItem[]) {
 }
 
 // ─── Main Component ─────────────────────────────────────────
-const Metronome = () => {
+const Metronome = ({
+  tempo: controlledTempo,
+  playing: controlledPlaying,
+  onTempoChange,
+  onPlayingChange,
+}: MetronomeProps) => {
   // Core state
-  const [bpm, setBpm] = useState(120);
+  const [bpm, setBpm] = useState(controlledTempo ?? 120);
   const [playing, setPlaying] = useState(false);
   const [timeSigIdx, setTimeSigIdx] = useState(0);
   const [subdivIdx, setSubdivIdx] = useState(0);
@@ -394,6 +406,32 @@ const Metronome = () => {
   };
 
   const tempoLabel = getTempoLabel(bpm);
+
+  useEffect(() => {
+    if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
+      setBpm(controlledTempo);
+    }
+  }, [bpm, controlledTempo]);
+
+  useEffect(() => {
+    onTempoChange?.(bpm);
+  }, [bpm, onTempoChange]);
+
+  useEffect(() => {
+    onPlayingChange?.(playing);
+  }, [onPlayingChange, playing]);
+
+  useEffect(() => {
+    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
+      return;
+    }
+
+    if (controlledPlaying) {
+      start();
+    } else {
+      stop();
+    }
+  }, [controlledPlaying, playing, start, stop]);
 
   // ─── Render ────────────────────────────────────────────
   const isPerformance = mode === 'performance';
