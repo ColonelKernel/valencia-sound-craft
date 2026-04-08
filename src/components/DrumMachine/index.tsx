@@ -188,18 +188,21 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
       return accumulator;
     }, {});
 
+    const cpCountry = (rhythmList.find((p) => p.id === currentPresetId)
+      || presetByIdLocal.get(currentPresetId))?.country;
+
     return Object.entries(grouped).sort(([leftCountry], [rightCountry]) => {
-      if (leftCountry === currentPreset?.country && rightCountry !== currentPreset?.country) {
+      if (leftCountry === cpCountry && rightCountry !== cpCountry) {
         return -1;
       }
 
-      if (rightCountry === currentPreset?.country && leftCountry !== currentPreset?.country) {
+      if (rightCountry === cpCountry && leftCountry !== cpCountry) {
         return 1;
       }
 
       return leftCountry.localeCompare(rightCountry);
     });
-  }, [currentPreset?.country, sortedPresets]);
+  }, [currentPresetId, rhythmList, sortedPresets]);
 
   const presetById = useMemo(() => {
     return new Map(DRUM_PRESETS.map((preset) => [preset.id, preset]));
