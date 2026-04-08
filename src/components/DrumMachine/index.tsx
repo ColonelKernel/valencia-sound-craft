@@ -188,8 +188,9 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
       return accumulator;
     }, {});
 
+    const localMap = new Map(DRUM_PRESETS.map((p) => [p.id, p]));
     const cpCountry = (rhythmList.find((p) => p.id === currentPresetId)
-      || presetByIdLocal.get(currentPresetId))?.country;
+      || localMap.get(currentPresetId))?.country;
 
     return Object.entries(grouped).sort(([leftCountry], [rightCountry]) => {
       if (leftCountry === cpCountry && rightCountry !== cpCountry) {
