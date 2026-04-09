@@ -37,6 +37,8 @@ const COMPLEXITY_SORT_ORDER: Record<Complexity, number> = {
   advanced: 2,
 };
 
+const DEFAULT_TIME_SIGNATURE: [number, number] = [4, 4];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 let _uid = 0;
@@ -227,7 +229,7 @@ const DrumMachine = ({
       || presetById.get(currentPresetId)
       || null;
   }, [rhythmList, currentPresetId, presetById]);
-  const currentTimeSignature = currentPreset?.timeSignature || ([4, 4] as [number, number]);
+  const currentTimeSignature = currentPreset?.timeSignature ?? DEFAULT_TIME_SIGNATURE;
   const subdivisionBoundaries = useMemo(() => {
     if (currentPreset) {
       return getSubdivisionBoundaries(currentPreset.pulseGrouping);

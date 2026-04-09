@@ -135,7 +135,7 @@ const ChordProgressionBuilder = ({
       else { setPlaying(false); setCurrentIdx(-1); }
     }, progression.length * chordDuration));
     timeoutRef.current = ids;
-  }, [progression, bpm, beatsPerChord, stop, timbre, looping]);
+  }, [progression, bpm, beatsPerChord, stop, timbre, voicingType, expressive, looping]);
 
   const addChord = (pc: ProgressionChord) => {
     if (lockProgression) return;

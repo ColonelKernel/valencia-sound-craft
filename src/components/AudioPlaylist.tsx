@@ -18,8 +18,13 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const isPlayingRef = useRef(isPlaying);
 
   const current = tracks[currentIndex];
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -49,7 +54,9 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.load();
-    if (isPlaying) audio.play();
+    if (isPlayingRef.current) {
+      void audio.play().catch(() => setIsPlaying(false));
+    }
   }, [currentIndex]);
 
   const toggle = () => {

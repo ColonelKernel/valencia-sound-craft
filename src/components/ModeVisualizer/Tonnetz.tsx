@@ -303,7 +303,7 @@ const Tonnetz = ({
       else { setPlaying(false); setCurrentIdx(-1); }
     }, progression.length * chordDuration));
     timeoutRef.current = ids;
-  }, [progression, bpm, stop, timbre, looping]);
+  }, [progression, bpm, stop, timbre, midiEnabled, midiChannel, looping]);
 
   useEffect(() => { return () => { timeoutRef.current.forEach(clearTimeout); }; }, []);
 
@@ -344,7 +344,7 @@ const Tonnetz = ({
     }));
     const progChords = chords.map(c => ({ chord: c, source: 'diatonic' as const }));
     downloadMidi(progChords, bpm, 4, ALL_NOTES[rootIdx], 'tonnetz');
-  }, [progression, bpm]);
+  }, [progression, bpm, rootIdx]);
 
   const loadPreset = useCallback((triads: TonnetzTriadData[]) => {
     // Transpose preset to current root
