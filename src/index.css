@@ -94,6 +94,26 @@
     outline: 2px solid hsl(var(--ring) / 0.45);
     outline-offset: 2px;
   }
+
+  .slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--primary));
+    background: hsl(var(--background));
+    cursor: pointer;
+  }
+
+  .slider-input::-moz-range-thumb {
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 9999px;
+    border: 2px solid hsl(var(--primary));
+    background: hsl(var(--background));
+    cursor: pointer;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
