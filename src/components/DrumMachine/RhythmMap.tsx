@@ -46,7 +46,7 @@ const FitBounds = ({ countries }: { countries: CountryMapData[] }) => {
       const bounds = countries.map(c => [c.lat, c.lng] as [number, number]);
       map.fitBounds(bounds, { padding: [30, 30], maxZoom: 5 });
     }
-  }, []);
+  }, [countries, map]);
   return null;
 };
 

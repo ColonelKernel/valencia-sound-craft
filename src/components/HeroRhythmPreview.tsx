@@ -1,17 +1,65 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, Square } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import StepSequencer from "@/components/Blipblox/StepSequencer";
+import { buildCompositePattern, type SequencerLayer } from "@/components/Blipblox/rhythmEngineModel";
 import { cn } from "@/lib/utils";
 
 const HERO_STEP_COUNT = 8;
-const SEEDED_PATTERN = [1, 0, 0, 1, 0, 0, 0, 0];
-const SEEDED_VELOCITY = [112, 0, 0, 88, 0, 0, 0, 0];
 const HERO_BPM = 108;
 
+const HERO_TRACKS: SequencerLayer[] = [
+  {
+    id: "hero-kick",
+    label: "Kick",
+    instrumentId: "kick",
+    instrument: "Kick",
+    role: "bass",
+    band: "low",
+    pattern: [1, 0, 0, 1, 0, 0, 1, 0],
+    velocity: [122, 0, 0, 108, 0, 0, 98, 0],
+  },
+  {
+    id: "hero-clap",
+    label: "Clap",
+    instrumentId: "snare",
+    instrument: "Clap",
+    role: "lead",
+    band: "mid",
+    pattern: [0, 0, 1, 0, 0, 0, 1, 0],
+    velocity: [0, 0, 94, 0, 0, 0, 102, 0],
+  },
+  {
+    id: "hero-hat",
+    label: "Hat",
+    instrumentId: "hh-closed",
+    instrument: "Hi-Hat",
+    role: "timeline",
+    band: "high",
+    pattern: [1, 1, 1, 1, 1, 1, 1, 1],
+    velocity: [74, 58, 68, 56, 76, 60, 70, 58],
+  },
+];
+
+function cloneHeroTracks(tracks: SequencerLayer[]) {
+  return tracks.map((track) => ({
+    ...track,
+    pattern: [...track.pattern],
+    velocity: [...track.velocity],
+  }));
+}
+
+function createEmptyHeroTracks() {
+  return HERO_TRACKS.map((track) => ({
+    ...track,
+    pattern: new Array(HERO_STEP_COUNT).fill(0),
+    velocity: new Array(HERO_STEP_COUNT).fill(0),
+  }));
+}
+
 const HeroRhythmPreview = () => {
-  const [pattern, setPattern] = useState<number[]>(() => new Array(HERO_STEP_COUNT).fill(0));
-  const [velocity, setVelocity] = useState<number[]>(() => new Array(HERO_STEP_COUNT).fill(0));
+  const [layers, setLayers] = useState<SequencerLayer[]>(() => createEmptyHeroTracks());
   const [currentStep, setCurrentStep] = useState(-1);
   const [playing, setPlaying] = useState(false);
   const [showPulse, setShowPulse] = useState(false);
@@ -19,10 +67,15 @@ const HeroRhythmPreview = () => {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
   const stepRef = useRef(0);
+  const compositePlayback = useMemo(() => buildCompositePattern(layers), [layers]);
 
   const activeStepCount = useMemo(
-    () => pattern.reduce((count, step) => count + (step > 0 ? 1 : 0), 0),
-    [pattern],
+    () =>
+      layers.reduce(
+        (count, layer) => count + layer.pattern.reduce((layerTotal, step) => layerTotal + step, 0),
+        0,
+      ),
+    [layers],
   );
 
   const getAudioContext = useCallback(() => {
@@ -37,34 +90,42 @@ const HeroRhythmPreview = () => {
     return audioCtxRef.current;
   }, []);
 
-  const playPreviewTone = useCallback((index: number, step: number, nextVelocity: number) => {
+  const playPreviewTone = useCallback((index: number, step: number, nextVelocity: number, layerId?: string) => {
     if (step === 0 || nextVelocity <= 0) {
       return;
     }
 
     const audioContext = getAudioContext();
     const time = audioContext.currentTime;
+    const layer = layerId ? layers.find((entry) => entry.id === layerId) : null;
+    const band = layer?.band ?? "mid";
     const accent = index % 4 === 0 || nextVelocity >= 100;
+    const bodyStartFrequency = band === "low" ? 110 : band === "high" ? 320 : 188;
+    const bodyEndFrequency = band === "low" ? 52 : band === "high" ? 150 : 84;
+    const clickStartFrequency = band === "low" ? 420 : band === "high" ? 1680 : 980;
+    const clickEndFrequency = band === "low" ? 160 : band === "high" ? 720 : 320;
+    const bodyPeakGain = band === "low" ? 0.22 : band === "high" ? 0.08 : 0.16;
+    const clickPeakGain = band === "low" ? 0.035 : band === "high" ? 0.045 : 0.05;
 
     const bodyOscillator = audioContext.createOscillator();
     const bodyGain = audioContext.createGain();
     const clickOscillator = audioContext.createOscillator();
     const clickGain = audioContext.createGain();
 
-    bodyOscillator.type = accent ? "triangle" : "sine";
-    bodyOscillator.frequency.setValueAtTime(accent ? 188 : 152, time);
-    bodyOscillator.frequency.exponentialRampToValueAtTime(72, time + 0.14);
+    bodyOscillator.type = band === "low" ? "triangle" : accent ? "square" : "sine";
+    bodyOscillator.frequency.setValueAtTime(accent ? bodyStartFrequency : bodyStartFrequency * 0.88, time);
+    bodyOscillator.frequency.exponentialRampToValueAtTime(bodyEndFrequency, time + 0.14);
 
     bodyGain.gain.setValueAtTime(0.0001, time);
-    bodyGain.gain.exponentialRampToValueAtTime(0.18, time + 0.01);
+    bodyGain.gain.exponentialRampToValueAtTime(bodyPeakGain, time + 0.01);
     bodyGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.16);
 
-    clickOscillator.type = "square";
-    clickOscillator.frequency.setValueAtTime(accent ? 980 : 760, time);
-    clickOscillator.frequency.exponentialRampToValueAtTime(320, time + 0.04);
+    clickOscillator.type = band === "high" ? "triangle" : "square";
+    clickOscillator.frequency.setValueAtTime(accent ? clickStartFrequency : clickStartFrequency * 0.82, time);
+    clickOscillator.frequency.exponentialRampToValueAtTime(clickEndFrequency, time + 0.04);
 
     clickGain.gain.setValueAtTime(0.0001, time);
-    clickGain.gain.exponentialRampToValueAtTime(0.05, time + 0.005);
+    clickGain.gain.exponentialRampToValueAtTime(clickPeakGain, time + 0.005);
     clickGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.05);
 
     bodyOscillator.connect(bodyGain);
@@ -76,21 +137,19 @@ const HeroRhythmPreview = () => {
     clickOscillator.start(time);
     bodyOscillator.stop(time + 0.2);
     clickOscillator.stop(time + 0.08);
-  }, [getAudioContext]);
+  }, [getAudioContext, layers]);
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (reducedMotion) {
-      setPattern([...SEEDED_PATTERN]);
-      setVelocity([...SEEDED_VELOCITY]);
+      setLayers(cloneHeroTracks(HERO_TRACKS));
       setShowPulse(true);
       return;
     }
 
     const activateTimer = window.setTimeout(() => {
-      setPattern([...SEEDED_PATTERN]);
-      setVelocity([...SEEDED_VELOCITY]);
+      setLayers(cloneHeroTracks(HERO_TRACKS));
       setShowPulse(true);
     }, 240);
 
@@ -117,11 +176,13 @@ const HeroRhythmPreview = () => {
 
       setCurrentStep(nextStep);
 
-      if (pattern[nextStep] === 1) {
-        playPreviewTone(nextStep, pattern[nextStep], velocity[nextStep] ?? 0);
-      }
+      layers.forEach((layer) => {
+        if (layer.pattern[nextStep] === 1) {
+          playPreviewTone(nextStep, layer.pattern[nextStep], layer.velocity[nextStep] ?? 0, layer.id);
+        }
+      });
 
-      stepRef.current = (nextStep + 1) % pattern.length;
+      stepRef.current = (nextStep + 1) % HERO_STEP_COUNT;
     }, stepDurationMs);
 
     return () => {
@@ -129,7 +190,7 @@ const HeroRhythmPreview = () => {
         window.clearInterval(timerRef.current);
       }
     };
-  }, [pattern, playPreviewTone, playing, velocity]);
+  }, [layers, playPreviewTone, playing]);
 
   useEffect(() => {
     return () => {
@@ -139,9 +200,8 @@ const HeroRhythmPreview = () => {
     };
   }, []);
 
-  const handlePatternChange = (nextPattern: number[], nextVelocity: number[]) => {
-    setPattern(nextPattern);
-    setVelocity(nextVelocity);
+  const handleLayersChange = (nextLayers: SequencerLayer[]) => {
+    setLayers(cloneHeroTracks(nextLayers));
     setShowPulse(false);
   };
 
@@ -160,16 +220,18 @@ const HeroRhythmPreview = () => {
       </div>
 
       <p className="mt-4 rounded-2xl border border-primary-foreground/12 bg-primary-foreground/6 px-4 py-3 text-sm font-medium text-primary-foreground">
-        Click any step to build a rhythm → Press play
+        Stack kick, clap, and hats into a groove → Press play
       </p>
 
       <div className="mt-4 rounded-2xl border border-primary-foreground/10 bg-black/25 p-4">
         <StepSequencer
-          pattern={pattern}
-          velocityPattern={velocity}
-          onChange={handlePatternChange}
+          pattern={compositePlayback.pattern}
+          velocityPattern={compositePlayback.velocity}
+          layers={layers}
+          layout="compact"
+          onLayersChange={handleLayersChange}
           onStepPreview={playPreviewTone}
-          pulseSteps={showPulse ? [0, 3] : []}
+          pulseSteps={showPulse ? [0, 2, 4, 6] : []}
           currentStep={currentStep}
           stepOptions={[]}
         />
@@ -195,12 +257,12 @@ const HeroRhythmPreview = () => {
           {playing ? "Stop Preview" : "Play Rhythm"}
         </button>
 
-        <a
-          href="#mode-visualizer"
+        <Link
+          to="/tools/rhythm"
           className="inline-flex items-center justify-center rounded-2xl border border-primary-foreground/18 px-4 py-3 text-sm font-medium text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
         >
           Open the full rhythm system
-        </a>
+        </Link>
       </div>
     </div>
   );

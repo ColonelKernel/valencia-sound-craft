@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import {
   Play, Pause, X, RotateCcw, Sparkles, ArrowRightLeft,
   Music2, ChevronDown, ChevronUp, Download, ArrowLeft, ArrowRight,
@@ -27,18 +27,34 @@ interface ChordProgressionBuilderProps {
   chordSpellings: ChordSpelling[];
   root: string;
   mode: string;
+  tempo?: number;
+  playing?: boolean;
+  chordProgression?: string[];
+  onRootChange?: (root: string) => void;
+  onModeChange?: (mode: string) => void;
+  onTempoChange?: (tempo: number) => void;
+  onPlayingChange?: (playing: boolean) => void;
+  onProgressionChange?: (progression: string[]) => void;
 }
 
 const ChordProgressionBuilder = ({
   chordSpellings: _initialChordSpellings,
   root: initialRoot,
   mode: initialMode,
+  tempo: controlledTempo,
+  playing: controlledPlaying,
+  chordProgression: _controlledProgression,
+  onRootChange,
+  onModeChange,
+  onTempoChange,
+  onPlayingChange,
+  onProgressionChange,
 }: ChordProgressionBuilderProps) => {
   const [progression, setProgression] = useState<ProgressionChord[]>([]);
   const [undoStack, setUndoStack] = useState<ProgressionChord[][]>([]);
   const [playing, setPlaying] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(-1);
-  const [bpm, setBpm] = useState(100);
+  const [bpm, setBpm] = useState(controlledTempo ?? 100);
   const [beatsPerChord, setBeatsPerChord] = useState(4);
   const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
   const [localRoot, setLocalRoot] = useState(initialRoot);
@@ -119,7 +135,7 @@ const ChordProgressionBuilder = ({
       else { setPlaying(false); setCurrentIdx(-1); }
     }, progression.length * chordDuration));
     timeoutRef.current = ids;
-  }, [progression, bpm, beatsPerChord, stop, timbre, looping]);
+  }, [progression, bpm, beatsPerChord, stop, timbre, voicingType, expressive, looping]);
 
   const addChord = (pc: ProgressionChord) => {
     if (lockProgression) return;
@@ -169,11 +185,13 @@ const ChordProgressionBuilder = ({
       setProgression(prev => prev.map(pc => ({ ...pc, chord: transposeChord(pc.chord, semitones, flats) })));
     }
     setLocalRoot(newRoot);
+    onRootChange?.(newRoot);
   };
 
   const handleModeChange = (newMode: string) => {
     stop();
     setLocalMode(newMode);
+    onModeChange?.(newMode);
     if (!lockProgression && progression.length > 0) {
       const newScale = getScaleNotes(root, newMode);
       const newChords = getChordSpellings(newScale, newMode);
@@ -225,6 +243,48 @@ const ChordProgressionBuilder = ({
     if (viewMode !== 'standard') return pc.chord.name;
     return di >= 0 ? getRomanNumeral(pc.chord, di) : '';
   };
+
+  useEffect(() => {
+    if (initialRoot !== localRoot) {
+      setLocalRoot(initialRoot);
+    }
+  }, [initialRoot, localRoot]);
+
+  useEffect(() => {
+    if (initialMode !== localMode) {
+      setLocalMode(initialMode);
+    }
+  }, [initialMode, localMode]);
+
+  useEffect(() => {
+    if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
+      setBpm(controlledTempo);
+    }
+  }, [bpm, controlledTempo]);
+
+  useEffect(() => {
+    onTempoChange?.(bpm);
+  }, [bpm, onTempoChange]);
+
+  useEffect(() => {
+    onPlayingChange?.(playing);
+  }, [onPlayingChange, playing]);
+
+  useEffect(() => {
+    onProgressionChange?.(progression.map((entry) => entry.chord.symbol));
+  }, [onProgressionChange, progression]);
+
+  useEffect(() => {
+    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
+      return;
+    }
+
+    if (controlledPlaying) {
+      playProgression();
+    } else {
+      stop();
+    }
+  }, [controlledPlaying, playProgression, playing, stop]);
 
   if (chordSpellings.length === 0) {
     return (

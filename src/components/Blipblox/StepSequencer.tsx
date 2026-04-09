@@ -1,13 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
+
+import { buildCompositePattern, type SequencerLayer } from "./rhythmEngineModel";
 
 interface StepSequencerProps {
   pattern: number[];
   velocityPattern?: number[];
+  layers?: SequencerLayer[];
+  grouping?: number[];
+  layout?: "default" | "compact";
   onChange?: (pattern: number[], velocity: number[]) => void;
-  onStepPreview?: (index: number, step: number, velocity: number) => void;
+  onLayersChange?: (layers: SequencerLayer[]) => void;
+  onStepPreview?: (index: number, step: number, velocity: number, layerId?: string) => void;
   pulseSteps?: number[];
+  accentSteps?: number[];
   stepMode?: number;
   onStepModeChange?: (mode: number) => void;
   stepOptions?: number[];
@@ -15,39 +22,271 @@ interface StepSequencerProps {
   readOnly?: boolean;
 }
 
+type DragSession = {
+  rowIndex: number;
+  layerId: string;
+  mode: "paint" | "erase" | "accent";
+  velocity: number;
+  originIndex: number;
+  originY: number;
+  lastVelocity: number;
+  appliedSteps: Set<number>;
+};
+
+type StepMeta = {
+  index: number;
+  groupIndex: number;
+  isGroupStart: boolean;
+  isGroupEnd: boolean;
+  isPulse: boolean;
+};
+
+type DisplayLayer = SequencerLayer & {
+  velocity: number[];
+};
+
+const DEFAULT_STEP_OPTIONS = [16, 32];
+
+const LAYER_BADGES: Record<DisplayLayer["band"], string> = {
+  low: "border-amber-400/30 bg-amber-400/10 text-amber-100",
+  mid: "border-sky-400/30 bg-sky-400/10 text-sky-100",
+  high: "border-cyan-300/30 bg-cyan-300/10 text-cyan-100",
+};
+
+function sum(values: number[]) {
+  return values.reduce((total, value) => total + value, 0);
+}
+
+function buildDefaultGrouping(totalSteps: number) {
+  if (totalSteps <= 0) {
+    return [];
+  }
+
+  if (totalSteps === 12) {
+    return [3, 3, 3, 3];
+  }
+
+  if (totalSteps % 4 === 0) {
+    return new Array(totalSteps / 4).fill(4);
+  }
+
+  if (totalSteps % 3 === 0) {
+    return new Array(totalSteps / 3).fill(3);
+  }
+
+  return [totalSteps];
+}
+
+function buildResolvedLayers(
+  pattern: number[],
+  velocityPattern: number[] | undefined,
+  layers: SequencerLayer[] | undefined,
+): DisplayLayer[] {
+  if (layers && layers.length > 0) {
+    return layers.map((layer) => ({
+      ...layer,
+      pattern: [...layer.pattern],
+      velocity: layer.velocity?.length ? [...layer.velocity] : layer.pattern.map((step) => (step ? 96 : 0)),
+    }));
+  }
+
+  const velocity = velocityPattern || pattern.map((step) => (step ? 96 : 0));
+
+  return [
+    {
+      id: "primary-lane",
+      label: "Pattern",
+      instrumentId: "primary-lane",
+      instrument: "Pattern",
+      role: "lead",
+      band: "mid",
+      pattern: [...pattern],
+      velocity: [...velocity],
+    },
+  ];
+}
+
+function cloneDisplayLayers(layers: DisplayLayer[]) {
+  return layers.map((layer) => ({
+    ...layer,
+    pattern: [...layer.pattern],
+    velocity: [...layer.velocity],
+  }));
+}
+
+function getDefaultVelocity(layer: DisplayLayer) {
+  switch (layer.band) {
+    case "low":
+      return 112;
+    case "mid":
+      return 98;
+    case "high":
+      return 78;
+    default:
+      return 96;
+  }
+}
+
+function buildStepMeta(totalSteps: number, grouping: number[], pulseSteps: number[]) {
+  const resolvedGrouping = grouping.length > 0 && sum(grouping) === totalSteps
+    ? grouping
+    : buildDefaultGrouping(totalSteps);
+  const pulseSet = new Set(pulseSteps);
+  const meta: StepMeta[] = [];
+  let offset = 0;
+
+  resolvedGrouping.forEach((groupSize, groupIndex) => {
+    for (let index = 0; index < groupSize; index += 1) {
+      const stepIndex = offset + index;
+
+      meta.push({
+        index: stepIndex,
+        groupIndex,
+        isGroupStart: index === 0,
+        isGroupEnd: index === groupSize - 1,
+        isPulse: pulseSet.has(stepIndex) || index === 0,
+      });
+    }
+
+    offset += groupSize;
+  });
+
+  if (meta.length === totalSteps) {
+    return meta;
+  }
+
+  return Array.from({ length: totalSteps }, (_, index) => ({
+    index,
+    groupIndex: 0,
+    isGroupStart: index === 0,
+    isGroupEnd: index === totalSteps - 1,
+    isPulse: pulseSet.has(index) || index === 0,
+  }));
+}
+
+function StepCell({
+  layer,
+  meta,
+  isActive,
+  velocity,
+  isCurrent,
+  isAccent,
+  shouldPulse,
+  compact,
+  isPressed,
+  isAnimated,
+  readOnly,
+  onMouseDown,
+  onMouseEnter,
+  onMouseMove,
+  onMouseUp,
+  onKeyDown,
+}: {
+  layer: DisplayLayer;
+  meta: StepMeta;
+  isActive: boolean;
+  velocity: number;
+  isCurrent: boolean;
+  isAccent: boolean;
+  shouldPulse: boolean;
+  compact: boolean;
+  isPressed: boolean;
+  isAnimated: boolean;
+  readOnly: boolean;
+  onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onMouseEnter: () => void;
+  onMouseMove: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onMouseUp: () => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
+}) {
+  const isLocked = readOnly || layer.locked;
+  const inactiveTone = layer.band === "low"
+    ? "border-amber-400/12 bg-amber-400/6"
+    : layer.band === "high"
+      ? "border-cyan-300/12 bg-cyan-300/6"
+      : "border-border/50 bg-secondary/55";
+  const activeTone = !isActive
+    ? inactiveTone
+    : layer.band === "low"
+      ? velocity >= 110
+        ? "border-amber-200/80 bg-amber-300 text-slate-950 shadow-[0_0_28px_rgba(251,191,36,0.35)]"
+        : "border-amber-300/60 bg-amber-400/70 text-amber-950 shadow-[0_0_18px_rgba(251,191,36,0.2)]"
+      : layer.band === "high"
+        ? velocity >= 96
+          ? "border-cyan-100/80 bg-cyan-300 text-slate-950 shadow-[0_0_26px_rgba(103,232,249,0.3)]"
+          : "border-cyan-300/55 bg-cyan-400/70 text-slate-950 shadow-[0_0_16px_rgba(34,211,238,0.22)]"
+        : velocity >= 110
+          ? "border-primary/80 bg-primary text-primary-foreground shadow-[0_0_24px_rgba(248,250,252,0.22)]"
+          : "border-primary/55 bg-primary/80 text-primary-foreground shadow-[0_0_16px_rgba(248,250,252,0.16)]";
+
+  return (
+    <button
+      type="button"
+      aria-label={`${layer.instrument} step ${meta.index + 1}${isActive ? " active" : " inactive"}`}
+      aria-pressed={isActive}
+      disabled={isLocked}
+      onMouseDown={onMouseDown}
+      onMouseEnter={onMouseEnter}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onKeyDown={onKeyDown}
+      className={cn(
+        "relative flex aspect-square min-h-[clamp(1.75rem,5vw,3rem)] w-full items-center justify-center rounded-xl border text-[9px] font-semibold transition-[transform,background-color,border-color,box-shadow,filter] duration-150 ease-out select-none",
+        compact && "min-h-[clamp(2.35rem,10vw,3.25rem)] rounded-2xl text-[10px]",
+        isLocked ? "cursor-default opacity-95" : "cursor-pointer",
+        activeTone,
+        meta.isGroupStart && "ring-1 ring-white/6 ring-inset",
+        meta.isPulse && !isActive && "border-border/70",
+        isAccent && "after:absolute after:inset-x-[18%] after:top-[10%] after:h-1 after:rounded-full after:bg-white/70",
+        isCurrent && "ring-2 ring-white/70 ring-offset-2 ring-offset-card",
+        shouldPulse && "sequencer-step-pulse",
+        isPressed && "scale-[0.97]",
+        isAnimated && "sequencer-step-press",
+        !isLocked && "hover:brightness-110",
+      )}
+    >
+      {isActive && velocity >= 118 && <span>!</span>}
+      {isActive && velocity >= 92 && velocity < 118 && <span>●</span>}
+      {isActive && velocity > 0 && velocity < 92 && <span className="opacity-80">·</span>}
+    </button>
+  );
+}
+
+const MemoStepCell = memo(StepCell);
+
 const StepSequencer = ({
   pattern,
   velocityPattern,
+  layers,
+  grouping,
+  layout = "default",
   onChange,
+  onLayersChange,
   onStepPreview,
   pulseSteps = [],
+  accentSteps = [],
   stepMode = 16,
   onStepModeChange,
-  stepOptions = [16, 32],
+  stepOptions = DEFAULT_STEP_OPTIONS,
   currentStep = -1,
   readOnly = false,
 }: StepSequencerProps) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragValue, setDragValue] = useState<number | null>(null);
-  const [pressedStep, setPressedStep] = useState<number | null>(null);
-  const [animatedStep, setAnimatedStep] = useState<number | null>(null);
+  const [pressedCell, setPressedCell] = useState<string | null>(null);
+  const [animatedKey, setAnimatedKey] = useState<string | null>(null);
+  const isCompact = layout === "compact";
 
-  const suppressClickRef = useRef(false);
-  const dragStartIndexRef = useRef<number | null>(null);
-  const dragAppliedStepsRef = useRef<Set<number>>(new Set());
   const animationTimerRef = useRef<number | null>(null);
-  const latestPatternRef = useRef(pattern);
-  const latestVelocityRef = useRef(velocityPattern || pattern.map((step) => (step ? 100 : 0)));
+  const dragSessionRef = useRef<DragSession | null>(null);
+  const latestLayersRef = useRef<DisplayLayer[]>(buildResolvedLayers(pattern, velocityPattern, layers));
 
-  const velocity = velocityPattern || pattern.map((step) => (step ? 100 : 0));
+  const resolvedLayers = useMemo(
+    () => buildResolvedLayers(pattern, velocityPattern, layers),
+    [layers, pattern, velocityPattern],
+  );
 
   useEffect(() => {
-    latestPatternRef.current = [...pattern];
-  }, [pattern]);
-
-  useEffect(() => {
-    latestVelocityRef.current = [...velocity];
-  }, [velocity]);
+    latestLayersRef.current = cloneDisplayLayers(resolvedLayers);
+  }, [resolvedLayers]);
 
   useEffect(() => {
     return () => {
@@ -57,187 +296,268 @@ const StepSequencer = ({
     };
   }, []);
 
-  const triggerStepAnimation = useCallback((index: number) => {
+  const totalSteps = resolvedLayers[0]?.pattern.length || pattern.length;
+  const resolvedGrouping = useMemo(() => {
+    if (grouping && grouping.length > 0 && sum(grouping) === totalSteps) {
+      return grouping;
+    }
+
+    return buildDefaultGrouping(totalSteps);
+  }, [grouping, totalSteps]);
+  const resolvedPulseSteps = useMemo(
+    () => pulseSteps.length > 0 ? pulseSteps : resolvedGrouping.reduce<number[]>((steps, _, index) => {
+      const offset = resolvedGrouping.slice(0, index).reduce((total, value) => total + value, 0);
+      steps.push(offset);
+      return steps;
+    }, []),
+    [pulseSteps, resolvedGrouping],
+  );
+  const stepMeta = useMemo(
+    () => buildStepMeta(totalSteps, resolvedGrouping, resolvedPulseSteps),
+    [resolvedGrouping, resolvedPulseSteps, totalSteps],
+  );
+  const accentSet = useMemo(() => new Set(accentSteps), [accentSteps]);
+  const showHeader = !isCompact;
+  const showCompactTrackLabels = isCompact && resolvedLayers.length > 1;
+
+  const stepGridStyle = useMemo(
+    () => ({ gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(0, 1fr))` }),
+    [totalSteps],
+  );
+
+  const emitLayers = useCallback((nextLayers: DisplayLayer[]) => {
+    latestLayersRef.current = cloneDisplayLayers(nextLayers);
+
+    onLayersChange?.(nextLayers);
+
+    const composite = buildCompositePattern(nextLayers);
+    onChange?.(composite.pattern, composite.velocity);
+  }, [onChange, onLayersChange]);
+
+  const previewStep = useCallback((layer: DisplayLayer, index: number, step: number, velocity: number) => {
+    if (step > 0 && velocity > 0) {
+      onStepPreview?.(index, step, velocity, layer.id);
+    }
+  }, [onStepPreview]);
+
+  const triggerAnimation = useCallback((layerId: string, index: number) => {
     if (animationTimerRef.current) {
       window.clearTimeout(animationTimerRef.current);
     }
 
-    setAnimatedStep(index);
+    const nextKey = `${layerId}:${index}`;
+    setAnimatedKey(nextKey);
     animationTimerRef.current = window.setTimeout(() => {
-      setAnimatedStep(null);
+      setAnimatedKey(null);
     }, 180);
   }, []);
 
-  const emitChange = useCallback((nextPattern: number[], nextVelocity: number[]) => {
-    latestPatternRef.current = nextPattern;
-    latestVelocityRef.current = nextVelocity;
-    onChange?.(nextPattern, nextVelocity);
-  }, [onChange]);
+  const applyStepUpdate = useCallback((
+    rowIndex: number,
+    index: number,
+    nextStep: number,
+    nextVelocity: number,
+  ) => {
+    const nextLayers = cloneDisplayLayers(latestLayersRef.current);
+    const targetLayer = nextLayers[rowIndex];
 
-  const previewStep = useCallback((index: number, step: number, nextVelocity: number) => {
-    if (step > 0 && nextVelocity > 0) {
-      onStepPreview?.(index, step, nextVelocity);
-    }
-  }, [onStepPreview]);
-
-  const cycleStep = useCallback((index: number) => {
-    if (readOnly) {
+    if (!targetLayer || targetLayer.locked) {
       return;
     }
 
-    const nextPattern = [...latestPatternRef.current];
-    const nextVelocity = [...latestVelocityRef.current];
+    targetLayer.pattern[index] = nextStep;
+    targetLayer.velocity[index] = nextStep ? nextVelocity : 0;
 
-    if (nextPattern[index] === 0) {
-      nextPattern[index] = 1;
-      nextVelocity[index] = 100;
-    } else if (nextVelocity[index] >= 90) {
-      nextVelocity[index] = 60;
-    } else if (nextVelocity[index] >= 50) {
-      nextVelocity[index] = 30;
-    } else {
-      nextPattern[index] = 0;
-      nextVelocity[index] = 0;
-    }
+    emitLayers(nextLayers);
+    triggerAnimation(targetLayer.id, index);
+    previewStep(targetLayer, index, nextStep, nextVelocity);
+  }, [emitLayers, previewStep, triggerAnimation]);
 
-    triggerStepAnimation(index);
-    emitChange(nextPattern, nextVelocity);
-    previewStep(index, nextPattern[index], nextVelocity[index]);
-  }, [emitChange, previewStep, readOnly, triggerStepAnimation]);
+  const resetDragSession = useCallback(() => {
+    dragSessionRef.current = null;
+    setPressedCell(null);
+  }, []);
 
-  const paintStep = useCallback((index: number, value: number) => {
-    if (readOnly || dragAppliedStepsRef.current.has(index)) {
+  useEffect(() => {
+    const handleMouseUp = () => {
+      resetDragSession();
+    };
+
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [resetDragSession]);
+
+  const handleMouseDown = useCallback((
+    layer: DisplayLayer,
+    rowIndex: number,
+    index: number,
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    if (readOnly || layer.locked) {
       return;
     }
 
-    const nextPattern = [...latestPatternRef.current];
-    const nextVelocity = [...latestVelocityRef.current];
-    const nextStep = value ? 1 : 0;
-    const nextStepVelocity = value ? 100 : 0;
+    const isActive = latestLayersRef.current[rowIndex]?.pattern[index] === 1;
+    const currentVelocity = latestLayersRef.current[rowIndex]?.velocity[index] ?? 0;
+    const mode: DragSession["mode"] = event.shiftKey ? "accent" : isActive ? "erase" : "paint";
+    const velocity = event.shiftKey
+      ? 127
+      : currentVelocity > 0
+        ? currentVelocity
+        : getDefaultVelocity(layer);
 
-    nextPattern[index] = nextStep;
-    nextVelocity[index] = nextStepVelocity;
-    dragAppliedStepsRef.current.add(index);
+    dragSessionRef.current = {
+      rowIndex,
+      layerId: layer.id,
+      mode,
+      velocity,
+      originIndex: index,
+      originY: event.clientY,
+      lastVelocity: velocity,
+      appliedSteps: new Set(),
+    };
 
-    triggerStepAnimation(index);
-    emitChange(nextPattern, nextVelocity);
-    previewStep(index, nextStep, nextStepVelocity);
-  }, [emitChange, previewStep, readOnly, triggerStepAnimation]);
+    setPressedCell(`${layer.id}:${index}`);
+    applyStepUpdate(rowIndex, index, mode === "erase" ? 0 : 1, mode === "erase" ? 0 : velocity);
+    dragSessionRef.current.appliedSteps.add(index);
+  }, [applyStepUpdate, readOnly]);
 
-  const handleMouseDown = (index: number) => {
-    if (readOnly) {
+  const handleMouseEnter = useCallback((layer: DisplayLayer, rowIndex: number, index: number) => {
+    const session = dragSessionRef.current;
+
+    if (!session || readOnly || layer.locked || session.rowIndex !== rowIndex || session.layerId !== layer.id) {
       return;
     }
 
-    setIsDragging(true);
-    setPressedStep(index);
-    setDragValue(pattern[index] === 0 ? 1 : 0);
-    dragStartIndexRef.current = index;
-    dragAppliedStepsRef.current = new Set();
-    suppressClickRef.current = false;
-    latestPatternRef.current = [...pattern];
-    latestVelocityRef.current = [...velocity];
-  };
-
-  const handleMouseEnter = (index: number) => {
-    if (!isDragging || readOnly || dragValue === null) {
+    if (session.appliedSteps.has(index)) {
+      setPressedCell(`${layer.id}:${index}`);
       return;
     }
 
-    suppressClickRef.current = true;
+    const nextVelocity = session.mode === "erase" ? 0 : session.lastVelocity;
+    applyStepUpdate(rowIndex, index, session.mode === "erase" ? 0 : 1, nextVelocity);
+    session.appliedSteps.add(index);
+    setPressedCell(`${layer.id}:${index}`);
+  }, [applyStepUpdate, readOnly]);
 
-    if (
-      dragStartIndexRef.current !== null &&
-      !dragAppliedStepsRef.current.has(dragStartIndexRef.current)
-    ) {
-      paintStep(dragStartIndexRef.current, dragValue);
-    }
+  const handleMouseMove = useCallback((
+    layer: DisplayLayer,
+    rowIndex: number,
+    index: number,
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    const session = dragSessionRef.current;
 
-    paintStep(index, dragValue);
-    setPressedStep(index);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setDragValue(null);
-    setPressedStep(null);
-    dragStartIndexRef.current = null;
-    dragAppliedStepsRef.current = new Set();
-  };
-
-  const handleClick = (index: number) => {
-    if (readOnly) {
+    if (!session || readOnly || layer.locked || session.rowIndex !== rowIndex || session.layerId !== layer.id) {
       return;
     }
 
-    if (suppressClickRef.current) {
-      suppressClickRef.current = false;
+    if (session.mode === "erase" || session.originIndex !== index) {
       return;
     }
 
-    cycleStep(index);
-  };
+    const nextVelocity = Math.max(30, Math.min(127, Math.round(session.velocity - (event.clientY - session.originY) * 0.8)));
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
-    if (readOnly) {
+    if (Math.abs(nextVelocity - session.lastVelocity) < 4) {
       return;
     }
 
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      cycleStep(index);
-    }
-  };
+    session.lastVelocity = nextVelocity;
+    applyStepUpdate(rowIndex, index, 1, nextVelocity);
+  }, [applyStepUpdate, readOnly]);
 
-  const getStepTone = (step: number, vel: number, idx: number) => {
-    const isCurrent = idx === currentStep;
-
-    if (step === 0) {
-      const isDownbeat = idx % 4 === 0;
-
-      return cn(
-        isDownbeat
-          ? "border-border/80 bg-secondary/85 text-muted-foreground"
-          : "border-border/50 bg-secondary/45 text-muted-foreground/80",
-        !readOnly && "hover:scale-[1.05] hover:brightness-125",
-        isCurrent && "ring-2 ring-primary/45 ring-offset-2 ring-offset-card",
-      );
+  const handleKeyDown = useCallback((
+    layer: DisplayLayer,
+    rowIndex: number,
+    index: number,
+    event: React.KeyboardEvent<HTMLButtonElement>,
+  ) => {
+    if (readOnly || layer.locked) {
+      return;
     }
 
-    if (vel >= 90) {
-      return cn(
-        "border-amber-200/70 bg-amber-300 text-slate-950 shadow-[0_0_24px_rgba(251,191,36,0.35)]",
-        !readOnly && "hover:scale-[1.05] hover:brightness-110",
-        isCurrent && "ring-2 ring-amber-100/80 ring-offset-2 ring-offset-card",
-      );
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
     }
 
-    if (vel >= 50) {
-      return cn(
-        "border-primary/70 bg-primary/85 text-primary-foreground shadow-[0_0_18px_rgba(255,255,255,0.18)]",
-        !readOnly && "hover:scale-[1.05] hover:brightness-110",
-        isCurrent && "ring-2 ring-primary/70 ring-offset-2 ring-offset-card",
-      );
-    }
+    event.preventDefault();
 
-    return cn(
-      "border-primary/35 bg-primary/45 text-primary-foreground shadow-[0_0_14px_rgba(255,255,255,0.12)]",
-      !readOnly && "hover:scale-[1.05] hover:brightness-110",
-      isCurrent && "ring-2 ring-primary/45 ring-offset-2 ring-offset-card",
-    );
-  };
+    const currentLayer = latestLayersRef.current[rowIndex];
+    const isActive = currentLayer?.pattern[index] === 1;
+    const nextVelocity = event.shiftKey
+      ? 127
+      : isActive
+        ? 0
+        : currentLayer?.velocity[index] || getDefaultVelocity(layer);
 
-  const totalSteps = pattern.length;
-  const minCellWidth = totalSteps >= 128 ? 10 : totalSteps >= 64 ? 12 : totalSteps >= 32 ? 14 : 20;
-  const gridStyle = {
-    gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(${minCellWidth}px, 1fr))`,
-  };
+    applyStepUpdate(rowIndex, index, isActive && !event.shiftKey ? 0 : 1, nextVelocity);
+  }, [applyStepUpdate, readOnly]);
+
+  const renderStepGrid = useCallback((layer: DisplayLayer, rowIndex: number) => (
+    <div className="grid gap-0" style={stepGridStyle}>
+      {stepMeta.map((meta) => {
+        const key = `${layer.id}:${meta.index}`;
+        const velocity = layer.velocity[meta.index] ?? 0;
+        const isActive = layer.pattern[meta.index] === 1;
+
+        return (
+          <div
+            key={key}
+            className={cn(
+              "relative px-[1px] py-[1px]",
+              meta.isGroupStart && meta.index !== 0 && "pl-2",
+            )}
+          >
+            {meta.isGroupStart && meta.index !== 0 && (
+              <span className="absolute inset-y-1 left-0 w-px rounded-full bg-white/10" aria-hidden />
+            )}
+
+            <MemoStepCell
+              layer={layer}
+              meta={meta}
+              isActive={isActive}
+              velocity={velocity}
+              isCurrent={currentStep === meta.index}
+              isAccent={accentSet.has(meta.index)}
+              shouldPulse={currentStep === -1 && resolvedPulseSteps.includes(meta.index) && isActive}
+              compact={isCompact}
+              isPressed={pressedCell === key}
+              isAnimated={animatedKey === key}
+              readOnly={readOnly}
+              onMouseDown={(event) => handleMouseDown(layer, rowIndex, meta.index, event)}
+              onMouseEnter={() => handleMouseEnter(layer, rowIndex, meta.index)}
+              onMouseMove={(event) => handleMouseMove(layer, rowIndex, meta.index, event)}
+              onMouseUp={resetDragSession}
+              onKeyDown={(event) => handleKeyDown(layer, rowIndex, meta.index, event)}
+            />
+          </div>
+        );
+      })}
+    </div>
+  ), [
+    accentSet,
+    animatedKey,
+    currentStep,
+    handleKeyDown,
+    handleMouseDown,
+    handleMouseEnter,
+    handleMouseMove,
+    isCompact,
+    pressedCell,
+    readOnly,
+    resetDragSession,
+    resolvedPulseSteps,
+    stepGridStyle,
+    stepMeta,
+  ]);
 
   return (
-    <div className="space-y-3" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
+    <div className={cn("space-y-4", isCompact && "space-y-3")} onMouseLeave={resetDragSession}>
       {onStepModeChange && stepOptions.length > 1 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] text-muted-foreground">Steps:</span>
+          <span className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Resolution</span>
           {stepOptions.map((mode) => (
             <button
               key={mode}
@@ -256,53 +576,122 @@ const StepSequencer = ({
         </div>
       )}
 
-      <div className="overflow-x-auto pb-1">
-        <div className="grid min-w-max gap-2" style={gridStyle}>
-          {pattern.map((step, index) => {
-            const isPressed = pressedStep === index;
-            const shouldPulse = pulseSteps.includes(index) && step === 1 && currentStep === -1;
+      <div className={cn(
+        "space-y-3",
+        !isCompact && "rounded-3xl border border-border/70 bg-card/70 p-3 sm:p-4",
+      )}>
+        <div className="space-y-3">
+          {!isCompact && (
+            <div className="rounded-2xl border border-white/8 bg-secondary/35 px-3 py-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+                  Cycle Grouping
+                </div>
+                <div className="text-[11px] text-muted-foreground">
+                  {resolvedGrouping.join(" + ")}
+                </div>
+              </div>
+              <div className="mt-2 flex gap-2">
+                {resolvedGrouping.map((groupSize, index) => (
+                  <div
+                    key={`${groupSize}-${index}`}
+                    className="flex min-h-9 items-center justify-between rounded-xl border border-white/8 bg-black/20 px-3 text-xs text-foreground"
+                    style={{ flex: `${groupSize} 1 0` }}
+                  >
+                    <span className="font-medium">{groupSize}</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {resolvedGrouping.slice(0, index).reduce((total, value) => total + value, 0) + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-            return (
-              <button
-                key={index}
-                type="button"
-                aria-label={`Step ${index + 1}${step ? " active" : " inactive"}`}
-                aria-pressed={step === 1}
-                onClick={() => handleClick(index)}
-                onKeyDown={(event) => handleKeyDown(event, index)}
-                onMouseDown={() => handleMouseDown(index)}
-                onMouseEnter={() => handleMouseEnter(index)}
+          {showHeader && (
+            <div className="grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)] gap-2 px-1 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+              <div className="flex items-center">Lane</div>
+              <div className="grid gap-0" style={stepGridStyle}>
+                {stepMeta.map((meta) => (
+                  <div
+                    key={`step-label-${meta.index}`}
+                    className={cn(
+                      "flex justify-center px-[1px] py-1",
+                      meta.isGroupStart && meta.index !== 0 && "pl-2",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1",
+                        currentStep === meta.index && "bg-primary text-primary-foreground",
+                        meta.isPulse && currentStep !== meta.index && "bg-white/6 text-foreground",
+                      )}
+                    >
+                      {meta.index + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {resolvedLayers.map((layer, rowIndex) => (
+            isCompact ? (
+              <div
+                key={layer.id}
                 className={cn(
-                  "flex aspect-square items-center justify-center rounded-md border text-[7px] font-semibold transition-[transform,background-color,border-color,box-shadow,filter] duration-200 ease-out select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-card",
-                  readOnly ? "cursor-default" : "cursor-pointer",
-                  getStepTone(step, velocity[index], index),
-                  isPressed && "scale-[0.98]",
-                  animatedStep === index && "sequencer-step-press",
-                  shouldPulse && "sequencer-step-pulse",
+                  "items-center gap-3",
+                  showCompactTrackLabels
+                    ? "grid grid-cols-[minmax(3.25rem,4.5rem)_minmax(0,1fr)]"
+                    : "block",
                 )}
               >
-                {step === 1 && velocity[index] >= 90 && <span>▉</span>}
-                {step === 1 && velocity[index] >= 50 && velocity[index] < 90 && <span>●</span>}
-                {step === 1 && velocity[index] > 0 && velocity[index] < 50 && (
-                  <span className="opacity-70">·</span>
+                {showCompactTrackLabels && (
+                  <div className="space-y-1">
+                    <span className={cn(
+                      "inline-flex min-h-8 w-full items-center justify-center rounded-xl border px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                      LAYER_BADGES[layer.band],
+                    )}>
+                      {layer.label}
+                    </span>
+                  </div>
                 )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        <div className="grid min-w-max gap-2" style={gridStyle}>
-          {pattern.map((_, index) => (
-            <div key={index} className="flex justify-center">
-              {index % 4 === 0 && (
-                <span className="text-[8px] text-muted-foreground">{Math.floor(index / 4) + 1}</span>
-              )}
-            </div>
+                {renderStepGrid(layer, rowIndex)}
+              </div>
+            ) : (
+              <div
+                key={layer.id}
+                className="grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)] items-center gap-2"
+              >
+                <div className="space-y-1">
+                  <span className={cn(
+                    "inline-flex min-h-9 w-full items-center justify-center rounded-2xl border px-3 text-[11px] font-medium",
+                    LAYER_BADGES[layer.band],
+                  )}>
+                    {layer.label}
+                  </span>
+                  <p className="truncate px-1 text-[10px] text-muted-foreground">{layer.instrument}</p>
+                </div>
+                {renderStepGrid(layer, rowIndex)}
+              </div>
+            )
           ))}
         </div>
       </div>
+
+      {!readOnly && !isCompact && (
+        <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+          <span className="rounded-full border border-border bg-card/70 px-3 py-1">
+            Click or drag to paint
+          </span>
+          <span className="rounded-full border border-border bg-card/70 px-3 py-1">
+            Drag vertically to shape velocity
+          </span>
+          <span className="rounded-full border border-border bg-card/70 px-3 py-1">
+            Hold Shift for accents
+          </span>
+        </div>
+      )}
     </div>
   );
 };

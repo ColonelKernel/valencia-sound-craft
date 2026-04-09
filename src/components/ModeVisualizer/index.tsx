@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum, Globe, ChevronDown, ChevronUp } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import {
@@ -19,7 +19,6 @@ import { playNote, playChord, playScale, playNoteAtOctave, type InstrumentTimbre
 
 const Fretboard = lazy(() => import("./Fretboard"));
 const SheetMusic = lazy(() => import("./SheetMusic"));
-const ModeReference = lazy(() => import("./ModeReference"));
 const Metronome = lazy(() => import("./Metronome"));
 const ChordProgressionBuilder = lazy(() => import("./ChordProgressionBuilder"));
 const KeyboardVisualizer = lazy(() => import("./KeyboardVisualizer"));
@@ -29,10 +28,68 @@ const Tonnetz = lazy(() => import("./Tonnetz"));
 const CircleOfFifths = lazy(() => import("./CircleOfFifths"));
 const GlobalRhythmEngine = lazy(() => import("../Blipblox/GlobalRhythmEngine"));
 
-const ModeVisualizer = () => {
+export type ModeVisualizerTab =
+  | "visualizer"
+  | "metronome"
+  | "progression"
+  | "reference"
+  | "polyrhythm"
+  | "rhythmmap"
+  | "tonnetz"
+  | "circleof5";
+
+interface ModeVisualizerProps {
+  root?: string;
+  mode?: string;
+  tempo?: number;
+  playing?: boolean;
+  chordProgression?: string[];
+  embeddedPreset?: never;
+  onRootChange?: (root: string) => void;
+  onModeChange?: (mode: string) => void;
+  onTempoChange?: (tempo: number) => void;
+  onPlayingChange?: (playing: boolean) => void;
+  onChordProgressionChange?: (progression: string[]) => void;
+  initialTab?: ModeVisualizerTab;
+  showOnlyTabs?: ModeVisualizerTab[];
+  defaultExpanded?: boolean;
+  hideToolSelector?: boolean;
+  hideShellHeading?: boolean;
+  disableToolPreload?: boolean;
+}
+
+const TOOL_OPTIONS: Array<{ value: ModeVisualizerTab; label: string }> = [
+  { value: "rhythmmap", label: "Rhythm Atlas Engine" },
+  { value: "polyrhythm", label: "Rhythm Engine" },
+  { value: "visualizer", label: "Mode Visualizer" },
+  { value: "progression", label: "Chord Progressions" },
+  { value: "metronome", label: "Metronome" },
+  { value: "reference", label: "Scale Reference" },
+  { value: "tonnetz", label: "Tonnetz" },
+  { value: "circleof5", label: "Circle of Fifths" },
+];
+
+const ModeVisualizer = ({
+  root: controlledRoot,
+  mode: controlledMode,
+  tempo,
+  playing,
+  chordProgression,
+  onRootChange,
+  onModeChange,
+  onTempoChange,
+  onPlayingChange,
+  onChordProgressionChange,
+  initialTab,
+  showOnlyTabs,
+  defaultExpanded = true,
+  hideToolSelector = false,
+  hideShellHeading = false,
+  disableToolPreload = false,
+}: ModeVisualizerProps) => {
   const ref = useFadeIn();
-  const [root, setRoot] = useState("C");
-  const [mode, setMode] = useState("Ionian");
+  const [root, setRoot] = useState(controlledRoot ?? "C");
+  const [mode, setMode] = useState(controlledMode ?? "Ionian");
   const [lefty, setLefty] = useState(false);
   const [showIntervals, setShowIntervals] = useState(false);
   const [showFingers, setShowFingers] = useState(false);
@@ -44,13 +101,18 @@ const ModeVisualizer = () => {
   const [hoveredChord, setHoveredChord] = useState<ChordSpelling | null>(null);
   const [selectedChord, setSelectedChord] = useState<ChordSpelling | null>(null);
   const [chordDisplay, setChordDisplay] = useState<'notes' | 'intervals'>('notes');
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'metronome' | 'progression' | 'reference' | 'polyrhythm' | 'rhythmmap' | 'moderef' | 'tonnetz' | 'circleof5'>('rhythmmap');
-  const [expanded, setExpanded] = useState(true);
+  const initialActiveTab = initialTab || showOnlyTabs?.[0] || "rhythmmap";
+  const [activeTab, setActiveTab] = useState<ModeVisualizerTab>(initialActiveTab);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const [instrument, setInstrument] = useState<'guitar' | 'bass' | 'keyboard' | 'other'>('guitar');
   const [guitarStrings, setGuitarStrings] = useState<6 | 7 | 8>(6);
   const [bassStrings, setBassStrings] = useState<4 | 5 | 6>(4);
   const [otherInstrument, setOtherInstrument] = useState(FRETTED_INSTRUMENTS[0].key);
   const [timbre, setTimbre] = useState<InstrumentTimbre>('piano');
+  const availableTabs = useMemo(
+    () => TOOL_OPTIONS.filter((tool) => !showOnlyTabs || showOnlyTabs.includes(tool.value)),
+    [showOnlyTabs],
+  );
 
   const scaleNotes = getScaleNotes(root, mode);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
@@ -97,36 +159,68 @@ const ModeVisualizer = () => {
   };
 
   // Clear selected chord when mode/root changes
-  const handleRootChange = (r: string) => { setRoot(r); setSelectedChord(null); };
-  const handleModeChange = (m: string) => { setMode(m); setSelectedChord(null); };
+  const handleRootChange = (r: string) => {
+    setRoot(r);
+    setSelectedChord(null);
+    onRootChange?.(r);
+  };
+  const handleModeChange = (m: string) => {
+    setMode(m);
+    setSelectedChord(null);
+    onModeChange?.(m);
+  };
   const toolFallback = <div className="rounded-2xl border border-border/70 bg-card/60 p-4 text-sm text-muted-foreground">Loading system…</div>;
 
   useEffect(() => {
-    void import("../Blipblox/GlobalRhythmEngine");
-  }, []);
+    if (!disableToolPreload) {
+      void import("../Blipblox/GlobalRhythmEngine");
+    }
+  }, [disableToolPreload]);
+
+  useEffect(() => {
+    if (controlledRoot && controlledRoot !== root) {
+      setRoot(controlledRoot);
+      setSelectedChord(null);
+    }
+  }, [controlledRoot, root]);
+
+  useEffect(() => {
+    if (controlledMode && controlledMode !== mode) {
+      setMode(controlledMode);
+      setSelectedChord(null);
+    }
+  }, [controlledMode, mode]);
+
+  useEffect(() => {
+    if (!availableTabs.some((tool) => tool.value === activeTab)) {
+      setActiveTab(availableTabs[0]?.value || "visualizer");
+    }
+  }, [activeTab, availableTabs]);
 
   return (
     <section id="mode-visualizer" className="section-padding !pb-8 bg-secondary/50 scroll-mt-24" ref={ref}>
       <div className="container mx-auto">
-        <button
-          onClick={() => setExpanded(prev => !prev)}
-          className="fade-up mb-6 w-full flex items-center justify-between gap-6 rounded-[1.75rem] border border-border/70 bg-card/75 px-5 py-5 text-left shadow-[0_18px_50px_-34px_rgba(0,0,0,0.75)] backdrop-blur-sm group sm:px-6"
-        >
-          <div className="text-left">
-            <p className="text-xs tracking-[0.32em] uppercase text-muted-foreground mb-3">
-              Systems
-            </p>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-              Interactive Systems
-            </h2>
-            <p className="text-sm md:text-base text-muted-foreground mt-3 max-w-2xl">
-              Start with the rhythm engine, then move into harmony, practice, and production tools without leaving the page.
-            </p>
-          </div>
-          <div className="shrink-0 ml-4 flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground group-hover:bg-accent">
-            {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-          </div>
-        </button>
+        {!hideShellHeading && (
+          <button
+            onClick={() => setExpanded(prev => !prev)}
+            className="fade-up mb-6 w-full flex items-center justify-between gap-6 rounded-[1.75rem] border border-border/70 bg-card/75 px-5 py-5 text-left shadow-[0_18px_50px_-34px_rgba(0,0,0,0.75)] backdrop-blur-sm group sm:px-6"
+          >
+            <div className="text-left">
+              <p className="text-xs tracking-[0.32em] uppercase text-muted-foreground mb-3">
+                Systems
+              </p>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+                Interactive Systems
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground mt-3 max-w-2xl">
+                Start with the rhythm engine, then move into harmony, practice, and production tools without leaving the page.
+              </p>
+            </div>
+            <div className="shrink-0 ml-4 flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground group-hover:bg-accent">
+              {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </div>
+          </button>
+        )}
 
         {expanded && (
           <>
@@ -148,32 +242,55 @@ const ModeVisualizer = () => {
                 )}
               </div>
 
-              <select
-                value={activeTab}
-                onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
-                className="mt-4 w-full sm:w-auto min-w-[260px] bg-background border border-border rounded-2xl px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="rhythmmap">🌍 Rhythm Atlas Engine</option>
-                <option value="polyrhythm">🥁 Rhythm Engine</option>
-                <option value="visualizer">🎸 Mode Visualizer</option>
-                <option value="progression">🎵 Chord Progressions</option>
-                <option value="metronome">⏱ Metronome</option>
-                <option value="reference">📖 Scale Reference</option>
-                <option value="moderef">🎼 Mode Reference</option>
-                <option value="tonnetz">🔷 Tonnetz</option>
-                <option value="circleof5">⭕ Circle of Fifths</option>
-              </select>
+              {hideToolSelector ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {availableTabs.map((tool) => (
+                    <button
+                      key={tool.value}
+                      type="button"
+                      onClick={() => setActiveTab(tool.value)}
+                      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                        activeTab === tool.value
+                          ? "border-primary/30 bg-primary/10 text-foreground"
+                          : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground"
+                      }`}
+                    >
+                      {tool.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value as ModeVisualizerTab)}
+                  className="mt-4 w-full sm:w-auto min-w-[260px] bg-background border border-border rounded-2xl px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {availableTabs.map((tool) => (
+                    <option key={tool.value} value={tool.value}>
+                      {tool.label}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
-            {activeTab === 'tonnetz' && (
+            {availableTabs.some((tool) => tool.value === 'tonnetz') && activeTab === 'tonnetz' && (
               <Suspense fallback={toolFallback}>
                 <div>
-                  <Tonnetz scaleNotes={scaleNotes} root={root} timbre={timbre} />
+                  <Tonnetz
+                    scaleNotes={scaleNotes}
+                    root={root}
+                    timbre={timbre}
+                    tempo={tempo}
+                    playing={playing}
+                    onTempoChange={onTempoChange}
+                    onPlayingChange={onPlayingChange}
+                  />
                 </div>
               </Suspense>
             )}
 
-            {activeTab === 'circleof5' && (
+            {availableTabs.some((tool) => tool.value === 'circleof5') && activeTab === 'circleof5' && (
               <Suspense fallback={toolFallback}>
                 <div>
                   <CircleOfFifths
@@ -190,7 +307,7 @@ const ModeVisualizer = () => {
               </Suspense>
             )}
 
-            {activeTab === 'reference' && (
+            {availableTabs.some((tool) => tool.value === 'reference') && activeTab === 'reference' && (
               <Suspense fallback={toolFallback}>
                 <div>
                   <MasterScaleReference />
@@ -198,41 +315,66 @@ const ModeVisualizer = () => {
               </Suspense>
             )}
 
-            {activeTab === 'polyrhythm' && (
+            {availableTabs.some((tool) => tool.value === 'polyrhythm') && activeTab === 'polyrhythm' && (
               <Suspense fallback={toolFallback}>
                 <div>
-                  <DrumMachine />
+                  <DrumMachine
+                    tempo={tempo}
+                    playing={playing}
+                    onTempoChange={onTempoChange}
+                    onPlayingChange={onPlayingChange}
+                  />
                 </div>
               </Suspense>
             )}
 
-            {activeTab === 'rhythmmap' && (
+            {availableTabs.some((tool) => tool.value === 'rhythmmap') && activeTab === 'rhythmmap' && (
               <Suspense fallback={toolFallback}>
-                <GlobalRhythmEngine root={root} mode={mode} />
+                <GlobalRhythmEngine
+                  root={root}
+                  mode={mode}
+                  tempo={tempo}
+                  playing={playing}
+                  onTempoChange={onTempoChange}
+                  onPlayingChange={onPlayingChange}
+                />
               </Suspense>
             )}
 
-            {activeTab === 'metronome' && (
+            {availableTabs.some((tool) => tool.value === 'metronome') && activeTab === 'metronome' && (
               <Suspense fallback={toolFallback}>
                 <div>
-                  <Metronome />
+                  <Metronome
+                    tempo={tempo}
+                    playing={playing}
+                    onTempoChange={onTempoChange}
+                    onPlayingChange={onPlayingChange}
+                  />
                 </div>
               </Suspense>
             )}
 
-            {activeTab === 'progression' && (
+            {availableTabs.some((tool) => tool.value === 'progression') && activeTab === 'progression' && (
               <Suspense fallback={toolFallback}>
                 <div>
                   <ChordProgressionBuilder
                     chordSpellings={chordSpellings}
                     root={root}
                     mode={mode}
+                    tempo={tempo}
+                    playing={playing}
+                    chordProgression={chordProgression}
+                    onRootChange={onRootChange}
+                    onModeChange={onModeChange}
+                    onTempoChange={onTempoChange}
+                    onPlayingChange={onPlayingChange}
+                    onProgressionChange={onChordProgressionChange}
                   />
                 </div>
               </Suspense>
             )}
 
-            {activeTab === 'visualizer' && (
+            {availableTabs.some((tool) => tool.value === 'visualizer') && activeTab === 'visualizer' && (
             <Suspense fallback={toolFallback}>
             <>
         {/* Control Panel */}
@@ -713,14 +855,6 @@ const ModeVisualizer = () => {
         )}
         </>
             </Suspense>
-            )}
-
-            {activeTab === 'moderef' && (
-              <Suspense fallback={toolFallback}>
-                <div>
-                  <ModeReference rootNote={root} timbre={timbre} />
-                </div>
-              </Suspense>
             )}
         </>
         )}

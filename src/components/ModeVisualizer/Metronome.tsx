@@ -5,6 +5,13 @@ import {
   Volume2, VolumeX, SkipForward, Eye, EyeOff
 } from "lucide-react";
 
+interface MetronomeProps {
+  tempo?: number;
+  playing?: boolean;
+  onTempoChange?: (tempo: number) => void;
+  onPlayingChange?: (playing: boolean) => void;
+}
+
 // ─── Types ──────────────────────────────────────────────────
 type MetronomeMode = 'practice' | 'performance' | 'flow';
 type SoundType = 'click' | 'woodblock' | 'kick' | 'soft' | 'hihat';
@@ -128,9 +135,14 @@ function saveSetlist(items: SetlistItem[]) {
 }
 
 // ─── Main Component ─────────────────────────────────────────
-const Metronome = () => {
+const Metronome = ({
+  tempo: controlledTempo,
+  playing: controlledPlaying,
+  onTempoChange,
+  onPlayingChange,
+}: MetronomeProps) => {
   // Core state
-  const [bpm, setBpm] = useState(120);
+  const [bpm, setBpm] = useState(controlledTempo ?? 120);
   const [playing, setPlaying] = useState(false);
   const [timeSigIdx, setTimeSigIdx] = useState(0);
   const [subdivIdx, setSubdivIdx] = useState(0);
@@ -174,10 +186,15 @@ const Metronome = () => {
   const barCountRef = useRef(0);
   const rampBpmRef = useRef(bpm);
   const lastBeatTimeRef = useRef(0);
+  const playingRef = useRef(false);
 
   const timeSig = TIME_SIGNATURES[timeSigIdx];
   const subdivision = SUBDIVISIONS[subdivIdx].value;
   const sound = SOUNDS[soundIdx];
+
+  useEffect(() => {
+    playingRef.current = playing;
+  }, [playing]);
 
   // ─── Audio Control ─────────────────────────────────────
   const stop = useCallback(() => {
@@ -267,12 +284,14 @@ const Metronome = () => {
 
   // Restart on param change while playing
   useEffect(() => {
-    if (playing) {
-      stop();
-      const t = setTimeout(() => start(), 50);
-      return () => clearTimeout(t);
+    if (!playingRef.current) {
+      return;
     }
-  }, [bpm, timeSigIdx, subdivIdx, accentFirst, swing, volume, soundIdx, mode, ambientSound, dropout, dropoutChance, tempoRamp, loopBars]);
+
+    stop();
+    const t = window.setTimeout(() => start(), 50);
+    return () => clearTimeout(t);
+  }, [start, stop]);
 
   // Spacebar control
   useEffect(() => {
@@ -394,6 +413,32 @@ const Metronome = () => {
   };
 
   const tempoLabel = getTempoLabel(bpm);
+
+  useEffect(() => {
+    if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
+      setBpm(controlledTempo);
+    }
+  }, [bpm, controlledTempo]);
+
+  useEffect(() => {
+    onTempoChange?.(bpm);
+  }, [bpm, onTempoChange]);
+
+  useEffect(() => {
+    onPlayingChange?.(playing);
+  }, [onPlayingChange, playing]);
+
+  useEffect(() => {
+    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
+      return;
+    }
+
+    if (controlledPlaying) {
+      start();
+    } else {
+      stop();
+    }
+  }, [controlledPlaying, playing, start, stop]);
 
   // ─── Render ────────────────────────────────────────────
   const isPerformance = mode === 'performance';

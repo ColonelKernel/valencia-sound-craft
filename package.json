@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "analyze": "vite build --mode analyze",
     "build:dev": "vite build --mode development",
     "build:midi-loops": "node scripts/build-midi-loop-library.mjs",
     "lint": "eslint .",
+    "lighthouse": "lhci autorun --config=./lighthouserc.cjs",
     "preview": "vite preview",
     "lovable:status": "node scripts/lovable-preview.mjs status",
     "lovable:sync": "node scripts/lovable-preview.mjs sync",
@@ -75,6 +77,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.6.0",

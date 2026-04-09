@@ -37,6 +37,8 @@ const COMPLEXITY_SORT_ORDER: Record<Complexity, number> = {
   advanced: 2,
 };
 
+const DEFAULT_TIME_SIGNATURE: [number, number] = [4, 4];
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 let _uid = 0;
@@ -67,15 +69,33 @@ function createTrackFromPreset(
 
 interface DrumMachineProps {
   embeddedPreset?: PatternPreset;
+  tempo?: number;
+  playing?: boolean;
+  selectedRegion?: Region;
+  selectedRhythmId?: string;
+  onTempoChange?: (tempo: number) => void;
+  onPlayingChange?: (playing: boolean) => void;
+  onRegionChange?: (region: Region) => void;
+  onRhythmChange?: (next: { rhythmId: string; region: Region; country: string }) => void;
 }
 
-const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
+const DrumMachine = ({
+  embeddedPreset,
+  tempo: controlledTempo,
+  playing: controlledPlaying,
+  selectedRegion: controlledRegion,
+  selectedRhythmId,
+  onTempoChange,
+  onPlayingChange,
+  onRegionChange,
+  onRhythmChange,
+}: DrumMachineProps) => {
   const initialPreset = embeddedPreset || DRUM_PRESETS[0];
   const initialRegion = initialPreset.region;
   const initialRhythmList = filterPresets({ region: initialRegion });
 
   // State
-  const [bpm, setBpm] = useState(initialPreset.bpm);
+  const [bpm, setBpm] = useState(controlledTempo ?? initialPreset.bpm);
   const [swing, setSwing] = useState(initialPreset.swing);
   const [playing, setPlaying] = useState(false);
   const [tracks, setTracks] = useState<TrackState[]>(() => {
@@ -213,7 +233,7 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
       || presetById.get(currentPresetId)
       || null;
   }, [rhythmList, currentPresetId, presetById]);
-  const currentTimeSignature = currentPreset?.timeSignature || ([4, 4] as [number, number]);
+  const currentTimeSignature = currentPreset?.timeSignature ?? DEFAULT_TIME_SIGNATURE;
   const subdivisionBoundaries = useMemo(() => {
     if (currentPreset) {
       return getSubdivisionBoundaries(currentPreset.pulseGrouping);
@@ -439,6 +459,61 @@ const DrumMachine = ({ embeddedPreset }: DrumMachineProps) => {
     setRhythmList(regionPresets);
     applyPresetSelection(nextPreset);
   }, [embeddedPreset, applyPresetSelection, presetById]);
+
+  useEffect(() => {
+    if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
+      setBpm(controlledTempo);
+    }
+  }, [bpm, controlledTempo]);
+
+  useEffect(() => {
+    onTempoChange?.(bpm);
+  }, [bpm, onTempoChange]);
+
+  useEffect(() => {
+    onPlayingChange?.(playing);
+  }, [onPlayingChange, playing]);
+
+  useEffect(() => {
+    onRegionChange?.(selectedRegion);
+  }, [onRegionChange, selectedRegion]);
+
+  useEffect(() => {
+    if (!currentPreset) {
+      return;
+    }
+
+    onRhythmChange?.({
+      rhythmId: currentPreset.id,
+      region: currentPreset.region,
+      country: currentPreset.country,
+    });
+  }, [currentPreset, onRhythmChange]);
+
+  useEffect(() => {
+    if (typeof controlledPlaying === "boolean" && controlledPlaying !== playing) {
+      setPlaying(controlledPlaying);
+    }
+  }, [controlledPlaying, playing]);
+
+  useEffect(() => {
+    if (controlledRegion && controlledRegion !== selectedRegion) {
+      handleRegionSelect(controlledRegion);
+    }
+  }, [controlledRegion, handleRegionSelect, selectedRegion]);
+
+  useEffect(() => {
+    if (!selectedRhythmId || selectedRhythmId === currentPresetId) {
+      return;
+    }
+
+    const nextPreset = presetById.get(selectedRhythmId);
+
+    if (nextPreset) {
+      setSelectedRegion(nextPreset.region);
+      applyPresetSelection(nextPreset);
+    }
+  }, [applyPresetSelection, currentPresetId, presetById, selectedRhythmId]);
 
   const clearAll = () => {
     setPlaying(false);
