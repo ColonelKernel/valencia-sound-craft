@@ -19,7 +19,6 @@ import { playNote, playChord, playScale, playNoteAtOctave, type InstrumentTimbre
 
 const Fretboard = lazy(() => import("./Fretboard"));
 const SheetMusic = lazy(() => import("./SheetMusic"));
-const ModeReference = lazy(() => import("./ModeReference"));
 const Metronome = lazy(() => import("./Metronome"));
 const ChordProgressionBuilder = lazy(() => import("./ChordProgressionBuilder"));
 const KeyboardVisualizer = lazy(() => import("./KeyboardVisualizer"));
@@ -36,7 +35,6 @@ export type ModeVisualizerTab =
   | "reference"
   | "polyrhythm"
   | "rhythmmap"
-  | "moderef"
   | "tonnetz"
   | "circleof5";
 
@@ -67,7 +65,6 @@ const TOOL_OPTIONS: Array<{ value: ModeVisualizerTab; label: string }> = [
   { value: "progression", label: "Chord Progressions" },
   { value: "metronome", label: "Metronome" },
   { value: "reference", label: "Scale Reference" },
-  { value: "moderef", label: "Mode Reference" },
   { value: "tonnetz", label: "Tonnetz" },
   { value: "circleof5", label: "Circle of Fifths" },
 ];
@@ -858,14 +855,6 @@ const ModeVisualizer = ({
         )}
         </>
             </Suspense>
-            )}
-
-            {availableTabs.some((tool) => tool.value === 'moderef') && activeTab === 'moderef' && (
-              <Suspense fallback={toolFallback}>
-                <div>
-                  <ModeReference rootNote={root} timbre={timbre} />
-                </div>
-              </Suspense>
             )}
         </>
         )}
