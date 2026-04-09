@@ -2,6 +2,12 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import {
+  getChordSpellings,
+  getScaleNotes,
+} from "@/components/ModeVisualizer/scaleData";
+import { getSecondaryDominants } from "@/components/ModeVisualizer/chordProgressionUtils";
+
+import {
   GlobalMusicProvider,
   useGlobalMusic,
   useGlobalMusicActions,
@@ -83,5 +89,34 @@ describe("globalMusicState", () => {
     expect(screen.getByTestId("rhythm-state")).toHaveTextContent("stopped");
     expect(screen.getByTestId("harmony-state")).toHaveTextContent("playing");
   });
-});
 
+  it("preserves rich chord progression entries in shared state", () => {
+    const scaleNotes = getScaleNotes("C", "Ionian");
+    const chordSpellings = getChordSpellings(scaleNotes, "Ionian");
+    const [secondaryDominant] = getSecondaryDominants("C", "Ionian", chordSpellings);
+
+    const ProgressionProbe = () => {
+      const progression = useGlobalMusic((state) => state.chordProgression);
+      return <div data-testid="progression-source">{progression[0]?.sourceLabel ?? "empty"}</div>;
+    };
+
+    const Controls = () => {
+      const actions = useGlobalMusicActions();
+      return (
+        <button type="button" onClick={() => actions.setChordProgression([secondaryDominant])}>
+          Set progression
+        </button>
+      );
+    };
+
+    render(
+      <GlobalMusicProvider>
+        <ProgressionProbe />
+        <Controls />
+      </GlobalMusicProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Set progression" }));
+    expect(screen.getByTestId("progression-source")).toHaveTextContent("resolves to IIm7");
+  });
+});

@@ -15,6 +15,7 @@ import {
   type StringTuning,
   type TuningPreset,
 } from "./scaleData";
+import type { ProgressionChord } from "./chordProgressionUtils";
 import { playNote, playChord, playScale, playNoteAtOctave, type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
 
 const Fretboard = lazy(() => import("./Fretboard"));
@@ -43,13 +44,13 @@ interface ModeVisualizerProps {
   mode?: string;
   tempo?: number;
   playing?: boolean;
-  chordProgression?: string[];
+  chordProgression?: ProgressionChord[];
   embeddedPreset?: never;
   onRootChange?: (root: string) => void;
   onModeChange?: (mode: string) => void;
   onTempoChange?: (tempo: number) => void;
   onPlayingChange?: (playing: boolean) => void;
-  onChordProgressionChange?: (progression: string[]) => void;
+  onChordProgressionChange?: (progression: ProgressionChord[]) => void;
   initialTab?: ModeVisualizerTab;
   showOnlyTabs?: ModeVisualizerTab[];
   defaultExpanded?: boolean;

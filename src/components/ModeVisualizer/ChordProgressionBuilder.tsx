@@ -22,6 +22,10 @@ import {
   playChordTonesExpressive, downloadMidi, getStyleSuggestions,
   NOTES_SHARP, NOTES_FLAT,
 } from "./chordProgressionUtils";
+import {
+  cloneProgression,
+  equalProgressions,
+} from "@/features/shared/chordProgressionModel";
 
 interface ChordProgressionBuilderProps {
   chordSpellings: ChordSpelling[];
@@ -29,12 +33,12 @@ interface ChordProgressionBuilderProps {
   mode: string;
   tempo?: number;
   playing?: boolean;
-  chordProgression?: string[];
+  chordProgression?: ProgressionChord[];
   onRootChange?: (root: string) => void;
   onModeChange?: (mode: string) => void;
   onTempoChange?: (tempo: number) => void;
   onPlayingChange?: (playing: boolean) => void;
-  onProgressionChange?: (progression: string[]) => void;
+  onProgressionChange?: (progression: ProgressionChord[]) => void;
 }
 
 const ChordProgressionBuilder = ({
@@ -43,14 +47,17 @@ const ChordProgressionBuilder = ({
   mode: initialMode,
   tempo: controlledTempo,
   playing: controlledPlaying,
-  chordProgression: _controlledProgression,
+  chordProgression: controlledProgression,
   onRootChange,
   onModeChange,
   onTempoChange,
   onPlayingChange,
   onProgressionChange,
 }: ChordProgressionBuilderProps) => {
-  const [progression, setProgression] = useState<ProgressionChord[]>([]);
+  const [progression, setProgression] = useState<ProgressionChord[]>(() =>
+    cloneProgression(controlledProgression ?? []),
+  );
+  const skipNextProgressionSyncRef = useRef(controlledProgression !== undefined);
   const [undoStack, setUndoStack] = useState<ProgressionChord[][]>([]);
   const [playing, setPlaying] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(-1);
@@ -271,8 +278,25 @@ const ChordProgressionBuilder = ({
   }, [onPlayingChange, playing]);
 
   useEffect(() => {
-    onProgressionChange?.(progression.map((entry) => entry.chord.symbol));
+    if (skipNextProgressionSyncRef.current) {
+      skipNextProgressionSyncRef.current = false;
+      return;
+    }
+
+    onProgressionChange?.(cloneProgression(progression));
   }, [onProgressionChange, progression]);
+
+  useEffect(() => {
+    if (!controlledProgression || equalProgressions(controlledProgression, progression)) {
+      return;
+    }
+
+    skipNextProgressionSyncRef.current = true;
+    setProgression(cloneProgression(controlledProgression));
+    setEditingIdx((current) =>
+      current !== null && current >= controlledProgression.length ? null : current,
+    );
+  }, [controlledProgression, progression]);
 
   useEffect(() => {
     if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {

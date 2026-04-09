@@ -8,13 +8,19 @@ import {
   type ReactNode,
 } from "react";
 
+import type { ProgressionChord } from "@/components/ModeVisualizer/chordProgressionUtils";
+import {
+  cloneProgression,
+  equalProgressions,
+} from "@/features/shared/chordProgressionModel";
+
 export interface GlobalMusicState {
   key: string;
   mode: string;
   tempo: number;
   rhythmId: string;
   region: string;
-  chordProgression: string[];
+  chordProgression: ProgressionChord[];
   playing: boolean;
 }
 
@@ -36,18 +42,6 @@ const DEFAULT_STATE: GlobalMusicState = {
   chordProgression: [],
   playing: false,
 };
-
-function shallowEqualArray(left: string[], right: string[]) {
-  if (left === right) {
-    return true;
-  }
-
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  return left.every((value, index) => value === right[index]);
-}
 
 function createGlobalMusicStore(initialState?: Partial<GlobalMusicState>) {
   let snapshot: GlobalMusicSnapshot = {
@@ -73,7 +67,7 @@ function createGlobalMusicStore(initialState?: Partial<GlobalMusicState>) {
       snapshot.state.rhythmId === nextSnapshot.state.rhythmId &&
       snapshot.state.region === nextSnapshot.state.region &&
       snapshot.state.playing === nextSnapshot.state.playing &&
-      shallowEqualArray(snapshot.state.chordProgression, nextSnapshot.state.chordProgression);
+      equalProgressions(snapshot.state.chordProgression, nextSnapshot.state.chordProgression);
 
     if (sameTransport && sameState) {
       return;
@@ -123,11 +117,11 @@ function createGlobalMusicStore(initialState?: Partial<GlobalMusicState>) {
     setRegion(region: string) {
       updateState((current) => (current.region === region ? current : { ...current, region }));
     },
-    setChordProgression(chordProgression: string[]) {
+    setChordProgression(chordProgression: ProgressionChord[]) {
       updateState((current) =>
-        shallowEqualArray(current.chordProgression, chordProgression)
+        equalProgressions(current.chordProgression, chordProgression)
           ? current
-          : { ...current, chordProgression: [...chordProgression] },
+          : { ...current, chordProgression: cloneProgression(chordProgression) },
       );
     },
     setPlaying(playing: boolean) {
@@ -260,4 +254,3 @@ export function useGlobalTransport(owner: string) {
     setPlaying,
   };
 }
-

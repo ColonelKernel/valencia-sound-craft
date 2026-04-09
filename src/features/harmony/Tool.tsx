@@ -23,7 +23,7 @@ const HarmonyTool = () => {
             <strong className="text-foreground">{tool.tempo} BPM</strong>.
           </p>
           <p>
-            Progression symbols are stored globally, so other harmony routes can reflect the same musical context without requiring the old one-page tool switcher.
+            The active chord progression is stored globally, so other harmony routes can reflect the same musical context without requiring the old one-page tool switcher.
           </p>
         </div>
       }
