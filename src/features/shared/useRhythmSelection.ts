@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import {
   getRhythmDefinitionById,
@@ -19,6 +19,7 @@ export function useRhythmSelection(toolId: string) {
   const actions = useGlobalMusicActions();
   const transport = useGlobalTransport(toolId);
   const tempoBridge = useDebouncedTempo(sharedTempo, actions.setTempo);
+  const syncedRef = useRef(false);
 
   const activeDefinition = useMemo(
     () => getRhythmDefinitionById(rhythmId) || RHYTHM_LIBRARY[0],
@@ -29,14 +30,17 @@ export function useRhythmSelection(toolId: string) {
     [activeDefinition],
   );
 
+  // Sync global state only once on mount when the stored rhythmId doesn't
+  // resolve to a valid definition (fallback case).
   useEffect(() => {
-    if (!activeDefinition) {
+    if (syncedRef.current || !activeDefinition) {
       return;
     }
 
-    if (activeDefinition.id !== rhythmId || activeDefinition.region !== region) {
+    if (activeDefinition.id !== rhythmId) {
       actions.setRhythm(activeDefinition.id, activeDefinition.region);
     }
+    syncedRef.current = true;
   }, [actions, activeDefinition, region, rhythmId]);
 
   return {
