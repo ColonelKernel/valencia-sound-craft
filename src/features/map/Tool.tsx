@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import type { RhythmBrowserRegion } from "@/components/Blipblox/rhythmEngineModel";
 
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
@@ -42,7 +43,7 @@ const MapTool = () => {
             <GlobalRhythmEngine
               tempo={tool.tempo}
               playing={tool.playing}
-              selectedRegion={tool.region}
+              selectedRegion={tool.region as RhythmBrowserRegion | "All"}
               selectedRhythmId={tool.rhythmId}
               onTempoChange={tool.setTempo}
               onPlayingChange={tool.setPlaying}
