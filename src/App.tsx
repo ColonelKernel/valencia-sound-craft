@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { GlobalMusicProvider } from "@/state/globalMusicState";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -25,25 +24,23 @@ const routeFallback = (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <GlobalMusicProvider>
-      <TooltipProvider>
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={routeFallback}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/tools" element={<ToolsLayout />}>
-                <Route index element={<ToolsIndex />} />
-                <Route path="rhythm" element={<RhythmTool />} />
-                <Route path="harmony" element={<HarmonyTool />} />
-                <Route path="map" element={<MapTool />} />
-                <Route path="circle" element={<CircleTool />} />
-                <Route path="tonnetz" element={<TonnetzTool />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
+      <Sonner />
+      <BrowserRouter>
+        <Suspense fallback={routeFallback}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/tools" element={<ToolsLayout />}>
+              <Route index element={<ToolsIndex />} />
+              <Route path="rhythm" element={<RhythmTool />} />
+              <Route path="harmony" element={<HarmonyTool />} />
+              <Route path="map" element={<MapTool />} />
+              <Route path="circle" element={<CircleTool />} />
+              <Route path="tonnetz" element={<TonnetzTool />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
     </GlobalMusicProvider>
   </QueryClientProvider>
 );
