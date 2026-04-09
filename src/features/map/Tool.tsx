@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import type { RhythmBrowserRegion } from "@/components/Blipblox/rhythmEngineModel";
 
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
