@@ -212,7 +212,7 @@ const HeroRhythmPreview = () => {
           <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-primary-foreground/55">
             Rhythm Engine
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-primary-foreground">Start with the groove</h2>
+          <h2 className="mt-2 text-2xl font-bold text-foreground">Start with the groove</h2>
         </div>
         <span className="rounded-full border border-primary-foreground/15 bg-primary-foreground/8 px-3 py-1 text-[11px] text-primary-foreground/70">
           {HERO_BPM} BPM
