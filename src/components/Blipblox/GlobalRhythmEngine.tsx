@@ -457,25 +457,34 @@ const GlobalRhythmEngine = ({
     }
   }, [controlledTempo, rhythmState.tempo]);
 
-  useEffect(() => {
-    onTempoChange?.(rhythmState.tempo);
-  }, [onTempoChange, rhythmState.tempo]);
+  const onTempoChangeRef = useRef(onTempoChange);
+  onTempoChangeRef.current = onTempoChange;
+  const onPlayingChangeRef = useRef(onPlayingChange);
+  onPlayingChangeRef.current = onPlayingChange;
+  const onRegionChangeRef = useRef(onRegionChange);
+  onRegionChangeRef.current = onRegionChange;
+  const onRhythmChangeRef = useRef(onRhythmChange);
+  onRhythmChangeRef.current = onRhythmChange;
 
   useEffect(() => {
-    onPlayingChange?.(playing);
-  }, [onPlayingChange, playing]);
+    onTempoChangeRef.current?.(rhythmState.tempo);
+  }, [rhythmState.tempo]);
 
   useEffect(() => {
-    onRegionChange?.(browserRegion);
-  }, [browserRegion, onRegionChange]);
+    onPlayingChangeRef.current?.(playing);
+  }, [playing]);
 
   useEffect(() => {
-    onRhythmChange?.({
+    onRegionChangeRef.current?.(browserRegion);
+  }, [browserRegion]);
+
+  useEffect(() => {
+    onRhythmChangeRef.current?.({
       rhythmId: activeDefinition.id,
       region: activeDefinition.region,
       country: activeDefinition.country,
     });
-  }, [activeDefinition.country, activeDefinition.id, activeDefinition.region, onRhythmChange]);
+  }, [activeDefinition.country, activeDefinition.id, activeDefinition.region]);
 
   useEffect(() => {
     if (selectedRegion && selectedRegion !== browserRegion) {
