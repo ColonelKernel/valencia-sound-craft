@@ -4,6 +4,10 @@ import { Link } from "react-router-dom";
 
 import HeroRhythmPreview from "@/components/HeroRhythmPreview";
 
+const WAVEFORM_HEIGHTS = Array.from({ length: 80 }, (_, index) =>
+  Math.sin(index * 0.2) * 40 + Math.random() * 30 + 10,
+);
+
 const Hero = () => {
   return (
     <section
@@ -73,13 +77,11 @@ const Hero = () => {
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 flex h-24 items-end justify-center gap-[2px] overflow-hidden opacity-25">
-        {Array.from({ length: 80 }).map((_, index) => (
+        {WAVEFORM_HEIGHTS.map((height, index) => (
           <div
             key={index}
             className="w-[3px] rounded-t-full bg-foreground/55"
-            style={{
-              height: `${Math.sin(index * 0.2) * 40 + Math.random() * 30 + 10}%`,
-            }}
+            style={{ height: `${height}%` }}
           />
         ))}
       </div>

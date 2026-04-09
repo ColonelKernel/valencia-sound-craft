@@ -260,10 +260,11 @@ const Tonnetz = ({
     const chordNotes = result.notes.map(i => ALL_NOTES[i]);
     playChord(chordNotes, 0.6, timbre);
     if (midiEnabled && isConnected()) midiSendChord(chordNotes, 600, 100, midiChannel);
-    setTimeout(() => {
+    const id = window.setTimeout(() => {
       setActiveTriad(result);
       setAnimatingTransform(null);
     }, 400);
+    timeoutRef.current.push(id);
   }, [activeTriad, timbre, midiEnabled, midiChannel]);
 
   const handleModulate = useCallback((direction: 'darker' | 'brighter' | 'distant') => {
