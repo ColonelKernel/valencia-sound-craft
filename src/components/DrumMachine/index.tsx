@@ -466,29 +466,38 @@ const DrumMachine = ({
     }
   }, [bpm, controlledTempo]);
 
-  useEffect(() => {
-    onTempoChange?.(bpm);
-  }, [bpm, onTempoChange]);
+  const onTempoChangeRef = useRef(onTempoChange);
+  onTempoChangeRef.current = onTempoChange;
+  const onPlayingChangeRef = useRef(onPlayingChange);
+  onPlayingChangeRef.current = onPlayingChange;
+  const onRegionChangeRef = useRef(onRegionChange);
+  onRegionChangeRef.current = onRegionChange;
+  const onRhythmChangeRef = useRef(onRhythmChange);
+  onRhythmChangeRef.current = onRhythmChange;
 
   useEffect(() => {
-    onPlayingChange?.(playing);
-  }, [onPlayingChange, playing]);
+    onTempoChangeRef.current?.(bpm);
+  }, [bpm]);
 
   useEffect(() => {
-    onRegionChange?.(selectedRegion);
-  }, [onRegionChange, selectedRegion]);
+    onPlayingChangeRef.current?.(playing);
+  }, [playing]);
+
+  useEffect(() => {
+    onRegionChangeRef.current?.(selectedRegion);
+  }, [selectedRegion]);
 
   useEffect(() => {
     if (!currentPreset) {
       return;
     }
 
-    onRhythmChange?.({
+    onRhythmChangeRef.current?.({
       rhythmId: currentPreset.id,
       region: currentPreset.region,
       country: currentPreset.country,
     });
-  }, [currentPreset, onRhythmChange]);
+  }, [currentPreset]);
 
   useEffect(() => {
     if (typeof controlledPlaying === "boolean" && controlledPlaying !== playing) {
