@@ -24,16 +24,16 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-6 py-28 md:py-32">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,420px)] lg:gap-14">
           <div className="max-w-3xl space-y-7">
-            <p className="text-sm font-medium uppercase tracking-[0.34em] text-primary-foreground/60">
+            <p className="text-sm font-medium uppercase tracking-[0.34em] text-foreground/60">
               Valencia, Spain • Music • Systems • Production
             </p>
 
             <div className="space-y-5">
-              <h1 className="max-w-3xl text-5xl font-bold leading-[0.98] text-primary-foreground md:text-6xl lg:text-7xl">
+              <h1 className="max-w-3xl text-5xl font-bold leading-[0.98] text-foreground md:text-6xl lg:text-7xl">
                 Music producer, guitarist, and creative technologist for records that move.
               </h1>
 
-              <p className="max-w-2xl text-base leading-relaxed text-primary-foreground/72 md:text-lg">
+              <p className="max-w-2xl text-base leading-relaxed text-foreground/70 md:text-lg">
                 I build finished records, live session workflows, and playable music systems that
                 make rhythm, harmony, and experimentation feel immediate.
               </p>
@@ -42,25 +42,25 @@ const Hero = () => {
             <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
               <a
                 href="#contact"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_18px_40px_-24px_rgba(255,255,255,0.55)] hover:bg-primary/90"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-foreground px-6 py-3.5 text-sm font-semibold text-background shadow-[0_18px_40px_-24px_rgba(255,255,255,0.55)] hover:bg-foreground/90"
               >
                 Start a Project <ArrowRight size={16} />
               </a>
               <a
                 href="#portfolio"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-foreground/28 px-6 py-3.5 text-sm font-medium text-primary-foreground hover:bg-primary-foreground/10"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-foreground/28 px-6 py-3.5 text-sm font-medium text-foreground hover:bg-foreground/10"
               >
                 <Headphones size={16} /> Listen to Work
               </a>
               <Link
                 to="/tools/rhythm"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-foreground/12 bg-primary-foreground/6 px-6 py-3.5 text-sm font-medium text-primary-foreground/82 hover:bg-primary-foreground/12 hover:text-primary-foreground"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-foreground/12 bg-foreground/6 px-6 py-3.5 text-sm font-medium text-foreground/82 hover:bg-foreground/12 hover:text-foreground"
               >
                 Try the Rhythm Engine
               </Link>
             </div>
 
-            <p className="max-w-xl text-sm text-primary-foreground/52">
+            <p className="max-w-xl text-sm text-foreground/52">
               Based in Valencia and working with artists locally and worldwide across production,
               live instrumentation, and interactive tool design.
             </p>
@@ -76,7 +76,7 @@ const Hero = () => {
         {Array.from({ length: 80 }).map((_, index) => (
           <div
             key={index}
-            className="w-[3px] rounded-t-full bg-primary-foreground/55"
+            className="w-[3px] rounded-t-full bg-foreground/55"
             style={{
               height: `${Math.sin(index * 0.2) * 40 + Math.random() * 30 + 10}%`,
             }}

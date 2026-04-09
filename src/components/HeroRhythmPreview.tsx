@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Play, Square } from "lucide-react";
+import { Play, Square, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import StepSequencer from "@/components/Blipblox/StepSequencer";
@@ -206,24 +206,29 @@ const HeroRhythmPreview = () => {
   };
 
   return (
-    <div className="hero-preview-glow rounded-3xl border border-primary-foreground/14 bg-black/35 p-4 shadow-[0_28px_80px_-36px_rgba(0,0,0,0.85)] backdrop-blur-md sm:p-5">
+    <div className="hero-preview-glow group relative rounded-3xl border border-[hsl(45_70%_55%/0.25)] bg-[linear-gradient(145deg,hsl(0_0%_8%/0.92),hsl(0_0%_5%/0.96))] p-4 shadow-[0_28px_80px_-36px_rgba(0,0,0,0.85),0_0_60px_-20px_hsl(45_70%_45%/0.08)] backdrop-blur-md sm:p-5">
+      {/* Subtle corner accent glow */}
+      <div className="pointer-events-none absolute -left-px -top-px h-24 w-24 rounded-tl-3xl bg-[radial-gradient(ellipse_at_0%_0%,hsl(45_70%_55%/0.12),transparent_70%)]" />
+      <div className="pointer-events-none absolute -bottom-px -right-px h-24 w-24 rounded-br-3xl bg-[radial-gradient(ellipse_at_100%_100%,hsl(45_70%_55%/0.08),transparent_70%)]" />
+
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.32em] text-primary-foreground/55">
+          <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.32em] text-[hsl(45_60%_65%/0.8)]">
+            <Sparkles size={12} className="text-[hsl(45_60%_65%)]" />
             Rhythm Engine
           </p>
           <h2 className="mt-2 text-2xl font-bold text-foreground">Start with the groove</h2>
         </div>
-        <span className="rounded-full border border-primary-foreground/15 bg-primary-foreground/8 px-3 py-1 text-[11px] text-primary-foreground/70">
+        <span className="rounded-full border border-[hsl(45_60%_55%/0.2)] bg-[hsl(45_60%_55%/0.08)] px-3 py-1 text-[11px] font-semibold text-[hsl(45_60%_70%)]">
           {HERO_BPM} BPM
         </span>
       </div>
 
-      <p className="mt-4 rounded-2xl border border-primary-foreground/12 bg-primary-foreground/6 px-4 py-3 text-sm font-medium text-primary-foreground">
+      <p className="mt-4 rounded-2xl border border-foreground/10 bg-foreground/[0.04] px-4 py-3 text-sm font-medium text-foreground/80">
         Stack kick, clap, and hats into a groove → Press play
       </p>
 
-      <div className="mt-4 rounded-2xl border border-primary-foreground/10 bg-black/25 p-4">
+      <div className="mt-4 rounded-2xl border border-foreground/8 bg-black/30 p-4">
         <StepSequencer
           pattern={compositePlayback.pattern}
           velocityPattern={compositePlayback.velocity}
@@ -246,10 +251,10 @@ const HeroRhythmPreview = () => {
           }}
           disabled={activeStepCount === 0}
           className={cn(
-            "inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl px-6 text-base font-semibold shadow-[0_16px_36px_-18px_rgba(255,255,255,0.45)]",
+            "inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl px-6 text-base font-semibold transition-all",
             playing
-              ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              : "bg-primary text-primary-foreground hover:bg-primary/90",
+              ? "bg-destructive text-destructive-foreground shadow-[0_12px_28px_-10px_hsl(0_84%_60%/0.4)] hover:bg-destructive/90"
+              : "bg-[hsl(45_70%_50%)] text-background shadow-[0_16px_36px_-14px_hsl(45_70%_50%/0.5)] hover:bg-[hsl(45_70%_55%)]",
             activeStepCount === 0 && "cursor-not-allowed opacity-50 shadow-none",
           )}
         >
@@ -259,7 +264,7 @@ const HeroRhythmPreview = () => {
 
         <Link
           to="/tools/rhythm"
-          className="inline-flex items-center justify-center rounded-2xl border border-primary-foreground/18 px-4 py-3 text-sm font-medium text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+          className="inline-flex items-center justify-center rounded-2xl border border-foreground/18 px-4 py-3 text-sm font-medium text-foreground/80 hover:bg-foreground/10 hover:text-foreground"
         >
           Open the full rhythm system
         </Link>
