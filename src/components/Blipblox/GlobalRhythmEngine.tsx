@@ -318,22 +318,32 @@ const GlobalRhythmEngine = ({
   onRegionChange,
   onRhythmChange,
 }: GlobalRhythmEngineProps) => {
-  const initialDefinition = (
-    getDefinitionForPreset(embeddedPreset)
+  const initialDefinitionRef = useRef(
+    (getDefinitionForPreset(embeddedPreset)
     || RHYTHM_LIBRARY[0]
-    || getDefaultRhythmDefinitionForCountry("Argentina")
-  )!;
+    || getDefaultRhythmDefinitionForCountry("Argentina"))!
+  );
+  const initialDefinition = initialDefinitionRef.current;
 
-  const initialComposite = buildCompositePattern(initialDefinition.layers);
+  // If the parent provides selectedRhythmId/selectedRegion, start synced to that
+  // to avoid firing onRhythmChange on mount with a divergent initial state.
+  const startDefinitionRef = useRef(
+    (selectedRhythmId ? getRhythmDefinitionById(selectedRhythmId) : null) ?? initialDefinition
+  );
+  const startDefinition = startDefinitionRef.current;
+
+  const initialComposite = buildCompositePattern(startDefinition.layers);
 
   const [rhythmState, setRhythmState] = useState<GlobalRhythmState>(() =>
-    createGlobalRhythmState(initialDefinition, embeddedPreset?.bpm ?? initialDefinition.defaultTempo),
+    createGlobalRhythmState(startDefinition, embeddedPreset?.bpm ?? startDefinition.defaultTempo),
   );
   const [playing, setPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
   const [swing, setSwing] = useState(0);
-  const [browserRegion, setBrowserRegion] = useState<RhythmBrowserRegion | "All">(initialDefinition.region);
-  const [browserCountry, setBrowserCountry] = useState(initialDefinition.country);
+  const [browserRegion, setBrowserRegion] = useState<RhythmBrowserRegion | "All">(
+    (selectedRegion && selectedRegion !== "All" ? selectedRegion : null) ?? startDefinition.region
+  );
+  const [browserCountry, setBrowserCountry] = useState(startDefinition.country);
   const [meterFilter, setMeterFilter] = useState<string | "All">("All");
   const [feelFilter, setFeelFilter] = useState<TimeFeel | "All">("All");
   const [tempoBandFilter, setTempoBandFilter] = useState<RhythmTempoBand | "All">("All");
@@ -379,8 +389,8 @@ const GlobalRhythmEngine = ({
   onRhythmChangeRef.current = onRhythmChange;
 
   const activeDefinition = useMemo(
-    () => getRhythmDefinitionById(rhythmState.rhythmId) || initialDefinition,
-    [initialDefinition, rhythmState.rhythmId],
+    () => getRhythmDefinitionById(rhythmState.rhythmId) || startDefinition,
+    [startDefinition, rhythmState.rhythmId],
   );
   const morphOverlay = useMemo(
     () => scaleMorphOverlay(
@@ -477,17 +487,29 @@ const GlobalRhythmEngine = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playing]);
 
+  const selectedRegionRef = useRef(selectedRegion);
+  selectedRegionRef.current = selectedRegion;
+
   useEffect(() => {
-    onRegionChangeRef.current?.(browserRegion);
+    // Only notify parent when our region diverges from what parent already knows
+    if (browserRegion !== selectedRegionRef.current) {
+      onRegionChangeRef.current?.(browserRegion);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [browserRegion]);
 
+  const selectedRhythmIdRef = useRef(selectedRhythmId);
+  selectedRhythmIdRef.current = selectedRhythmId;
+
   useEffect(() => {
-    onRhythmChangeRef.current?.({
-      rhythmId: activeDefinition.id,
-      region: activeDefinition.region,
-      country: activeDefinition.country,
-    });
+    // Only notify parent when our rhythm diverges from what parent already knows
+    if (activeDefinition.id !== selectedRhythmIdRef.current) {
+      onRhythmChangeRef.current?.({
+        rhythmId: activeDefinition.id,
+        region: activeDefinition.region,
+        country: activeDefinition.country,
+      });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDefinition.country, activeDefinition.id, activeDefinition.region]);
 
@@ -539,14 +561,15 @@ const GlobalRhythmEngine = ({
       return;
     }
 
-    if (!browserRhythms.some((definition) => definition.id === activeDefinition.id)) {
+    if (!browserRhythms.some((definition) => definition.id === rhythmStateRef.current.rhythmId)) {
       const nextDefinition = browserRhythms[0];
 
       if (nextDefinition) {
         setRhythmState(createGlobalRhythmState(nextDefinition));
       }
     }
-  }, [activeDefinition.id, browserRhythms]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [browserRhythms]);
 
   const getCtx = useCallback(() => {
     if (!audioCtxRef.current) {
