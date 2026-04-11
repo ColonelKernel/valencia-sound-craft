@@ -458,13 +458,14 @@ const GlobalRhythmEngine = ({
   }, [continentFilter, filteredDefinitions]);
 
   useEffect(() => {
-    if (typeof controlledTempo === "number" && controlledTempo !== rhythmState.tempo) {
+    if (typeof controlledTempo === "number" && controlledTempo !== rhythmStateRef.current.tempo) {
       setRhythmState((currentState) => ({
         ...currentState,
         tempo: controlledTempo,
       }));
     }
-  }, [controlledTempo, rhythmState.tempo]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlledTempo]);
 
   useEffect(() => {
     onTempoChangeRef.current?.(rhythmState.tempo);
@@ -494,7 +495,8 @@ const GlobalRhythmEngine = ({
     if (selectedRegion && selectedRegion !== browserRegion) {
       setBrowserRegion(selectedRegion);
     }
-  }, [browserRegion, selectedRegion]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRegion]);
 
   useEffect(() => {
     baseLayersRef.current = rhythmState.layers;
@@ -529,7 +531,8 @@ const GlobalRhythmEngine = ({
     if (!regionCountries.includes(browserCountry)) {
       setBrowserCountry(regionCountries[0]);
     }
-  }, [browserCountry, regionCountries]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regionCountries]);
 
   useEffect(() => {
     if (browserRhythms.length === 0) {
@@ -609,12 +612,13 @@ const GlobalRhythmEngine = ({
   }, [embeddedPreset, loadRhythmDefinition]);
 
   useEffect(() => {
-    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
+    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playingRef.current) {
       return;
     }
 
     setPlaying(controlledPlaying);
-  }, [controlledPlaying, playing]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlledPlaying]);
 
   useEffect(() => {
     if (!selectedRhythmId || selectedRhythmId === activeDefinition.id) {
@@ -625,11 +629,12 @@ const GlobalRhythmEngine = ({
 
     if (nextDefinition) {
       loadRhythmDefinition(nextDefinition, {
-        tempo: controlledTempo ?? rhythmState.tempo,
+        tempo: controlledTempo ?? rhythmStateRef.current.tempo,
         syncBrowser: true,
       });
     }
-  }, [activeDefinition.id, controlledTempo, loadRhythmDefinition, rhythmState.tempo, selectedRhythmId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRhythmId, loadRhythmDefinition]);
 
   const handleLayersChange = useCallback((nextLayers: SequencerLayer[]) => {
     const sanitizedLayers = nextLayers.filter((layer) => layer.id !== "morph-overlay");
