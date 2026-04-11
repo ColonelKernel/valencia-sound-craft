@@ -368,6 +368,15 @@ const GlobalRhythmEngine = ({
   const swingRef = useRef(swing);
   const adaptiveModeRef = useRef(adaptiveMode);
   const variationStrengthRef = useRef(variationStrength);
+  // Callback refs — prevent inline functions from causing effect re-firing on every render
+  const onTempoChangeRef = useRef(onTempoChange);
+  onTempoChangeRef.current = onTempoChange;
+  const onPlayingChangeRef = useRef(onPlayingChange);
+  onPlayingChangeRef.current = onPlayingChange;
+  const onRegionChangeRef = useRef(onRegionChange);
+  onRegionChangeRef.current = onRegionChange;
+  const onRhythmChangeRef = useRef(onRhythmChange);
+  onRhythmChangeRef.current = onRhythmChange;
 
   const activeDefinition = useMemo(
     () => getRhythmDefinitionById(rhythmState.rhythmId) || initialDefinition,
@@ -458,24 +467,28 @@ const GlobalRhythmEngine = ({
   }, [controlledTempo, rhythmState.tempo]);
 
   useEffect(() => {
-    onTempoChange?.(rhythmState.tempo);
-  }, [onTempoChange, rhythmState.tempo]);
+    onTempoChangeRef.current?.(rhythmState.tempo);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rhythmState.tempo]);
 
   useEffect(() => {
-    onPlayingChange?.(playing);
-  }, [onPlayingChange, playing]);
+    onPlayingChangeRef.current?.(playing);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing]);
 
   useEffect(() => {
-    onRegionChange?.(browserRegion);
-  }, [browserRegion, onRegionChange]);
+    onRegionChangeRef.current?.(browserRegion);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [browserRegion]);
 
   useEffect(() => {
-    onRhythmChange?.({
+    onRhythmChangeRef.current?.({
       rhythmId: activeDefinition.id,
       region: activeDefinition.region,
       country: activeDefinition.country,
     });
-  }, [activeDefinition.country, activeDefinition.id, activeDefinition.region, onRhythmChange]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDefinition.country, activeDefinition.id, activeDefinition.region]);
 
   useEffect(() => {
     if (selectedRegion && selectedRegion !== browserRegion) {
