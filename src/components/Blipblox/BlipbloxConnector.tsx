@@ -22,26 +22,16 @@ interface BlipbloxConnectorProps {
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'sending';
 
 function resizeStepSequence(values: number[], targetLength: number): number[] {
-  if (targetLength <= 0) {
-    return [];
-  }
-
-  if (values.length === 0) {
-    return new Array(targetLength).fill(0);
-  }
-
-  if (values.length === targetLength) {
-    return [...values];
-  }
+  if (targetLength <= 0) return [];
+  if (values.length === 0) return new Array(targetLength).fill(0);
+  if (values.length === targetLength) return [...values];
 
   const resized = new Array(targetLength).fill(0);
   const ratio = values.length / targetLength;
-
   for (let index = 0; index < targetLength; index += 1) {
     const sourceIndex = Math.min(values.length - 1, Math.floor(index * ratio));
     resized[index] = values[sourceIndex] ?? 0;
   }
-
   return resized;
 }
 
@@ -56,10 +46,22 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
   const [midiSupported, setMidiSupported] = useState(true);
   const [currentStep, setCurrentStep] = useState(-1);
   const [showMorpher, setShowMorpher] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // myTRACKS-specific state
+  const [midiMode, setMidiMode] = useState<'single' | 'multi' | 'cc'>('single');
+  const [playMode, setPlayMode] = useState<'note' | 'clip' | 'drum'>('drum');
+  const [fxLeverCc, setFxLeverCc] = useState(74);
+  const [trackCount, setTrackCount] = useState(2);
+
+  // SK2-specific state
+  const [octave, setOctave] = useState(4);
+  const [arpDirection, setArpDirection] = useState<'up' | 'down' | 'random'>('up');
+
+  // After Dark-specific state
   const [ccNumber, setCcNumber] = useState(1);
   const [evolve, setEvolve] = useState(false);
-  const [octave, setOctave] = useState(4);
+  const [modulationDepth, setModulationDepth] = useState(20);
+  const [lfoRate, setLfoRate] = useState(1);
 
   // Pattern state
   const [pattern, setPattern] = useState<number[]>(new Array(16).fill(0));
@@ -75,7 +77,6 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
       if (ok) {
         const outs = blipbloxEngine.getOutputs();
         setOutputs(outs);
-        // Auto-detect
         const detected = blipbloxEngine.detectBlipblox();
         if (detected) setSelectedOutputId(detected.id);
         else if (outs.length > 0) setSelectedOutputId(outs[0].id);
@@ -88,7 +89,6 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
   useEffect(() => {
     if (embeddedPreset) {
       setBpm(embeddedPreset.bpm);
-      // Use first track's pattern
       const track = embeddedPreset.tracks[0];
       if (track) {
         const groove = mapGroove(track.steps);
@@ -118,30 +118,51 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
     const note = getDeviceNote(deviceType);
 
     if (deviceType === 'mytracks') {
-      const { pattern: translated } = translateForMyTracks(pattern, velocityPattern, bpm, { stepMode });
-      blipbloxEngine.startLoop(translated, note, channel, (step) => setCurrentStep(step));
+      const result = translateForMyTracks(pattern, velocityPattern, bpm, {
+        stepMode,
+        midiMode,
+        playMode,
+        fxLeverCc,
+        trackCount,
+      });
+
+      if (midiMode === 'cc' && result.ccMessages) {
+        // Send pattern + CC messages
+        blipbloxEngine.startLoop(result.pattern, result.note, channel, (step) => {
+          setCurrentStep(step);
+          const msg = result.ccMessages?.find(m => m.step === step);
+          if (msg) blipbloxEngine.sendCC(msg.cc, msg.value, channel);
+        });
+      } else if (midiMode === 'multi' && result.multiPatterns && result.multiPatterns.length > 0) {
+        // Play first track; in a real multi-track MIDI setup you'd iterate
+        blipbloxEngine.startLoop(result.multiPatterns[0].pattern, result.multiPatterns[0].note, channel, (step) => setCurrentStep(step));
+      } else {
+        blipbloxEngine.startLoop(result.pattern, result.note, channel, (step) => setCurrentStep(step));
+      }
     } else if (deviceType === 'sk2') {
       const { patterns } = translateForSK2(pattern, velocityPattern, bpm, {
         root,
         scale: mode,
         octave,
+        arpDirection,
       });
       if (patterns.length > 0) {
         blipbloxEngine.startLoop(patterns[0].pattern, patterns[0].note, channel, (step) => setCurrentStep(step));
       }
     } else {
       const { ccMessages, pattern: translated } = translateForAfterDark(pattern, velocityPattern, bpm, {
-        ccNumber: ccNumber,
+        ccNumber,
         evolve,
+        modulationDepth,
+        lfoRate,
       });
-      // Send CC messages as pattern plays
       blipbloxEngine.startLoop(translated, note, channel, (step) => {
         setCurrentStep(step);
         const msg = ccMessages.find(m => m.step === step);
         if (msg) blipbloxEngine.sendCC(msg.cc, msg.value, channel);
       });
     }
-  }, [status, pattern, velocityPattern, bpm, deviceType, channel, stepMode, root, mode, octave, ccNumber, evolve]);
+  }, [status, pattern, velocityPattern, bpm, deviceType, channel, stepMode, midiMode, playMode, fxLeverCc, trackCount, root, mode, octave, arpDirection, ccNumber, evolve, modulationDepth, lfoRate]);
 
   const stopPattern = useCallback(() => {
     blipbloxEngine.stopLoop();
@@ -160,8 +181,8 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
     setVelocityPattern(v);
   }, []);
 
-  const handleStepModeChange = useCallback((mode: number) => {
-    const nextMode = mode === 32 ? 32 : 16;
+  const handleStepModeChange = useCallback((m: number) => {
+    const nextMode = m === 32 ? 32 : 16;
     setStepMode(nextMode);
     setPattern((current) => resizeStepSequence(current, nextMode));
     setVelocityPattern((current) => resizeStepSequence(current, nextMode));
@@ -172,7 +193,6 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
     setOutputs(blipbloxEngine.getOutputs());
   }, []);
 
-  // Build morpher sources from presets
   const morpherSources = presets.slice(0, 10).map(p => ({
     name: p.name,
     midiPattern: mapGroove(p.tracks[0]?.steps || []).midiPattern,
@@ -198,6 +218,26 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
     );
   }
 
+  const btnGroup = (label: string, options: { value: string; label: string }[], value: string, onChange: (v: string) => void) => (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-muted-foreground shrink-0">{label}</span>
+      <div className="flex gap-1">
+        {options.map(o => (
+          <button
+            key={o.value}
+            onClick={() => onChange(o.value)}
+            className={cn(
+              'text-[10px] px-2 py-0.5 rounded',
+              value === o.value ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-6 space-y-4">
       {/* Header */}
@@ -208,7 +248,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
             Blipblox Connector
           </h3>
           <p className="text-[10px] text-muted-foreground mt-1">
-            Connect to MyTracks, SK2, or After Dark via MIDI
+            Connect to myTRACKS, SK2, or After Dark via MIDI
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -249,7 +289,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
             onChange={e => setDeviceType(e.target.value as BlipbloxDeviceType)}
             className="bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
           >
-            <option value="mytracks">MyTracks</option>
+            <option value="mytracks">myTRACKS</option>
             <option value="sk2">SK2</option>
             <option value="afterdark">After Dark</option>
           </select>
@@ -281,125 +321,186 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
         </button>
       </div>
 
-      {/* Device-specific options */}
-      {(status === 'connected' || status === 'sending') && (
-        <>
-          <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {showAdvanced ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-            Device Options
-          </button>
+      {/* ── Product Panel (always visible) ── */}
+      <div className="p-3 rounded-lg bg-secondary/30 border border-border space-y-3">
+        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+          {deviceType === 'mytracks' ? 'myTRACKS Options' : deviceType === 'sk2' ? 'SK2 Options' : 'After Dark Options'}
+        </h4>
 
-          {showAdvanced && (
-            <div className="p-3 rounded-lg bg-secondary/30 border border-border space-y-3">
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground">BPM</span>
-                  <input
-                    type="number" min={40} max={300} value={bpm}
-                    onChange={e => setBpm(Number(e.target.value))}
-                    className="w-16 bg-card border border-border rounded px-2 py-1 text-xs text-foreground text-center"
-                  />
-                </div>
+        {/* BPM — always shown */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">BPM</span>
+          <input
+            type="number" min={40} max={300} value={bpm}
+            onChange={e => setBpm(Number(e.target.value))}
+            className="w-16 bg-card border border-border rounded px-2 py-1 text-xs text-foreground text-center"
+          />
+        </div>
 
-                {deviceType === 'mytracks' && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground">Step Mode</span>
-                    {([16, 32] as const).map(m => (
-                      <button
-                        key={m}
-                        onClick={() => handleStepModeChange(m)}
-                        className={cn(
-                          'text-[10px] px-2 py-0.5 rounded',
-                          stepMode === m ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground'
-                        )}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                )}
+        {/* ── myTRACKS Panel ── */}
+        {deviceType === 'mytracks' && (
+          <div className="space-y-2.5">
+            {btnGroup('MIDI Mode', [
+              { value: 'single', label: 'Single' },
+              { value: 'multi', label: 'Multi' },
+              { value: 'cc', label: 'CC' },
+            ], midiMode, v => setMidiMode(v as typeof midiMode))}
 
-                {deviceType === 'sk2' && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">Root</span>
-                      <span className="text-xs font-medium text-foreground">{root}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">Scale</span>
-                      <span className="text-xs font-medium text-foreground">{mode}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">Octave</span>
-                      <input
-                        type="number" min={1} max={7} value={octave}
-                        onChange={e => setOctave(Number(e.target.value))}
-                        className="w-12 bg-card border border-border rounded px-1.5 py-0.5 text-xs text-foreground text-center"
-                      />
-                    </div>
-                  </>
-                )}
+            {btnGroup('Play Mode', [
+              { value: 'drum', label: 'Drum Machine' },
+              { value: 'note', label: 'Note' },
+              { value: 'clip', label: 'Clip' },
+            ], playMode, v => setPlayMode(v as typeof playMode))}
 
-                {deviceType === 'afterdark' && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">CC#</span>
-                      <input
-                        type="number" min={0} max={127} value={ccNumber}
-                        onChange={e => setCcNumber(Number(e.target.value))}
-                        className="w-14 bg-card border border-border rounded px-1.5 py-0.5 text-xs text-foreground text-center"
-                      />
-                    </div>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox" checked={evolve}
-                        onChange={e => setEvolve(e.target.checked)}
-                        className="accent-primary"
-                      />
-                      <span className="text-[10px] text-muted-foreground">Evolving</span>
-                    </label>
-                  </>
-                )}
-              </div>
+            {btnGroup('Steps', [
+              { value: '16', label: '16' },
+              { value: '32', label: '32' },
+            ], String(stepMode), v => handleStepModeChange(Number(v)))}
 
-              {/* SysEx upload */}
+            {midiMode === 'multi' && (
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1 text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:bg-accent transition-colors"
-                >
-                  <Upload className="w-3 h-3" /> Load .syx
-                </button>
+                <span className="text-[10px] text-muted-foreground">Tracks</span>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setTrackCount(n)}
+                      className={cn(
+                        'text-[10px] w-6 h-6 rounded',
+                        trackCount === n ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-accent'
+                      )}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {midiMode === 'cc' && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground">FX Lever CC#</span>
                 <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".syx,.SYX"
-                  onChange={handleSysexUpload}
-                  className="hidden"
+                  type="number" min={0} max={127} value={fxLeverCc}
+                  onChange={e => setFxLeverCc(Number(e.target.value))}
+                  className="w-14 bg-card border border-border rounded px-1.5 py-0.5 text-xs text-foreground text-center"
                 />
-                <span className="text-[9px] text-muted-foreground">Upload SysEx preset file</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── SK2 Panel ── */}
+        {deviceType === 'sk2' && (
+          <div className="space-y-2.5">
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground">Root</span>
+                <span className="text-xs font-semibold text-foreground">{root}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground">Scale</span>
+                <span className="text-xs font-semibold text-foreground capitalize">{mode}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground">Octave</span>
+                <input
+                  type="number" min={1} max={7} value={octave}
+                  onChange={e => setOctave(Number(e.target.value))}
+                  className="w-12 bg-card border border-border rounded px-1.5 py-0.5 text-xs text-foreground text-center"
+                />
               </div>
             </div>
-          )}
+            {btnGroup('Arp', [
+              { value: 'up', label: '↑ Up' },
+              { value: 'down', label: '↓ Down' },
+              { value: 'random', label: '? Random' },
+            ], arpDirection, v => setArpDirection(v as typeof arpDirection))}
+          </div>
+        )}
 
+        {/* ── After Dark Panel ── */}
+        {deviceType === 'afterdark' && (
+          <div className="space-y-2.5">
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground">CC#</span>
+                <input
+                  type="number" min={0} max={127} value={ccNumber}
+                  onChange={e => setCcNumber(Number(e.target.value))}
+                  className="w-14 bg-card border border-border rounded px-1.5 py-0.5 text-xs text-foreground text-center"
+                />
+              </div>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox" checked={evolve}
+                  onChange={e => setEvolve(e.target.checked)}
+                  className="accent-primary"
+                />
+                <span className="text-[10px] text-muted-foreground">Evolve</span>
+              </label>
+            </div>
+
+            {evolve && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-muted-foreground w-24 shrink-0">Mod Depth</span>
+                  <input
+                    type="range" min={0} max={127} value={modulationDepth}
+                    onChange={e => setModulationDepth(Number(e.target.value))}
+                    className="flex-1 accent-primary"
+                  />
+                  <span className="text-[10px] text-foreground w-6 text-right">{modulationDepth}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-muted-foreground w-24 shrink-0">LFO Rate</span>
+                  <input
+                    type="range" min={1} max={8} value={lfoRate}
+                    onChange={e => setLfoRate(Number(e.target.value))}
+                    className="flex-1 accent-primary"
+                  />
+                  <span className="text-[10px] text-foreground w-6 text-right">×{lfoRate}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SysEx upload */}
+        <div className="flex items-center gap-2 pt-1 border-t border-border/40">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1 text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:bg-accent transition-colors"
+          >
+            <Upload className="w-3 h-3" /> Load .syx
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".syx,.SYX"
+            onChange={handleSysexUpload}
+            className="hidden"
+          />
+          <span className="text-[9px] text-muted-foreground">Upload SysEx preset file</span>
+        </div>
+      </div>
+
+      {/* Step Sequencer + Transport (gated on connection) */}
+      {(status === 'connected' || status === 'sending') && (
+        <>
           {/* Step Sequencer */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-foreground">Pattern</span>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => {
-                    setPattern(new Array(stepMode).fill(0));
-                    setVelocityPattern(new Array(stepMode).fill(0));
-                  }}
-                  className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:bg-accent"
-                >
-                  Clear
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  setPattern(new Array(stepMode).fill(0));
+                  setVelocityPattern(new Array(stepMode).fill(0));
+                }}
+                className="text-[10px] px-2 py-0.5 rounded border border-border text-muted-foreground hover:bg-accent"
+              >
+                Clear
+              </button>
             </div>
             <StepSequencer
               pattern={pattern}
@@ -431,9 +532,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
             )}
 
             <button
-              onClick={() => {
-                blipbloxEngine.startClock(bpm);
-              }}
+              onClick={() => blipbloxEngine.startClock(bpm)}
               className="text-[10px] px-3 py-1.5 rounded border border-border text-muted-foreground hover:bg-accent transition-colors"
             >
               Start Clock
@@ -471,7 +570,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
             </div>
           )}
 
-          {/* Preset info tooltip */}
+          {/* Preset info */}
           {embeddedPreset && (
             <div className="p-2 rounded-md bg-secondary/20 border border-border/50 text-[10px] text-muted-foreground space-y-0.5">
               <div className="font-medium text-foreground">{embeddedPreset.name}</div>

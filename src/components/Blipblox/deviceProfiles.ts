@@ -18,6 +18,9 @@ const MYTRACKS_DRUM_MAP: Record<string, number> = {
   'agogo-high': 67, 'agogo-low': 68,
 };
 
+// Per-track instrument assignments for myTRACKS multi mode (tracks 1–5)
+const MYTRACKS_MULTI_INSTRUMENTS = ['kick', 'snare', 'hh-closed', 'hh-open', 'clap'];
+
 // Scale degree to MIDI note (relative to root)
 const SCALE_INTERVALS: Record<string, number[]> = {
   major: [0, 2, 4, 5, 7, 9, 11],
@@ -38,6 +41,14 @@ const ROOT_MIDI: Record<string, number> = {
 export interface MyTracksOptions {
   stepMode: 16 | 32;
   instrumentId?: string;
+  /** Single: one track, Multi: up to 5 tracks, CC: route hits as CC messages */
+  midiMode?: 'single' | 'multi' | 'cc';
+  /** Note: chromatic, Clip: looped clip, Drum Machine: GM drum map */
+  playMode?: 'note' | 'clip' | 'drum';
+  /** Number of tracks to fill in multi mode (1–5) */
+  trackCount?: number;
+  /** CC number for FX lever in cc mode (default 74) */
+  fxLeverCc?: number;
 }
 
 export function translateForMyTracks(
@@ -45,14 +56,68 @@ export function translateForMyTracks(
   velocityPattern: number[] | undefined,
   bpm: number,
   options: MyTracksOptions = { stepMode: 16 }
-): { pattern: StepPattern; note: number } {
+): { pattern: StepPattern; note: number; ccMessages?: { step: number; cc: number; value: number }[]; multiPatterns?: { note: number; pattern: StepPattern }[] } {
   const targetSteps = options.stepMode;
-  const note = MYTRACKS_DRUM_MAP[options.instrumentId || 'kick'] || 36;
+  const midiMode = options.midiMode ?? 'single';
 
-  // Resize pattern to target step count
+  if (midiMode === 'cc') {
+    // Route active steps as CC messages on fxLeverCc
+    const cc = options.fxLeverCc ?? 74;
+    const ccMessages: { step: number; cc: number; value: number }[] = [];
+    const resized = resizePattern(midiPattern, targetSteps);
+    const resizedVel = velocityPattern ? resizeVelocity(velocityPattern, targetSteps) : undefined;
+    resized.forEach((step, i) => {
+      if (step === 1) {
+        ccMessages.push({ step: i, cc, value: resizedVel?.[i] ?? 100 });
+      }
+    });
+    const note = MYTRACKS_DRUM_MAP[options.instrumentId || 'kick'] || 36;
+    return {
+      pattern: { midiPattern: resized, velocityPattern: resizedVel, bpm },
+      note,
+      ccMessages,
+    };
+  }
+
+  if (midiMode === 'multi') {
+    const count = Math.min(Math.max(options.trackCount ?? 1, 1), 5);
+    const resized = resizePattern(midiPattern, targetSteps);
+    const resizedVel = velocityPattern ? resizeVelocity(velocityPattern, targetSteps) : undefined;
+
+    // Distribute active steps round-robin across tracks
+    const trackPatterns: number[][] = Array.from({ length: count }, () => new Array(targetSteps).fill(0));
+    const trackVelocities: number[][] = Array.from({ length: count }, () => new Array(targetSteps).fill(0));
+    let trackIdx = 0;
+    resized.forEach((step, i) => {
+      if (step === 1) {
+        trackPatterns[trackIdx % count][i] = 1;
+        trackVelocities[trackIdx % count][i] = resizedVel?.[i] ?? 100;
+        trackIdx++;
+      }
+    });
+
+    const multiPatterns = trackPatterns.map((p, t) => {
+      const instrId = MYTRACKS_MULTI_INSTRUMENTS[t] ?? 'kick';
+      const note = MYTRACKS_DRUM_MAP[instrId] ?? 36;
+      return {
+        note,
+        pattern: { midiPattern: p, velocityPattern: trackVelocities[t], bpm },
+      };
+    });
+
+    // Primary pattern / note for compatibility
+    const note = MYTRACKS_DRUM_MAP[MYTRACKS_MULTI_INSTRUMENTS[0]] ?? 36;
+    return {
+      pattern: { midiPattern: resized, velocityPattern: resizedVel, bpm },
+      note,
+      multiPatterns,
+    };
+  }
+
+  // single / default
+  const note = MYTRACKS_DRUM_MAP[options.instrumentId || 'kick'] || 36;
   const resized = resizePattern(midiPattern, targetSteps);
   const resizedVel = velocityPattern ? resizeVelocity(velocityPattern, targetSteps) : undefined;
-
   return {
     pattern: { midiPattern: resized, velocityPattern: resizedVel, bpm },
     note,
@@ -66,6 +131,8 @@ export interface SK2Options {
   scale: string;
   octave?: number;
   chordNotes?: number[]; // MIDI notes for chord injection
+  /** Arpeggiation direction */
+  arpDirection?: 'up' | 'down' | 'random';
 }
 
 export function translateForSK2(
@@ -82,15 +149,22 @@ export function translateForSK2(
   const scaleNotes = intervals.map(i => rootMidi + octaveOffset + i);
 
   // If chord notes provided, use those; otherwise arpeggiate through scale
-  const notePool = options.chordNotes && options.chordNotes.length > 0
+  let notePool = options.chordNotes && options.chordNotes.length > 0
     ? options.chordNotes
     : scaleNotes;
+
+  // Apply arp direction
+  const direction = options.arpDirection ?? 'up';
+  if (direction === 'down') {
+    notePool = [...notePool].reverse();
+  } else if (direction === 'random') {
+    notePool = [...notePool].sort(() => Math.random() - 0.5);
+  }
 
   // Create arpeggiated patterns — one note per active step
   const patterns: { note: number; pattern: StepPattern }[] = [];
   let noteIdx = 0;
 
-  // Group active steps into a single melodic line
   const melodicPattern = midiPattern.map(step => {
     if (step === 1) {
       const note = notePool[noteIdx % notePool.length];
@@ -121,6 +195,10 @@ export function translateForSK2(
 export interface AfterDarkOptions {
   ccNumber?: number; // default CC 1 (mod wheel)
   evolve?: boolean;
+  /** Modulation amplitude for evolve sine wave (0–127, default 20) */
+  modulationDepth?: number;
+  /** LFO rate — controls how many full sine cycles per pattern (default 1) */
+  lfoRate?: number;
 }
 
 export function translateForAfterDark(
@@ -130,6 +208,9 @@ export function translateForAfterDark(
   options: AfterDarkOptions = {}
 ): { ccMessages: { step: number; cc: number; value: number }[]; pattern: StepPattern } {
   const cc = options.ccNumber ?? 1;
+  const depth = options.modulationDepth ?? 20;
+  // lfoRate: number of full sine cycles across the pattern length (default 1)
+  const lfoRate = options.lfoRate ?? 1;
   const ccMessages: { step: number; cc: number; value: number }[] = [];
 
   const evolvedPattern = [...midiPattern];
@@ -138,10 +219,9 @@ export function translateForAfterDark(
   midiPattern.forEach((step, i) => {
     if (step === 1) {
       let value = velocityPattern ? velocityPattern[i] : 100;
-      // Evolving: add gradual intensity shift
       if (options.evolve) {
-        const phase = (i / midiPattern.length) * Math.PI * 2;
-        const modulation = Math.sin(phase) * 20;
+        const phase = (i / midiPattern.length) * Math.PI * 2 * lfoRate;
+        const modulation = Math.sin(phase) * depth;
         value = Math.max(0, Math.min(127, Math.round(value + modulation)));
       }
       ccMessages.push({ step: i, cc, value });
