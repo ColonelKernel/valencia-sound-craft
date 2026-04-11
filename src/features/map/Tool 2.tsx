@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback } from "react";
+import { lazy, Suspense } from "react";
 
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
@@ -12,12 +12,6 @@ const GlobalRhythmEngine = lazy(() => import("@/components/Blipblox/GlobalRhythm
 const MapTool = () => {
   useToolPerformance("map-route");
   const tool = useTool();
-  const handleRhythmChange = useCallback(
-    (next: { rhythmId: string; region: string }) => {
-      tool.setRhythm(next.rhythmId, next.region);
-    },
-    [tool.setRhythm],
-  );
 
   return (
     <ToolPageLayout
@@ -53,7 +47,9 @@ const MapTool = () => {
               onTempoChange={tool.setTempo}
               onPlayingChange={tool.setPlaying}
               onRegionChange={tool.setRegion}
-              onRhythmChange={handleRhythmChange}
+              onRhythmChange={(next) => {
+                tool.setRhythm(next.rhythmId, next.region);
+              }}
             />
           </Suspense>
         }
@@ -63,3 +59,4 @@ const MapTool = () => {
 };
 
 export default MapTool;
+

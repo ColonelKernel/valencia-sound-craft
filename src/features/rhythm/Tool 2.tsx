@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback } from "react";
+import { lazy, Suspense } from "react";
 
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
@@ -19,12 +19,6 @@ const loadingCard = (
 const RhythmTool = () => {
   useToolPerformance("rhythm-route");
   const tool = useTool();
-  const handleRhythmChange = useCallback(
-    (next: { rhythmId: string; region: string }) => {
-      tool.setRhythm(next.rhythmId, next.region);
-    },
-    [tool.setRhythm],
-  );
 
   return (
     <ToolPageLayout
@@ -59,7 +53,9 @@ const RhythmTool = () => {
               onTempoChange={tool.setTempo}
               onPlayingChange={tool.setPlaying}
               onRegionChange={tool.setRegion}
-              onRhythmChange={handleRhythmChange}
+              onRhythmChange={(next) => {
+                tool.setRhythm(next.rhythmId, next.region);
+              }}
             />
           </Suspense>
         }
@@ -73,7 +69,9 @@ const RhythmTool = () => {
               onTempoChange={tool.setTempo}
               onPlayingChange={tool.setPlaying}
               onRegionChange={tool.setRegion}
-              onRhythmChange={handleRhythmChange}
+              onRhythmChange={(next) => {
+                tool.setRhythm(next.rhythmId, next.region);
+              }}
             />
           </Suspense>
         }

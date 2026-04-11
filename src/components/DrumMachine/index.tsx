@@ -90,9 +90,15 @@ const DrumMachine = ({
   onRegionChange,
   onRhythmChange,
 }: DrumMachineProps) => {
-  const initialPreset = embeddedPreset || DRUM_PRESETS[0];
-  const initialRegion = initialPreset.region;
+  const controlledPreset = selectedRhythmId
+    ? DRUM_PRESETS.find((preset) => preset.id === selectedRhythmId) || null
+    : null;
+  const embeddedSelection = embeddedPreset
+    ? DRUM_PRESETS.find((preset) => preset.id === embeddedPreset.id) || embeddedPreset
+    : null;
+  const initialRegion = controlledPreset?.region || controlledRegion || embeddedSelection?.region || DRUM_PRESETS[0].region;
   const initialRhythmList = filterPresets({ region: initialRegion });
+  const initialPreset = controlledPreset || embeddedSelection || initialRhythmList[0] || DRUM_PRESETS[0];
 
   // State
   const [bpm, setBpm] = useState(controlledTempo ?? initialPreset.bpm);
@@ -132,6 +138,18 @@ const DrumMachine = ({
   const stepRef = useRef<Record<string, number>>({});
   const trackNextTimeRef = useRef<Record<string, number>>({});
   const tracksRef = useRef(tracks);
+  const previousControlledTempoRef = useRef(controlledTempo);
+  const previousControlledPlayingRef = useRef(controlledPlaying);
+  const previousControlledRegionRef = useRef(controlledRegion);
+  const previousSelectedRhythmIdRef = useRef(selectedRhythmId);
+  const suppressTempoCallbackRef = useRef(false);
+  const suppressPlayingCallbackRef = useRef(false);
+  const suppressRegionCallbackRef = useRef(false);
+  const suppressRhythmCallbackRef = useRef(false);
+  const skipInitialTempoCallbackRef = useRef(typeof controlledTempo === "number");
+  const skipInitialPlayingCallbackRef = useRef(typeof controlledPlaying === "boolean");
+  const skipInitialRegionCallbackRef = useRef(Boolean(controlledRegion));
+  const skipInitialRhythmCallbackRef = useRef(Boolean(selectedRhythmId));
   tracksRef.current = tracks;
 
   const getCtx = useCallback(() => {
@@ -243,6 +261,23 @@ const DrumMachine = ({
   }, [currentPreset]);
   const hasSolo = tracks.some(t => t.solo);
 
+  const syncRegionBrowser = useCallback((region: Region) => {
+    const regionRhythms = filterRhythms({ region });
+    const regionPresets = regionRhythms
+      .map((rhythm) => presetById.get(rhythm.id))
+      .filter((preset): preset is PatternPreset => Boolean(preset));
+
+    setSelectedCategory(null);
+    setFilterFeel(null);
+    setFilterComplexity(null);
+    setFilterRhythmType(null);
+    setSearchQuery("");
+    setSelectedRegion(region);
+    setRhythmList(regionPresets);
+
+    return regionPresets;
+  }, [presetById]);
+
   const loadPattern = useCallback((preset: PatternPreset) => {
     setTracks(preset.tracks.map((track) =>
       createTrackFromPreset(track.instrumentId, track.steps, track.subdivisions)
@@ -263,19 +298,7 @@ const DrumMachine = ({
   }, [loadPattern, loadTimbres]);
 
   const handleRegionSelect = useCallback((region: Region) => {
-    const regionRhythms = filterRhythms({ region });
-    const regionPresets = regionRhythms
-      .map((rhythm) => presetById.get(rhythm.id))
-      .filter((preset): preset is PatternPreset => Boolean(preset));
-
-    setSelectedCategory(null);
-    setFilterFeel(null);
-    setFilterComplexity(null);
-    setFilterRhythmType(null);
-    setSearchQuery("");
-    setSelectedRegion(region);
-    setRhythmList(regionPresets);
-
+    const regionPresets = syncRegionBrowser(region);
     const nextPreset = regionPresets[0] || null;
     if (!nextPreset) {
       setCurrentPresetId("");
@@ -286,7 +309,7 @@ const DrumMachine = ({
     }
 
     applyPresetSelection(nextPreset);
-  }, [applyPresetSelection, presetById]);
+  }, [applyPresetSelection, syncRegionBrowser]);
 
   // ─── Scheduler ──────────────────────────────────────────────────────────────
 
@@ -424,6 +447,10 @@ const DrumMachine = ({
   useEffect(() => {
     setRhythmList(filteredPresets);
 
+    if (selectedRhythmId && selectedRhythmId !== currentPresetId) {
+      return;
+    }
+
     if (filteredPresets.length === 0) {
       setCurrentPresetId("");
       setTracks([]);
@@ -437,7 +464,7 @@ const DrumMachine = ({
     if (!matchingPreset) {
       applyPresetSelection(filteredPresets[0]);
     }
-  }, [filteredPresets, currentPresetId, applyPresetSelection]);
+  }, [filteredPresets, currentPresetId, applyPresetSelection, selectedRhythmId]);
 
   useEffect(() => {
     if (!embeddedPreset) {
@@ -445,41 +472,77 @@ const DrumMachine = ({
     }
 
     const nextPreset = presetById.get(embeddedPreset.id) || embeddedPreset;
-    const regionRhythms = filterRhythms({ region: nextPreset.region });
-    const regionPresets = regionRhythms
-      .map((rhythm) => presetById.get(rhythm.id))
-      .filter((preset): preset is PatternPreset => Boolean(preset));
-
-    setSelectedCategory(null);
-    setFilterFeel(null);
-    setFilterComplexity(null);
-    setFilterRhythmType(null);
-    setSearchQuery("");
-    setSelectedRegion(nextPreset.region);
-    setRhythmList(regionPresets);
+    syncRegionBrowser(nextPreset.region);
     applyPresetSelection(nextPreset);
-  }, [embeddedPreset, applyPresetSelection, presetById]);
+  }, [embeddedPreset, applyPresetSelection, presetById, syncRegionBrowser]);
 
   useEffect(() => {
+    if (controlledTempo === previousControlledTempoRef.current) {
+      return;
+    }
+
+    previousControlledTempoRef.current = controlledTempo;
+
     if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
+      suppressTempoCallbackRef.current = true;
       setBpm(controlledTempo);
     }
   }, [bpm, controlledTempo]);
 
   useEffect(() => {
+    if (skipInitialTempoCallbackRef.current) {
+      skipInitialTempoCallbackRef.current = false;
+      return;
+    }
+
+    if (suppressTempoCallbackRef.current) {
+      suppressTempoCallbackRef.current = false;
+      return;
+    }
+
     onTempoChange?.(bpm);
   }, [bpm, onTempoChange]);
 
   useEffect(() => {
+    if (skipInitialPlayingCallbackRef.current) {
+      skipInitialPlayingCallbackRef.current = false;
+      return;
+    }
+
+    if (suppressPlayingCallbackRef.current) {
+      suppressPlayingCallbackRef.current = false;
+      return;
+    }
+
     onPlayingChange?.(playing);
   }, [onPlayingChange, playing]);
 
   useEffect(() => {
+    if (skipInitialRegionCallbackRef.current) {
+      skipInitialRegionCallbackRef.current = false;
+      return;
+    }
+
+    if (suppressRegionCallbackRef.current) {
+      suppressRegionCallbackRef.current = false;
+      return;
+    }
+
     onRegionChange?.(selectedRegion);
   }, [onRegionChange, selectedRegion]);
 
   useEffect(() => {
     if (!currentPreset) {
+      return;
+    }
+
+    if (skipInitialRhythmCallbackRef.current) {
+      skipInitialRhythmCallbackRef.current = false;
+      return;
+    }
+
+    if (suppressRhythmCallbackRef.current) {
+      suppressRhythmCallbackRef.current = false;
       return;
     }
 
@@ -491,18 +554,44 @@ const DrumMachine = ({
   }, [currentPreset, onRhythmChange]);
 
   useEffect(() => {
+    if (controlledPlaying === previousControlledPlayingRef.current) {
+      return;
+    }
+
+    previousControlledPlayingRef.current = controlledPlaying;
+
     if (typeof controlledPlaying === "boolean" && controlledPlaying !== playing) {
+      suppressPlayingCallbackRef.current = true;
       setPlaying(controlledPlaying);
     }
   }, [controlledPlaying, playing]);
 
   useEffect(() => {
+    if (controlledRegion === previousControlledRegionRef.current) {
+      return;
+    }
+
+    previousControlledRegionRef.current = controlledRegion;
+
     if (controlledRegion && controlledRegion !== selectedRegion) {
+      suppressRegionCallbackRef.current = true;
+
+      if (selectedRhythmId && selectedRhythmId !== currentPresetId) {
+        syncRegionBrowser(controlledRegion);
+        return;
+      }
+
       handleRegionSelect(controlledRegion);
     }
-  }, [controlledRegion, handleRegionSelect, selectedRegion]);
+  }, [controlledRegion, currentPresetId, handleRegionSelect, selectedRegion, selectedRhythmId, syncRegionBrowser]);
 
   useEffect(() => {
+    if (selectedRhythmId === previousSelectedRhythmIdRef.current) {
+      return;
+    }
+
+    previousSelectedRhythmIdRef.current = selectedRhythmId;
+
     if (!selectedRhythmId || selectedRhythmId === currentPresetId) {
       return;
     }
@@ -510,10 +599,11 @@ const DrumMachine = ({
     const nextPreset = presetById.get(selectedRhythmId);
 
     if (nextPreset) {
-      setSelectedRegion(nextPreset.region);
+      suppressRhythmCallbackRef.current = true;
+      syncRegionBrowser(nextPreset.region);
       applyPresetSelection(nextPreset);
     }
-  }, [applyPresetSelection, currentPresetId, presetById, selectedRhythmId]);
+  }, [applyPresetSelection, currentPresetId, presetById, selectedRhythmId, syncRegionBrowser]);
 
   const clearAll = () => {
     setPlaying(false);

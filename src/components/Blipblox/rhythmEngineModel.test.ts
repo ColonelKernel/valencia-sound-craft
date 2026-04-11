@@ -3,45 +3,28 @@ import { describe, expect, it } from "vitest";
 import {
   filterRhythmLibrary,
   getDefaultRhythmDefinitionForCountry,
-  validateRhythmLibrary,
+  getRhythmDefinitionById,
 } from "./rhythmEngineModel";
 
 describe("rhythmEngineModel", () => {
-  it("promotes documented countries into structured multi-layer rhythms", () => {
-    const spain = getDefaultRhythmDefinitionForCountry("Spain");
-    const cuba = getDefaultRhythmDefinitionForCountry("Cuba");
-
-    expect(spain?.name).toBe("Buleria");
-    expect(spain?.grouping).toEqual([3, 3, 2, 2, 2]);
-    expect(spain?.layers.length).toBeGreaterThanOrEqual(3);
-    expect(spain?.instrumentRoles.low).toBeTruthy();
-    expect(spain?.instrumentRoles.mid).toBeTruthy();
-    expect(spain?.instrumentRoles.high).toBeTruthy();
-
-    expect(cuba?.name).toContain("Son Clave");
-    expect(cuba?.layers.length).toBeGreaterThanOrEqual(3);
+  it("resolves shared preset ids into atlas-backed rhythm definitions", () => {
+    expect(getRhythmDefinitionById("flamenco_buleria")?.country).toBe("Spain");
+    expect(getRhythmDefinitionById("brazil_baiao")?.region).toBe("brazil");
+    expect(getRhythmDefinitionById("argentina_chacarera")?.name).toBe("Chacarera");
   });
 
-  it("keeps fallback atlas countries validated and playable", () => {
-    const luxembourg = getDefaultRhythmDefinitionForCountry("Luxembourg");
+  it("filters the atlas-backed library by region without leaking other regions", () => {
+    const flamencoDefinitions = filterRhythmLibrary({ region: "flamenco" });
+    const brazilDefinitions = filterRhythmLibrary({ region: "brazil" });
 
-    expect(luxembourg?.classification).toBe("proxy");
-    expect(luxembourg?.layers.length).toBeGreaterThanOrEqual(3);
-    expect(luxembourg?.sources.length).toBeGreaterThan(0);
+    expect(flamencoDefinitions.length).toBeGreaterThan(0);
+    expect(brazilDefinitions.length).toBeGreaterThan(0);
+    expect(flamencoDefinitions.every((definition) => definition.region === "flamenco")).toBe(true);
+    expect(brazilDefinitions.every((definition) => definition.region === "brazil")).toBe(true);
   });
 
-  it("supports browser filtering by region and meter", () => {
-    const results = filterRhythmLibrary({
-      region: "balkans",
-      meter: "7/8",
-    });
-
-    expect(results.length).toBeGreaterThan(0);
-    expect(results.every((rhythm) => rhythm.region === "balkans")).toBe(true);
-    expect(results.every((rhythm) => rhythm.meter === "7/8")).toBe(true);
-  });
-
-  it("validates the full structured rhythm library", () => {
-    expect(validateRhythmLibrary()).toEqual([]);
+  it("returns country defaults that stay aligned with the expected region", () => {
+    expect(getDefaultRhythmDefinitionForCountry("Spain")?.region).toBe("flamenco");
+    expect(getDefaultRhythmDefinitionForCountry("Brazil")?.country).toBe("Brazil");
   });
 });

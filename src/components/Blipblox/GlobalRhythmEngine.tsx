@@ -318,8 +318,13 @@ const GlobalRhythmEngine = ({
   onRegionChange,
   onRhythmChange,
 }: GlobalRhythmEngineProps) => {
+  const controlledDefinition = selectedRhythmId
+    ? getRhythmDefinitionById(selectedRhythmId)
+    : null;
   const initialDefinition = (
-    getDefinitionForPreset(embeddedPreset)
+    controlledDefinition
+    || (selectedRegion ? filterRhythmLibrary({ region: selectedRegion })[0] : null)
+    || getDefinitionForPreset(embeddedPreset)
     || RHYTHM_LIBRARY[0]
     || getDefaultRhythmDefinitionForCountry("Argentina")
   )!;
@@ -368,6 +373,18 @@ const GlobalRhythmEngine = ({
   const swingRef = useRef(swing);
   const adaptiveModeRef = useRef(adaptiveMode);
   const variationStrengthRef = useRef(variationStrength);
+  const previousControlledTempoRef = useRef(controlledTempo);
+  const previousControlledPlayingRef = useRef(controlledPlaying);
+  const previousSelectedRegionRef = useRef(selectedRegion);
+  const previousSelectedRhythmIdRef = useRef(selectedRhythmId);
+  const suppressTempoCallbackRef = useRef(false);
+  const suppressPlayingCallbackRef = useRef(false);
+  const suppressRegionCallbackRef = useRef(false);
+  const suppressRhythmCallbackRef = useRef(false);
+  const skipInitialTempoCallbackRef = useRef(typeof controlledTempo === "number");
+  const skipInitialPlayingCallbackRef = useRef(typeof controlledPlaying === "boolean");
+  const skipInitialRegionCallbackRef = useRef(Boolean(selectedRegion));
+  const skipInitialRhythmCallbackRef = useRef(Boolean(selectedRhythmId));
 
   const activeDefinition = useMemo(
     () => getRhythmDefinitionById(rhythmState.rhythmId) || initialDefinition,
@@ -449,7 +466,14 @@ const GlobalRhythmEngine = ({
   }, [continentFilter, filteredDefinitions]);
 
   useEffect(() => {
+    if (controlledTempo === previousControlledTempoRef.current) {
+      return;
+    }
+
+    previousControlledTempoRef.current = controlledTempo;
+
     if (typeof controlledTempo === "number" && controlledTempo !== rhythmState.tempo) {
+      suppressTempoCallbackRef.current = true;
       setRhythmState((currentState) => ({
         ...currentState,
         tempo: controlledTempo,
@@ -458,18 +482,58 @@ const GlobalRhythmEngine = ({
   }, [controlledTempo, rhythmState.tempo]);
 
   useEffect(() => {
+    if (skipInitialTempoCallbackRef.current) {
+      skipInitialTempoCallbackRef.current = false;
+      return;
+    }
+
+    if (suppressTempoCallbackRef.current) {
+      suppressTempoCallbackRef.current = false;
+      return;
+    }
+
     onTempoChange?.(rhythmState.tempo);
   }, [onTempoChange, rhythmState.tempo]);
 
   useEffect(() => {
+    if (skipInitialPlayingCallbackRef.current) {
+      skipInitialPlayingCallbackRef.current = false;
+      return;
+    }
+
+    if (suppressPlayingCallbackRef.current) {
+      suppressPlayingCallbackRef.current = false;
+      return;
+    }
+
     onPlayingChange?.(playing);
   }, [onPlayingChange, playing]);
 
   useEffect(() => {
+    if (skipInitialRegionCallbackRef.current) {
+      skipInitialRegionCallbackRef.current = false;
+      return;
+    }
+
+    if (suppressRegionCallbackRef.current) {
+      suppressRegionCallbackRef.current = false;
+      return;
+    }
+
     onRegionChange?.(browserRegion);
   }, [browserRegion, onRegionChange]);
 
   useEffect(() => {
+    if (skipInitialRhythmCallbackRef.current) {
+      skipInitialRhythmCallbackRef.current = false;
+      return;
+    }
+
+    if (suppressRhythmCallbackRef.current) {
+      suppressRhythmCallbackRef.current = false;
+      return;
+    }
+
     onRhythmChange?.({
       rhythmId: activeDefinition.id,
       region: activeDefinition.region,
@@ -478,7 +542,14 @@ const GlobalRhythmEngine = ({
   }, [activeDefinition.country, activeDefinition.id, activeDefinition.region, onRhythmChange]);
 
   useEffect(() => {
+    if (selectedRegion === previousSelectedRegionRef.current) {
+      return;
+    }
+
+    previousSelectedRegionRef.current = selectedRegion;
+
     if (selectedRegion && selectedRegion !== browserRegion) {
+      suppressRegionCallbackRef.current = true;
       setBrowserRegion(selectedRegion);
     }
   }, [browserRegion, selectedRegion]);
@@ -519,6 +590,10 @@ const GlobalRhythmEngine = ({
   }, [browserCountry, regionCountries]);
 
   useEffect(() => {
+    if (selectedRhythmId && selectedRhythmId !== activeDefinition.id) {
+      return;
+    }
+
     if (browserRhythms.length === 0) {
       return;
     }
@@ -530,7 +605,7 @@ const GlobalRhythmEngine = ({
         setRhythmState(createGlobalRhythmState(nextDefinition));
       }
     }
-  }, [activeDefinition.id, browserRhythms]);
+  }, [activeDefinition.id, browserRhythms, selectedRhythmId]);
 
   const getCtx = useCallback(() => {
     if (!audioCtxRef.current) {
@@ -596,14 +671,27 @@ const GlobalRhythmEngine = ({
   }, [embeddedPreset, loadRhythmDefinition]);
 
   useEffect(() => {
+    if (controlledPlaying === previousControlledPlayingRef.current) {
+      return;
+    }
+
+    previousControlledPlayingRef.current = controlledPlaying;
+
     if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
       return;
     }
 
+    suppressPlayingCallbackRef.current = true;
     setPlaying(controlledPlaying);
   }, [controlledPlaying, playing]);
 
   useEffect(() => {
+    if (selectedRhythmId === previousSelectedRhythmIdRef.current) {
+      return;
+    }
+
+    previousSelectedRhythmIdRef.current = selectedRhythmId;
+
     if (!selectedRhythmId || selectedRhythmId === activeDefinition.id) {
       return;
     }
@@ -611,6 +699,7 @@ const GlobalRhythmEngine = ({
     const nextDefinition = getRhythmDefinitionById(selectedRhythmId);
 
     if (nextDefinition) {
+      suppressRhythmCallbackRef.current = true;
       loadRhythmDefinition(nextDefinition, {
         tempo: controlledTempo ?? rhythmState.tempo,
         syncBrowser: true,
