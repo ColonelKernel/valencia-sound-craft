@@ -22,7 +22,7 @@ export const INSTRUMENT_TIMBRES: { id: InstrumentTimbre; label: string }[] = [
 
 let audioCtx: AudioContext | null = null;
 
-function getAudioContext(): AudioContext {
+export function getAudioContext(): AudioContext {
   if (!audioCtx) {
     audioCtx = new AudioContext();
   }

@@ -1,5 +1,5 @@
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
-import { type InstrumentTimbre } from "./audioSynth";
+import { type InstrumentTimbre, getAudioContext } from "./audioSynth";
 
 // ─── Constants ──────────────────────────────────────────────
 export const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -635,7 +635,7 @@ export function downloadMidi(chords: ProgressionChord[], bpm: number, beatsPerCh
 
 // ─── Audio Playback ─────────────────────────────────────────
 export function playChordTones(notes: string[], duration = 0.8, timbre: InstrumentTimbre = 'piano') {
-  const ctx = new AudioContext();
+  const ctx = getAudioContext();
   const NOTE_FREQ: Record<string, number> = {
     'C': 261.63, 'C#': 277.18, 'Db': 277.18,
     'D': 293.66, 'D#': 311.13, 'Eb': 311.13,
@@ -816,7 +816,7 @@ export function playChordTonesExpressive(
 ) {
   const voiced = applyVoicing(notes, voicing);
   const ep = getExpressivePlaybackParams(params);
-  const ctx = new AudioContext();
+  const ctx = getAudioContext();
   const NOTE_FREQ: Record<string, number> = {
     'C': 261.63, 'C#': 277.18, 'Db': 277.18,
     'D': 293.66, 'D#': 311.13, 'Eb': 311.13,

@@ -58,8 +58,12 @@ const ChordProgressionBuilder = ({
     cloneProgression(controlledProgression ?? []),
   );
   const skipNextProgressionSyncRef = useRef(controlledProgression !== undefined);
+  const progressionRef = useRef(progression);
+  progressionRef.current = progression;
   const [undoStack, setUndoStack] = useState<ProgressionChord[][]>([]);
   const [playing, setPlaying] = useState(false);
+  const playingRef = useRef(playing);
+  playingRef.current = playing;
   const [currentIdx, setCurrentIdx] = useState(-1);
   const [bpm, setBpm] = useState(controlledTempo ?? 100);
   const [beatsPerChord, setBeatsPerChord] = useState(4);
@@ -240,9 +244,9 @@ const ChordProgressionBuilder = ({
 
   const getChordLabel = (pc: ProgressionChord, _idx: number) => {
     const di = chordSpellings.findIndex(c => c.rootNote === pc.chord.rootNote);
-    if (viewMode === 'roman') return di >= 0 ? getRomanNumeral(pc.chord, di) : pc.chord.symbol;
-    if (viewMode === 'nashville') return di >= 0 ? getNashvilleNumber(di, pc.chord) : pc.chord.symbol;
-    return pc.chord.symbol;
+    if (viewMode === 'roman') return di >= 0 ? getRomanNumeral(pc.chord, di) : pc.chord.name;
+    if (viewMode === 'nashville') return di >= 0 ? getNashvilleNumber(di, pc.chord) : pc.chord.name;
+    return pc.chord.name;
   };
 
   const getSubLabel = (pc: ProgressionChord) => {
@@ -287,7 +291,7 @@ const ChordProgressionBuilder = ({
   }, [onProgressionChange, progression]);
 
   useEffect(() => {
-    if (!controlledProgression || equalProgressions(controlledProgression, progression)) {
+    if (!controlledProgression || equalProgressions(controlledProgression, progressionRef.current)) {
       return;
     }
 
@@ -296,10 +300,12 @@ const ChordProgressionBuilder = ({
     setEditingIdx((current) =>
       current !== null && current >= controlledProgression.length ? null : current,
     );
-  }, [controlledProgression, progression]);
+  // progressionRef is a ref — intentionally excluded from deps so this only fires on external updates
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlledProgression]);
 
   useEffect(() => {
-    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
+    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playingRef.current) {
       return;
     }
 
@@ -308,7 +314,9 @@ const ChordProgressionBuilder = ({
     } else {
       stop();
     }
-  }, [controlledPlaying, playProgression, playing, stop]);
+  // playingRef is a ref — intentionally excluded from deps so this only fires on external controlledPlaying changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlledPlaying, playProgression, stop]);
 
   if (chordSpellings.length === 0) {
     return (

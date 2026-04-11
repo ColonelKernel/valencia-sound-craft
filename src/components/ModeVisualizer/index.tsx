@@ -227,21 +227,23 @@ const ModeVisualizer = ({
           <>
             {/* Tool Selector Dropdown */}
             <div className="mb-6 rounded-[1.5rem] border border-border/70 bg-card/70 p-4 shadow-[0_18px_45px_-36px_rgba(0,0,0,0.75)]">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <label className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground mb-2 block">
-                    Start Here
-                  </label>
-                  <p className="max-w-2xl text-sm text-muted-foreground">
-                    The rhythm engine opens first so you can hear and shape the system immediately.
-                  </p>
+              {!hideToolSelector && (
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <label className="text-xs font-medium uppercase tracking-[0.28em] text-muted-foreground mb-2 block">
+                      Start Here
+                    </label>
+                    <p className="max-w-2xl text-sm text-muted-foreground">
+                      The rhythm engine opens first so you can hear and shape the system immediately.
+                    </p>
+                  </div>
+                  {activeTab === "rhythmmap" && (
+                    <span className="inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-foreground">
+                      Featured System
+                    </span>
+                  )}
                 </div>
-                {activeTab === "rhythmmap" && (
-                  <span className="inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.2em] text-foreground">
-                    Featured System
-                  </span>
-                )}
-              </div>
+              )}
 
               {hideToolSelector ? (
                 <div className="mt-4 flex flex-wrap gap-2">
