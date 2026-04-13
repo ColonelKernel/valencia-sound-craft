@@ -3,6 +3,7 @@ import { useEffect, useMemo } from "react";
 import {
   getRhythmDefinitionById,
   RHYTHM_LIBRARY,
+  type RhythmBrowserRegion,
 } from "@/components/Blipblox/rhythmEngineModel";
 import { useDebouncedTempo } from "@/features/shared/useDebouncedTempo";
 import { getMusicRhythmById } from "@/music-core/rhythmCatalog";
@@ -41,7 +42,7 @@ export function useRhythmSelection(toolId: string) {
 
   return {
     rhythmId: activeDefinition?.id ?? rhythmId,
-    region: activeDefinition?.region ?? region,
+    region: (activeDefinition?.region ?? region) as RhythmBrowserRegion,
     tempo: tempoBridge.tempo,
     sharedTempo,
     setTempo: tempoBridge.setTempo,

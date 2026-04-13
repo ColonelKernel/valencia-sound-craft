@@ -64,7 +64,7 @@ const RhythmTool = () => {
             <DrumMachine
               tempo={tool.tempo}
               playing={tool.playing}
-              selectedRegion={tool.region}
+              selectedRegion={tool.region as any}
               selectedRhythmId={tool.rhythmId}
               onTempoChange={tool.setTempo}
               onPlayingChange={tool.setPlaying}
