@@ -90,7 +90,14 @@ const DrumMachine = ({
   onRegionChange,
   onRhythmChange,
 }: DrumMachineProps) => {
-  const initialPreset = embeddedPreset || DRUM_PRESETS[0];
+  // If the parent supplies selectedRhythmId, start synced to that preset so
+  // the first onRhythmChange call doesn't diverge from and overwrite the parent's state.
+  const initialPresetRef = useRef(
+    embeddedPreset
+    || (selectedRhythmId ? DRUM_PRESETS.find((p) => p.id === selectedRhythmId) : null)
+    || DRUM_PRESETS[0]
+  );
+  const initialPreset = initialPresetRef.current;
   const initialRegion = initialPreset.region;
   const initialRhythmList = filterPresets({ region: initialRegion });
 
@@ -123,6 +130,16 @@ const DrumMachine = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [browserSort, setBrowserSort] = useState<BrowserSort>("country");
   const [showKonnakol, setShowKonnakol] = useState(false);
+
+  // Callback refs — prevent inline functions from causing effect re-firing on every render
+  const onTempoChangeRef = useRef(onTempoChange);
+  onTempoChangeRef.current = onTempoChange;
+  const onPlayingChangeRef = useRef(onPlayingChange);
+  onPlayingChangeRef.current = onPlayingChange;
+  const onRegionChangeRef = useRef(onRegionChange);
+  onRegionChangeRef.current = onRegionChange;
+  const onRhythmChangeRef = useRef(onRhythmChange);
+  onRhythmChangeRef.current = onRhythmChange;
 
   // Audio refs
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -464,31 +481,36 @@ const DrumMachine = ({
     if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
       setBpm(controlledTempo);
     }
-  }, [bpm, controlledTempo]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controlledTempo]);
 
   useEffect(() => {
-    onTempoChange?.(bpm);
-  }, [bpm, onTempoChange]);
+    onTempoChangeRef.current?.(bpm);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bpm]);
 
   useEffect(() => {
-    onPlayingChange?.(playing);
-  }, [onPlayingChange, playing]);
+    onPlayingChangeRef.current?.(playing);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing]);
 
   useEffect(() => {
-    onRegionChange?.(selectedRegion);
-  }, [onRegionChange, selectedRegion]);
+    onRegionChangeRef.current?.(selectedRegion);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRegion]);
 
   useEffect(() => {
     if (!currentPreset) {
       return;
     }
 
-    onRhythmChange?.({
+    onRhythmChangeRef.current?.({
       rhythmId: currentPreset.id,
       region: currentPreset.region,
       country: currentPreset.country,
     });
-  }, [currentPreset, onRhythmChange]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPreset]);
 
   useEffect(() => {
     if (typeof controlledPlaying === "boolean" && controlledPlaying !== playing) {
