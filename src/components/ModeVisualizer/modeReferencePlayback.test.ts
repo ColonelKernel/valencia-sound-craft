@@ -30,7 +30,7 @@ function toAbsolutePitch(note: string, octave: number): number {
 }
 
 describe("buildModeReferenceSequence", () => {
-  it("starts one octave lower and spans exactly two octaves for diatonic modes", () => {
+  it("starts at the reference octave and spans exactly one octave for diatonic modes", () => {
     const sequence = buildModeReferenceSequence(["C", "D", "E", "F", "G", "A", "B"]);
 
     expect(sequence[0]).toEqual({ note: "C", octave: MODE_REFERENCE_START_OCTAVE });
@@ -38,15 +38,15 @@ describe("buildModeReferenceSequence", () => {
       note: "C",
       octave: MODE_REFERENCE_START_OCTAVE + MODE_REFERENCE_OCTAVES,
     });
-    expect(sequence).toHaveLength(15);
+    expect(sequence).toHaveLength(8);
 
     const span =
       toAbsolutePitch(sequence.at(-1)!.note, sequence.at(-1)!.octave) -
       toAbsolutePitch(sequence[0].note, sequence[0].octave);
-    expect(span).toBe(24);
+    expect(span).toBe(12);
   });
 
-  it("wraps octaves correctly for non-C roots while staying within the same two-octave span", () => {
+  it("wraps octaves correctly for non-C roots while staying within the same one-octave span", () => {
     const sequence = buildModeReferenceSequence([
       "B",
       "C",
@@ -68,11 +68,11 @@ describe("buildModeReferenceSequence", () => {
       note: "B",
       octave: MODE_REFERENCE_START_OCTAVE + MODE_REFERENCE_OCTAVES,
     });
-    expect(sequence).toHaveLength(25);
+    expect(sequence).toHaveLength(13);
 
     const span =
       toAbsolutePitch(sequence.at(-1)!.note, sequence.at(-1)!.octave) -
       toAbsolutePitch(sequence[0].note, sequence[0].octave);
-    expect(span).toBe(24);
+    expect(span).toBe(12);
   });
 });

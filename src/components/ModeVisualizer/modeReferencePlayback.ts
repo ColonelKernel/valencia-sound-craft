@@ -4,7 +4,7 @@ export interface ModeReferenceStep {
 }
 
 export const MODE_REFERENCE_START_OCTAVE = 3;
-export const MODE_REFERENCE_OCTAVES = 2;
+export const MODE_REFERENCE_OCTAVES = 1;
 
 const PITCH_INDEX: Record<string, number> = {
   C: 0,
