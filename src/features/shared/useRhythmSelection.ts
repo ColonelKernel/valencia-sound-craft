@@ -3,6 +3,7 @@ import { useEffect, useMemo } from "react";
 import {
   getRhythmDefinitionById,
   RHYTHM_LIBRARY,
+  type RhythmBrowserRegion,
 } from "@/components/Blipblox/rhythmEngineModel";
 import { useDebouncedTempo } from "@/features/shared/useDebouncedTempo";
 import { getMusicRhythmById } from "@/music-core/rhythmCatalog";
