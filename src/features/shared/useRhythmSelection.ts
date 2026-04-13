@@ -42,7 +42,7 @@ export function useRhythmSelection(toolId: string) {
 
   return {
     rhythmId: activeDefinition?.id ?? rhythmId,
-    region: activeDefinition?.region ?? region,
+    region: (activeDefinition?.region ?? region) as RhythmBrowserRegion,
     tempo: tempoBridge.tempo,
     sharedTempo,
     setTempo: tempoBridge.setTempo,
