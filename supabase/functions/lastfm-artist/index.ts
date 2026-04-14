@@ -8,6 +8,10 @@ const corsHeaders = {
 
 const LASTFM_BASE = "https://ws.audioscrobbler.com/2.0/";
 
+interface LastFmTag { name: string }
+interface LastFmArtist { name: string }
+interface LastFmAlbum { name: string; playcount: string }
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -56,66 +60,34 @@ serve(async (req) => {
       name: artistInfo?.name ?? artist,
       listeners: parseInt(artistInfo?.stats?.listeners ?? "0", 10),
       playcount: parseInt(artistInfo?.stats?.playcount ?? "0", 10),
-      tags: (artistInfo?.tags?.tag ?? []).map((t: { name: string }) => t.name).slice(0, 5),
+      tags: (artistInfo?.tags?.tag ?? []).map((t: LastFmTag) => t.name).slice(0, 5),
       bio: artistInfo?.bio?.summary?.replace(/<[^>]*>/g, "")?.slice(0, 300) ?? "",
-      similar: (artistInfo?.similar?.artist ?? []).map((a: { name: string }) => a.name).slice(0, 5),
+      similar: (artistInfo?.similar?.artist ?? []).map((a: LastFmArtist) => a.name).slice(0, 5),
     };
 
-    // Optionally fetch weekly chart list + recent weekly playcount data
+    // Fetch album catalog data for depth analysis
     if (includeWeekly) {
       try {
-        // Get weekly chart list to find available date ranges
-        const chartListUrl = `${LASTFM_BASE}?method=artist.getweeklychartlist&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json`;
-        // Actually Last.fm doesn't have artist.getweeklychartlist
-        // Use artist.getweeklyartistchart from user charts or use artist.gettoptracks with period
-        // Better approach: use chart.getartistchart isn't available either
-        // Most reliable: use artist.getTopTracks for different periods to approximate trend
+        const albumUrl = `${LASTFM_BASE}?method=artist.gettopalbums&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json&limit=15`;
+        const albumResp = await fetch(albumUrl);
 
-        // Fetch top tracks for different time periods to build a trend
-        const periods = [
-          { period: "7day", label: "1W" },
-          { period: "1month", label: "1M" },
-          { period: "3month", label: "3M" },
-          { period: "6month", label: "6M" },
-          { period: "12month", label: "12M" },
-        ];
-
-        // Use artist.getTopAlbums with different periods to get playcount snapshots
-        const weeklyData: { period: string; label: string; playcount: number; listeners: number }[] = [];
-
-        for (const p of periods) {
-          try {
-            const topUrl = `${LASTFM_BASE}?method=artist.gettoptracks&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json&period=${p.period}&limit=50`;
-            const topResp = await fetch(topUrl);
-            if (topResp.ok) {
-              const topData = await topResp.json();
-              const tracks = topData?.toptracks?.track ?? [];
-              const totalPlaycount = tracks.reduce(
-                (sum: number, t: { playcount: string }) => sum + parseInt(t.playcount ?? "0", 10),
-                0
-              );
-              const totalListeners = tracks.reduce(
-                (sum: number, t: { listeners: string }) => sum + parseInt(t.listeners ?? "0", 10),
-                0
-              );
-              weeklyData.push({
-                period: p.period,
-                label: p.label,
-                playcount: totalPlaycount,
-                listeners: totalListeners,
-              });
-            } else {
-              await topResp.text(); // consume body
-            }
-          } catch {
-            // Skip failed period
-          }
+        if (albumResp.ok) {
+          const albumData = await albumResp.json();
+          const albums = (albumData?.topalbums?.album ?? []) as LastFmAlbum[];
+          result.albumCatalog = albums
+            .filter((a) => a.name && a.name !== "(null)")
+            .map((a) => ({
+              name: a.name,
+              playcount: parseInt(a.playcount ?? "0", 10),
+            }))
+            .slice(0, 12);
+        } else {
+          await albumResp.text();
+          result.albumCatalog = [];
         }
-
-        result.weeklyTrend = weeklyData;
       } catch (e) {
-        console.error("Weekly chart fetch error:", e);
-        result.weeklyTrend = [];
+        console.error("Album fetch error:", e);
+        result.albumCatalog = [];
       }
     }
 
