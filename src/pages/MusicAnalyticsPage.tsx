@@ -169,8 +169,8 @@ export default function MusicAnalyticsPage() {
         {/* Content */}
         <section className="py-8 md:py-12">
           <div className="container mx-auto px-6">
-            <Suspense key={tab} fallback={sectionFallback}>
-              {tab === "overview" && (
+            {tab === "overview" && (
+              <Suspense fallback={sectionFallback}>
                 <StreamingDashboard
                   data={data}
                   artists={artists}
@@ -180,13 +180,17 @@ export default function MusicAnalyticsPage() {
                   onSelectArtist={setSelectedArtist}
                   mode={mode}
                 />
-              )}
+              </Suspense>
+            )}
 
-              {tab === "acquisition" && (
+            {tab === "acquisition" && (
+              <Suspense fallback={sectionFallback}>
                 <AcquisitionScorecard data={data} artists={artists} mode={mode} />
-              )}
+              </Suspense>
+            )}
 
-              {tab === "compare" && (
+            {tab === "compare" && (
+              <Suspense fallback={sectionFallback}>
                 <div className="space-y-6">
                   {/* Artist multi-select */}
                   <div className="rounded-xl border border-border/50 bg-card p-4">
@@ -211,17 +215,23 @@ export default function MusicAnalyticsPage() {
                   </div>
                   <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
                 </div>
-              )}
+              </Suspense>
+            )}
 
-              {tab === "segments" && (
+            {tab === "segments" && (
+              <Suspense fallback={sectionFallback}>
                 <CatalogSegmentation data={data} artists={artists} mode={mode} />
-              )}
+              </Suspense>
+            )}
 
-              {tab === "risk" && (
+            {tab === "risk" && (
+              <Suspense fallback={sectionFallback}>
                 <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
-              )}
+              </Suspense>
+            )}
 
-              {tab === "portfolio" && (
+            {tab === "portfolio" && (
+              <Suspense fallback={sectionFallback}>
                 <div className="space-y-6">
                   {/* Artist add controls */}
                   <div className="rounded-xl border border-border/50 bg-card p-4">
@@ -251,12 +261,14 @@ export default function MusicAnalyticsPage() {
                     mode={mode}
                   />
                 </div>
-              )}
+              </Suspense>
+            )}
 
-              {tab === "ai" && (
+            {tab === "ai" && (
+              <Suspense fallback={sectionFallback}>
                 <CatalogAnalyzer artists={artists} data={data} />
-              )}
-            </Suspense>
+              </Suspense>
+            )}
 
             {/* Footer label */}
             <p className="mt-12 text-[10px] text-muted-foreground/60 text-center">
