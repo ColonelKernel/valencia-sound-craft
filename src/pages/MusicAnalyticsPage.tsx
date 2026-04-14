@@ -1,21 +1,16 @@
-import { lazy, Suspense, useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import RouteHead from "@/components/seo/RouteHead";
 import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataService";
-
-const StreamingDashboard = lazy(() => import("@/components/MusicAnalytics/StreamingDashboard"));
-const ArtistComparison = lazy(() => import("@/components/MusicAnalytics/ArtistComparison"));
-const CatalogSegmentation = lazy(() => import("@/components/MusicAnalytics/CatalogSegmentation"));
-const VolatilityPanel = lazy(() => import("@/components/MusicAnalytics/VolatilityPanel"));
-const PortfolioBuilder = lazy(() => import("@/components/MusicAnalytics/PortfolioBuilder"));
-const CatalogAnalyzer = lazy(() => import("@/components/MusicAnalytics/CatalogAnalyzer"));
-const AcquisitionScorecard = lazy(() => import("@/components/MusicAnalytics/AcquisitionScorecard"));
-
-const sectionFallback = (
-  <div className="h-48 rounded-2xl border border-border/50 bg-card/30 animate-pulse" />
-);
+import StreamingDashboard from "@/components/MusicAnalytics/StreamingDashboard";
+import ArtistComparison from "@/components/MusicAnalytics/ArtistComparison";
+import CatalogSegmentation from "@/components/MusicAnalytics/CatalogSegmentation";
+import VolatilityPanel from "@/components/MusicAnalytics/VolatilityPanel";
+import PortfolioBuilder from "@/components/MusicAnalytics/PortfolioBuilder";
+import CatalogAnalyzer from "@/components/MusicAnalytics/CatalogAnalyzer";
+import AcquisitionScorecard from "@/components/MusicAnalytics/AcquisitionScorecard";
 
 type ViewMode = "streams" | "revenue";
 type Tab = "overview" | "acquisition" | "compare" | "segments" | "risk" | "portfolio" | "ai";
