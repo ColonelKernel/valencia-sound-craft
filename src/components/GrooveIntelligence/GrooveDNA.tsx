@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import type { NormalizedGroove } from "./types";
-import type { DrumPattern, PlaybackState } from "./audioEngine";
+import type { DrumPattern } from "./audioEngine";
 import { interpretGroove, kNearest } from "./utils";
 import { generatePattern, startPlayback, stopPlayback, downloadMidi } from "./audioEngine";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   groove: NormalizedGroove | null;
@@ -197,6 +198,9 @@ export default function GrooveDNA({ groove, allGrooves, onSelectGroove, currentS
         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 font-mono">Interpretation</div>
         <p className="text-sm text-foreground/70 italic leading-relaxed">&ldquo;{interpretation}&rdquo;</p>
       </div>
+
+      {/* AI Narrative */}
+      <AINarrative groove={groove} />
 
       {/* Nearest */}
       <div>
