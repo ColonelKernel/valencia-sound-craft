@@ -53,6 +53,9 @@ export default function GrooveIntelligenceLab() {
     setSelected(g);
     playGrooveSequence(g.norm_density, g.norm_swing, g.norm_velocity);
 
+    // Record trajectory
+    setTrajectory(prev => [...prev, { groove: g, timestamp: Date.now() }]);
+
     // Auto-play the new groove
     const pattern = generatePattern(g);
     setTimeout(() => {
