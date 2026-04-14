@@ -454,16 +454,16 @@ const GlobalRhythmEngine = ({
     [browserCountry, filteredDefinitions],
   );
   const visibleAtlasRhythms = useMemo(() => {
-    const visibleCountries = new Set(filteredDefinitions.map((definition) => definition.country));
-
     return GLOBAL_RHYTHM_ATLAS.filter((rhythm) => {
       if (continentFilter !== "All" && rhythm.continent !== continentFilter) {
         return false;
       }
-
-      return visibleCountries.has(rhythm.country);
+      if (tagFilter !== "All" && !rhythm.tags.includes(tagFilter)) {
+        return false;
+      }
+      return true;
     });
-  }, [continentFilter, filteredDefinitions]);
+  }, [continentFilter, tagFilter]);
 
   useEffect(() => {
     if (controlledTempo === previousControlledTempoRef.current) {
