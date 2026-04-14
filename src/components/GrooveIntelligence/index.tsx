@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { NormalizedGroove, RawGroove, ViewMode } from "./types";
+import type { NormalizedGroove, RawGroove, ViewMode, TrajectoryPoint } from "./types";
 import { normalizeGrooves, grooveDistance, syntheticDistance } from "./utils";
 import { playGrooveSequence, generatePattern, startPlayback, stopPlayback } from "./audioEngine";
 import GrooveField from "./GrooveField";
@@ -14,6 +14,7 @@ const VIEW_MODES: { key: ViewMode; label: string }[] = [
   { key: "landscape", label: "Landscape" },
 ];
 
+
 export default function GrooveIntelligenceLab() {
   const [grooves, setGrooves] = useState<NormalizedGroove[]>([]);
   const [selected, setSelected] = useState<NormalizedGroove | null>(null);
@@ -22,6 +23,7 @@ export default function GrooveIntelligenceLab() {
   const [sculptorActive, setSculptorActive] = useState(false);
   const [sculptorValues, setSculptorValues] = useState({ energy: 0.5, swing: 0.5, syncopation: 0.5, dynamics: 0.5 });
   const [currentStep, setCurrentStep] = useState(-1);
+  const [trajectory, setTrajectory] = useState<TrajectoryPoint[]>([]);
 
   const sculptorRef = useRef(sculptorValues);
   sculptorRef.current = sculptorValues;
@@ -46,6 +48,9 @@ export default function GrooveIntelligenceLab() {
     setCurrentStep(-1);
     setSelected(g);
     playGrooveSequence(g.norm_density, g.norm_swing, g.norm_velocity);
+
+    // Record trajectory
+    setTrajectory(prev => [...prev, { groove: g, timestamp: Date.now() }]);
 
     // Auto-play the new groove
     const pattern = generatePattern(g);
@@ -139,7 +144,33 @@ export default function GrooveIntelligenceLab() {
             onClick={handleSelect}
             viewMode={viewMode}
             currentStep={currentStep}
+            trajectory={trajectory}
           />
+          {/* Trajectory distance meter */}
+          {trajectory.length >= 2 && (
+            <div className="absolute top-3 left-3 bg-black/70 border border-white/10 rounded-lg px-3 py-2 pointer-events-auto">
+              <div className="flex items-center gap-3">
+                <div>
+                  <p className="text-[9px] text-muted-foreground/60 font-mono uppercase tracking-wider">Trajectory</p>
+                  <p className="text-xs font-mono text-foreground">
+                    {trajectory.length} stops · Σd = {trajectory.reduce((sum, tp, i) => {
+                      if (i === 0) return 0;
+                      return sum + grooveDistance(tp.groove, trajectory[i - 1].groove);
+                    }, 0).toFixed(2)}
+                  </p>
+                  <p className="text-[9px] font-mono text-muted-foreground/40 mt-0.5">
+                    Last hop: {grooveDistance(trajectory[trajectory.length - 1].groove, trajectory[trajectory.length - 2].groove).toFixed(3)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setTrajectory(selected ? [{ groove: selected, timestamp: Date.now() }] : [])}
+                  className="text-[9px] font-mono text-muted-foreground/50 hover:text-foreground border border-white/10 rounded px-2 py-1 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
           {/* Meta text */}
           <div className="absolute bottom-4 left-4 right-4 text-center pointer-events-none">
             <p className="text-[10px] text-white/15 font-mono tracking-wider">

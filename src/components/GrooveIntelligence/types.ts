@@ -36,3 +36,8 @@ export interface NormalizedGroove extends RawGroove {
 }
 
 export type ViewMode = "field" | "topology" | "landscape";
+
+export interface TrajectoryPoint {
+  groove: NormalizedGroove;
+  timestamp: number;
+}
