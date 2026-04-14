@@ -15,40 +15,41 @@ const Hero = () => {
           height={1080}
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(5,5,5,0.97)_0%,rgba(5,5,5,0.88)_45%,rgba(5,5,5,0.55)_100%)]" />
+        <div className="absolute inset-0 bg-black/65" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.35)_0%,transparent_100%)]" />
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-28 md:py-32">
         <div className="max-w-2xl space-y-7">
-          <p className="text-sm font-medium uppercase tracking-[0.34em] text-primary-foreground/60">
+          <p className="text-sm font-medium uppercase tracking-[0.34em] text-white/60">
             Based in Valencia, Spain
           </p>
 
           <div className="space-y-5">
-            <h1 className="text-5xl font-bold leading-[1.05] text-primary-foreground md:text-6xl lg:text-7xl">
+            <h1 className="text-5xl font-bold leading-[1.05] text-white md:text-6xl lg:text-7xl [text-shadow:_0_2px_20px_rgba(0,0,0,0.6)]">
               Music Producer, Guitarist &amp; Creative Technologist
             </h1>
 
-            <p className="max-w-xl text-base leading-relaxed text-primary-foreground/72 md:text-lg">
+            <p className="max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
               I help artists turn ideas into finished records — blending live instruments,
               modern production, and global influences.
             </p>
           </div>
 
-          <p className="text-sm text-primary-foreground/50">
+          <p className="text-sm text-white/50">
             Based in Valencia, working with artists locally and worldwide.
           </p>
 
           <div className="flex flex-col gap-4 sm:flex-row">
             <a
               href="#contact"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_18px_40px_-24px_rgba(255,255,255,0.55)] hover:bg-primary/90"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-[0_18px_40px_-24px_rgba(255,255,255,0.55)] hover:bg-white/90"
             >
               Start a Project <ArrowRight size={16} />
             </a>
             <a
               href="#portfolio"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-foreground/28 px-6 py-3.5 text-sm font-medium text-primary-foreground hover:bg-primary-foreground/10"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/25 px-6 py-3.5 text-sm font-medium text-white hover:bg-white/10"
             >
               <Headphones size={16} /> Listen to Work
             </a>
@@ -60,7 +61,7 @@ const Hero = () => {
         {Array.from({ length: 80 }).map((_, index) => (
           <div
             key={index}
-            className="w-[3px] rounded-t-full bg-primary-foreground/55"
+            className="w-[3px] rounded-t-full bg-white/55"
             style={{
               height: `${Math.sin(index * 0.2) * 40 + Math.random() * 30 + 10}%`,
             }}
