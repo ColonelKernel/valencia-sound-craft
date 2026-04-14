@@ -1,24 +1,21 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Area, ComposedChart, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  Area, ComposedChart, Legend, Line,
 } from "recharts";
 import type { ArtistMonthly } from "@/lib/musicDataService";
-import { linearRegression, forecast } from "@/lib/linearRegression";
+import { forecast } from "@/lib/linearRegression";
+import { formatMetric } from "@/lib/catalogAnalytics";
 
 interface Props {
   data: ArtistMonthly[];
   artists: string[];
   loading: boolean;
   error: string | null;
-}
-
-function formatStreams(n: number): string {
-  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return String(n);
+  selectedArtist: string;
+  onSelectArtist: (a: string) => void;
+  mode: "streams" | "revenue";
 }
 
 const cardAnim = {
@@ -26,12 +23,11 @@ const cardAnim = {
   show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4 } }),
 };
 
-export default function StreamingDashboard({ data, artists, loading, error }: Props) {
-  const [selectedArtist, setSelectedArtist] = useState<string>("all");
-
+export default function StreamingDashboard({
+  data, artists, loading, error, selectedArtist, onSelectArtist, mode,
+}: Props) {
   const filtered = useMemo(() => {
     if (selectedArtist === "all") {
-      // aggregate all top artists by month
       const map = new Map<string, number>();
       const topSet = new Set(artists);
       for (const r of data) {
@@ -54,11 +50,9 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
     const last = filtered[filtered.length - 1]?.streams ?? 0;
     const prev = filtered[filtered.length - 2]?.streams ?? last;
     const momGrowth = prev > 0 ? ((last - prev) / prev) * 100 : 0;
-
     const points = filtered.map((r, i) => ({ x: i, y: r.streams }));
     const fc = forecast(points, 6);
     const projected6m = fc.reduce((s, f) => s + f.y, 0);
-
     return { total, momGrowth, projected6m };
   }, [filtered]);
 
@@ -66,23 +60,23 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
     if (!filtered.length) return [];
     const points = filtered.map((r, i) => ({ x: i, y: r.streams }));
     const fc = forecast(points, 6);
+    const rev = mode === "revenue" ? 0.003 : 1;
 
     const actual = filtered.map((r) => ({
       month: r.month,
-      actual: r.streams,
+      actual: r.streams * rev,
       forecast: null as number | null,
       upper: null as number | null,
       lower: null as number | null,
     }));
 
-    // Bridge: last actual point also starts forecast
     if (actual.length > 0) {
-      const lastActual = actual[actual.length - 1];
+      const last = actual[actual.length - 1];
       actual[actual.length - 1] = {
-        ...lastActual,
-        forecast: lastActual.actual,
-        upper: lastActual.actual,
-        lower: lastActual.actual,
+        ...last,
+        forecast: last.actual,
+        upper: last.actual,
+        lower: last.actual,
       };
     }
 
@@ -96,16 +90,17 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
       return {
         month: `${fy}-${String(fm).padStart(2, "0")}`,
         actual: null as number | null,
-        forecast: f.y,
-        upper: f.upper,
-        lower: f.lower,
+        forecast: f.y * rev,
+        upper: f.upper * rev,
+        lower: f.lower * rev,
       };
     });
 
     return [...actual, ...forecasted];
-  }, [filtered]);
+  }, [filtered, mode]);
 
-  // Portfolio table data
+  const [sortKey, setSortKey] = useState<"total" | "forecastQ">("total");
+
   const portfolioData = useMemo(() => {
     return artists.map((artist) => {
       const rows = data.filter((r) => r.artist === artist);
@@ -119,16 +114,13 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
         if (diff > 0) trend = "↑";
         else if (diff < 0) trend = "↓";
       }
-
       const points = sorted.map((r, i) => ({ x: i, y: r.streams }));
       const fc = forecast(points, 3);
       const forecastQ = fc.reduce((s, f) => s + f.y, 0);
-
       return { artist, total, peakMonth: peakRow?.month ?? "–", trend, forecastQ };
     });
   }, [data, artists]);
 
-  const [sortKey, setSortKey] = useState<"total" | "forecastQ">("total");
   const sortedPortfolio = useMemo(
     () => [...portfolioData].sort((a, b) => b[sortKey] - a[sortKey]),
     [portfolioData, sortKey]
@@ -136,58 +128,34 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
 
   if (loading) {
     return (
-      <div className="container mx-auto px-6">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          Fetching chart data…
-        </div>
+      <div className="flex items-center gap-3 text-muted-foreground">
+        <div className="h-4 w-4 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
+        Fetching chart data…
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-6">
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-destructive">
-          {error}
-        </div>
+      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-destructive">
+        {error}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-6 space-y-10">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Streaming Dashboard</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Data sourced from publicly available Spotify Charts
-          </p>
-        </div>
-
-        <select
-          value={selectedArtist}
-          onChange={(e) => setSelectedArtist(e.target.value)}
-          className="w-full sm:w-56 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-        >
-          <option value="all">All Top Artists</option>
-          {artists.map((a) => (
-            <option key={a} value={a}>{a}</option>
-          ))}
-        </select>
-      </div>
-
+    <div className="space-y-8">
       {/* Metric Cards */}
       {metrics && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { label: "Total Streams", value: formatStreams(metrics.total), color: "text-primary" },
+            { label: `Total ${mode === "revenue" ? "Revenue" : "Streams"}`, value: formatMetric(metrics.total, mode), color: "text-foreground" },
             {
               label: "MoM Growth",
               value: `${metrics.momGrowth >= 0 ? "+" : ""}${metrics.momGrowth.toFixed(1)}%`,
               color: metrics.momGrowth >= 0 ? "text-emerald-400" : "text-red-400",
             },
-            { label: "Projected 6-Month", value: formatStreams(metrics.projected6m), color: "text-primary" },
+            { label: "6-Month Forecast", value: formatMetric(metrics.projected6m, mode), color: "text-foreground" },
           ].map((card, i) => (
             <motion.div
               key={card.label}
@@ -214,7 +182,7 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
         className="rounded-xl border border-border/50 bg-card p-4 md:p-6"
       >
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
-          Monthly Streams — Actual vs Forecast
+          Monthly {mode === "revenue" ? "Revenue" : "Streams"} — Actual vs Forecast
         </h3>
         <div className="h-72 md:h-96">
           <ResponsiveContainer width="100%" height="100%">
@@ -226,7 +194,7 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
                 tickLine={false}
               />
               <YAxis
-                tickFormatter={formatStreams}
+                tickFormatter={(v) => formatMetric(v, mode === "revenue" ? "revenue" : "streams")}
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 tickLine={false}
                 axisLine={false}
@@ -238,14 +206,14 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
                   borderRadius: "8px",
                   fontSize: "12px",
                 }}
-                formatter={(val: number) => [formatStreams(val), ""]}
+                formatter={(val: number) => [formatMetric(val, mode === "revenue" ? "revenue" : "streams"), ""]}
               />
               <Legend />
               <Area
                 dataKey="upper"
                 stroke="none"
-                fill="hsl(var(--primary))"
-                fillOpacity={0.08}
+                fill="hsl(var(--foreground))"
+                fillOpacity={0.06}
                 name="Confidence Band"
                 connectNulls={false}
               />
@@ -259,18 +227,18 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
               />
               <Line
                 dataKey="actual"
-                stroke="hsl(var(--primary))"
+                stroke="hsl(var(--foreground))"
                 strokeWidth={2}
-                dot={{ r: 3, fill: "hsl(var(--primary))" }}
+                dot={{ r: 3, fill: "hsl(var(--foreground))" }}
                 name="Actual"
                 connectNulls={false}
               />
               <Line
                 dataKey="forecast"
-                stroke="hsl(var(--primary))"
+                stroke="hsl(var(--foreground))"
                 strokeWidth={2}
                 strokeDasharray="6 4"
-                dot={{ r: 3, fill: "hsl(var(--primary))", strokeDasharray: "0" }}
+                dot={{ r: 3, fill: "hsl(var(--foreground))", strokeDasharray: "0" }}
                 name="Forecast"
                 connectNulls={false}
               />
@@ -289,17 +257,17 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border/50">
-              <th className="text-left p-4 font-medium text-muted-foreground">Artist</th>
+              <th className="text-left p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Artist</th>
               <th
-                className="text-right p-4 font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors"
                 onClick={() => setSortKey("total")}
               >
-                Total Streams {sortKey === "total" && "▾"}
+                Total {mode === "revenue" ? "Rev" : "Streams"} {sortKey === "total" && "▾"}
               </th>
-              <th className="text-right p-4 font-medium text-muted-foreground">Peak Month</th>
-              <th className="text-center p-4 font-medium text-muted-foreground">Trend</th>
+              <th className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Peak Month</th>
+              <th className="text-center p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Trend</th>
               <th
-                className="text-right p-4 font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors"
                 onClick={() => setSortKey("forecastQ")}
               >
                 Forecast Q {sortKey === "forecastQ" && "▾"}
@@ -310,14 +278,14 @@ export default function StreamingDashboard({ data, artists, loading, error }: Pr
             {sortedPortfolio.map((row) => (
               <tr key={row.artist} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
                 <td className="p-4 font-medium text-foreground">{row.artist}</td>
-                <td className="p-4 text-right text-muted-foreground">{formatStreams(row.total)}</td>
+                <td className="p-4 text-right text-muted-foreground">{formatMetric(row.total, mode)}</td>
                 <td className="p-4 text-right text-muted-foreground">{row.peakMonth}</td>
                 <td className="p-4 text-center text-lg">
                   <span className={row.trend === "↑" ? "text-emerald-400" : row.trend === "↓" ? "text-red-400" : "text-muted-foreground"}>
                     {row.trend}
                   </span>
                 </td>
-                <td className="p-4 text-right text-muted-foreground">{formatStreams(row.forecastQ)}</td>
+                <td className="p-4 text-right text-muted-foreground">{formatMetric(row.forecastQ, mode)}</td>
               </tr>
             ))}
           </tbody>
