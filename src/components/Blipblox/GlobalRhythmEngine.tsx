@@ -2,13 +2,10 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import {
   Download,
   Globe,
-  MapPinned,
   Music,
   Play,
   Search,
   Shuffle,
-  SlidersHorizontal,
-  Sparkles,
   Square,
   TimerReset,
   Zap,
