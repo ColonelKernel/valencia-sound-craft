@@ -14,6 +14,11 @@ const VIEW_MODES: { key: ViewMode; label: string }[] = [
   { key: "landscape", label: "Landscape" },
 ];
 
+export interface TrajectoryPoint {
+  groove: NormalizedGroove;
+  timestamp: number;
+}
+
 export default function GrooveIntelligenceLab() {
   const [grooves, setGrooves] = useState<NormalizedGroove[]>([]);
   const [selected, setSelected] = useState<NormalizedGroove | null>(null);
@@ -22,6 +27,7 @@ export default function GrooveIntelligenceLab() {
   const [sculptorActive, setSculptorActive] = useState(false);
   const [sculptorValues, setSculptorValues] = useState({ energy: 0.5, swing: 0.5, syncopation: 0.5, dynamics: 0.5 });
   const [currentStep, setCurrentStep] = useState(-1);
+  const [trajectory, setTrajectory] = useState<TrajectoryPoint[]>([]);
 
   const sculptorRef = useRef(sculptorValues);
   sculptorRef.current = sculptorValues;
