@@ -31,13 +31,13 @@ export default function GrooveIntelligenceLab() {
     fetch("/data/egmd.json")
       .then(r => r.json())
       .then((data: RawGroove[]) => {
-        // Sample to MAX_NODES
         const sampled = data.length > MAX_NODES
           ? data.sort(() => Math.random() - 0.5).slice(0, MAX_NODES)
           : data;
         setRawData(sampled);
         setGrooves(normalizeGrooves(sampled));
-      });
+      })
+      .catch(err => console.error("Failed to load groove data:", err));
   }, []);
 
   // Recompute field on selection (similarity warp)
