@@ -348,7 +348,6 @@ const GlobalRhythmEngine = ({
   const [tagFilter, setTagFilter] = useState<RhythmTag | "All">("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [showAtlas, setShowAtlas] = useState(true);
   const [showMorph, setShowMorph] = useState(false);
   const [showBlipblox, setShowBlipblox] = useState(false);
   const [showExport, setShowExport] = useState(false);
