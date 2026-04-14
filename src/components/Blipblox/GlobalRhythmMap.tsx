@@ -280,6 +280,7 @@ function useRhythmPreview() {
 const GlobalRhythmMap = ({
   rhythms,
   selectedCountry,
+  focusContinent,
   onCountryHover,
   onCountrySelect,
 }: GlobalRhythmMapProps) => {
