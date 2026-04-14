@@ -411,7 +411,7 @@ const GlobalRhythmMap = ({
     [countryMarkers, hoveredRhythm],
   );
   const pulseIcon = useMemo(
-    () => hoveredRhythm ? createPulseIcon(CONTINENT_FILL_COLORS[hoveredRhythm.continent]) : null,
+    () => hoveredRhythm ? createPulseIcon(CONTINENT_FILL_COLORS[hoveredRhythm.continent], PULSE_ELEMENT_ID) : null,
     [hoveredRhythm],
   );
 
