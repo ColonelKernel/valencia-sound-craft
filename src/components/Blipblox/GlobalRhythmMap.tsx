@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { Globe2, MapPinned, MousePointerClick } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Globe2, MapPinned, MousePointerClick, Volume2 } from "lucide-react";
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { cn } from "@/lib/utils";
 
 import { ATLAS_COUNTRY_CENTROIDS } from "./atlasCountryCentroids";
-import { type Rhythm, type RhythmContinent } from "./globalRhythmAtlas";
+import { type Rhythm, type RhythmContinent, getPlaybackVelocityPattern } from "./globalRhythmAtlas";
 
 interface GlobalRhythmMapProps {
   rhythms: Rhythm[];
