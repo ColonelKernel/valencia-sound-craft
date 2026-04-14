@@ -16,6 +16,7 @@ const HarmonyTool = lazy(() => import("@/features/harmony/Tool"));
 const MapTool = lazy(() => import("@/features/map/Tool"));
 const CircleTool = lazy(() => import("@/features/circle/Tool"));
 const TonnetzTool = lazy(() => import("@/features/tonnetz/Tool"));
+const MusicAnalyticsPage = lazy(() => import("./pages/MusicAnalyticsPage"));
 
 const routeFallback = (
   <div className="min-h-screen bg-background pt-24">
@@ -41,6 +42,7 @@ const App = () => (
                 <Route path="circle" element={<CircleTool />} />
                 <Route path="tonnetz" element={<TonnetzTool />} />
               </Route>
+              <Route path="/music-analytics" element={<MusicAnalyticsPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
