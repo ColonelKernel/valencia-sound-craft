@@ -26,6 +26,8 @@ export default function GrooveField({ grooves, selected, hovered, onHover, onCli
   const timeRef = useRef(0);
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
   const sizeRef = useRef({ w: 0, h: 0 });
+  const trajAnimRef = useRef(1);
+  const prevTrajLenRef = useRef(0);
 
   const toScreen = useCallback((px: number, py: number) => {
     const { w, h } = sizeRef.current;
