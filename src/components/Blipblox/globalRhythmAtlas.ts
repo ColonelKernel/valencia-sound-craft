@@ -1031,13 +1031,13 @@ const REGIONAL_COUNTRY_MAP: Partial<Record<string, RegionalGroupId>> = {
   Lebanon: "middle_east_maqsum",
   Liberia: "west_africa_timeline",
   Libya: "middle_east_maqsum",
-  Mali: "west_africa_timeline",
+  
   Mauritania: "west_africa_timeline",
   Montenegro: "balkan_seven",
   Morocco: "middle_east_maqsum",
   Nepal: "south_asia_tala",
   Niger: "west_africa_timeline",
-  Nigeria: "west_africa_timeline",
+  
   "North Macedonia": "balkan_seven",
   Oman: "middle_east_maqsum",
   Pakistan: "south_asia_tala",
@@ -1048,7 +1048,7 @@ const REGIONAL_COUNTRY_MAP: Partial<Record<string, RegionalGroupId>> = {
   "Saint Lucia": "caribbean_clave",
   "Saint Vincent and the Grenadines": "caribbean_clave",
   "Saudi Arabia": "middle_east_maqsum",
-  Senegal: "west_africa_timeline",
+  
   Serbia: "balkan_seven",
   "Sierra Leone": "west_africa_timeline",
   Slovenia: "balkan_seven",
