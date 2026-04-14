@@ -372,10 +372,12 @@ const GlobalRhythmMap = ({
                   mouseover: () => {
                     setHoveredRhythm(rhythm);
                     onCountryHover?.(rhythm);
+                    playPreview(rhythm);
                   },
                   mouseout: () => {
                     setHoveredRhythm(null);
                     onCountryHover?.(null);
+                    stopPreview();
                   },
                 }}
               >
