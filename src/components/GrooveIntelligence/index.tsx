@@ -14,10 +14,6 @@ const VIEW_MODES: { key: ViewMode; label: string }[] = [
   { key: "landscape", label: "Landscape" },
 ];
 
-export interface TrajectoryPoint {
-  groove: NormalizedGroove;
-  timestamp: number;
-}
 
 export default function GrooveIntelligenceLab() {
   const [grooves, setGrooves] = useState<NormalizedGroove[]>([]);
