@@ -55,6 +55,7 @@ export type CountryMetadata = {
 type RhythmTemplate = Omit<Rhythm, "country" | "region" | "continent" | "midiPattern" | "accents"> & {
   hitUnits: number[];
   accentUnits: number[];
+  tags?: RhythmTag[];
 };
 
 type RegionalGroupId =
