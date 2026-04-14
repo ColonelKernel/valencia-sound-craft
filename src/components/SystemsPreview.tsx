@@ -1,7 +1,14 @@
-import { ArrowRight, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
+import { ArrowRight, Brain, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const previewCards = [
+  {
+    to: "/groove-intelligence",
+    icon: Brain,
+    title: "Groove Intelligence Lab",
+    description: "Navigate rhythmic feel space — 300 grooves projected into a perceptual particle field with AI narratives and real-time synthesis.",
+    featured: true,
+  },
   {
     to: "/tools/rhythm",
     icon: Globe2,
@@ -60,24 +67,42 @@ const SystemsPreview = () => (
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        {previewCards.map((card) => (
-          <article
-            key={card.to}
-            className="rounded-[1.5rem] border border-border/70 bg-card/75 p-5 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)]"
-          >
-            <card.icon className="h-5 w-5 text-primary" />
-            <h3 className="mt-4 text-lg font-semibold text-foreground">{card.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">{card.description}</p>
-            <Link
-              to={card.to}
-              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary"
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {previewCards.map((card) => {
+          const featured = 'featured' in card && card.featured;
+          return (
+            <article
+              key={card.to}
+              className={`rounded-[1.5rem] border p-5 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)] ${
+                featured
+                  ? "md:col-span-2 xl:col-span-3 border-emerald-500/30 bg-emerald-950/20"
+                  : "border-border/70 bg-card/75"
+              }`}
             >
-              Open tool
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </article>
-        ))}
+              <div className={featured ? "flex flex-col md:flex-row md:items-center md:gap-8" : ""}>
+                <div className={featured ? "flex-1" : ""}>
+                  <div className="flex items-center gap-2">
+                    <card.icon className={`h-5 w-5 ${featured ? "text-emerald-400" : "text-primary"}`} />
+                    {featured && <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded-full">New — Research Tool</span>}
+                  </div>
+                  <h3 className={`mt-4 font-semibold text-foreground ${featured ? "text-2xl" : "text-lg"}`}>{card.title}</h3>
+                  <p className={`mt-2 leading-6 text-muted-foreground ${featured ? "text-base max-w-2xl" : "text-sm"}`}>{card.description}</p>
+                </div>
+                <Link
+                  to={card.to}
+                  className={`mt-5 md:mt-0 inline-flex items-center gap-2 font-medium hover:text-primary ${
+                    featured
+                      ? "text-base text-emerald-400 hover:text-emerald-300 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-5 py-3"
+                      : "text-sm text-foreground"
+                  }`}
+                >
+                  {featured ? "Launch Lab" : "Open tool"}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   </section>
