@@ -1,5 +1,9 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  LineChart, Line,
+} from "recharts";
 import type { ArtistMonthly } from "@/lib/musicDataService";
 import {
   buildArtistComparison,
@@ -16,6 +20,13 @@ interface Props {
   mode: "streams" | "revenue";
 }
 
+interface WeeklyTrendPoint {
+  period: string;
+  label: string;
+  playcount: number;
+  listeners: number;
+}
+
 interface LastFmData {
   name: string;
   listeners: number;
@@ -23,6 +34,7 @@ interface LastFmData {
   tags: string[];
   bio: string;
   similar: string[];
+  weeklyTrend?: WeeklyTrendPoint[];
 }
 
 const LABEL_CONFIG: Record<AcquisitionLabel, { color: string; bg: string }> = {

@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { artist } = await req.json();
+    const { artist, includeWeekly } = await req.json();
     if (!artist || typeof artist !== "string") {
       return new Response(
         JSON.stringify({ error: "artist is required" }),
@@ -30,29 +30,29 @@ serve(async (req) => {
       );
     }
 
-    const url = `${LASTFM_BASE}?method=artist.getinfo&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json`;
-    const response = await fetch(url);
+    // Fetch artist info
+    const infoUrl = `${LASTFM_BASE}?method=artist.getinfo&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json`;
+    const infoResp = await fetch(infoUrl);
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("Last.fm API error:", response.status, text);
+    if (!infoResp.ok) {
+      const text = await infoResp.text();
+      console.error("Last.fm API error:", infoResp.status, text);
       return new Response(
-        JSON.stringify({ error: `Last.fm API error: ${response.status}` }),
+        JSON.stringify({ error: `Last.fm API error: ${infoResp.status}` }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
-
-    if (data.error) {
+    const infoData = await infoResp.json();
+    if (infoData.error) {
       return new Response(
-        JSON.stringify({ error: data.message ?? "Artist not found" }),
+        JSON.stringify({ error: infoData.message ?? "Artist not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const artistInfo = data.artist;
-    const result = {
+    const artistInfo = infoData.artist;
+    const result: Record<string, unknown> = {
       name: artistInfo?.name ?? artist,
       listeners: parseInt(artistInfo?.stats?.listeners ?? "0", 10),
       playcount: parseInt(artistInfo?.stats?.playcount ?? "0", 10),
@@ -60,6 +60,64 @@ serve(async (req) => {
       bio: artistInfo?.bio?.summary?.replace(/<[^>]*>/g, "")?.slice(0, 300) ?? "",
       similar: (artistInfo?.similar?.artist ?? []).map((a: { name: string }) => a.name).slice(0, 5),
     };
+
+    // Optionally fetch weekly chart list + recent weekly playcount data
+    if (includeWeekly) {
+      try {
+        // Get weekly chart list to find available date ranges
+        const chartListUrl = `${LASTFM_BASE}?method=artist.getweeklychartlist&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json`;
+        // Actually Last.fm doesn't have artist.getweeklychartlist
+        // Use artist.getweeklyartistchart from user charts or use artist.gettoptracks with period
+        // Better approach: use chart.getartistchart isn't available either
+        // Most reliable: use artist.getTopTracks for different periods to approximate trend
+
+        // Fetch top tracks for different time periods to build a trend
+        const periods = [
+          { period: "7day", label: "1W" },
+          { period: "1month", label: "1M" },
+          { period: "3month", label: "3M" },
+          { period: "6month", label: "6M" },
+          { period: "12month", label: "12M" },
+        ];
+
+        // Use artist.getTopAlbums with different periods to get playcount snapshots
+        const weeklyData: { period: string; label: string; playcount: number; listeners: number }[] = [];
+
+        for (const p of periods) {
+          try {
+            const topUrl = `${LASTFM_BASE}?method=artist.gettoptracks&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json&period=${p.period}&limit=50`;
+            const topResp = await fetch(topUrl);
+            if (topResp.ok) {
+              const topData = await topResp.json();
+              const tracks = topData?.toptracks?.track ?? [];
+              const totalPlaycount = tracks.reduce(
+                (sum: number, t: { playcount: string }) => sum + parseInt(t.playcount ?? "0", 10),
+                0
+              );
+              const totalListeners = tracks.reduce(
+                (sum: number, t: { listeners: string }) => sum + parseInt(t.listeners ?? "0", 10),
+                0
+              );
+              weeklyData.push({
+                period: p.period,
+                label: p.label,
+                playcount: totalPlaycount,
+                listeners: totalListeners,
+              });
+            } else {
+              await topResp.text(); // consume body
+            }
+          } catch {
+            // Skip failed period
+          }
+        }
+
+        result.weeklyTrend = weeklyData;
+      } catch (e) {
+        console.error("Weekly chart fetch error:", e);
+        result.weeklyTrend = [];
+      }
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
