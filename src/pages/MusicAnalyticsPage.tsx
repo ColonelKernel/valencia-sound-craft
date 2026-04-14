@@ -262,7 +262,6 @@ export default function MusicAnalyticsPage() {
             <p className="mt-12 text-[10px] text-muted-foreground/60 text-center">
               Built using real streaming data, public APIs, and simplified financial modeling
             </p>
-            </p>
           </div>
         </section>
       </main>
