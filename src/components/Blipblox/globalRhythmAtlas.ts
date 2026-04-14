@@ -529,6 +529,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "tupan",
     confidence: "high",
     classification: "documented",
+    tags: ["asymmetric", "dance-driven", "hand-percussion"],
     source: {
       title: "Bulgarian Rhythms Research Paper",
       type: "pdf",
@@ -548,6 +549,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "conga/clave",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "clave-based", "dance-driven", "hand-percussion", "ensemble"],
     source: {
       title: "Claves in the Caribbean",
       type: "pdf",
@@ -567,6 +569,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "djembe",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "polyrhythm", "dance-driven", "call-response", "hand-percussion"],
     source: {
       title: "African Rhythms Overview",
       type: "academic",
@@ -586,6 +589,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "djembe",
     confidence: "high",
     classification: "documented",
+    tags: ["compound", "12-beat-cycle", "polyrhythm", "dance-driven", "call-response", "hand-percussion", "ensemble"],
     source: {
       title: "African Rhythms and Calls",
       type: "pdf",
@@ -605,6 +609,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "tabla",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "cycle-based", "improvisational", "hand-percussion"],
     source: {
       title: "Indian Rhythms and Odd Meters",
       type: "academic",
@@ -624,6 +629,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "taiko",
     confidence: "medium",
     classification: "documented",
+    tags: ["binary", "ensemble", "call-response"],
     source: {
       title: "Festival drumming field reference",
       type: "field",
@@ -643,6 +649,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "cajón",
     confidence: "high",
     classification: "documented",
+    tags: ["compound", "12-beat-cycle", "dance-driven", "hand-percussion", "polyrhythm"],
     source: {
       title: "Peru Cajon Grooves",
       type: "pdf",
@@ -662,6 +669,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "cajón",
     confidence: "high",
     classification: "documented",
+    tags: ["asymmetric", "12-beat-cycle", "dance-driven", "hand-percussion", "improvisational"],
     source: {
       title: "Flamenco Rhythm Course Notes",
       type: "academic",
@@ -681,6 +689,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "surdo",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "polyrhythm", "dance-driven", "ensemble", "call-response"],
     source: {
       title: "Candombe Ensemble Parts",
       type: "pdf",
