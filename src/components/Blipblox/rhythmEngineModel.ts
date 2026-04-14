@@ -837,6 +837,10 @@ export function filterRhythmLibrary(filters: RhythmLibraryFilters = {}) {
       return false;
     }
 
+    if (filters.tag && filters.tag !== "All" && !definition.atlasRhythm.tags.includes(filters.tag)) {
+      return false;
+    }
+
     if (filters.search) {
       const searchValue = filters.search.toLowerCase();
       const searchable = [
