@@ -3,6 +3,7 @@ import {
   getAtlasRhythmByCountry,
   type Rhythm,
   type RhythmContinent,
+  type RhythmTag,
 } from "./globalRhythmAtlas";
 import {
   DRUM_PRESETS,
@@ -85,6 +86,7 @@ export interface RhythmLibraryFilters {
   meter?: string | "All";
   feel?: TimeFeel | "All";
   tempoBand?: RhythmTempoBand | "All";
+  tag?: RhythmTag | "All";
   search?: string;
 }
 
@@ -832,6 +834,10 @@ export function filterRhythmLibrary(filters: RhythmLibraryFilters = {}) {
     }
 
     if (filters.tempoBand && filters.tempoBand !== "All" && inferTempoBand(definition.tempoRange) !== filters.tempoBand) {
+      return false;
+    }
+
+    if (filters.tag && filters.tag !== "All" && !definition.atlasRhythm.tags.includes(filters.tag)) {
       return false;
     }
 

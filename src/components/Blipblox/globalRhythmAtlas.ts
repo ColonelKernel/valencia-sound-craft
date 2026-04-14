@@ -1,3 +1,19 @@
+export type RhythmTag =
+  | "binary"
+  | "ternary"
+  | "compound"
+  | "asymmetric"
+  | "polyrhythm"
+  | "clave-based"
+  | "cycle-based"
+  | "12-beat-cycle"
+  | "dance-driven"
+  | "improvisational"
+  | "call-response"
+  | "hand-percussion"
+  | "ensemble"
+  | "drum-kit-adapted";
+
 export type Rhythm = {
   id: string;
   name: string;
@@ -15,6 +31,7 @@ export type Rhythm = {
   timbreProfile: string;
   confidence: "high" | "medium" | "low";
   classification: "documented" | "regional" | "proxy";
+  tags: RhythmTag[];
   source: {
     title: string;
     type: "pdf" | "academic" | "field" | "midi";
@@ -35,9 +52,10 @@ export type CountryMetadata = {
   continent: RhythmContinent;
 };
 
-type RhythmTemplate = Omit<Rhythm, "country" | "region" | "continent" | "midiPattern" | "accents"> & {
+type RhythmTemplate = Omit<Rhythm, "country" | "region" | "continent" | "midiPattern" | "accents" | "tags"> & {
   hitUnits: number[];
   accentUnits: number[];
+  tags?: RhythmTag[];
 };
 
 type RegionalGroupId =
@@ -471,6 +489,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "neutral kit",
     confidence: "high",
     classification: "documented",
+    tags: ["compound", "12-beat-cycle", "dance-driven", "hand-percussion", "polyrhythm"],
     source: {
       title: "Bombo Leguero Patterns",
       type: "pdf",
@@ -490,6 +509,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "surdo",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "dance-driven", "ensemble", "call-response"],
     source: {
       title: "Samba de Roda Ensemble",
       type: "pdf",
@@ -509,6 +529,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "tupan",
     confidence: "high",
     classification: "documented",
+    tags: ["asymmetric", "dance-driven", "hand-percussion"],
     source: {
       title: "Bulgarian Rhythms Research Paper",
       type: "pdf",
@@ -528,6 +549,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "conga/clave",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "clave-based", "dance-driven", "hand-percussion", "ensemble"],
     source: {
       title: "Claves in the Caribbean",
       type: "pdf",
@@ -547,6 +569,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "djembe",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "polyrhythm", "dance-driven", "call-response", "hand-percussion"],
     source: {
       title: "African Rhythms Overview",
       type: "academic",
@@ -566,6 +589,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "djembe",
     confidence: "high",
     classification: "documented",
+    tags: ["compound", "12-beat-cycle", "polyrhythm", "dance-driven", "call-response", "hand-percussion", "ensemble"],
     source: {
       title: "African Rhythms and Calls",
       type: "pdf",
@@ -585,6 +609,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "tabla",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "cycle-based", "improvisational", "hand-percussion"],
     source: {
       title: "Indian Rhythms and Odd Meters",
       type: "academic",
@@ -604,6 +629,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "taiko",
     confidence: "medium",
     classification: "documented",
+    tags: ["binary", "ensemble", "call-response"],
     source: {
       title: "Festival drumming field reference",
       type: "field",
@@ -623,6 +649,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "cajón",
     confidence: "high",
     classification: "documented",
+    tags: ["compound", "12-beat-cycle", "dance-driven", "hand-percussion", "polyrhythm"],
     source: {
       title: "Peru Cajon Grooves",
       type: "pdf",
@@ -642,6 +669,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "cajón",
     confidence: "high",
     classification: "documented",
+    tags: ["asymmetric", "12-beat-cycle", "dance-driven", "hand-percussion", "improvisational"],
     source: {
       title: "Flamenco Rhythm Course Notes",
       type: "academic",
@@ -661,6 +689,7 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "surdo",
     confidence: "high",
     classification: "documented",
+    tags: ["binary", "polyrhythm", "dance-driven", "ensemble", "call-response"],
     source: {
       title: "Candombe Ensemble Parts",
       type: "pdf",
@@ -683,6 +712,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "djembe",
     confidence: "medium",
     classification: "regional",
+    tags: ["compound", "12-beat-cycle", "polyrhythm", "call-response", "hand-percussion"],
     source: {
       title: "African Rhythms and Calls",
       type: "pdf",
@@ -702,6 +732,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "tupan",
     confidence: "medium",
     classification: "regional",
+    tags: ["asymmetric", "dance-driven", "hand-percussion"],
     source: {
       title: "Balkan Rhythms Overview",
       type: "academic",
@@ -721,6 +752,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "darbuka",
     confidence: "medium",
     classification: "regional",
+    tags: ["binary", "cycle-based", "dance-driven", "hand-percussion"],
     source: {
       title: "Arab percussion field reference",
       type: "field",
@@ -740,6 +772,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "tabla",
     confidence: "medium",
     classification: "regional",
+    tags: ["binary", "cycle-based", "improvisational", "hand-percussion"],
     source: {
       title: "Indian Rhythms and Odd Meters",
       type: "academic",
@@ -759,6 +792,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "conga/clave",
     confidence: "medium",
     classification: "regional",
+    tags: ["binary", "clave-based", "dance-driven", "hand-percussion"],
     source: {
       title: "Claves in the Caribbean",
       type: "pdf",
@@ -961,6 +995,64 @@ function buildProxyTemplate(country: string, region: string, continent: RhythmCo
   };
 }
 
+function inferTags(template: RhythmTemplate, metadata: CountryMetadata): RhythmTag[] {
+  if (template.tags && template.tags.length > 0) {
+    return [...template.tags];
+  }
+
+  const tags: RhythmTag[] = [];
+  const uniqueGroups = new Set(template.subdivision);
+
+  // Structure tags
+  if (uniqueGroups.size > 1) {
+    tags.push("asymmetric");
+  }
+  if (template.subdivision.every((g) => g === 3)) {
+    tags.push("ternary");
+  } else if (template.subdivision.every((g) => g === 2 || g === 4)) {
+    tags.push("binary");
+  }
+  if (template.meter === "12/8" || template.meter === "6/8") {
+    tags.push("compound");
+  }
+  if (template.cycleLength === 12 && template.meter === "12/8") {
+    tags.push("12-beat-cycle");
+  }
+
+  // Rhythmic concept tags
+  if (metadata.continent === "Africa" || template.timbreProfile === "djembe") {
+    tags.push("polyrhythm");
+  }
+  if (template.timbreProfile === "conga/clave" || template.tradition.toLowerCase().includes("clave")) {
+    tags.push("clave-based");
+  }
+  if (template.timbreProfile === "tabla" || template.tradition.toLowerCase().includes("tala")) {
+    tags.push("cycle-based");
+  }
+
+  // Performance tags
+  if (template.tradition.toLowerCase().includes("dance") || template.tradition.toLowerCase().includes("compás") || template.tradition.toLowerCase().includes("compas")) {
+    tags.push("dance-driven");
+  }
+  if (template.tradition.toLowerCase().includes("call") || metadata.continent === "Africa") {
+    tags.push("call-response");
+  }
+
+  // Instrumentation tags
+  const handPercussion = ["djembe", "tabla", "darbuka", "cajón", "conga/clave"];
+  if (handPercussion.includes(template.timbreProfile)) {
+    tags.push("hand-percussion");
+  }
+  if (template.instruments.length >= 3) {
+    tags.push("ensemble");
+  }
+  if (template.timbreProfile === "neutral kit") {
+    tags.push("drum-kit-adapted");
+  }
+
+  return tags.length > 0 ? tags : ["binary"];
+}
+
 function hydrateTemplate(template: RhythmTemplate, metadata: CountryMetadata): Rhythm {
   const timbreProfile = template.classification === "proxy"
     ? getTimbreProfile(metadata.country, metadata.region, metadata.continent)
@@ -985,6 +1077,7 @@ function hydrateTemplate(template: RhythmTemplate, metadata: CountryMetadata): R
     timbreProfile,
     confidence: template.classification === "proxy" ? "low" : template.confidence,
     classification: template.classification,
+    tags: inferTags(template, metadata),
     source: { ...template.source },
   };
 }
@@ -1032,6 +1125,10 @@ export function validateRhythm(rhythm: Rhythm): string[] {
 
   if (!rhythm.source.title) {
     errors.push(`${rhythm.country}: source title is required`);
+  }
+
+  if (!rhythm.tags || rhythm.tags.length === 0) {
+    errors.push(`${rhythm.country}: at least one tag is required`);
   }
 
   return errors;
@@ -1088,6 +1185,7 @@ export function filterAtlasRhythms(filters: {
   country?: string;
   continent?: RhythmContinent | "All";
   meter?: string | "All";
+  tag?: RhythmTag | "All";
 } = {}): Rhythm[] {
   return GLOBAL_RHYTHM_ATLAS.filter((rhythm) => {
     if (filters.country && rhythm.country !== filters.country) {
@@ -1102,8 +1200,22 @@ export function filterAtlasRhythms(filters: {
       return false;
     }
 
+    if (filters.tag && filters.tag !== "All" && !rhythm.tags.includes(filters.tag)) {
+      return false;
+    }
+
     return true;
   });
+}
+
+export function filterByContinent(rhythms: Rhythm[], selectedContinent?: RhythmContinent | "All"): Rhythm[] {
+  if (!selectedContinent || selectedContinent === "All") return rhythms;
+  return rhythms.filter((r) => r.continent === selectedContinent);
+}
+
+export function filterByTag(rhythms: Rhythm[], tag?: RhythmTag | "All"): Rhythm[] {
+  if (!tag || tag === "All") return rhythms;
+  return rhythms.filter((r) => r.tags.includes(tag));
 }
 
 export const GLOBAL_RHYTHM_ATLAS: Rhythm[] = COUNTRY_METADATA.map((metadata) =>
@@ -1112,6 +1224,24 @@ export const GLOBAL_RHYTHM_ATLAS: Rhythm[] = COUNTRY_METADATA.map((metadata) =>
 
 export const GLOBAL_RHYTHM_METERS = unique(GLOBAL_RHYTHM_ATLAS.map((rhythm) => rhythm.meter)).sort();
 export const GLOBAL_RHYTHM_CONTINENTS = unique(GLOBAL_RHYTHM_ATLAS.map((rhythm) => rhythm.continent)).sort() as RhythmContinent[];
+export const GLOBAL_RHYTHM_TAGS = unique(GLOBAL_RHYTHM_ATLAS.flatMap((rhythm) => rhythm.tags)).sort() as RhythmTag[];
+
+// Indexed lookups for performance
+export const ATLAS_BY_CONTINENT = new Map<RhythmContinent, Rhythm[]>();
+GLOBAL_RHYTHM_ATLAS.forEach((rhythm) => {
+  const list = ATLAS_BY_CONTINENT.get(rhythm.continent) || [];
+  list.push(rhythm);
+  ATLAS_BY_CONTINENT.set(rhythm.continent, list);
+});
+
+export const ATLAS_BY_TAG = new Map<RhythmTag, Rhythm[]>();
+GLOBAL_RHYTHM_ATLAS.forEach((rhythm) => {
+  rhythm.tags.forEach((tag) => {
+    const list = ATLAS_BY_TAG.get(tag) || [];
+    list.push(rhythm);
+    ATLAS_BY_TAG.set(tag, list);
+  });
+});
 
 export function validateGlobalRhythmAtlas(): string[] {
   const errors: string[] = [];
