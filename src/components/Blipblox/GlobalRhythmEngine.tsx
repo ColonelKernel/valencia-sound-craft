@@ -440,9 +440,10 @@ const GlobalRhythmEngine = ({
       meter: meterFilter,
       feel: feelFilter,
       tempoBand: tempoBandFilter,
+      tag: tagFilter,
       search: searchQuery || undefined,
     }),
-    [browserRegion, feelFilter, meterFilter, searchQuery, tempoBandFilter],
+    [browserRegion, feelFilter, meterFilter, searchQuery, tagFilter, tempoBandFilter],
   );
   const regionCountries = useMemo(
     () => getRegionCountries(browserRegion).filter((country) =>
