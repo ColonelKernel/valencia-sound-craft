@@ -345,6 +345,7 @@ const GlobalRhythmEngine = ({
   const [feelFilter, setFeelFilter] = useState<TimeFeel | "All">("All");
   const [tempoBandFilter, setTempoBandFilter] = useState<RhythmTempoBand | "All">("All");
   const [continentFilter, setContinentFilter] = useState<RhythmContinent | "All">("All");
+  const [tagFilter, setTagFilter] = useState<RhythmTag | "All">("All");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [showAtlas, setShowAtlas] = useState(true);
