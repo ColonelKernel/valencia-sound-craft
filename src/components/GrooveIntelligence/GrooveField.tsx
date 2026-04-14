@@ -211,7 +211,12 @@ export default function GrooveField({ grooves, selected, hovered, onHover, onCli
 
       // Draw trajectory path
       if (trajectory.length >= 2) {
-        const trajProgress = useRef_trajAnim.current;
+        // Reset animation when new segment added
+        if (trajectory.length !== prevTrajLenRef.current) {
+          trajAnimRef.current = 0;
+          prevTrajLenRef.current = trajectory.length;
+        }
+        const trajProgress = trajAnimRef.current;
 
         // Draw completed segments
         for (let i = 1; i < trajectory.length; i++) {
@@ -273,7 +278,7 @@ export default function GrooveField({ grooves, selected, hovered, onHover, onCli
 
         // Animate latest segment
         if (trajProgress < 1) {
-          useRef_trajAnim.current = Math.min(1, trajProgress + 0.025);
+          trajAnimRef.current = Math.min(1, trajProgress + 0.025);
         }
       }
 
