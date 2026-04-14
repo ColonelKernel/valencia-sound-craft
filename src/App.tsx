@@ -44,6 +44,7 @@ const App = () => (
                 <Route path="tonnetz" element={<TonnetzTool />} />
               </Route>
               <Route path="/music-analytics" element={<MusicAnalyticsPage />} />
+              <Route path="/groove-intelligence" element={<GrooveIntelligencePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
