@@ -83,6 +83,7 @@ export interface GlobalRhythmState {
 export interface RhythmLibraryFilters {
   region?: RhythmBrowserRegion | "All";
   country?: string | "All";
+  continent?: RhythmContinent | "All";
   meter?: string | "All";
   feel?: TimeFeel | "All";
   tempoBand?: RhythmTempoBand | "All";
@@ -817,6 +818,10 @@ export function getRegionCountries(region: RhythmBrowserRegion | "All" = "All") 
 
 export function filterRhythmLibrary(filters: RhythmLibraryFilters = {}) {
   return RHYTHM_LIBRARY.filter((definition) => {
+    if (filters.continent && filters.continent !== "All" && definition.continent !== filters.continent) {
+      return false;
+    }
+
     if (filters.region && filters.region !== "All" && definition.region !== filters.region) {
       return false;
     }
