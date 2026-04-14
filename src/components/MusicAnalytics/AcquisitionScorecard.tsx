@@ -69,7 +69,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
     setLastfm(null);
 
     supabase.functions
-      .invoke("lastfm-artist", { body: { artist: selectedArtist } })
+      .invoke("lastfm-artist", { body: { artist: selectedArtist, includeWeekly: true } })
       .then(({ data: d, error: e }) => {
         if (cancelled) return;
         if (e) {
@@ -282,6 +282,70 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
               </div>
             )}
           </div>
+
+          {/* Last.fm Playcount Trend Chart */}
+          {lastfm?.weeklyTrend && lastfm.weeklyTrend.length > 0 && (
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <h5 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-4">
+                Playcount Trend by Period (Last.fm)
+              </h5>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={lastfm.weeklyTrend}
+                    margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tickFormatter={(v) => {
+                        if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+                        if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+                        return v.toString();
+                      }}
+                      tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                      }}
+                      formatter={(val: number, name: string) => [
+                        val.toLocaleString(),
+                        name === "playcount" ? "Plays" : "Listeners",
+                      ]}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="playcount"
+                      fill="hsl(var(--foreground))"
+                      fillOpacity={0.8}
+                      radius={[4, 4, 0, 0]}
+                      name="Plays"
+                    />
+                    <Bar
+                      dataKey="listeners"
+                      fill="hsl(var(--muted-foreground))"
+                      fillOpacity={0.5}
+                      radius={[4, 4, 0, 0]}
+                      name="Listeners"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-[10px] text-muted-foreground/50 mt-2">
+                Top 50 tracks aggregated by time period — shows engagement intensity across recency windows
+              </p>
+            </div>
+          )}
 
           {/* Streaming metrics summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
