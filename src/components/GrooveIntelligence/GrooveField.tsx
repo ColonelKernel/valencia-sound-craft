@@ -9,6 +9,7 @@ interface Props {
   onHover: (g: NormalizedGroove | null) => void;
   onClick: (g: NormalizedGroove) => void;
   viewMode: ViewMode;
+  currentStep?: number;
 }
 
 const MARGIN = 40;
@@ -17,7 +18,7 @@ const REPEL_DIST = 0.04;
 const REPEL_FORCE = 0.0003;
 const MORPH_LERP = 0.06;
 
-export default function GrooveField({ grooves, selected, hovered, onHover, onClick, viewMode }: Props) {
+export default function GrooveField({ grooves, selected, hovered, onHover, onClick, viewMode, currentStep = -1 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const timeRef = useRef(0);
@@ -230,14 +231,31 @@ export default function GrooveField({ grooves, selected, hovered, onHover, onCli
         ctx.fill();
         ctx.globalAlpha = 1;
 
-        // Selection ring pulse
+        // Selection ring pulse — syncs to playback step
         if (isSel) {
-          const pulse = Math.sin(t * 0.05) * 0.3 + 0.7;
+          const beatPulse = currentStep >= 0 && currentStep % 4 === 0 ? 1.0 : 0.6;
+          const pulse = currentStep >= 0
+            ? beatPulse
+            : Math.sin(t * 0.05) * 0.3 + 0.7;
           ctx.strokeStyle = g.color.replace("60%)", `${pulse * 60}%)`);
-          ctx.lineWidth = 1.5;
+          ctx.lineWidth = currentStep >= 0 && currentStep % 4 === 0 ? 2.5 : 1.5;
+          const ringR = currentStep >= 0
+            ? r + 4 + (currentStep % 4 === 0 ? 4 : 1)
+            : r + 4 + Math.sin(t * 0.03) * 2;
           ctx.beginPath();
-          ctx.arc(x, y, r + 4 + Math.sin(t * 0.03) * 2, 0, Math.PI * 2);
+          ctx.arc(x, y, ringR, 0, Math.PI * 2);
           ctx.stroke();
+
+          // Beat flash on downbeats
+          if (currentStep >= 0 && currentStep % 4 === 0) {
+            const flash = ctx.createRadialGradient(x, y, 0, x, y, r * 8);
+            flash.addColorStop(0, g.color.replace("60%)", "40%)").replace("hsl", "hsla").replace(")", ", 0.15)"));
+            flash.addColorStop(1, "transparent");
+            ctx.fillStyle = flash;
+            ctx.beginPath();
+            ctx.arc(x, y, r * 8, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
       }
 

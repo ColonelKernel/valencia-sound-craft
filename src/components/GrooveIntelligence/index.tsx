@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { NormalizedGroove, RawGroove, ViewMode } from "./types";
 import { normalizeGrooves, grooveDistance, syntheticDistance } from "./utils";
-import { playGrooveSequence } from "./audioEngine";
+import { playGrooveSequence, generatePattern, startPlayback, stopPlayback } from "./audioEngine";
 import GrooveField from "./GrooveField";
 import GrooveDNA from "./GrooveDNA";
 import GrooveSculptor from "./GrooveSculptor";
@@ -15,13 +15,13 @@ const VIEW_MODES: { key: ViewMode; label: string }[] = [
 ];
 
 export default function GrooveIntelligenceLab() {
-  const [rawData, setRawData] = useState<RawGroove[]>([]);
   const [grooves, setGrooves] = useState<NormalizedGroove[]>([]);
   const [selected, setSelected] = useState<NormalizedGroove | null>(null);
   const [hovered, setHovered] = useState<NormalizedGroove | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("field");
   const [sculptorActive, setSculptorActive] = useState(false);
   const [sculptorValues, setSculptorValues] = useState({ energy: 0.5, swing: 0.5, syncopation: 0.5, dynamics: 0.5 });
+  const [currentStep, setCurrentStep] = useState(-1);
 
   const sculptorRef = useRef(sculptorValues);
   sculptorRef.current = sculptorValues;
@@ -34,7 +34,6 @@ export default function GrooveIntelligenceLab() {
         const sampled = data.length > MAX_NODES
           ? data.sort(() => Math.random() - 0.5).slice(0, MAX_NODES)
           : data;
-        setRawData(sampled);
         setGrooves(normalizeGrooves(sampled));
       })
       .catch(err => console.error("Failed to load groove data:", err));
@@ -42,16 +41,24 @@ export default function GrooveIntelligenceLab() {
 
   // Recompute field on selection (similarity warp)
   const handleSelect = useCallback((g: NormalizedGroove) => {
+    // Stop any existing playback
+    stopPlayback();
+    setCurrentStep(-1);
     setSelected(g);
     playGrooveSequence(g.norm_density, g.norm_swing, g.norm_velocity);
 
-    // Warp field: reposition based on distance from selected
+    // Auto-play the new groove
+    const pattern = generatePattern(g);
+    setTimeout(() => {
+      startPlayback(g, pattern, (step) => setCurrentStep(step));
+    }, 200);
+
+    // Warp field
     setGrooves(prev => prev.map(node => {
       if (node.id === g.id) {
         return { ...node, tx: 0.5, ty: 0.5 };
       }
       const d = grooveDistance(g, node);
-      // Place similar grooves close, distant ones far
       const angle = Math.atan2(node.py - g.py, node.px - g.px);
       const r = 0.08 + d * 0.35;
       return {
@@ -69,7 +76,6 @@ export default function GrooveIntelligenceLab() {
       const target = sculptorRef.current;
       setGrooves(prev => prev.map(node => {
         const d = syntheticDistance(target, node);
-        // Closer to synthetic target → closer to center
         const angle = Math.atan2(node.py - 0.5, node.px - 0.5);
         const r = 0.05 + d * 0.4;
         return {
@@ -78,10 +84,15 @@ export default function GrooveIntelligenceLab() {
           ty: 0.5 + Math.sin(angle) * r,
         };
       }));
+      stopPlayback();
+      setCurrentStep(-1);
       setSelected(null);
     }, 100);
     return () => clearTimeout(id);
   }, [sculptorActive, sculptorValues, grooves.length]);
+
+  // Cleanup
+  useEffect(() => () => stopPlayback(), []);
 
   const handleHover = useCallback((g: NormalizedGroove | null) => setHovered(g), []);
 
@@ -127,6 +138,7 @@ export default function GrooveIntelligenceLab() {
             onHover={handleHover}
             onClick={handleSelect}
             viewMode={viewMode}
+            currentStep={currentStep}
           />
           {/* Meta text */}
           <div className="absolute bottom-4 left-4 right-4 text-center pointer-events-none">
@@ -137,7 +149,7 @@ export default function GrooveIntelligenceLab() {
         </div>
 
         {/* Right Panel */}
-        <aside className="w-72 border-l border-white/5 p-4 overflow-y-auto shrink-0 flex flex-col gap-6">
+        <aside className="w-72 border-l border-white/5 p-4 overflow-y-auto shrink-0 flex flex-col gap-5">
           <GrooveSculptor
             values={sculptorValues}
             onChange={setSculptorValues}
@@ -149,6 +161,7 @@ export default function GrooveIntelligenceLab() {
             groove={selected}
             allGrooves={grooves}
             onSelectGroove={handleSelect}
+            currentStep={currentStep}
           />
         </aside>
       </div>
