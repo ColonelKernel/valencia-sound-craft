@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import type { NormalizedGroove, RawGroove, ViewMode } from "./types";
+import type { NormalizedGroove, RawGroove, ViewMode, TrajectoryPoint } from "./types";
 import { normalizeGrooves, grooveDistance, syntheticDistance } from "./utils";
 import { playGrooveSequence, generatePattern, startPlayback, stopPlayback } from "./audioEngine";
 import GrooveField from "./GrooveField";

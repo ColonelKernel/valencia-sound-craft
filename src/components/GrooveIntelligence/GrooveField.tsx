@@ -1,6 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
-import type { NormalizedGroove, ViewMode } from "./types";
-import type { TrajectoryPoint } from "./index";
+import type { NormalizedGroove, ViewMode, TrajectoryPoint } from "./types";
 import { noise2D, kNearest } from "./utils";
 
 interface Props {
