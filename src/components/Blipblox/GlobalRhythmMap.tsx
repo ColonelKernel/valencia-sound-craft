@@ -436,6 +436,7 @@ const GlobalRhythmMap = ({
           attributionControl={false}
         >
           <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+          <FocusContinent continent={focusContinent} />
           <FocusSelectedCountry marker={selectedMarker} />
           {countryMarkers.map((marker) => {
             const { rhythm } = marker;
