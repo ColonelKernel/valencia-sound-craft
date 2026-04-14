@@ -990,6 +990,7 @@ const GlobalRhythmEngine = ({
         <GlobalRhythmMap
           rhythms={visibleAtlasRhythms}
           selectedCountry={rhythmState.country}
+          focusContinent={continentFilter}
           onCountrySelect={handleMapSelect}
         />
       </div>
