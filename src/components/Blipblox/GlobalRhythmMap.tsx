@@ -136,6 +136,74 @@ const FocusSelectedCountry = ({ marker }: { marker: CountryRhythmMarker | null }
   return null;
 };
 
+const TIMBRE_FREQS: Record<string, { freq: number; type: OscillatorType }> = {
+  djembe: { freq: 180, type: "triangle" },
+  "conga/clave": { freq: 800, type: "square" },
+  surdo: { freq: 100, type: "sine" },
+  "cajón": { freq: 220, type: "triangle" },
+  tupan: { freq: 140, type: "sine" },
+  tabla: { freq: 260, type: "triangle" },
+  darbuka: { freq: 340, type: "triangle" },
+  taiko: { freq: 90, type: "sine" },
+  "log drum": { freq: 400, type: "square" },
+  "neutral kit": { freq: 150, type: "sine" },
+};
+
+function useRhythmPreview() {
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const timerIdsRef = useRef<number[]>([]);
+
+  const stopPreview = useCallback(() => {
+    timerIdsRef.current.forEach((id) => clearTimeout(id));
+    timerIdsRef.current = [];
+  }, []);
+
+  const playPreview = useCallback((rhythm: Rhythm) => {
+    stopPreview();
+
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext();
+    }
+    const ctx = audioCtxRef.current;
+    if (ctx.state === "suspended") ctx.resume();
+
+    const velocity = getPlaybackVelocityPattern(rhythm);
+    const bpm = (rhythm.bpmRange[0] + rhythm.bpmRange[1]) / 2;
+    const stepDuration = (60 / bpm / 4); // 16th notes
+    const timbre = TIMBRE_FREQS[rhythm.timbreProfile] || TIMBRE_FREQS["neutral kit"];
+    const stepsToPlay = Math.min(rhythm.midiPattern.length, 16);
+
+    for (let i = 0; i < stepsToPlay; i++) {
+      if (!rhythm.midiPattern[i]) continue;
+
+      const timerId = window.setTimeout(() => {
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const vol = Math.max(0.05, (velocity[i] / 127) * 0.25);
+
+        osc.type = timbre.type;
+        osc.frequency.setValueAtTime(timbre.freq * (rhythm.accents[i] ? 1.2 : 1), now);
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      }, i * stepDuration * 1000);
+
+      timerIdsRef.current.push(timerId);
+    }
+  }, [stopPreview]);
+
+  useEffect(() => {
+    return () => stopPreview();
+  }, [stopPreview]);
+
+  return { playPreview, stopPreview };
+}
+
 const GlobalRhythmMap = ({
   rhythms,
   selectedCountry,
@@ -143,6 +211,7 @@ const GlobalRhythmMap = ({
   onCountrySelect,
 }: GlobalRhythmMapProps) => {
   const [hoveredRhythm, setHoveredRhythm] = useState<Rhythm | null>(null);
+  const { playPreview, stopPreview } = useRhythmPreview();
 
   const countryMarkers = useMemo(() => {
     const rhythmsByCountry = rhythms.reduce<Map<string, Rhythm[]>>((countryMap, rhythm) => {
