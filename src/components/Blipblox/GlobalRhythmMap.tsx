@@ -453,6 +453,13 @@ const GlobalRhythmMap = ({
               </CircleMarker>
             );
           })}
+          {hoveredMarker && pulseIcon && (
+            <Marker
+              position={[hoveredMarker.lat, hoveredMarker.lng]}
+              icon={pulseIcon}
+              interactive={false}
+            />
+          )}
         </MapContainer>
       </div>
 
