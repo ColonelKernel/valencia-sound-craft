@@ -49,6 +49,7 @@ const Index = () => {
         </Suspense>
 
         <SystemsPreview />
+        <AnalyticsPreview />
 
         <Suspense fallback={<SectionFallback id="portfolio" className="bg-secondary/50" />}>
           <Portfolio />
