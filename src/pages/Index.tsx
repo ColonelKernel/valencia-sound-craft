@@ -42,11 +42,13 @@ const Index = () => {
       <Navbar />
       <main>
         <Hero />
-        <SystemsPreview />
 
         <Suspense fallback={<SectionFallback id="services" className="bg-background" />}>
           <Services />
         </Suspense>
+
+        <SystemsPreview />
+
         <Suspense fallback={<SectionFallback id="portfolio" className="bg-secondary/50" />}>
           <Portfolio />
         </Suspense>
