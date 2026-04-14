@@ -1,14 +1,16 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
+import { jsPDF } from "jspdf";
 import type { ArtistMonthly } from "@/lib/musicDataService";
 import {
   buildArtistComparison,
   formatMetric,
   type AcquisitionScore,
   type AcquisitionLabel,
+  type ArtistComparisonData,
 } from "@/lib/catalogAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
