@@ -165,104 +165,88 @@ export default function MusicAnalyticsPage() {
         <section className="py-8 md:py-12">
           <div className="container mx-auto px-6">
             {tab === "overview" && (
-              <Suspense fallback={sectionFallback}>
-                <StreamingDashboard
-                  data={data}
-                  artists={artists}
-                  loading={loading}
-                  error={error}
-                  selectedArtist={selectedArtist}
-                  onSelectArtist={setSelectedArtist}
-                  mode={mode}
-                />
-              </Suspense>
+              <StreamingDashboard
+                data={data}
+                artists={artists}
+                loading={loading}
+                error={error}
+                selectedArtist={selectedArtist}
+                onSelectArtist={setSelectedArtist}
+                mode={mode}
+              />
             )}
 
             {tab === "acquisition" && (
-              <Suspense fallback={sectionFallback}>
-                <AcquisitionScorecard data={data} artists={artists} mode={mode} />
-              </Suspense>
+              <AcquisitionScorecard data={data} artists={artists} mode={mode} />
             )}
 
             {tab === "compare" && (
-              <Suspense fallback={sectionFallback}>
-                <div className="space-y-6">
-                  {/* Artist multi-select */}
-                  <div className="rounded-xl border border-border/50 bg-card p-4">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                      Select 2–4 artists to compare
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {artists.map((a) => (
-                        <button
-                          key={a}
-                          onClick={() => toggleCompareArtist(a)}
-                          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                            compareArtists.includes(a)
-                              ? "border-foreground bg-foreground text-background"
-                              : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                          }`}
-                        >
-                          {a}
-                        </button>
-                      ))}
-                    </div>
+              <div className="space-y-6">
+                <div className="rounded-xl border border-border/50 bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+                    Select 2–4 artists to compare
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {artists.map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => toggleCompareArtist(a)}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          compareArtists.includes(a)
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    ))}
                   </div>
-                  <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
                 </div>
-              </Suspense>
+                <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
+              </div>
             )}
 
             {tab === "segments" && (
-              <Suspense fallback={sectionFallback}>
-                <CatalogSegmentation data={data} artists={artists} mode={mode} />
-              </Suspense>
+              <CatalogSegmentation data={data} artists={artists} mode={mode} />
             )}
 
             {tab === "risk" && (
-              <Suspense fallback={sectionFallback}>
-                <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
-              </Suspense>
+              <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
             )}
 
             {tab === "portfolio" && (
-              <Suspense fallback={sectionFallback}>
-                <div className="space-y-6">
-                  {/* Artist add controls */}
-                  <div className="rounded-xl border border-border/50 bg-card p-4">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                      Build your portfolio
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {artists.map((a) => (
-                        <button
-                          key={a}
-                          onClick={() => togglePortfolioArtist(a)}
-                          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                            portfolio.includes(a)
-                              ? "border-foreground bg-foreground text-background"
-                              : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                          }`}
-                        >
-                          {portfolio.includes(a) ? `✓ ${a}` : a}
-                        </button>
-                      ))}
-                    </div>
+              <div className="space-y-6">
+                <div className="rounded-xl border border-border/50 bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+                    Build your portfolio
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {artists.map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => togglePortfolioArtist(a)}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          portfolio.includes(a)
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
+                        }`}
+                      >
+                        {portfolio.includes(a) ? `✓ ${a}` : a}
+                      </button>
+                    ))}
                   </div>
-                  <PortfolioBuilder
-                    data={data}
-                    portfolio={portfolio}
-                    onRemove={(a) => setPortfolio((prev) => prev.filter((x) => x !== a))}
-                    mode={mode}
-                  />
                 </div>
-              </Suspense>
+                <PortfolioBuilder
+                  data={data}
+                  portfolio={portfolio}
+                  onRemove={(a) => setPortfolio((prev) => prev.filter((x) => x !== a))}
+                  mode={mode}
+                />
+              </div>
             )}
 
             {tab === "ai" && (
-              <Suspense fallback={sectionFallback}>
-                <CatalogAnalyzer artists={artists} data={data} />
-              </Suspense>
+              <CatalogAnalyzer artists={artists} data={data} />
             )}
 
             {/* Footer label */}
