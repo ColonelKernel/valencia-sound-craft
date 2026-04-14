@@ -183,18 +183,17 @@ export default function MusicAnalyticsPage() {
                 </div>
 
                 {/* Artist filter (overview & risk tabs) */}
-                {(tab === "overview" || tab === "risk") && (
-                  <select
-                    value={selectedArtist}
-                    onChange={(e) => setSelectedArtist(e.target.value)}
-                    className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                  >
-                    <option value="all">All Artists</option>
-                    {artists.map((a) => (
-                      <option key={a} value={a}>{a}</option>
-                    ))}
-                  </select>
-                )}
+                <select
+                  value={selectedArtist}
+                  onChange={(e) => setSelectedArtist(e.target.value)}
+                  className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                  style={{ display: (tab === "overview" || tab === "risk") ? "block" : "none" }}
+                >
+                  <option value="all">All Artists</option>
+                  {artists.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
