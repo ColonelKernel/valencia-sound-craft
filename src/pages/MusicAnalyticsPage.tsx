@@ -169,7 +169,7 @@ export default function MusicAnalyticsPage() {
         {/* Content */}
         <section className="py-8 md:py-12">
           <div className="container mx-auto px-6">
-            <Suspense fallback={sectionFallback}>
+            <Suspense key={tab} fallback={sectionFallback}>
               {tab === "overview" && (
                 <StreamingDashboard
                   data={data}
