@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback } from "react";
 import type { NormalizedGroove, ViewMode } from "./types";
+import type { TrajectoryPoint } from "./index";
 import { noise2D, kNearest } from "./utils";
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
   onClick: (g: NormalizedGroove) => void;
   viewMode: ViewMode;
   currentStep?: number;
+  trajectory?: TrajectoryPoint[];
 }
 
 const MARGIN = 40;
