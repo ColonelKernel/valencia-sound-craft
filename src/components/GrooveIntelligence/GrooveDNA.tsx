@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import type { NormalizedGroove } from "./types";
-import type { DrumPattern, PlaybackState } from "./audioEngine";
+import type { DrumPattern } from "./audioEngine";
 import { interpretGroove, kNearest } from "./utils";
 import { generatePattern, startPlayback, stopPlayback, downloadMidi } from "./audioEngine";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   groove: NormalizedGroove | null;
@@ -85,6 +86,62 @@ function StepGrid({ pattern, currentStep }: { pattern: DrumPattern; currentStep:
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function AINarrative({ groove }: { groove: NormalizedGroove }) {
+  const [narrative, setNarrative] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const lastId = useRef<string>("");
+
+  useEffect(() => {
+    if (groove.id === lastId.current) return;
+    lastId.current = groove.id;
+    setLoading(true);
+    setNarrative(null);
+
+    supabase.functions.invoke("groove-narrative", {
+      body: {
+        genre: groove.genre,
+        bpm: groove.bpm,
+        duration: groove.duration,
+        density: groove.norm_density,
+        swing: groove.norm_swing,
+        syncopation: groove.norm_syncopation,
+        velocity: groove.norm_velocity,
+        substyle: groove.substyle,
+      },
+    }).then(({ data, error }) => {
+      if (error) {
+        console.error("Narrative error:", error);
+        setNarrative(null);
+      } else {
+        setNarrative(data?.narrative || null);
+      }
+      setLoading(false);
+    });
+  }, [groove.id]);
+
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 font-mono flex items-center gap-2">
+        AI Narrative
+        {loading && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />}
+      </div>
+      {loading && (
+        <div className="space-y-1.5">
+          <div className="h-3 bg-foreground/5 rounded animate-pulse w-full" />
+          <div className="h-3 bg-foreground/5 rounded animate-pulse w-4/5" />
+          <div className="h-3 bg-foreground/5 rounded animate-pulse w-3/5" />
+        </div>
+      )}
+      {!loading && narrative && (
+        <p className="text-sm text-foreground/80 leading-relaxed italic">&ldquo;{narrative}&rdquo;</p>
+      )}
+      {!loading && !narrative && (
+        <p className="text-xs text-muted-foreground/40 font-mono">Narrative unavailable</p>
+      )}
     </div>
   );
 }
@@ -197,6 +254,9 @@ export default function GrooveDNA({ groove, allGrooves, onSelectGroove, currentS
         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 font-mono">Interpretation</div>
         <p className="text-sm text-foreground/70 italic leading-relaxed">&ldquo;{interpretation}&rdquo;</p>
       </div>
+
+      {/* AI Narrative */}
+      <AINarrative groove={groove} />
 
       {/* Nearest */}
       <div>
