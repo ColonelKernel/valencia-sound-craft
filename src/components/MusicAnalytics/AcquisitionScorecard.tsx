@@ -91,13 +91,136 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
     [comparisons]
   );
 
+  const generatePDF = useCallback(() => {
+    if (!selected || !selectedArtist) return;
+    const doc = new jsPDF();
+    const a = selected;
+    const lf = lastfm;
+    let y = 20;
+
+    // Header
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text("CONFIDENTIAL — INTERNAL USE ONLY", 14, y);
+    y += 6;
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, y);
+    y += 12;
+
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(30);
+    doc.text(`Acquisition Report: ${a.artist}`, 14, y);
+    y += 12;
+
+    // Score
+    doc.setFontSize(14);
+    const scoreColor = a.acquisition.score >= 80 ? [34, 197, 94] :
+      a.acquisition.score >= 60 ? [59, 130, 246] :
+      a.acquisition.score >= 40 ? [245, 158, 11] : [239, 68, 68];
+    doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
+    doc.text(`Score: ${a.acquisition.score}/100 — ${a.acquisition.label}`, 14, y);
+    y += 14;
+
+    // Score Components
+    doc.setFontSize(11);
+    doc.setTextColor(30);
+    doc.text("SCORING BREAKDOWN", 14, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setTextColor(80);
+    const comps = [
+      { label: "Growth (30%)", value: a.acquisition.components.growth },
+      { label: "Stability (30%)", value: a.acquisition.components.stability },
+      { label: "Longevity (20%)", value: a.acquisition.components.longevity },
+      { label: "Momentum (20%)", value: a.acquisition.components.momentum },
+    ];
+    comps.forEach((c) => {
+      doc.text(`${c.label}: ${c.value}%`, 18, y);
+      // Progress bar
+      doc.setDrawColor(220);
+      doc.rect(80, y - 3, 60, 3);
+      doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
+      doc.rect(80, y - 3, 60 * (c.value / 100), 3, "F");
+      y += 7;
+    });
+    y += 6;
+
+    // Streaming Metrics
+    doc.setFontSize(11);
+    doc.setTextColor(30);
+    doc.text("STREAMING METRICS", 14, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setTextColor(80);
+    doc.text(`Total Streams: ${formatMetric(a.total, mode)}`, 18, y); y += 6;
+    doc.text(`MoM Growth: ${a.momGrowth >= 0 ? "+" : ""}${a.momGrowth.toFixed(1)}%`, 18, y); y += 6;
+    doc.text(`Volatility: ${a.volatilityLabel} (${a.volatility}%)`, 18, y); y += 6;
+    doc.text(`Catalog Segment: ${a.segment}`, 18, y); y += 6;
+    doc.text(`Forecast Q: ${formatMetric(a.forecastQ, mode)}`, 18, y); y += 10;
+
+    // Last.fm Market Data
+    if (lf) {
+      doc.setFontSize(11);
+      doc.setTextColor(30);
+      doc.text("MARKET INTELLIGENCE (Last.fm)", 14, y);
+      y += 8;
+      doc.setFontSize(10);
+      doc.setTextColor(80);
+      doc.text(`Global Listeners: ${lf.listeners.toLocaleString()}`, 18, y); y += 6;
+      doc.text(`Total Playcount: ${lf.playcount.toLocaleString()}`, 18, y); y += 6;
+      doc.text(`Avg Plays/Listener: ${lf.listeners > 0 ? (lf.playcount / lf.listeners).toFixed(1) : "N/A"}`, 18, y); y += 6;
+      if (lf.tags.length) {
+        doc.text(`Genre Tags: ${lf.tags.join(", ")}`, 18, y); y += 6;
+      }
+      if (lf.similar.length) {
+        doc.text(`Comparable Artists: ${lf.similar.join(", ")}`, 18, y); y += 6;
+      }
+      if (lf.albumCatalog && lf.albumCatalog.length) {
+        y += 4;
+        doc.setFontSize(11);
+        doc.setTextColor(30);
+        doc.text("ALBUM CATALOG DEPTH", 14, y);
+        y += 8;
+        doc.setFontSize(9);
+        doc.setTextColor(80);
+        lf.albumCatalog.forEach((album) => {
+          if (y > 270) { doc.addPage(); y = 20; }
+          doc.text(`${album.name}: ${album.playcount.toLocaleString()} plays`, 18, y);
+          y += 5;
+        });
+      }
+    }
+
+    // Footer
+    if (y > 260) { doc.addPage(); y = 20; }
+    y += 10;
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text("Built using real streaming data, public APIs, and simplified financial modeling", 14, y);
+    y += 4;
+    doc.text("Valencia Sound Craft — Music Catalog Intelligence Platform", 14, y);
+
+    doc.save(`acquisition-report-${a.artist.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+  }, [selected, selectedArtist, lastfm, mode]);
+
   return (
     <div className="space-y-8">
-      <div>
-        <h3 className="text-lg font-semibold text-foreground">Acquisition Scoring Model</h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          Multi-factor scoring: Growth (30%) · Stability (30%) · Longevity (20%) · Momentum (20%)
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">Acquisition Scoring Model</h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Multi-factor scoring: Growth (30%) · Stability (30%) · Longevity (20%) · Momentum (20%)
+          </p>
+        </div>
+        {selected && (
+          <button
+            onClick={generatePDF}
+            className="rounded-lg border border-border bg-card px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export PDF
+          </button>
+        )}
       </div>
 
       {/* Ranking table */}
