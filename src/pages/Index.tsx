@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import RouteHead, { createToolStructuredData } from "@/components/seo/RouteHead";
 import SystemsPreview from "@/components/SystemsPreview";
+import AnalyticsPreview from "@/components/AnalyticsPreview";
 
 const Services = lazy(() => import("@/components/Services"));
 const Portfolio = lazy(() => import("@/components/Portfolio"));
@@ -48,6 +49,7 @@ const Index = () => {
         </Suspense>
 
         <SystemsPreview />
+        <AnalyticsPreview />
 
         <Suspense fallback={<SectionFallback id="portfolio" className="bg-secondary/50" />}>
           <Portfolio />
