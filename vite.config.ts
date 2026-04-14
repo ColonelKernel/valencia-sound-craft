@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => ({
             return undefined;
           }
 
-          if (id.includes("leaflet") || id.includes("react-leaflet")) {
+          if (id.includes("leaflet") && !id.includes("react-leaflet")) {
             return "map-vendor";
           }
 
