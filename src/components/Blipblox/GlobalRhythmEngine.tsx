@@ -432,6 +432,7 @@ const GlobalRhythmEngine = ({
 
   const filteredDefinitions = useMemo(
     () => filterRhythmLibrary({
+      continent: continentFilter,
       region: browserRegion,
       meter: meterFilter,
       feel: feelFilter,
@@ -439,7 +440,7 @@ const GlobalRhythmEngine = ({
       tag: tagFilter,
       search: searchQuery || undefined,
     }),
-    [browserRegion, feelFilter, meterFilter, searchQuery, tagFilter, tempoBandFilter],
+    [browserRegion, continentFilter, feelFilter, meterFilter, searchQuery, tagFilter, tempoBandFilter],
   );
   const regionCountries = useMemo(
     () => getRegionCountries(browserRegion).filter((country) =>
@@ -968,7 +969,11 @@ const GlobalRhythmEngine = ({
               <button
                 key={continent}
                 type="button"
-                onClick={() => setContinentFilter(continent as RhythmContinent | "All")}
+                onClick={() => {
+                  setContinentFilter(continent as RhythmContinent | "All");
+                  setBrowserRegion("All");
+                  setBrowserCountry("");
+                }}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                   continentFilter === continent
