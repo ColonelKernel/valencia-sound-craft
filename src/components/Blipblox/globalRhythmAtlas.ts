@@ -1,3 +1,19 @@
+export type RhythmTag =
+  | "binary"
+  | "ternary"
+  | "compound"
+  | "asymmetric"
+  | "polyrhythm"
+  | "clave-based"
+  | "cycle-based"
+  | "12-beat-cycle"
+  | "dance-driven"
+  | "improvisational"
+  | "call-response"
+  | "hand-percussion"
+  | "ensemble"
+  | "drum-kit-adapted";
+
 export type Rhythm = {
   id: string;
   name: string;
@@ -15,6 +31,7 @@ export type Rhythm = {
   timbreProfile: string;
   confidence: "high" | "medium" | "low";
   classification: "documented" | "regional" | "proxy";
+  tags: RhythmTag[];
   source: {
     title: string;
     type: "pdf" | "academic" | "field" | "midi";
