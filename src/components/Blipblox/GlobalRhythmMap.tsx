@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Globe2, MapPinned, MousePointerClick, Volume2 } from "lucide-react";
-import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from "react-leaflet";
+import { CircleMarker, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { cn } from "@/lib/utils";
@@ -136,6 +137,48 @@ const FocusSelectedCountry = ({ marker }: { marker: CountryRhythmMarker | null }
   return null;
 };
 
+function createPulseIcon(color: string) {
+  const size = 40;
+  return L.divIcon({
+    className: "",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<div style="
+      width:${size}px;height:${size}px;position:relative;
+    ">
+      <span style="
+        position:absolute;inset:0;border-radius:50%;
+        border:2px solid ${color};opacity:0.7;
+        animation:atlas-pulse-ring 1s ease-out infinite;
+      "></span>
+      <span style="
+        position:absolute;inset:25%;border-radius:50%;
+        background:${color};opacity:0.35;
+        animation:atlas-pulse-dot 1s ease-out infinite;
+      "></span>
+    </div>`,
+  });
+}
+
+// Inject pulse keyframes once
+if (typeof document !== "undefined" && !document.getElementById("atlas-pulse-css")) {
+  const style = document.createElement("style");
+  style.id = "atlas-pulse-css";
+  style.textContent = `
+    @keyframes atlas-pulse-ring {
+      0% { transform:scale(0.8); opacity:0.7; }
+      70% { transform:scale(1.8); opacity:0; }
+      100% { transform:scale(1.8); opacity:0; }
+    }
+    @keyframes atlas-pulse-dot {
+      0% { transform:scale(1); opacity:0.35; }
+      50% { transform:scale(1.15); opacity:0.5; }
+      100% { transform:scale(1); opacity:0.35; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 const TIMBRE_FREQS: Record<string, { freq: number; type: OscillatorType }> = {
   djembe: { freq: 180, type: "triangle" },
   "conga/clave": { freq: 800, type: "square" },
@@ -260,7 +303,14 @@ const GlobalRhythmMap = ({
     () => countryMarkers.reduce((maxCount, marker) => Math.max(maxCount, marker.rhythmCount), 1),
     [countryMarkers],
   );
-
+  const hoveredMarker = useMemo(
+    () => (hoveredRhythm ? countryMarkers.find((m) => m.country === hoveredRhythm.country) || null : null),
+    [countryMarkers, hoveredRhythm],
+  );
+  const pulseIcon = useMemo(
+    () => hoveredRhythm ? createPulseIcon(CONTINENT_FILL_COLORS[hoveredRhythm.continent]) : null,
+    [hoveredRhythm],
+  );
 
   return (
     <div className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-5 space-y-4">
@@ -403,6 +453,13 @@ const GlobalRhythmMap = ({
               </CircleMarker>
             );
           })}
+          {hoveredMarker && pulseIcon && (
+            <Marker
+              position={[hoveredMarker.lat, hoveredMarker.lng]}
+              icon={pulseIcon}
+              interactive={false}
+            />
+          )}
         </MapContainer>
       </div>
 
