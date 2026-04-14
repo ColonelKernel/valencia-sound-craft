@@ -969,7 +969,11 @@ const GlobalRhythmEngine = ({
               <button
                 key={continent}
                 type="button"
-                onClick={() => setContinentFilter(continent as RhythmContinent | "All")}
+                onClick={() => {
+                  setContinentFilter(continent as RhythmContinent | "All");
+                  setBrowserRegion("All");
+                  setBrowserCountry("");
+                }}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                   continentFilter === continent
