@@ -303,7 +303,14 @@ const GlobalRhythmMap = ({
     () => countryMarkers.reduce((maxCount, marker) => Math.max(maxCount, marker.rhythmCount), 1),
     [countryMarkers],
   );
-
+  const hoveredMarker = useMemo(
+    () => (hoveredRhythm ? countryMarkers.find((m) => m.country === hoveredRhythm.country) || null : null),
+    [countryMarkers, hoveredRhythm],
+  );
+  const pulseIcon = useMemo(
+    () => hoveredRhythm ? createPulseIcon(CONTINENT_FILL_COLORS[hoveredRhythm.continent]) : null,
+    [hoveredRhythm],
+  );
 
   return (
     <div className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-5 space-y-4">
