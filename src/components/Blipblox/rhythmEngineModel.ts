@@ -3,6 +3,7 @@ import {
   getAtlasRhythmByCountry,
   type Rhythm,
   type RhythmContinent,
+  type RhythmTag,
 } from "./globalRhythmAtlas";
 import {
   DRUM_PRESETS,
