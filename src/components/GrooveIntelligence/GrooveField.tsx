@@ -207,6 +207,74 @@ export default function GrooveField({ grooves, selected, hovered, onHover, onCli
         }
       }
 
+      // Draw trajectory path
+      if (trajectory.length >= 2) {
+        const trajProgress = useRef_trajAnim.current;
+
+        // Draw completed segments
+        for (let i = 1; i < trajectory.length; i++) {
+          const fromG = grooves.find(g => g.id === trajectory[i - 1].groove.id);
+          const toG = grooves.find(g => g.id === trajectory[i].groove.id);
+          if (!fromG || !toG) continue;
+
+          const from = toScreen(fromG.cx, fromG.cy);
+          const to = toScreen(toG.cx, toG.cy);
+          const isLatest = i === trajectory.length - 1;
+          const segAlpha = isLatest ? Math.min(trajProgress, 1) : 1;
+          const fadeAlpha = Math.max(0.15, 1 - (trajectory.length - 1 - i) * 0.12);
+
+          // Trail glow
+          ctx.strokeStyle = `rgba(120, 255, 200, ${0.06 * fadeAlpha * segAlpha})`;
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          if (isLatest && trajProgress < 1) {
+            ctx.lineTo(from.x + (to.x - from.x) * trajProgress, from.y + (to.y - from.y) * trajProgress);
+          } else {
+            ctx.lineTo(to.x, to.y);
+          }
+          ctx.stroke();
+
+          // Main line
+          ctx.strokeStyle = `rgba(120, 255, 200, ${0.35 * fadeAlpha * segAlpha})`;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 3]);
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          if (isLatest && trajProgress < 1) {
+            ctx.lineTo(from.x + (to.x - from.x) * trajProgress, from.y + (to.y - from.y) * trajProgress);
+          } else {
+            ctx.lineTo(to.x, to.y);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Waypoint dot
+          if (i < trajectory.length - 1) {
+            const wp = toScreen(fromG.cx, fromG.cy);
+            ctx.fillStyle = `rgba(120, 255, 200, ${0.4 * fadeAlpha})`;
+            ctx.beginPath();
+            ctx.arc(wp.x, wp.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Step number label
+          if (!isLatest || trajProgress >= 0.8) {
+            const mid = isLatest && trajProgress < 1
+              ? { x: from.x + (to.x - from.x) * trajProgress * 0.5, y: from.y + (to.y - from.y) * trajProgress * 0.5 }
+              : { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+            ctx.fillStyle = `rgba(120, 255, 200, ${0.25 * fadeAlpha})`;
+            ctx.font = "bold 8px monospace";
+            ctx.fillText(`${i}`, mid.x + 4, mid.y - 4);
+          }
+        }
+
+        // Animate latest segment
+        if (trajProgress < 1) {
+          useRef_trajAnim.current = Math.min(1, trajProgress + 0.025);
+        }
+      }
+
       // Draw nodes
       for (const g of grooves) {
         const { x, y } = toScreen(g.cx, g.cy);
