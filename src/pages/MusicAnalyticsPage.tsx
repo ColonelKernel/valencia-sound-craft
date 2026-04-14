@@ -11,16 +11,18 @@ const CatalogSegmentation = lazy(() => import("@/components/MusicAnalytics/Catal
 const VolatilityPanel = lazy(() => import("@/components/MusicAnalytics/VolatilityPanel"));
 const PortfolioBuilder = lazy(() => import("@/components/MusicAnalytics/PortfolioBuilder"));
 const CatalogAnalyzer = lazy(() => import("@/components/MusicAnalytics/CatalogAnalyzer"));
+const AcquisitionScorecard = lazy(() => import("@/components/MusicAnalytics/AcquisitionScorecard"));
 
 const sectionFallback = (
   <div className="h-48 rounded-2xl border border-border/50 bg-card/30 animate-pulse" />
 );
 
 type ViewMode = "streams" | "revenue";
-type Tab = "overview" | "compare" | "segments" | "risk" | "portfolio" | "ai";
+type Tab = "overview" | "acquisition" | "compare" | "segments" | "risk" | "portfolio" | "ai";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "Overview" },
+  { id: "acquisition", label: "Acquisition" },
   { id: "compare", label: "Compare" },
   { id: "segments", label: "Segments" },
   { id: "risk", label: "Risk" },
@@ -90,10 +92,10 @@ export default function MusicAnalyticsPage() {
               className="max-w-3xl"
             >
               <p className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-3">
-                Catalog Intelligence
+                Catalog Intelligence Platform
               </p>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-3">
-                Music Catalog Intelligence Dashboard
+                Music Catalog Intelligence Platform
               </h1>
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">
                 Evaluate music catalogs as financial assets. Forecast performance, assess risk,
@@ -180,6 +182,10 @@ export default function MusicAnalyticsPage() {
                 />
               )}
 
+              {tab === "acquisition" && (
+                <AcquisitionScorecard data={data} artists={artists} mode={mode} />
+              )}
+
               {tab === "compare" && (
                 <div className="space-y-6">
                   {/* Artist multi-select */}
@@ -254,7 +260,7 @@ export default function MusicAnalyticsPage() {
 
             {/* Footer label */}
             <p className="mt-12 text-[10px] text-muted-foreground/60 text-center">
-              Simulated catalog analytics using real-world streaming data and simplified financial modeling
+              Built using real streaming data, public APIs, and simplified financial modeling
             </p>
           </div>
         </section>

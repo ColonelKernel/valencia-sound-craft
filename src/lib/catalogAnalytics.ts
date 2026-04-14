@@ -115,6 +115,85 @@ export function diversificationScore(artistVolatilities: number[]): number {
   return Math.min(100, Math.max(0, Math.round(100 - avgCV * 100 + diversityBonus)));
 }
 
+/* ── Acquisition Scoring ── */
+export type AcquisitionLabel = "Strong Acquisition" | "Promising" | "Hold" | "High Risk";
+
+export interface AcquisitionScore {
+  score: number; // 0–100
+  label: AcquisitionLabel;
+  components: {
+    growth: number;
+    stability: number;
+    longevity: number;
+    momentum: number;
+  };
+}
+
+function normalize(value: number, min: number, max: number): number {
+  if (max === min) return 0.5;
+  return Math.max(0, Math.min(1, (value - min) / (max - min)));
+}
+
+export function computeAcquisitionScore(
+  monthlyData: { month: string; streams: number }[]
+): AcquisitionScore {
+  const streams = monthlyData.map((r) => r.streams);
+  if (streams.length < 2) {
+    return { score: 0, label: "High Risk", components: { growth: 0, stability: 0, longevity: 0, momentum: 0 } };
+  }
+
+  // Growth rate (linear regression slope normalized by mean)
+  const mean = streams.reduce((s, v) => s + v, 0) / streams.length;
+  const slope = streams.length > 1
+    ? streams.reduce((s, v, i) => s + (i - (streams.length - 1) / 2) * (v - mean), 0) /
+      streams.reduce((s, _, i) => s + (i - (streams.length - 1) / 2) ** 2, 0)
+    : 0;
+  const growthRate = mean > 0 ? slope / mean : 0;
+  // Normalize: -0.2 to 0.2 → 0 to 1
+  const growthNorm = normalize(growthRate, -0.2, 0.2);
+
+  // Stability (inverse of coefficient of variation)
+  const cv = mean > 0 ? computeVolatility(streams) / mean : 1;
+  // Lower CV = higher stability. CV 0→1, invert and normalize
+  const stabilityNorm = normalize(1 - cv, 0, 1);
+
+  // Longevity (active months, normalized 1–36 range)
+  const activeMonths = streams.filter((s) => s > 0).length;
+  const longevityNorm = normalize(activeMonths, 1, 36);
+
+  // Momentum (recent 3 months avg vs historical avg)
+  const recent = streams.slice(-3);
+  const recentAvg = recent.reduce((s, v) => s + v, 0) / recent.length;
+  const ratio = mean > 0 ? recentAvg / mean : 1;
+  // Normalize: 0.5–1.5 → 0–1
+  const momentumNorm = normalize(ratio, 0.5, 1.5);
+
+  const rawScore =
+    growthNorm * 0.3 +
+    stabilityNorm * 0.3 +
+    longevityNorm * 0.2 +
+    momentumNorm * 0.2;
+
+  const score = Math.round(rawScore * 100);
+
+  let label: AcquisitionLabel;
+  if (score >= 80) label = "Strong Acquisition";
+  else if (score >= 60) label = "Promising";
+  else if (score >= 40) label = "Hold";
+  else label = "High Risk";
+
+  return {
+    score,
+    label,
+    components: {
+      growth: Math.round(growthNorm * 100),
+      stability: Math.round(stabilityNorm * 100),
+      longevity: Math.round(longevityNorm * 100),
+      momentum: Math.round(momentumNorm * 100),
+    },
+  };
+}
+
 /* ── Artist comparison data ── */
 export interface ArtistComparisonData {
   artist: string;
@@ -124,6 +203,7 @@ export interface ArtistComparisonData {
   volatilityLabel: "Low" | "Medium" | "High";
   forecastQ: number;
   segment: CatalogSegment;
+  acquisition: AcquisitionScore;
   monthlyData: { month: string; streams: number }[];
 }
 
@@ -145,6 +225,7 @@ export function buildArtistComparison(
     const fc = forecast(points, 3);
     const forecastQ = fc.reduce((s, f) => s + f.y, 0);
     const segment = segmentArtist(rows);
+    const acquisition = computeAcquisitionScore(rows);
 
     return {
       artist,
@@ -154,6 +235,7 @@ export function buildArtistComparison(
       volatilityLabel: vol.label,
       forecastQ,
       segment,
+      acquisition,
       monthlyData: rows.map((r) => ({ month: r.month, streams: r.streams })),
     };
   });
