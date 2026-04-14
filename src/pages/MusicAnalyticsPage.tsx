@@ -1,21 +1,55 @@
-import { lazy, Suspense, useEffect, useState, useCallback } from "react";
+import { Component, useEffect, useState, useCallback, type ReactNode, type ErrorInfo } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import RouteHead from "@/components/seo/RouteHead";
 import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataService";
+import StreamingDashboard from "@/components/MusicAnalytics/StreamingDashboard";
+import ArtistComparison from "@/components/MusicAnalytics/ArtistComparison";
+import CatalogSegmentation from "@/components/MusicAnalytics/CatalogSegmentation";
+import VolatilityPanel from "@/components/MusicAnalytics/VolatilityPanel";
+import PortfolioBuilder from "@/components/MusicAnalytics/PortfolioBuilder";
+import CatalogAnalyzer from "@/components/MusicAnalytics/CatalogAnalyzer";
+import AcquisitionScorecard from "@/components/MusicAnalytics/AcquisitionScorecard";
 
-const StreamingDashboard = lazy(() => import("@/components/MusicAnalytics/StreamingDashboard"));
-const ArtistComparison = lazy(() => import("@/components/MusicAnalytics/ArtistComparison"));
-const CatalogSegmentation = lazy(() => import("@/components/MusicAnalytics/CatalogSegmentation"));
-const VolatilityPanel = lazy(() => import("@/components/MusicAnalytics/VolatilityPanel"));
-const PortfolioBuilder = lazy(() => import("@/components/MusicAnalytics/PortfolioBuilder"));
-const CatalogAnalyzer = lazy(() => import("@/components/MusicAnalytics/CatalogAnalyzer"));
-const AcquisitionScorecard = lazy(() => import("@/components/MusicAnalytics/AcquisitionScorecard"));
+// Error boundary to catch DOM reconciliation crashes
+class TabErrorBoundary extends Component<
+  { children: ReactNode; resetKey: string },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
 
-const sectionFallback = (
-  <div className="h-48 rounded-2xl border border-border/50 bg-card/30 animate-pulse" />
-);
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Tab render error:", error, info);
+  }
+
+  componentDidUpdate(prevProps: { resetKey: string }) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="rounded-xl border border-border/50 bg-card p-8 text-center">
+          <p className="text-sm text-muted-foreground">Something went wrong rendering this tab.</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-3 rounded-lg border border-border px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/50"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 type ViewMode = "streams" | "revenue";
 type Tab = "overview" | "acquisition" | "compare" | "segments" | "risk" | "portfolio" | "ai";
@@ -149,18 +183,17 @@ export default function MusicAnalyticsPage() {
                 </div>
 
                 {/* Artist filter (overview & risk tabs) */}
-                {(tab === "overview" || tab === "risk") && (
-                  <select
-                    value={selectedArtist}
-                    onChange={(e) => setSelectedArtist(e.target.value)}
-                    className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                  >
-                    <option value="all">All Artists</option>
-                    {artists.map((a) => (
-                      <option key={a} value={a}>{a}</option>
-                    ))}
-                  </select>
-                )}
+                <select
+                  value={selectedArtist}
+                  onChange={(e) => setSelectedArtist(e.target.value)}
+                  className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                  style={{ display: (tab === "overview" || tab === "risk") ? "block" : "none" }}
+                >
+                  <option value="all">All Artists</option>
+                  {artists.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -169,94 +202,95 @@ export default function MusicAnalyticsPage() {
         {/* Content */}
         <section className="py-8 md:py-12">
           <div className="container mx-auto px-6">
-            <Suspense key={tab} fallback={sectionFallback}>
-              {tab === "overview" && (
-                <StreamingDashboard
-                  data={data}
-                  artists={artists}
-                  loading={loading}
-                  error={error}
-                  selectedArtist={selectedArtist}
-                  onSelectArtist={setSelectedArtist}
-                  mode={mode}
-                />
-              )}
+            {/* Use display:none instead of unmounting to avoid Recharts DOM reconciliation crash */}
+            <div style={{ display: tab === "overview" ? "block" : "none" }}>
+              <StreamingDashboard
+                data={data}
+                artists={artists}
+                loading={loading}
+                error={error}
+                selectedArtist={selectedArtist}
+                onSelectArtist={setSelectedArtist}
+                mode={mode}
+              />
+            </div>
 
-              {tab === "acquisition" && (
+            <div style={{ display: tab === "acquisition" ? "block" : "none" }}>
+              {(tab === "acquisition" || data.length > 0) && (
                 <AcquisitionScorecard data={data} artists={artists} mode={mode} />
               )}
+            </div>
 
-              {tab === "compare" && (
-                <div className="space-y-6">
-                  {/* Artist multi-select */}
-                  <div className="rounded-xl border border-border/50 bg-card p-4">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                      Select 2–4 artists to compare
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {artists.map((a) => (
-                        <button
-                          key={a}
-                          onClick={() => toggleCompareArtist(a)}
-                          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                            compareArtists.includes(a)
-                              ? "border-foreground bg-foreground text-background"
-                              : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                          }`}
-                        >
-                          {a}
-                        </button>
-                      ))}
-                    </div>
+            <div style={{ display: tab === "compare" ? "block" : "none" }}>
+              <div className="space-y-6">
+                <div className="rounded-xl border border-border/50 bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+                    Select 2–4 artists to compare
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {artists.map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => toggleCompareArtist(a)}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          compareArtists.includes(a)
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    ))}
                   </div>
-                  <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
                 </div>
-              )}
+                <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
+              </div>
+            </div>
 
-              {tab === "segments" && (
-                <CatalogSegmentation data={data} artists={artists} mode={mode} />
-              )}
+            <div style={{ display: tab === "segments" ? "block" : "none" }}>
+              <CatalogSegmentation data={data} artists={artists} mode={mode} />
+            </div>
 
-              {tab === "risk" && (
-                <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
-              )}
+            <div style={{ display: tab === "risk" ? "block" : "none" }}>
+              <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
+            </div>
 
-              {tab === "portfolio" && (
-                <div className="space-y-6">
-                  {/* Artist add controls */}
-                  <div className="rounded-xl border border-border/50 bg-card p-4">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                      Build your portfolio
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {artists.map((a) => (
-                        <button
-                          key={a}
-                          onClick={() => togglePortfolioArtist(a)}
-                          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                            portfolio.includes(a)
-                              ? "border-foreground bg-foreground text-background"
-                              : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                          }`}
-                        >
-                          {portfolio.includes(a) ? `✓ ${a}` : a}
-                        </button>
-                      ))}
-                    </div>
+            <div style={{ display: tab === "portfolio" ? "block" : "none" }}>
+              <div className="space-y-6">
+                <div className="rounded-xl border border-border/50 bg-card p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+                    Build your portfolio
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {artists.map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => togglePortfolioArtist(a)}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          portfolio.includes(a)
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
+                        }`}
+                      >
+                        {portfolio.includes(a) ? `✓ ${a}` : a}
+                      </button>
+                    ))}
                   </div>
-                  <PortfolioBuilder
-                    data={data}
-                    portfolio={portfolio}
-                    onRemove={(a) => setPortfolio((prev) => prev.filter((x) => x !== a))}
-                    mode={mode}
-                  />
                 </div>
-              )}
+                <PortfolioBuilder
+                  data={data}
+                  portfolio={portfolio}
+                  onRemove={(a) => setPortfolio((prev) => prev.filter((x) => x !== a))}
+                  mode={mode}
+                />
+              </div>
+            </div>
 
+            <div style={{ display: tab === "ai" ? "block" : "none" }}>
               {tab === "ai" && (
                 <CatalogAnalyzer artists={artists} data={data} />
               )}
-            </Suspense>
+            </div>
 
             {/* Footer label */}
             <p className="mt-12 text-[10px] text-muted-foreground/60 text-center">
