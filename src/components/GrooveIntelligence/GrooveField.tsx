@@ -9,6 +9,7 @@ interface Props {
   onHover: (g: NormalizedGroove | null) => void;
   onClick: (g: NormalizedGroove) => void;
   viewMode: ViewMode;
+  currentStep?: number;
 }
 
 const MARGIN = 40;
