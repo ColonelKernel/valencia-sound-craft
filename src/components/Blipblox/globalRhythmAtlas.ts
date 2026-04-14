@@ -1127,6 +1127,10 @@ export function validateRhythm(rhythm: Rhythm): string[] {
     errors.push(`${rhythm.country}: source title is required`);
   }
 
+  if (!rhythm.tags || rhythm.tags.length === 0) {
+    errors.push(`${rhythm.country}: at least one tag is required`);
+  }
+
   return errors;
 }
 
