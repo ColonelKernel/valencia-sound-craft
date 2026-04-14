@@ -540,9 +540,9 @@ const GlobalRhythmMap = ({
                 }}
               >
                 <Popup>
-                  <div className="min-w-[180px] text-[11px]">
+                  <div className="min-w-[200px] text-[11px]">
                     <p className="font-semibold text-slate-900">{marker.country}</p>
-                    <p className="text-slate-600">{rhythm.name}</p>
+                    <p className="text-slate-600">{rhythm.name} · {rhythm.tradition}</p>
                     <p className="mt-1 text-slate-500">
                       {rhythm.continent} · {rhythm.region}
                     </p>
@@ -552,6 +552,49 @@ const GlobalRhythmMap = ({
                     <p className="text-slate-500">
                       {marker.rhythmCount} rhythm{marker.rhythmCount === 1 ? "" : "s"} in dataset
                     </p>
+                    <div className="mt-2 pt-2 border-t border-slate-200">
+                      <p className="text-[9px] font-medium text-slate-500 mb-1 uppercase tracking-wider">Pattern · {rhythm.cycleLength} steps</p>
+                      <div style={{
+                        display: "grid",
+                        gridTemplateColumns: `repeat(${Math.min(rhythm.midiPattern.length, 16)}, 1fr)`,
+                        gap: "2px",
+                      }}>
+                        {rhythm.midiPattern.slice(0, 16).map((hit, stepIdx) => (
+                          <div
+                            key={stepIdx}
+                            style={{
+                              width: "100%",
+                              aspectRatio: "1",
+                              minWidth: "8px",
+                              borderRadius: "2px",
+                              backgroundColor: hit
+                                ? rhythm.accents[stepIdx]
+                                  ? CONTINENT_FILL_COLORS[rhythm.continent]
+                                  : `${CONTINENT_FILL_COLORS[rhythm.continent]}99`
+                                : "#e2e8f0",
+                              border: hit && rhythm.accents[stepIdx]
+                                ? `1px solid ${CONTINENT_FILL_COLORS[rhythm.continent]}`
+                                : "1px solid #cbd5e1",
+                            }}
+                            title={`Step ${stepIdx + 1}${hit ? (rhythm.accents[stepIdx] ? " (accent)" : " (hit)") : ""}`}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5 text-[9px] text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 1, backgroundColor: CONTINENT_FILL_COLORS[rhythm.continent] }} />
+                          accent
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 1, backgroundColor: `${CONTINENT_FILL_COLORS[rhythm.continent]}99` }} />
+                          hit
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 1, backgroundColor: "#e2e8f0", border: "1px solid #cbd5e1" }} />
+                          rest
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </Popup>
               </CircleMarker>
