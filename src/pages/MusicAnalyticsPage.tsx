@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { Component, useEffect, useState, useCallback, type ReactNode, type ErrorInfo } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
