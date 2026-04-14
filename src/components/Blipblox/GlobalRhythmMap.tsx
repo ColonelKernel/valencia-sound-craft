@@ -167,47 +167,77 @@ const FocusSelectedCountry = ({ marker }: { marker: CountryRhythmMarker | null }
   return null;
 };
 
-function createPulseIcon(color: string) {
-  const size = 40;
+function createPulseIcon(color: string, id: string) {
+  const size = 48;
   return L.divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    html: `<div style="
-      width:${size}px;height:${size}px;position:relative;
-    ">
-      <span style="
+    html: `<div id="${id}" style="width:${size}px;height:${size}px;position:relative;">
+      <span class="atlas-ring" style="
         position:absolute;inset:0;border-radius:50%;
-        border:2px solid ${color};opacity:0.7;
-        animation:atlas-pulse-ring 1s ease-out infinite;
+        border:2.5px solid ${color};opacity:0;
+        transform:scale(0.6);
       "></span>
-      <span style="
-        position:absolute;inset:25%;border-radius:50%;
-        background:${color};opacity:0.35;
-        animation:atlas-pulse-dot 1s ease-out infinite;
+      <span class="atlas-glow" style="
+        position:absolute;inset:20%;border-radius:50%;
+        background:${color};opacity:0;
+        transform:scale(0.8);
       "></span>
     </div>`,
   });
 }
 
-// Inject pulse keyframes once
+// Inject step-synced pulse keyframes once
 if (typeof document !== "undefined" && !document.getElementById("atlas-pulse-css")) {
   const style = document.createElement("style");
   style.id = "atlas-pulse-css";
   style.textContent = `
-    @keyframes atlas-pulse-ring {
-      0% { transform:scale(0.8); opacity:0.7; }
-      70% { transform:scale(1.8); opacity:0; }
-      100% { transform:scale(1.8); opacity:0; }
+    .atlas-ring {
+      transition: transform 60ms ease-out, opacity 60ms ease-out;
     }
-    @keyframes atlas-pulse-dot {
-      0% { transform:scale(1); opacity:0.35; }
-      50% { transform:scale(1.15); opacity:0.5; }
-      100% { transform:scale(1); opacity:0.35; }
+    .atlas-glow {
+      transition: transform 80ms ease-out, opacity 80ms ease-out;
+    }
+    .atlas-hit .atlas-ring {
+      transform: scale(1.6) !important;
+      opacity: 0.8 !important;
+    }
+    .atlas-hit .atlas-glow {
+      transform: scale(1.1) !important;
+      opacity: 0.5 !important;
+    }
+    .atlas-accent .atlas-ring {
+      transform: scale(2.0) !important;
+      opacity: 1 !important;
+    }
+    .atlas-accent .atlas-glow {
+      transform: scale(1.3) !important;
+      opacity: 0.7 !important;
+    }
+    .atlas-idle .atlas-ring {
+      transform: scale(0.7);
+      opacity: 0.25;
+      animation: atlas-breathe-ring 1.6s ease-in-out infinite;
+    }
+    .atlas-idle .atlas-glow {
+      transform: scale(0.85);
+      opacity: 0.15;
+      animation: atlas-breathe-glow 1.6s ease-in-out infinite;
+    }
+    @keyframes atlas-breathe-ring {
+      0%, 100% { transform: scale(0.7); opacity: 0.25; }
+      50% { transform: scale(0.95); opacity: 0.4; }
+    }
+    @keyframes atlas-breathe-glow {
+      0%, 100% { transform: scale(0.85); opacity: 0.15; }
+      50% { transform: scale(1.0); opacity: 0.25; }
     }
   `;
   document.head.appendChild(style);
 }
+
+const PULSE_ELEMENT_ID = "atlas-pulse-marker";
 
 const TIMBRE_FREQS: Record<string, { freq: number; type: OscillatorType }> = {
   djembe: { freq: 180, type: "triangle" },
@@ -222,17 +252,39 @@ const TIMBRE_FREQS: Record<string, { freq: number; type: OscillatorType }> = {
   "neutral kit": { freq: 150, type: "sine" },
 };
 
+function triggerPulseHit(accent: boolean) {
+  const el = document.getElementById(PULSE_ELEMENT_ID);
+  if (!el) return;
+  // Remove previous hit class, force reflow, add new one
+  el.classList.remove("atlas-hit", "atlas-accent", "atlas-idle");
+  el.classList.add(accent ? "atlas-accent" : "atlas-hit");
+  // Return to idle after the hit decays
+  const tid = window.setTimeout(() => {
+    el.classList.remove("atlas-hit", "atlas-accent");
+    el.classList.add("atlas-idle");
+  }, 100);
+  return tid;
+}
+
 function useRhythmPreview() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const timerIdsRef = useRef<number[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const stopPreview = useCallback(() => {
     timerIdsRef.current.forEach((id) => clearTimeout(id));
     timerIdsRef.current = [];
+    setIsPlaying(false);
+    // Reset pulse to idle
+    const el = document.getElementById(PULSE_ELEMENT_ID);
+    if (el) {
+      el.classList.remove("atlas-hit", "atlas-accent", "atlas-idle");
+    }
   }, []);
 
   const playPreview = useCallback((rhythm: Rhythm) => {
     stopPreview();
+    setIsPlaying(true);
 
     if (!audioCtxRef.current) {
       audioCtxRef.current = new AudioContext();
@@ -246,7 +298,21 @@ function useRhythmPreview() {
     const timbre = TIMBRE_FREQS[rhythm.timbreProfile] || TIMBRE_FREQS["neutral kit"];
     const stepsToPlay = Math.min(rhythm.midiPattern.length, 16);
 
+    // Set idle breathing immediately
+    requestAnimationFrame(() => {
+      const el = document.getElementById(PULSE_ELEMENT_ID);
+      if (el) el.classList.add("atlas-idle");
+    });
+
     for (let i = 0; i < stepsToPlay; i++) {
+      // Schedule pulse hit on every step (active or silent for visual rhythm)
+      const pulseTimerId = window.setTimeout(() => {
+        if (rhythm.midiPattern[i]) {
+          triggerPulseHit(!!rhythm.accents[i]);
+        }
+      }, i * stepDuration * 1000);
+      timerIdsRef.current.push(pulseTimerId);
+
       if (!rhythm.midiPattern[i]) continue;
 
       const timerId = window.setTimeout(() => {
@@ -268,13 +334,19 @@ function useRhythmPreview() {
 
       timerIdsRef.current.push(timerId);
     }
+
+    // Auto-stop after all steps
+    const endTimerId = window.setTimeout(() => {
+      setIsPlaying(false);
+    }, stepsToPlay * stepDuration * 1000);
+    timerIdsRef.current.push(endTimerId);
   }, [stopPreview]);
 
   useEffect(() => {
     return () => stopPreview();
   }, [stopPreview]);
 
-  return { playPreview, stopPreview };
+  return { playPreview, stopPreview, isPlaying };
 }
 
 const GlobalRhythmMap = ({
@@ -339,7 +411,7 @@ const GlobalRhythmMap = ({
     [countryMarkers, hoveredRhythm],
   );
   const pulseIcon = useMemo(
-    () => hoveredRhythm ? createPulseIcon(CONTINENT_FILL_COLORS[hoveredRhythm.continent]) : null,
+    () => hoveredRhythm ? createPulseIcon(CONTINENT_FILL_COLORS[hoveredRhythm.continent], PULSE_ELEMENT_ID) : null,
     [hoveredRhythm],
   );
 
