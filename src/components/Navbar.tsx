@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
+import { BarChart3, Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 
 const normalizedHomeLinks = [
-  { label: "Tools", href: "#systems" },
+  { label: "Home", href: "#hero" },
+  { label: "Services", href: "#services" },
+  { label: "Interactive Tools", href: "#systems" },
   { label: "Work", href: "#portfolio" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
@@ -38,9 +40,11 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState<string | null>(null);
   const isToolsRoute = location.pathname.startsWith("/tools");
+  const isAnalyticsRoute = location.pathname === "/music-analytics";
+  const isHomePage = location.pathname === "/";
 
   useEffect(() => {
-    if (isToolsRoute) {
+    if (!isHomePage) {
       setScrolled(true);
       setActiveHref(null);
       return;
@@ -75,7 +79,89 @@ const Navbar = () => {
       window.removeEventListener("scroll", updateNavigationState);
       window.removeEventListener("resize", updateNavigationState);
     };
-  }, [isToolsRoute]);
+  }, [isHomePage]);
+
+  const renderHomeLinks = () => (
+    <>
+      {normalizedHomeLinks.map((link) => {
+        const isActive = activeHref === link.href;
+        return (
+          <a
+            key={link.href}
+            href={link.href}
+            aria-current={isActive ? "page" : undefined}
+            className={cn(
+              "group relative text-sm font-medium transition-colors px-0.5 py-1.5",
+              isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {link.label}
+            <span
+              className={cn(
+                "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
+                isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+              )}
+            />
+          </a>
+        );
+      })}
+      <Link
+        to="/music-analytics"
+        className={cn(
+          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
+          isAnalyticsRoute ? "text-foreground" : "text-primary hover:text-primary/80",
+        )}
+      >
+        <BarChart3 size={14} />
+        Analytics
+        <span
+          className={cn(
+            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
+            isAnalyticsRoute ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+          )}
+        />
+      </Link>
+    </>
+  );
+
+  const renderToolLinks = () =>
+    toolLinks.map((link) => (
+      <NavLink
+        key={link.to}
+        to={link.to}
+        end={link.end}
+        className={({ isActive }) =>
+          cn(
+            "group relative text-sm font-medium transition-colors px-0.5 py-1.5",
+            isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+          )
+        }
+      >
+        {({ isActive }) => (
+          <>
+            {link.label}
+            <span
+              className={cn(
+                "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
+                isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+              )}
+            />
+          </>
+        )}
+      </NavLink>
+    ));
+
+  const renderAnalyticsNav = () => (
+    <>
+      <Link
+        to="/"
+        className="group relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-0.5 py-1.5"
+      >
+        Home
+      </Link>
+      <span className="text-sm font-medium text-foreground px-0.5 py-1.5">Analytics</span>
+    </>
+  );
 
   return (
     <nav
@@ -91,69 +177,12 @@ const Navbar = () => {
           ZS
         </Link>
 
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-6 md:flex">
           {isToolsRoute
-            ? toolLinks.map((link, index) => {
-                const isPrimary = index === 0;
-
-                return (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    end={link.end}
-                    className={({ isActive }) =>
-                      cn(
-                        "group relative text-sm font-medium transition-colors",
-                        isPrimary
-                          ? "rounded-full border border-border/70 bg-secondary/35 px-3 py-1.5"
-                          : "px-0.5 py-1.5",
-                        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-                      )
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        {link.label}
-                        <span
-                          className={cn(
-                            "absolute bottom-0 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-                            isPrimary ? "bottom-[0.4rem]" : "-bottom-0.5",
-                            isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-                          )}
-                        />
-                      </>
-                    )}
-                  </NavLink>
-                );
-              })
-            : normalizedHomeLinks.map((link, index) => {
-                const isPrimary = index === 0;
-                const isActive = activeHref === link.href;
-
-                return (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "group relative text-sm font-medium transition-colors",
-                      isPrimary
-                        ? "rounded-full border border-border/70 bg-secondary/35 px-3 py-1.5"
-                        : "px-0.5 py-1.5",
-                      isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {link.label}
-                    <span
-                      className={cn(
-                        "absolute bottom-0 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-                        isPrimary ? "bottom-[0.4rem]" : "-bottom-0.5",
-                        isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-                      )}
-                    />
-                  </a>
-                );
-              })}
+            ? renderToolLinks()
+            : isAnalyticsRoute
+              ? renderAnalyticsNav()
+              : renderHomeLinks()}
 
           <div className="ml-2 flex items-center gap-3 border-l border-border pl-4">
             {socialLinks.map((socialLink) => (
@@ -186,50 +215,69 @@ const Navbar = () => {
         <div className="border-b border-border bg-background/96 px-6 pb-6 pt-2 backdrop-blur-xl md:hidden">
           <div className="space-y-2">
             {isToolsRoute
-              ? toolLinks.map((link, index) => {
-                  const isPrimary = index === 0;
-
-                  return (
-                    <NavLink
-                      key={link.to}
-                      to={link.to}
-                      end={link.end}
-                      onClick={() => setMenuOpen(false)}
-                      className={({ isActive }) =>
-                        cn(
-                          "block rounded-2xl px-4 py-3 text-sm font-medium",
-                          isPrimary && "border border-border/70",
-                          isActive
-                            ? "bg-secondary text-foreground"
-                            : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
-                        )
-                      }
-                    >
-                      {link.label}
-                    </NavLink>
-                  );
-                })
-              : normalizedHomeLinks.map((link, index) => {
-                  const isActive = activeHref === link.href;
-                  const isPrimary = index === 0;
-
-                  return (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMenuOpen(false)}
-                      className={cn(
+              ? toolLinks.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    end={link.end}
+                    onClick={() => setMenuOpen(false)}
+                    className={({ isActive }) =>
+                      cn(
                         "block rounded-2xl px-4 py-3 text-sm font-medium",
-                        isPrimary && "border border-border/70",
                         isActive
                           ? "bg-secondary text-foreground"
                           : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
-                      )}
-                    >
-                      {link.label}
-                    </a>
-                  );
-                })}
+                      )
+                    }
+                  >
+                    {link.label}
+                  </NavLink>
+                ))
+              : isAnalyticsRoute
+                ? (
+                    <>
+                      <Link
+                        to="/"
+                        onClick={() => setMenuOpen(false)}
+                        className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                      >
+                        Home
+                      </Link>
+                      <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
+                        Analytics
+                      </div>
+                    </>
+                  )
+                : (
+                    <>
+                      {normalizedHomeLinks.map((link) => {
+                        const isActive = activeHref === link.href;
+                        return (
+                          <a
+                            key={link.href}
+                            href={link.href}
+                            onClick={() => setMenuOpen(false)}
+                            className={cn(
+                              "block rounded-2xl px-4 py-3 text-sm font-medium",
+                              isActive
+                                ? "bg-secondary text-foreground"
+                                : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
+                            )}
+                          >
+                            {link.label}
+                          </a>
+                        );
+                      })}
+                      <Link
+                        to="/music-analytics"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-primary hover:bg-secondary/70"
+                      >
+                        <BarChart3 size={14} />
+                        Analytics
+                      </Link>
+                    </>
+                  )}
           </div>
 
           <div className="mt-4 flex items-center gap-4 border-t border-border pt-4">
