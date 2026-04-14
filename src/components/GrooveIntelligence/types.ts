@@ -20,24 +20,25 @@ export interface NormalizedGroove extends RawGroove {
   norm_syncopation: number;
   norm_swing: number;
   norm_velocity: number;
-  // projected 2D
   px: number;
   py: number;
-  // current rendered position (animated)
-  cx: number;
-  cy: number;
-  // target position (for morphing)
-  tx: number;
-  ty: number;
-  // visual
   radius: number;
   color: string;
   glowIntensity: number;
+  similar: string[];
+}
+
+export interface RenderGroove extends NormalizedGroove {
+  cx: number;
+  cy: number;
+  tx: number;
+  ty: number;
+  phase: number;
 }
 
 export type ViewMode = "field" | "topology" | "landscape";
 
 export interface TrajectoryPoint {
-  groove: NormalizedGroove;
+  grooveId: string;
   timestamp: number;
 }

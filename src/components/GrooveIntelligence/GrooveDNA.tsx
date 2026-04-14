@@ -1,24 +1,27 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useMemo, useCallback, useRef, useState, type MutableRefObject } from "react";
 import type { NormalizedGroove } from "./types";
 import type { DrumPattern } from "./audioEngine";
-import { interpretGroove, kNearest } from "./utils";
-import { generatePattern, startPlayback, stopPlayback, downloadMidi } from "./audioEngine";
+import {
+  downloadMidi,
+  generatePattern,
+  getPlaybackState,
+  startPlayback,
+  stopPlayback,
+  subscribePlaybackState,
+  subscribePlaybackSteps,
+} from "./audioEngine";
+import { interpretGroove } from "./utils";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   groove: NormalizedGroove | null;
-  allGrooves: NormalizedGroove[];
+  grooveMap: Map<string, NormalizedGroove>;
   onSelectGroove: (g: NormalizedGroove) => void;
-  currentStep: number;
 }
 
-function AnimBar({ label, value, delay, color }: { label: string; value: number; delay: number; color: string }) {
-  const [w, setW] = useState(0);
-  useEffect(() => {
-    const t = setTimeout(() => setW(value * 100), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
+const narrativeCache = new Map<string, string | null>();
 
+function AnimBar({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
@@ -27,61 +30,116 @@ function AnimBar({ label, value, delay, color }: { label: string; value: number;
       </div>
       <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-700 ease-out"
-          style={{ width: `${w}%`, background: color }}
+          className="h-full rounded-full transition-[width] duration-500 ease-out"
+          style={{ width: `${value * 100}%`, background: color }}
         />
       </div>
     </div>
   );
 }
 
-function StepGrid({ pattern, currentStep }: { pattern: DrumPattern; currentStep: number }) {
-  const lanes: { name: string; hits: { step: number; vel: number }[]; color: string }[] = [
+function StepGrid({
+  pattern,
+  stepRef,
+  active,
+}: {
+  pattern: DrumPattern;
+  stepRef: MutableRefObject<number>;
+  active: boolean;
+}) {
+  const lanes = useMemo(() => ([
     { name: "KK", hits: pattern.kick, color: "hsl(30, 90%, 55%)" },
     { name: "SN", hits: pattern.snare, color: "hsl(350, 80%, 55%)" },
     { name: "HH", hits: pattern.hihat, color: "hsl(180, 70%, 50%)" },
     { name: "PC", hits: pattern.perc, color: "hsl(280, 70%, 60%)" },
-  ];
+  ]).map(lane => ({
+    ...lane,
+    hitMap: new Map(lane.hits.map(hit => [hit.step, hit.vel])),
+  })), [pattern]);
+
+  const cellRefs = useRef<HTMLDivElement[][]>([]);
+  const indicatorRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const setCellRef = useCallback((laneIndex: number, stepIndex: number) => (node: HTMLDivElement | null) => {
+    if (!cellRefs.current[laneIndex]) cellRefs.current[laneIndex] = [];
+    cellRefs.current[laneIndex][stepIndex] = node;
+  }, []);
+
+  const setIndicatorRef = useCallback((stepIndex: number) => (node: HTMLDivElement | null) => {
+    indicatorRefs.current[stepIndex] = node;
+  }, []);
+
+  const paintStep = useCallback((step: number) => {
+    for (let laneIndex = 0; laneIndex < lanes.length; laneIndex++) {
+      const lane = lanes[laneIndex];
+      const cells = cellRefs.current[laneIndex] ?? [];
+      for (let stepIndex = 0; stepIndex < 16; stepIndex++) {
+        const cell = cells[stepIndex];
+        if (!cell) continue;
+
+        const velocity = lane.hitMap.get(stepIndex);
+        const isActive = step === stepIndex;
+        cell.style.background = velocity
+          ? (isActive ? "white" : lane.color)
+          : (isActive ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)");
+        cell.style.opacity = `${velocity ? 0.4 + velocity * 0.6 : 1}`;
+        cell.style.boxShadow = velocity && isActive ? `0 0 6px ${lane.color}` : "none";
+      }
+    }
+
+    for (let stepIndex = 0; stepIndex < 16; stepIndex++) {
+      const indicator = indicatorRefs.current[stepIndex];
+      if (!indicator) continue;
+      indicator.style.background = step === stepIndex
+        ? "rgba(255,255,255,0.6)"
+        : stepIndex % 4 === 0
+          ? "rgba(255,255,255,0.08)"
+          : "transparent";
+    }
+  }, [lanes]);
+
+  useEffect(() => {
+    paintStep(active ? stepRef.current : -1);
+    let raf = 0;
+    let lastStep = Number.NaN;
+
+    const loop = () => {
+      const step = active ? stepRef.current : -1;
+      if (step !== lastStep) {
+        paintStep(step);
+        lastStep = step;
+      }
+      raf = requestAnimationFrame(loop);
+    };
+
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [active, paintStep, stepRef]);
 
   return (
     <div className="space-y-1">
-      {lanes.map(lane => (
+      {lanes.map((lane, laneIndex) => (
         <div key={lane.name} className="flex items-center gap-1">
           <span className="text-[8px] text-muted-foreground font-mono w-5 shrink-0">{lane.name}</span>
           <div className="flex gap-[2px] flex-1">
-            {Array.from({ length: 16 }, (_, i) => {
-              const hit = lane.hits.find(h => h.step === i);
-              const isActive = currentStep === i;
-              return (
-                <div
-                  key={i}
-                  className="h-3 flex-1 rounded-[2px] transition-all duration-75"
-                  style={{
-                    background: hit
-                      ? isActive
-                        ? "white"
-                        : lane.color
-                      : isActive
-                        ? "rgba(255,255,255,0.1)"
-                        : "rgba(255,255,255,0.03)",
-                    opacity: hit ? 0.4 + hit.vel * 0.6 : 1,
-                    boxShadow: hit && isActive ? `0 0 6px ${lane.color}` : "none",
-                  }}
-                />
-              );
-            })}
+            {Array.from({ length: 16 }, (_, stepIndex) => (
+              <div
+                key={stepIndex}
+                ref={setCellRef(laneIndex, stepIndex)}
+                className="h-3 flex-1 rounded-[2px] transition-all duration-75"
+              />
+            ))}
           </div>
         </div>
       ))}
-      {/* Step indicators */}
       <div className="flex items-center gap-1 mt-0.5">
         <span className="w-5 shrink-0" />
         <div className="flex gap-[2px] flex-1">
-          {Array.from({ length: 16 }, (_, i) => (
+          {Array.from({ length: 16 }, (_, stepIndex) => (
             <div
-              key={i}
+              key={stepIndex}
+              ref={setIndicatorRef(stepIndex)}
               className="h-0.5 flex-1 rounded-full transition-colors duration-75"
-              style={{ background: currentStep === i ? "rgba(255,255,255,0.6)" : i % 4 === 0 ? "rgba(255,255,255,0.08)" : "transparent" }}
             />
           ))}
         </div>
@@ -93,11 +151,16 @@ function StepGrid({ pattern, currentStep }: { pattern: DrumPattern; currentStep:
 function AINarrative({ groove }: { groove: NormalizedGroove }) {
   const [narrative, setNarrative] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const lastId = useRef<string>("");
 
   useEffect(() => {
-    if (groove.id === lastId.current) return;
-    lastId.current = groove.id;
+    const cached = narrativeCache.get(groove.id);
+    if (cached !== undefined) {
+      setNarrative(cached);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
     setLoading(true);
     setNarrative(null);
 
@@ -113,15 +176,25 @@ function AINarrative({ groove }: { groove: NormalizedGroove }) {
         substyle: groove.substyle,
       },
     }).then(({ data, error }) => {
+      if (cancelled) return;
+
       if (error) {
         console.error("Narrative error:", error);
+        narrativeCache.set(groove.id, null);
         setNarrative(null);
       } else {
-        setNarrative(data?.narrative || null);
+        const nextNarrative = data?.narrative || null;
+        narrativeCache.set(groove.id, nextNarrative);
+        setNarrative(nextNarrative);
       }
+
       setLoading(false);
     });
-  }, [groove.id]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [groove]);
 
   return (
     <div>
@@ -146,44 +219,59 @@ function AINarrative({ groove }: { groove: NormalizedGroove }) {
   );
 }
 
-export default function GrooveDNA({ groove, allGrooves, onSelectGroove, currentStep }: Props) {
-  const [playing, setPlaying] = useState(false);
-  const [pattern, setPattern] = useState<DrumPattern | null>(null);
-  const patternRef = useRef<DrumPattern | null>(null);
+export default function GrooveDNA({ groove, grooveMap, onSelectGroove }: Props) {
+  const stepRef = useRef(getPlaybackState().currentStep);
+  const [playing, setPlaying] = useState(() => {
+    const playback = getPlaybackState();
+    return playback.playing && playback.grooveId === groove?.id;
+  });
 
-  // Generate pattern when groove changes
+  useEffect(() => subscribePlaybackSteps(step => {
+    stepRef.current = step;
+  }), []);
+
   useEffect(() => {
-    if (groove) {
-      const p = generatePattern(groove);
-      setPattern(p);
-      patternRef.current = p;
-    } else {
-      setPattern(null);
-      patternRef.current = null;
-      setPlaying(false);
-      stopPlayback();
-    }
+    return subscribePlaybackState(state => {
+      const isCurrentGroove = state.playing && state.grooveId === groove?.id;
+      stepRef.current = isCurrentGroove ? state.currentStep : -1;
+      setPlaying(isCurrentGroove);
+    });
   }, [groove?.id]);
 
-  // Cleanup on unmount
-  useEffect(() => () => stopPlayback(), []);
-
-  const togglePlay = useCallback(() => {
-    if (!groove || !patternRef.current) return;
-    if (playing) {
-      stopPlayback();
+  useEffect(() => {
+    if (!groove) {
+      stepRef.current = -1;
       setPlaying(false);
-    } else {
-      startPlayback(groove, patternRef.current, () => {});
-      setPlaying(true);
-    }
-  }, [groove, playing]);
-
-  const handleExportMidi = useCallback(() => {
-    if (groove && patternRef.current) {
-      downloadMidi(groove, patternRef.current);
     }
   }, [groove]);
+
+  useEffect(() => () => stopPlayback(), []);
+
+  const pattern = useMemo(() => (
+    groove ? generatePattern(groove) : null
+  ), [groove]);
+
+  const nearest = useMemo(() => {
+    if (!groove) return [];
+    return groove.similar
+      .map(id => grooveMap.get(id))
+      .filter((candidate): candidate is NormalizedGroove => Boolean(candidate));
+  }, [groove, grooveMap]);
+
+  const interpretation = useMemo(() => (
+    groove ? interpretGroove(groove) : ""
+  ), [groove]);
+
+  const togglePlay = useCallback(() => {
+    if (!groove || !pattern) return;
+
+    if (playing) stopPlayback();
+    else startPlayback(groove, pattern);
+  }, [groove, pattern, playing]);
+
+  const handleExportMidi = useCallback(() => {
+    if (groove && pattern) downloadMidi(groove, pattern);
+  }, [groove, pattern]);
 
   if (!groove) {
     return (
@@ -193,12 +281,8 @@ export default function GrooveDNA({ groove, allGrooves, onSelectGroove, currentS
     );
   }
 
-  const nearest = kNearest(allGrooves, groove, 5);
-  const interpretation = interpretGroove(groove);
-
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Identity */}
       <div>
         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 font-mono">Identity</div>
         <div className="text-lg font-semibold capitalize text-foreground">{groove.genre}</div>
@@ -210,7 +294,6 @@ export default function GrooveDNA({ groove, allGrooves, onSelectGroove, currentS
         </div>
       </div>
 
-      {/* Playback Controls */}
       <div>
         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 font-mono">Performance</div>
         <div className="flex gap-2 mb-3">
@@ -234,61 +317,56 @@ export default function GrooveDNA({ groove, allGrooves, onSelectGroove, currentS
           </button>
         </div>
 
-        {/* Step Grid */}
-        {pattern && <StepGrid pattern={pattern} currentStep={playing ? currentStep : -1} />}
+        {pattern && <StepGrid pattern={pattern} stepRef={stepRef} active={playing} />}
       </div>
 
-      {/* DNA Metrics */}
       <div>
         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3 font-mono">Groove DNA</div>
         <div className="space-y-3">
-          <AnimBar label="Energy" value={groove.norm_density} delay={0} color="hsl(30, 90%, 55%)" />
-          <AnimBar label="Swing" value={groove.norm_swing} delay={80} color="hsl(180, 70%, 50%)" />
-          <AnimBar label="Syncopation" value={groove.norm_syncopation} delay={160} color="hsl(280, 70%, 60%)" />
-          <AnimBar label="Expressiveness" value={groove.norm_velocity} delay={240} color="hsl(350, 80%, 55%)" />
+          <AnimBar label="Energy" value={groove.norm_density} color="hsl(30, 90%, 55%)" />
+          <AnimBar label="Swing" value={groove.norm_swing} color="hsl(180, 70%, 50%)" />
+          <AnimBar label="Syncopation" value={groove.norm_syncopation} color="hsl(280, 70%, 60%)" />
+          <AnimBar label="Expressiveness" value={groove.norm_velocity} color="hsl(350, 80%, 55%)" />
         </div>
       </div>
 
-      {/* Interpretation */}
       <div>
         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2 font-mono">Interpretation</div>
         <p className="text-sm text-foreground/70 italic leading-relaxed">&ldquo;{interpretation}&rdquo;</p>
       </div>
 
-      {/* AI Narrative */}
       <AINarrative groove={groove} />
 
-      {/* Nearest */}
       <div>
         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3 font-mono">
           Nearest in Feel Space
         </div>
         <div className="space-y-2">
-          {nearest.map((n, i) => (
+          {nearest.map((neighbor, index) => (
             <button
-              key={n.id}
-              onClick={() => onSelectGroove(n)}
+              key={neighbor.id}
+              onClick={() => onSelectGroove(neighbor)}
               className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-secondary/60 transition-colors text-left group"
             >
               <div
                 className="w-3 h-3 rounded-full shrink-0 group-hover:scale-125 transition-transform"
-                style={{ background: n.color, boxShadow: `0 0 ${4 + n.glowIntensity * 6}px ${n.color}` }}
+                style={{ background: neighbor.color, boxShadow: `0 0 ${4 + neighbor.glowIntensity * 6}px ${neighbor.color}` }}
               />
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium capitalize text-foreground/80 truncate">{n.genre} · {n.bpm} bpm</div>
+                <div className="text-xs font-medium capitalize text-foreground/80 truncate">{neighbor.genre} · {neighbor.bpm} bpm</div>
                 <div className="flex gap-2 mt-1">
                   {[
-                    { v: n.norm_density, c: "hsl(30,90%,55%)" },
-                    { v: n.norm_swing, c: "hsl(180,70%,50%)" },
-                    { v: n.norm_syncopation, c: "hsl(280,70%,60%)" },
-                  ].map((b, j) => (
-                    <div key={j} className="h-1 flex-1 rounded-full bg-secondary overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${b.v * 100}%`, background: b.c }} />
+                    { v: neighbor.norm_density, c: "hsl(30,90%,55%)" },
+                    { v: neighbor.norm_swing, c: "hsl(180,70%,50%)" },
+                    { v: neighbor.norm_syncopation, c: "hsl(280,70%,60%)" },
+                  ].map((bar, barIndex) => (
+                    <div key={barIndex} className="h-1 flex-1 rounded-full bg-secondary overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${bar.v * 100}%`, background: bar.c }} />
                     </div>
                   ))}
                 </div>
               </div>
-              <span className="text-[10px] text-muted-foreground font-mono">#{i + 1}</span>
+              <span className="text-[10px] text-muted-foreground font-mono">#{index + 1}</span>
             </button>
           ))}
         </div>

@@ -1,62 +1,160 @@
-import { useRef, useEffect, useCallback, useState } from "react";
-import type { NormalizedGroove, ViewMode, TrajectoryPoint } from "./types";
+import { useRef, useEffect, useCallback } from "react";
+import type { NormalizedGroove, RenderGroove, ViewMode, TrajectoryPoint } from "./types";
 import type { Cluster } from "./clustering";
-import type { LODResult } from "./lodManager";
-import { noise2D } from "./utils";
+import { syntheticDistance } from "./utils";
 import { SpatialIndex } from "./spatialIndex";
-import { Camera, DEFAULT_CAMERA, lerpCamera, zoomAt, worldToScreen, screenToWorld, getViewport, getLODLevel } from "./camera";
+import { Camera, DEFAULT_CAMERA, lerpCamera, zoomAt, worldToScreen, screenToWorld, getViewport } from "./camera";
 import { computeLOD } from "./lodManager";
+import { subscribePlaybackSteps } from "./audioEngine";
 
 interface Props {
   grooves: NormalizedGroove[];
-  selected: NormalizedGroove | null;
-  hovered: NormalizedGroove | null;
-  onHover: (g: NormalizedGroove | null) => void;
-  onClick: (g: NormalizedGroove) => void;
+  selectedId: string | null;
+  onSelect: (g: NormalizedGroove) => void;
   viewMode: ViewMode;
-  currentStep?: number;
   trajectory?: TrajectoryPoint[];
   clusters: Cluster[];
-  grooveMap: Map<string, NormalizedGroove>;
+  sculptorActive: boolean;
+  sculptorValues: { energy: number; swing: number; syncopation: number; dynamics: number };
 }
 
 const MARGIN = 40;
-const DRIFT_SPEED = 0.0004;
-const MORPH_LERP = 0.06;
+const MORPH_LERP = 0.14;
+const DRIFT_AMPLITUDE = 0.0018;
+const MAX_VISIBLE_NODES = 280;
+
+function withAlpha(color: string, alpha: number) {
+  if (color.startsWith("hsl(")) return color.replace("hsl(", "hsla(").replace(")", `, ${alpha})`);
+  if (color.startsWith("hsla(")) return color.replace(/,\s*[\d.]+\)$/, `, ${alpha})`);
+  return color;
+}
 
 export default function GrooveField({
-  grooves, selected, hovered, onHover, onClick, viewMode,
-  currentStep = -1, trajectory = [], clusters, grooveMap,
+  grooves,
+  selectedId,
+  onSelect,
+  viewMode,
+  trajectory = [],
+  clusters,
+  sculptorActive,
+  sculptorValues,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
-  const timeRef = useRef(0);
   const mouseRef = useRef<{ x: number; y: number } | null>(null);
   const sizeRef = useRef({ w: 0, h: 0 });
-  const trajAnimRef = useRef(1);
-  const prevTrajLenRef = useRef(0);
+  const playbackStepRef = useRef(-1);
+  const hoveredIdRef = useRef<string | null>(null);
+  const hoveredNodeRef = useRef<RenderGroove | null>(null);
 
-  // Camera state
   const cameraRef = useRef<Camera>({ ...DEFAULT_CAMERA });
   const targetCameraRef = useRef<Camera>({ ...DEFAULT_CAMERA });
-  const [cameraState, setCameraState] = useState<Camera>(DEFAULT_CAMERA);
-  const isPanning = useRef(false);
-  const panStart = useRef({ x: 0, y: 0, camX: 0, camY: 0 });
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0, camX: 0, camY: 0 });
 
-  // Spatial index
-  const spatialRef = useRef(new SpatialIndex<NormalizedGroove>());
-  const lodRef = useRef<LODResult | null>(null);
+  const onSelectRef = useRef(onSelect);
+  const selectedIdRef = useRef(selectedId);
+  const viewModeRef = useRef(viewMode);
+  const trajectoryRef = useRef(trajectory);
+  const clustersRef = useRef(clusters);
+  const sculptorActiveRef = useRef(sculptorActive);
+  const sculptorValuesRef = useRef(sculptorValues);
 
-  // Rebuild spatial index when grooves update positions (throttled in draw loop)
-  const indexDirtyRef = useRef(true);
-  useEffect(() => { indexDirtyRef.current = true; }, [grooves]);
+  const nodesRef = useRef<RenderGroove[]>([]);
+  const nodeMapRef = useRef(new Map<string, RenderGroove>());
+  const spatialRef = useRef(new SpatialIndex<RenderGroove>());
 
-  // Resize
+  const zoomLabelRef = useRef<HTMLDivElement>(null);
+  const zoomHintRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+  }, [onSelect]);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+
+  useEffect(() => {
+    viewModeRef.current = viewMode;
+  }, [viewMode]);
+
+  useEffect(() => {
+    trajectoryRef.current = trajectory;
+  }, [trajectory]);
+
+  useEffect(() => {
+    clustersRef.current = clusters;
+  }, [clusters]);
+
+  useEffect(() => {
+    sculptorActiveRef.current = sculptorActive;
+  }, [sculptorActive]);
+
+  useEffect(() => {
+    sculptorValuesRef.current = sculptorValues;
+  }, [sculptorValues]);
+
+  const applyTargets = useCallback(() => {
+    const nodes = nodesRef.current;
+    if (nodes.length === 0) return;
+
+    if (!sculptorActiveRef.current) {
+      for (const node of nodes) {
+        node.tx = node.px;
+        node.ty = node.py;
+      }
+      return;
+    }
+
+    const target = sculptorValuesRef.current;
+    for (const node of nodes) {
+      const distance = syntheticDistance(target, node);
+      const angle = Math.atan2(node.py - 0.5, node.px - 0.5);
+      const radius = 0.08 + distance * 0.12;
+      node.tx = 0.5 + Math.cos(angle) * radius;
+      node.ty = 0.5 + Math.sin(angle) * radius;
+    }
+  }, []);
+
+  useEffect(() => {
+    const nextNodes = grooves.map((groove, index) => ({
+      ...groove,
+      cx: groove.px,
+      cy: groove.py,
+      tx: groove.px,
+      ty: groove.py,
+      phase: index * 0.37,
+    }));
+
+    nodesRef.current = nextNodes;
+    nodeMapRef.current = new Map(nextNodes.map(node => [node.id, node]));
+    applyTargets();
+    spatialRef.current.rebuild(nextNodes);
+
+    if (hoveredIdRef.current) {
+      hoveredNodeRef.current = nodeMapRef.current.get(hoveredIdRef.current) ?? null;
+      if (!hoveredNodeRef.current) hoveredIdRef.current = null;
+    }
+  }, [grooves, applyTargets]);
+
+  useEffect(() => {
+    applyTargets();
+  }, [applyTargets, sculptorActive, sculptorValues]);
+
+  useEffect(() => subscribePlaybackSteps(step => {
+    playbackStepRef.current = step;
+  }), []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ro = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect;
+
+    const resizeObserver = new ResizeObserver(entries => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      const { width, height } = entry.contentRect;
       const dpr = window.devicePixelRatio || 1;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
@@ -64,446 +162,378 @@ export default function GrooveField({
       canvas.style.height = `${height}px`;
       sizeRef.current = { w: width * dpr, h: height * dpr };
     });
-    ro.observe(canvas.parentElement!);
-    return () => ro.disconnect();
+
+    resizeObserver.observe(canvas.parentElement!);
+    return () => resizeObserver.disconnect();
   }, []);
 
-  // Wheel zoom
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const dpr = window.devicePixelRatio || 1;
-      const r = canvas.getBoundingClientRect();
-      const sx = (e.clientX - r.left) * dpr;
-      const sy = (e.clientY - r.top) * dpr;
-      const { w, h } = sizeRef.current;
-      targetCameraRef.current = zoomAt(targetCameraRef.current, e.deltaY, sx, sy, w, h, MARGIN);
+
+    const updateHover = (nextNode: RenderGroove | null) => {
+      hoveredIdRef.current = nextNode?.id ?? null;
+      hoveredNodeRef.current = nextNode;
+      if (!isPanningRef.current) {
+        canvas.style.cursor = nextNode ? "pointer" : "crosshair";
+      }
     };
-    canvas.addEventListener("wheel", handleWheel, { passive: false });
-    return () => canvas.removeEventListener("wheel", handleWheel);
-  }, []);
 
-  // Pan + hover + click
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      if (e.button === 1 || e.button === 2 || (e.button === 0 && e.shiftKey)) {
-        isPanning.current = true;
-        panStart.current = { x: e.clientX, y: e.clientY, camX: targetCameraRef.current.x, camY: targetCameraRef.current.y };
+    const handleMouseDown = (event: MouseEvent) => {
+      if (event.button === 1 || event.button === 2 || (event.button === 0 && event.shiftKey)) {
+        isPanningRef.current = true;
+        panStartRef.current = {
+          x: event.clientX,
+          y: event.clientY,
+          camX: targetCameraRef.current.x,
+          camY: targetCameraRef.current.y,
+        };
         canvas.style.cursor = "grabbing";
-        e.preventDefault();
+        event.preventDefault();
       }
     };
 
     const handleMouseUp = () => {
-      if (isPanning.current) {
-        isPanning.current = false;
-        canvas.style.cursor = "crosshair";
-      }
+      if (!isPanningRef.current) return;
+      isPanningRef.current = false;
+      canvas.style.cursor = hoveredNodeRef.current ? "pointer" : "crosshair";
     };
 
-    const handleMove = (e: MouseEvent) => {
-      const r = canvas.getBoundingClientRect();
-      const sx = (e.clientX - r.left) * dpr;
-      const sy = (e.clientY - r.top) * dpr;
+    const handleMouseMove = (event: MouseEvent) => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const sx = (event.clientX - rect.left) * dpr;
+      const sy = (event.clientY - rect.top) * dpr;
       mouseRef.current = { x: sx, y: sy };
 
-      if (isPanning.current) {
-        const cam = targetCameraRef.current;
-        const vp = getViewport(cam);
+      if (isPanningRef.current) {
+        const viewport = getViewport(targetCameraRef.current);
         const { w, h } = sizeRef.current;
-        const dx = (e.clientX - panStart.current.x) * dpr / (w - 2 * MARGIN) * vp.w;
-        const dy = (e.clientY - panStart.current.y) * dpr / (h - 2 * MARGIN) * vp.h;
-        targetCameraRef.current = { ...cam, x: panStart.current.camX - dx, y: panStart.current.camY + dy };
+        const dx = ((event.clientX - panStartRef.current.x) * dpr / Math.max(1, w - 2 * MARGIN)) * viewport.w;
+        const dy = ((event.clientY - panStartRef.current.y) * dpr / Math.max(1, h - 2 * MARGIN)) * viewport.h;
+        targetCameraRef.current = {
+          ...targetCameraRef.current,
+          x: panStartRef.current.camX - dx,
+          y: panStartRef.current.camY + dy,
+        };
         return;
       }
 
-      // Hit test using spatial index
-      const { w: cw, h: ch } = sizeRef.current;
-      const cam = cameraRef.current;
-      const { px, py } = screenToWorld(sx, sy, cam, cw, ch, MARGIN);
-      const hitRadius = 0.02 / cam.zoom;
+      const { w, h } = sizeRef.current;
+      const { px, py } = screenToWorld(sx, sy, cameraRef.current, w, h, MARGIN);
+      const hitRadius = 0.018 / cameraRef.current.zoom;
       const candidates = spatialRef.current.queryNearest(px, py, hitRadius);
 
-      let closest: NormalizedGroove | null = null;
-      let minD = Infinity;
-      for (const g of candidates) {
-        const d = Math.hypot(g.cx - px, g.cy - py);
-        if (d < hitRadius && d < minD) { minD = d; closest = g; }
+      let closest: RenderGroove | null = null;
+      let minDistance = Infinity;
+      for (const candidate of candidates) {
+        const dx = candidate.cx - px;
+        const dy = candidate.cy - py;
+        const distance = dx * dx + dy * dy;
+        if (distance < hitRadius * hitRadius && distance < minDistance) {
+          minDistance = distance;
+          closest = candidate;
+        }
       }
-      onHover(closest);
+
+      updateHover(closest);
     };
 
-    const handleClick = (e: MouseEvent) => {
-      if (e.button !== 0 || e.shiftKey) return;
-      if (hovered) onClick(hovered);
+    const handleMouseLeave = () => {
+      mouseRef.current = null;
+      if (!isPanningRef.current) updateHover(null);
     };
 
-    const handleLeave = () => { mouseRef.current = null; onHover(null); };
-    const handleCtxMenu = (e: MouseEvent) => e.preventDefault();
+    const handleClick = (event: MouseEvent) => {
+      if (event.button !== 0 || event.shiftKey) return;
+      const hoveredNode = hoveredNodeRef.current;
+      if (hoveredNode) onSelectRef.current(hoveredNode);
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const sx = (event.clientX - rect.left) * dpr;
+      const sy = (event.clientY - rect.top) * dpr;
+      const { w, h } = sizeRef.current;
+      targetCameraRef.current = zoomAt(targetCameraRef.current, event.deltaY, sx, sy, w, h, MARGIN);
+    };
+
+    const handleContextMenu = (event: MouseEvent) => event.preventDefault();
 
     canvas.addEventListener("mousedown", handleMouseDown);
-    canvas.addEventListener("mousemove", handleMove);
-    canvas.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
     canvas.addEventListener("click", handleClick);
-    canvas.addEventListener("mouseleave", handleLeave);
-    canvas.addEventListener("contextmenu", handleCtxMenu);
+    canvas.addEventListener("wheel", handleWheel, { passive: false });
+    canvas.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("mouseup", handleMouseUp);
+
     return () => {
       canvas.removeEventListener("mousedown", handleMouseDown);
-      canvas.removeEventListener("mousemove", handleMove);
-      canvas.removeEventListener("mouseup", handleMouseUp);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
       canvas.removeEventListener("click", handleClick);
-      canvas.removeEventListener("mouseleave", handleLeave);
-      canvas.removeEventListener("contextmenu", handleCtxMenu);
+      canvas.removeEventListener("wheel", handleWheel);
+      canvas.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [grooves, hovered, onHover, onClick]);
+  }, []);
 
-  // Animation loop
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || grooves.length === 0) return;
-    let spatialRebuildCounter = 0;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
 
-    const draw = () => {
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      const { w, h } = sizeRef.current;
-      timeRef.current += 1;
-      const t = timeRef.current;
-
-      // Smooth camera
-      cameraRef.current = lerpCamera(cameraRef.current, targetCameraRef.current, 0.12);
-      const cam = cameraRef.current;
-      const lod = getLODLevel(cam.zoom);
-
-      // Rebuild spatial index every ~30 frames or when dirty
-      spatialRebuildCounter++;
-      if (indexDirtyRef.current || spatialRebuildCounter > 30) {
-        spatialRef.current.rebuild(grooves);
-        indexDirtyRef.current = false;
-        spatialRebuildCounter = 0;
-      }
-
-      // Compute LOD
-      const lodResult = computeLOD(cam, grooves, clusters, spatialRef.current, grooveMap);
-      lodRef.current = lodResult;
-
-      // Clear + background
-      ctx.clearRect(0, 0, w, h);
-      const bgGrad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w * 0.7);
-      bgGrad.addColorStop(0, "hsl(240, 15%, 8%)");
-      bgGrad.addColorStop(1, "hsl(240, 10%, 4%)");
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, w, h);
-
-      // Grid (adapts to zoom)
-      const gridCount = lod === 3 ? 20 : 10;
-      ctx.strokeStyle = `rgba(255,255,255,${lod === 3 ? 0.02 : 0.012})`;
+    const drawGrid = (camera: Camera, width: number, height: number) => {
+      const viewport = getViewport(camera);
+      const gridCount = camera.zoom >= 4 ? 14 : 10;
+      ctx.strokeStyle = camera.zoom >= 4 ? "rgba(255,255,255,0.035)" : "rgba(255,255,255,0.02)";
       ctx.lineWidth = 1;
-      const vp = getViewport(cam);
-      for (let i = 0; i <= gridCount; i++) {
-        const frac = i / gridCount;
-        const wpx = vp.x + frac * vp.w;
-        const wpy = vp.y + frac * vp.h;
-        const sxStart = worldToScreen(wpx, vp.y, cam, w, h, MARGIN);
-        const sxEnd = worldToScreen(wpx, vp.y + vp.h, cam, w, h, MARGIN);
-        ctx.beginPath(); ctx.moveTo(sxStart.x, sxStart.y); ctx.lineTo(sxEnd.x, sxEnd.y); ctx.stroke();
-        const syStart = worldToScreen(vp.x, wpy, cam, w, h, MARGIN);
-        const syEnd = worldToScreen(vp.x + vp.w, wpy, cam, w, h, MARGIN);
-        ctx.beginPath(); ctx.moveTo(syStart.x, syStart.y); ctx.lineTo(syEnd.x, syEnd.y); ctx.stroke();
-      }
 
-      const frozen = viewMode !== "field";
-
-      // Update positions ONLY for visible grooves + nearby buffer
-      const updateSet = lod === 1 ? [] : lodResult.visibleGrooves;
-      for (const g of updateSet) {
-        if (!frozen) {
-          const [dx, dy] = noise2D(g.px * 10, g.py * 10, t * DRIFT_SPEED);
-          g.tx = g.px + dx * 0.008;
-          g.ty = g.py + dy * 0.008;
-          if (selected && g.id === selected.id) { g.tx = 0.5; g.ty = 0.5; }
-        }
-        g.cx += (g.tx - g.cx) * MORPH_LERP;
-        g.cy += (g.ty - g.cy) * MORPH_LERP;
-      }
-
-      // Landscape contours (only at zoom level 1-2, using clusters)
-      if (viewMode === "landscape" && lod <= 2) {
-        const res = 30;
-        const cellW = (w - 2 * MARGIN) / res;
-        const cellH = (h - 2 * MARGIN) / res;
-        for (let ix = 0; ix < res; ix++) {
-          for (let iy = 0; iy < res; iy++) {
-            const frac_x = (ix + 0.5) / res;
-            const frac_y = (iy + 0.5) / res;
-            const wp = { px: vp.x + frac_x * vp.w, py: vp.y + frac_y * vp.h };
-            let d = 0;
-            for (const c of clusters) {
-              const dist = Math.hypot(c.centroid.px - wp.px, c.centroid.py - wp.py);
-              d += c.size * Math.exp(-dist * dist * 100);
-            }
-            if (d > 1) {
-              ctx.fillStyle = `hsla(220, 60%, 50%, ${Math.min(d * 0.01, 0.25)})`;
-              ctx.fillRect(MARGIN + ix * cellW, MARGIN + iy * cellH, cellW, cellH);
-            }
-          }
-        }
-      }
-
-      // === LEVEL 1: CLUSTER RENDERING ===
-      if (lod === 1) {
-        for (const c of lodResult.visibleClusters) {
-          const { x, y } = worldToScreen(c.centroid.px, c.centroid.py, cam, w, h, MARGIN);
-          const r = 8 + Math.sqrt(c.size) * 3;
-
-          // Cluster glow
-          const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
-          glow.addColorStop(0, c.color.replace("55%)", "35%)"));
-          glow.addColorStop(1, "transparent");
-          ctx.fillStyle = glow;
-          ctx.beginPath();
-          ctx.arc(x, y, r * 3, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Cluster body
-          ctx.fillStyle = c.color;
-          ctx.globalAlpha = 0.7;
-          ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = 1;
-
-          // Size label
-          ctx.fillStyle = "rgba(255,255,255,0.7)";
-          ctx.font = "bold 11px monospace";
-          ctx.textAlign = "center";
-          ctx.fillText(`${c.size}`, x, y + 4);
-
-          // Genre label below
-          ctx.fillStyle = "rgba(255,255,255,0.35)";
-          ctx.font = "9px monospace";
-          ctx.fillText(c.dominantGenre, x, y + r + 14);
-          ctx.textAlign = "start";
-        }
-      }
-
-      // === LEVEL 2–3: NODE RENDERING ===
-      if (lod >= 2) {
-        // Topology connections at level 3
-        if (viewMode === "topology" && lod === 3) {
-          ctx.strokeStyle = "rgba(255,255,255,0.04)";
-          ctx.lineWidth = 1;
-          // Only draw for visible grooves
-          for (const g of lodResult.visibleGrooves) {
-            // Use simple proximity instead of kNearest for perf
-            const nearby = spatialRef.current.queryNearest(g.cx, g.cy, 0.08 / cam.zoom);
-            for (const n of nearby.slice(0, 3)) {
-              if (n.id >= g.id) continue; // avoid double draw
-              const from = worldToScreen(g.cx, g.cy, cam, w, h, MARGIN);
-              const to = worldToScreen(n.cx, n.cy, cam, w, h, MARGIN);
-              ctx.beginPath();
-              ctx.moveTo(from.x, from.y);
-              ctx.lineTo(to.x, to.y);
-              ctx.stroke();
-            }
-          }
-        }
-
-        // Draw nodes
-        for (const g of lodResult.visibleGrooves) {
-          const { x, y } = worldToScreen(g.cx, g.cy, cam, w, h, MARGIN);
-          const isHov = hovered?.id === g.id;
-          const isSel = selected?.id === g.id;
-          const scale = lodResult.nodeScale;
-          const r = g.radius * scale * (isHov ? 1.6 : isSel ? 1.4 : 1);
-
-          // Glow (only level 2+)
-          if (lodResult.showGlow && (g.glowIntensity > 0.3 || isHov || isSel)) {
-            const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, r * (isSel ? 5 : 3));
-            glowGrad.addColorStop(0, g.color.replace("60%)", `${(isSel ? 40 : 25)}%)`));
-            glowGrad.addColorStop(1, "transparent");
-            ctx.fillStyle = glowGrad;
-            ctx.beginPath();
-            ctx.arc(x, y, r * (isSel ? 5 : 3), 0, Math.PI * 2);
-            ctx.fill();
-          }
-
-          // Node circle
-          ctx.fillStyle = g.color;
-          ctx.globalAlpha = isSel ? 1 : isHov ? 0.95 : lod === 2 ? 0.5 : 0.7;
-          ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = 1;
-
-          // Selection ring
-          if (isSel) {
-            const beatPulse = currentStep >= 0 && currentStep % 4 === 0 ? 1.0 : 0.6;
-            const pulse = currentStep >= 0 ? beatPulse : Math.sin(t * 0.05) * 0.3 + 0.7;
-            ctx.strokeStyle = g.color.replace("60%)", `${pulse * 60}%)`);
-            ctx.lineWidth = currentStep >= 0 && currentStep % 4 === 0 ? 2.5 : 1.5;
-            const ringR = currentStep >= 0 ? r + 4 + (currentStep % 4 === 0 ? 4 : 1) : r + 4 + Math.sin(t * 0.03) * 2;
-            ctx.beginPath();
-            ctx.arc(x, y, ringR, 0, Math.PI * 2);
-            ctx.stroke();
-
-            if (currentStep >= 0 && currentStep % 4 === 0) {
-              const flash = ctx.createRadialGradient(x, y, 0, x, y, r * 8);
-              flash.addColorStop(0, g.color.replace("60%)", "40%)").replace("hsl", "hsla").replace(")", ", 0.15)"));
-              flash.addColorStop(1, "transparent");
-              ctx.fillStyle = flash;
-              ctx.beginPath();
-              ctx.arc(x, y, r * 8, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-
-          // Labels at level 3
-          if (lodResult.showLabels && (isHov || isSel)) {
-            ctx.fillStyle = "rgba(255,255,255,0.5)";
-            ctx.font = "9px monospace";
-            ctx.fillText(`${g.genre} · ${g.bpm}bpm`, x + r + 6, y + 3);
-          }
-        }
-
-        // Level 2: also show faint cluster outlines
-        if (lod === 2) {
-          for (const c of lodResult.visibleClusters) {
-            const { x, y } = worldToScreen(c.centroid.px, c.centroid.py, cam, w, h, MARGIN);
-            const r = 6 + Math.sqrt(c.size) * 2;
-            ctx.strokeStyle = c.color.replace("55%)", "30%)");
-            ctx.globalAlpha = 0.2;
-            ctx.lineWidth = 1;
-            ctx.setLineDash([3, 3]);
-            ctx.beginPath();
-            ctx.arc(x, y, r * 2, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.globalAlpha = 1;
-
-            // Small genre label
-            ctx.fillStyle = "rgba(255,255,255,0.2)";
-            ctx.font = "8px monospace";
-            ctx.textAlign = "center";
-            ctx.fillText(c.dominantGenre, x, y + r * 2 + 12);
-            ctx.textAlign = "start";
-          }
-        }
-      }
-
-      // Draw trajectory
-      if (trajectory.length >= 2) {
-        if (trajectory.length !== prevTrajLenRef.current) {
-          trajAnimRef.current = 0;
-          prevTrajLenRef.current = trajectory.length;
-        }
-        const trajProgress = trajAnimRef.current;
-
-        for (let i = 1; i < trajectory.length; i++) {
-          const fromG = grooveMap.get(trajectory[i - 1].groove.id);
-          const toG = grooveMap.get(trajectory[i].groove.id);
-          if (!fromG || !toG) continue;
-
-          const from = worldToScreen(fromG.cx, fromG.cy, cam, w, h, MARGIN);
-          const to = worldToScreen(toG.cx, toG.cy, cam, w, h, MARGIN);
-          const isLatest = i === trajectory.length - 1;
-          const segAlpha = isLatest ? Math.min(trajProgress, 1) : 1;
-          const fadeAlpha = Math.max(0.15, 1 - (trajectory.length - 1 - i) * 0.12);
-
-          ctx.strokeStyle = `rgba(120, 255, 200, ${0.06 * fadeAlpha * segAlpha})`;
-          ctx.lineWidth = 8;
-          ctx.beginPath();
-          ctx.moveTo(from.x, from.y);
-          if (isLatest && trajProgress < 1) {
-            ctx.lineTo(from.x + (to.x - from.x) * trajProgress, from.y + (to.y - from.y) * trajProgress);
-          } else {
-            ctx.lineTo(to.x, to.y);
-          }
-          ctx.stroke();
-
-          ctx.strokeStyle = `rgba(120, 255, 200, ${0.35 * fadeAlpha * segAlpha})`;
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([4, 3]);
-          ctx.beginPath();
-          ctx.moveTo(from.x, from.y);
-          if (isLatest && trajProgress < 1) {
-            ctx.lineTo(from.x + (to.x - from.x) * trajProgress, from.y + (to.y - from.y) * trajProgress);
-          } else {
-            ctx.lineTo(to.x, to.y);
-          }
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          if (i < trajectory.length - 1) {
-            ctx.fillStyle = `rgba(120, 255, 200, ${0.4 * fadeAlpha})`;
-            ctx.beginPath();
-            ctx.arc(from.x, from.y, 3, 0, Math.PI * 2);
-            ctx.fill();
-          }
-
-          if (!isLatest || trajProgress >= 0.8) {
-            const mid = isLatest && trajProgress < 1
-              ? { x: from.x + (to.x - from.x) * trajProgress * 0.5, y: from.y + (to.y - from.y) * trajProgress * 0.5 }
-              : { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
-            ctx.fillStyle = `rgba(120, 255, 200, ${0.25 * fadeAlpha})`;
-            ctx.font = "bold 8px monospace";
-            ctx.fillText(`${i}`, mid.x + 4, mid.y - 4);
-          }
-        }
-
-        if (trajProgress < 1) {
-          trajAnimRef.current = Math.min(1, trajProgress + 0.025);
-        }
-      }
-
-      // Tooltip
-      if (hovered && mouseRef.current) {
-        const { x, y } = worldToScreen(hovered.cx, hovered.cy, cam, w, h, MARGIN);
-        ctx.fillStyle = "rgba(0,0,0,0.85)";
-        ctx.strokeStyle = "rgba(255,255,255,0.1)";
-        ctx.lineWidth = 1;
-        const tw = 160, th = 48;
-        const tx = x + 14, ty = y - th - 6;
+      for (let index = 0; index <= gridCount; index++) {
+        const fraction = index / gridCount;
+        const worldX = viewport.x + fraction * viewport.w;
+        const worldY = viewport.y + fraction * viewport.h;
+        const verticalStart = worldToScreen(worldX, viewport.y, camera, width, height, MARGIN);
+        const verticalEnd = worldToScreen(worldX, viewport.y + viewport.h, camera, width, height, MARGIN);
         ctx.beginPath();
-        ctx.roundRect(tx, ty, tw, th, 6);
-        ctx.fill();
+        ctx.moveTo(verticalStart.x, verticalStart.y);
+        ctx.lineTo(verticalEnd.x, verticalEnd.y);
         ctx.stroke();
 
-        ctx.fillStyle = "rgba(255,255,255,0.9)";
-        ctx.font = "bold 12px monospace";
-        ctx.fillText(`${hovered.genre} · ${hovered.bpm} bpm`, tx + 10, ty + 18);
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.font = "10px monospace";
-        ctx.fillText(`swing ${(hovered.norm_swing * 100).toFixed(0)}% · sync ${(hovered.norm_syncopation * 100).toFixed(0)}%`, tx + 10, ty + 34);
+        const horizontalStart = worldToScreen(viewport.x, worldY, camera, width, height, MARGIN);
+        const horizontalEnd = worldToScreen(viewport.x + viewport.w, worldY, camera, width, height, MARGIN);
+        ctx.beginPath();
+        ctx.moveTo(horizontalStart.x, horizontalStart.y);
+        ctx.lineTo(horizontalEnd.x, horizontalEnd.y);
+        ctx.stroke();
       }
-
-      // Zoom indicator
-      const zoomPct = Math.round(cam.zoom * 100);
-      ctx.fillStyle = "rgba(255,255,255,0.15)";
-      ctx.font = "10px monospace";
-      ctx.textAlign = "end";
-      ctx.fillText(`${zoomPct}% · LOD ${lod}`, w - MARGIN, h - 12);
-      ctx.textAlign = "start";
-
-      // Expose camera state for UI
-      if (Math.abs(cam.zoom - cameraState.zoom) > 0.01) {
-        setCameraState({ ...cam });
-      }
-
-      rafRef.current = requestAnimationFrame(draw);
     };
 
-    rafRef.current = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [grooves, selected, hovered, viewMode, clusters, grooveMap, cameraState.zoom]);
+    const drawLandscape = (visibleClusters: Cluster[], camera: Camera, width: number, height: number) => {
+      for (const cluster of visibleClusters) {
+        const { x, y } = worldToScreen(cluster.centroid.px, cluster.centroid.py, camera, width, height, MARGIN);
+        const radius = (10 + Math.sqrt(cluster.size) * 2.2) * camera.zoom * 0.35;
+        ctx.fillStyle = withAlpha(cluster.color, 0.08);
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
 
-  // Reset zoom handler
+        ctx.strokeStyle = withAlpha(cluster.color, 0.2);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, radius * 1.3, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    };
+
+    const drawClusters = (visibleClusters: Cluster[], camera: Camera, width: number, height: number, detailed: boolean) => {
+      for (const cluster of visibleClusters) {
+        const { x, y } = worldToScreen(cluster.centroid.px, cluster.centroid.py, camera, width, height, MARGIN);
+        const radius = 7 + Math.sqrt(cluster.size) * (detailed ? 2 : 2.8);
+
+        ctx.fillStyle = withAlpha(cluster.color, detailed ? 0.16 : 0.32);
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = withAlpha(cluster.color, detailed ? 0.18 : 0.4);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, detailed ? radius * 1.7 : radius * 1.3, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = detailed ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.6)";
+        ctx.font = detailed ? "8px monospace" : "bold 10px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(detailed ? cluster.dominantGenre : `${cluster.size}`, x, y + (detailed ? radius * 1.7 + 10 : 3));
+        ctx.textAlign = "start";
+      }
+    };
+
+    const drawTopology = (visibleNodes: RenderGroove[], camera: Camera, width: number, height: number) => {
+      const visibleIds = new Set(visibleNodes.map(node => node.id));
+      const drawn = new Set<string>();
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 1;
+
+      for (const node of visibleNodes) {
+        for (const neighborId of node.similar.slice(0, 2)) {
+          if (!visibleIds.has(neighborId)) continue;
+          const edgeKey = node.id < neighborId ? `${node.id}-${neighborId}` : `${neighborId}-${node.id}`;
+          if (drawn.has(edgeKey)) continue;
+          drawn.add(edgeKey);
+
+          const neighbor = nodeMapRef.current.get(neighborId);
+          if (!neighbor) continue;
+
+          const from = worldToScreen(node.cx, node.cy, camera, width, height, MARGIN);
+          const to = worldToScreen(neighbor.cx, neighbor.cy, camera, width, height, MARGIN);
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          ctx.lineTo(to.x, to.y);
+          ctx.stroke();
+        }
+      }
+    };
+
+    const drawTrajectory = (camera: Camera, width: number, height: number) => {
+      const points = trajectoryRef.current;
+      if (points.length < 2) return;
+
+      ctx.strokeStyle = "rgba(120, 255, 200, 0.28)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+
+      for (let index = 1; index < points.length; index++) {
+        const from = nodeMapRef.current.get(points[index - 1].grooveId);
+        const to = nodeMapRef.current.get(points[index].grooveId);
+        if (!from || !to) continue;
+
+        const fromPoint = worldToScreen(from.cx, from.cy, camera, width, height, MARGIN);
+        const toPoint = worldToScreen(to.cx, to.cy, camera, width, height, MARGIN);
+        ctx.beginPath();
+        ctx.moveTo(fromPoint.x, fromPoint.y);
+        ctx.lineTo(toPoint.x, toPoint.y);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(120, 255, 200, 0.4)";
+        ctx.beginPath();
+        ctx.arc(toPoint.x, toPoint.y, index === points.length - 1 ? 3.5 : 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.setLineDash([]);
+    };
+
+    const drawTooltip = (node: RenderGroove, camera: Camera, width: number, height: number) => {
+      const { x, y } = worldToScreen(node.cx, node.cy, camera, width, height, MARGIN);
+      const tooltipWidth = 164;
+      const tooltipHeight = 48;
+      const tx = Math.min(width - tooltipWidth - 12, x + 14);
+      const ty = Math.max(12, y - tooltipHeight - 8);
+
+      ctx.fillStyle = "rgba(0,0,0,0.82)";
+      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(tx, ty, tooltipWidth, tooltipHeight, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.font = "bold 12px monospace";
+      ctx.fillText(`${node.genre} · ${node.bpm} bpm`, tx + 10, ty + 18);
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.font = "10px monospace";
+      ctx.fillText(`swing ${(node.norm_swing * 100).toFixed(0)}% · sync ${(node.norm_syncopation * 100).toFixed(0)}%`, tx + 10, ty + 34);
+    };
+
+    const loop = () => {
+      const { w, h } = sizeRef.current;
+      if (!w || !h) {
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
+      cameraRef.current = lerpCamera(cameraRef.current, targetCameraRef.current, 0.14);
+      const camera = cameraRef.current;
+      const nodes = nodesRef.current;
+      const currentView = viewModeRef.current;
+
+      const lodResult = computeLOD(camera, nodes, clustersRef.current, spatialRef.current, nodeMapRef.current, MAX_VISIBLE_NODES);
+      const visibleNodes = lodResult.visibleGrooves;
+      const now = performance.now() * 0.001;
+      const frozen = currentView !== "field";
+
+      for (let index = 0; index < visibleNodes.length; index++) {
+        const node = visibleNodes[index];
+        const drift = frozen ? 0 : DRIFT_AMPLITUDE / Math.max(1, camera.zoom * 0.6);
+        const targetX = node.tx + Math.sin(now * 0.85 + node.phase + index * 0.05) * drift;
+        const targetY = node.ty + Math.cos(now * 0.9 + node.phase + index * 0.05) * drift;
+        node.cx += (targetX - node.cx) * MORPH_LERP;
+        node.cy += (targetY - node.cy) * MORPH_LERP;
+      }
+
+      spatialRef.current.rebuild(nodes);
+
+      ctx.clearRect(0, 0, w, h);
+      drawGrid(camera, w, h);
+
+      if (currentView === "landscape") {
+        drawLandscape(lodResult.visibleClusters, camera, w, h);
+      }
+
+      if (lodResult.level === 1) {
+        drawClusters(lodResult.visibleClusters, camera, w, h, false);
+      } else {
+        if (currentView === "topology") {
+          drawTopology(visibleNodes, camera, w, h);
+        }
+
+        if (lodResult.level === 2) {
+          drawClusters(lodResult.visibleClusters, camera, w, h, true);
+        }
+
+        const selectedNodeId = selectedIdRef.current;
+        const hoveredNodeId = hoveredIdRef.current;
+        const currentStep = playbackStepRef.current;
+
+        for (const node of visibleNodes) {
+          const { x, y } = worldToScreen(node.cx, node.cy, camera, w, h, MARGIN);
+          const isSelected = node.id === selectedNodeId;
+          const isHovered = node.id === hoveredNodeId;
+          const radius = node.radius * lodResult.nodeScale * (isHovered ? 1.45 : isSelected ? 1.3 : 1);
+
+          ctx.fillStyle = node.color;
+          ctx.globalAlpha = isSelected ? 1 : isHovered ? 0.95 : lodResult.level === 2 ? 0.44 : 0.68;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+
+          if (isSelected || isHovered) {
+            const pulse = isSelected
+              ? currentStep >= 0
+                ? (currentStep % 4 === 0 ? 1.2 : 0.8)
+                : (0.9 + Math.sin(now * 4) * 0.08)
+              : 0.7;
+
+            ctx.strokeStyle = withAlpha(node.color, isSelected ? 0.78 : 0.45);
+            ctx.lineWidth = isSelected ? 2 : 1.5;
+            ctx.beginPath();
+            ctx.arc(x, y, radius + 4 + pulse, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = "rgba(255,255,255,0.55)";
+            ctx.font = "9px monospace";
+            ctx.fillText(`${node.genre} · ${node.bpm}bpm`, x + radius + 6, y + 3);
+          }
+        }
+      }
+
+      drawTrajectory(camera, w, h);
+
+      if (hoveredNodeRef.current && mouseRef.current) {
+        drawTooltip(hoveredNodeRef.current, camera, w, h);
+      }
+
+      if (zoomLabelRef.current) {
+        zoomLabelRef.current.textContent = `${Math.round(camera.zoom * 100)}% · LOD ${lodResult.level}`;
+      }
+      if (zoomHintRef.current) {
+        zoomHintRef.current.style.opacity = camera.zoom <= 1.05 ? "1" : "0";
+      }
+
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
   const resetZoom = useCallback(() => {
     targetCameraRef.current = { ...DEFAULT_CAMERA };
   }, []);
@@ -515,28 +545,48 @@ export default function GrooveField({
         className="w-full h-full cursor-crosshair"
         style={{ display: "block" }}
       />
-      {/* Zoom controls */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-1 z-10">
-        <button
-          onClick={() => { targetCameraRef.current = { ...targetCameraRef.current, zoom: Math.min(12, targetCameraRef.current.zoom * 1.5) }; }}
-          className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/60 hover:text-white/90 text-sm font-mono flex items-center justify-center transition-colors"
-        >+</button>
-        <button
-          onClick={() => { targetCameraRef.current = { ...targetCameraRef.current, zoom: Math.max(0.8, targetCameraRef.current.zoom / 1.5) }; }}
-          className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/60 hover:text-white/90 text-sm font-mono flex items-center justify-center transition-colors"
-        >−</button>
-        <button
-          onClick={resetZoom}
-          className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/40 hover:text-white/80 text-[9px] font-mono flex items-center justify-center transition-colors"
-          title="Reset zoom"
-        >⌂</button>
-      </div>
-      {/* Zoom hint */}
-      {cameraState.zoom <= 1.05 && (
-        <div className="absolute bottom-4 left-4 text-[9px] text-white/15 font-mono pointer-events-none">
-          Scroll to zoom · Shift+drag to pan
+      <div className="absolute bottom-4 right-4 flex flex-col items-end gap-1 z-10">
+        <div ref={zoomLabelRef} className="text-[10px] text-white/20 font-mono pointer-events-none">
+          100% · LOD 1
         </div>
-      )}
+        <div className="flex flex-col gap-1">
+          <button
+            onClick={() => {
+              targetCameraRef.current = {
+                ...targetCameraRef.current,
+                zoom: Math.min(12, targetCameraRef.current.zoom * 1.5),
+              };
+            }}
+            className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/60 hover:text-white/90 text-sm font-mono flex items-center justify-center transition-colors"
+          >
+            +
+          </button>
+          <button
+            onClick={() => {
+              targetCameraRef.current = {
+                ...targetCameraRef.current,
+                zoom: Math.max(0.8, targetCameraRef.current.zoom / 1.5),
+              };
+            }}
+            className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/60 hover:text-white/90 text-sm font-mono flex items-center justify-center transition-colors"
+          >
+            −
+          </button>
+          <button
+            onClick={resetZoom}
+            className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/40 hover:text-white/80 text-[9px] font-mono flex items-center justify-center transition-colors"
+            title="Reset zoom"
+          >
+            ⌂
+          </button>
+        </div>
+      </div>
+      <div
+        ref={zoomHintRef}
+        className="absolute bottom-4 left-4 text-[9px] text-white/15 font-mono pointer-events-none transition-opacity duration-150"
+      >
+        Scroll to zoom · Shift+drag to pan
+      </div>
     </div>
   );
 }

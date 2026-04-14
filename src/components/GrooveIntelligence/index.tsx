@@ -1,15 +1,14 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import type { NormalizedGroove, RawGroove, ViewMode, TrajectoryPoint } from "./types";
-import { normalizeGrooves, grooveDistance, syntheticDistance } from "./utils";
+import type { Cluster } from "./clustering";
+import { normalizeGrooves, grooveDistance, MAX_RENDERED_GROOVES, sampleGrooveSet } from "./utils";
 import { playGrooveSequence, generatePattern, startPlayback, stopPlayback } from "./audioEngine";
 import { clusterGrooves, buildSimilarityCache } from "./clustering";
 import GrooveField from "./GrooveField";
 import GrooveDNA from "./GrooveDNA";
 import GrooveSculptor from "./GrooveSculptor";
 
-const INITIAL_BATCH = 300;
-const BATCH_SIZE = 500;
-const CLUSTER_K = 20;
+const CLUSTER_K = 12;
 
 const VIEW_MODES: { key: ViewMode; label: string }[] = [
   { key: "field", label: "Field" },
@@ -17,140 +16,138 @@ const VIEW_MODES: { key: ViewMode; label: string }[] = [
   { key: "landscape", label: "Landscape" },
 ];
 
+interface GrooveScene {
+  grooves: NormalizedGroove[];
+  grooveMap: Map<string, NormalizedGroove>;
+  clusters: Cluster[];
+  totalCount: number;
+  genreCount: number;
+}
+
 export default function GrooveIntelligenceLab() {
-  const [grooves, setGrooves] = useState<NormalizedGroove[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [selected, setSelected] = useState<NormalizedGroove | null>(null);
-  const [hovered, setHovered] = useState<NormalizedGroove | null>(null);
+  const [scene, setScene] = useState<GrooveScene | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("field");
   const [sculptorActive, setSculptorActive] = useState(false);
   const [sculptorValues, setSculptorValues] = useState({ energy: 0.5, swing: 0.5, syncopation: 0.5, dynamics: 0.5 });
-  const [currentStep, setCurrentStep] = useState(-1);
   const [trajectory, setTrajectory] = useState<TrajectoryPoint[]>([]);
-  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const playbackTimerRef = useRef<number | null>(null);
 
-  const sculptorRef = useRef(sculptorValues);
-  sculptorRef.current = sculptorValues;
-  const allRawRef = useRef<RawGroove[]>([]);
-  const loadingRef = useRef(false);
-
-  // Groove lookup map (O(1) access)
-  const grooveMap = useMemo(() => {
-    const m = new Map<string, NormalizedGroove>();
-    for (const g of grooves) m.set(g.id, g);
-    return m;
-  }, [grooves]);
-
-  // Clusters (recomputed when grooves change significantly)
-  const clusters = useMemo(() => {
-    if (grooves.length < 10) return [];
-    const k = Math.min(CLUSTER_K, Math.max(5, Math.floor(grooves.length / 30)));
-    return clusterGrooves(grooves, k);
-  }, [grooves]);
-
-  // Progressive loading
   useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
+
     fetch("/data/egmd.json")
-      .then(r => r.json())
+      .then(response => response.json())
       .then((data: RawGroove[]) => {
-        allRawRef.current = data;
-        setTotalCount(data.length);
+        if (cancelled) return;
 
-        // Load initial batch immediately
-        const initial = data.slice(0, INITIAL_BATCH);
-        setGrooves(normalizeGrooves(initial));
-        setLoadingProgress(Math.min(1, initial.length / data.length));
+        const workingSet = sampleGrooveSet(data, MAX_RENDERED_GROOVES);
+        const normalized = normalizeGrooves(workingSet, data);
+        const similarity = buildSimilarityCache(normalized, 5);
+        const grooves = normalized.map(groove => ({
+          ...groove,
+          similar: similarity.neighbors.get(groove.id) ?? [],
+        }));
+        const grooveMap = new Map(grooves.map(groove => [groove.id, groove]));
+        const clusterCount = Math.min(CLUSTER_K, Math.max(6, Math.floor(grooves.length / 24)));
+        const clusters = clusterGrooves(grooves, clusterCount);
 
-        // Progressively load remaining
-        if (data.length > INITIAL_BATCH) {
-          loadingRef.current = true;
-          let loaded = INITIAL_BATCH;
-          const loadNext = () => {
-            if (!loadingRef.current) return;
-            const next = data.slice(loaded, loaded + BATCH_SIZE);
-            if (next.length === 0) {
-              loadingRef.current = false;
-              return;
-            }
-            loaded += next.length;
-            const normalized = normalizeGrooves(next);
-            setGrooves(prev => [...prev, ...normalized]);
-            setLoadingProgress(Math.min(1, loaded / data.length));
-
-            if (loaded < data.length) {
-              setTimeout(loadNext, 50);
-            } else {
-              loadingRef.current = false;
-            }
-          };
-          setTimeout(loadNext, 100);
-        }
+        setScene({
+          grooves,
+          grooveMap,
+          clusters,
+          totalCount: data.length,
+          genreCount: new Set(grooves.map(groove => groove.genre)).size,
+        });
+        setSelectedId(current => current ?? grooves[0]?.id ?? null);
       })
-      .catch(err => console.error("Failed to load groove data:", err));
+      .catch(error => {
+        console.error("Failed to load groove data:", error);
+        if (!cancelled) setLoadError("Unable to initialize the groove field.");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
 
-    return () => { loadingRef.current = false; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Selection handler
-  const handleSelect = useCallback((g: NormalizedGroove) => {
-    stopPlayback();
-    setCurrentStep(-1);
-    setSelected(g);
-    playGrooveSequence(g.norm_density, g.norm_swing, g.norm_velocity);
-
-    setTrajectory(prev => [...prev, { groove: g, timestamp: Date.now() }]);
-
-    const pattern = generatePattern(g);
-    setTimeout(() => {
-      startPlayback(g, pattern, (step) => setCurrentStep(step));
-    }, 200);
-
-    // Warp field
-    setGrooves(prev => prev.map(node => {
-      if (node.id === g.id) {
-        return { ...node, tx: 0.5, ty: 0.5 };
-      }
-      const d = grooveDistance(g, node);
-      const angle = Math.atan2(node.py - g.py, node.px - g.px);
-      const r = 0.08 + d * 0.35;
-      return {
-        ...node,
-        tx: 0.5 + Math.cos(angle) * r,
-        ty: 0.5 + Math.sin(angle) * r,
-      };
-    }));
-  }, []);
-
-  // Sculptor morph
   useEffect(() => {
-    if (!sculptorActive || grooves.length === 0) return;
-    const id = setTimeout(() => {
-      const target = sculptorRef.current;
-      setGrooves(prev => prev.map(node => {
-        const d = syntheticDistance(target, node);
-        const angle = Math.atan2(node.py - 0.5, node.px - 0.5);
-        const r = 0.05 + d * 0.4;
-        return {
-          ...node,
-          tx: 0.5 + Math.cos(angle) * r,
-          ty: 0.5 + Math.sin(angle) * r,
-        };
-      }));
+    if (!sculptorActive) return;
+    if (playbackTimerRef.current !== null) {
+      window.clearTimeout(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+    stopPlayback();
+    setSelectedId(null);
+  }, [sculptorActive]);
+
+  useEffect(() => {
+    return () => {
+      if (playbackTimerRef.current !== null) window.clearTimeout(playbackTimerRef.current);
       stopPlayback();
-      setCurrentStep(-1);
-      setSelected(null);
-    }, 100);
-    return () => clearTimeout(id);
-  }, [sculptorActive, sculptorValues, grooves.length]);
+    };
+  }, []);
 
-  // Cleanup
-  useEffect(() => () => stopPlayback(), []);
+  const selected = useMemo(() => {
+    if (!scene || !selectedId) return null;
+    return scene.grooveMap.get(selectedId) ?? null;
+  }, [scene, selectedId]);
 
-  const handleHover = useCallback((g: NormalizedGroove | null) => setHovered(g), []);
+  const handleSelect = useCallback((groove: NormalizedGroove) => {
+    if (playbackTimerRef.current !== null) {
+      window.clearTimeout(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+
+    stopPlayback();
+    playGrooveSequence(groove.norm_density, groove.norm_swing, groove.norm_velocity);
+    setSelectedId(groove.id);
+    setTrajectory(previous => (
+      previous[previous.length - 1]?.grooveId === groove.id
+        ? previous
+        : [...previous, { grooveId: groove.id, timestamp: Date.now() }]
+    ));
+
+    const pattern = generatePattern(groove);
+    playbackTimerRef.current = window.setTimeout(() => {
+      startPlayback(groove, pattern);
+      playbackTimerRef.current = null;
+    }, 80);
+  }, []);
+
+  const trajectoryStats = useMemo(() => {
+    if (!scene || trajectory.length < 2) return null;
+
+    let totalDistance = 0;
+    for (let index = 1; index < trajectory.length; index++) {
+      const from = scene.grooveMap.get(trajectory[index - 1].grooveId);
+      const to = scene.grooveMap.get(trajectory[index].grooveId);
+      if (!from || !to) continue;
+      totalDistance += grooveDistance(from, to);
+    }
+
+    const previous = scene.grooveMap.get(trajectory[trajectory.length - 2].grooveId);
+    const current = scene.grooveMap.get(trajectory[trajectory.length - 1].grooveId);
+
+    return {
+      totalDistance,
+      lastHop: previous && current ? grooveDistance(previous, current) : 0,
+    };
+  }, [scene, trajectory]);
+
+  const clearTrajectory = useCallback(() => {
+    setTrajectory(selected ? [{ grooveId: selected.id, timestamp: Date.now() }] : []);
+  }, [selected]);
 
   return (
     <div className="fixed inset-0 flex flex-col bg-[hsl(240,10%,4%)] text-foreground overflow-hidden">
-      {/* Header */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/5 shrink-0 z-10">
         <div className="flex items-center gap-4">
           <a href="/" className="text-muted-foreground hover:text-foreground transition-colors text-xs font-mono">← Back</a>
@@ -160,70 +157,61 @@ export default function GrooveIntelligenceLab() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {VIEW_MODES.map(m => (
+          {VIEW_MODES.map(mode => (
             <button
-              key={m.key}
-              onClick={() => setViewMode(m.key)}
+              key={mode.key}
+              onClick={() => setViewMode(mode.key)}
               className={`px-3 py-1 text-[10px] font-mono uppercase tracking-wider rounded transition-colors ${
-                viewMode === m.key
+                viewMode === mode.key
                   ? "bg-foreground/10 text-foreground"
                   : "text-muted-foreground/50 hover:text-muted-foreground"
               }`}
             >
-              {m.label}
+              {mode.label}
             </button>
           ))}
         </div>
         <div className="flex items-center gap-3">
-          {/* Loading progress */}
-          {loadingProgress < 1 && (
-            <div className="flex items-center gap-2">
-              <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500/60 rounded-full transition-all duration-300" style={{ width: `${loadingProgress * 100}%` }} />
-              </div>
-              <span className="text-[9px] text-muted-foreground/40 font-mono">Loading…</span>
-            </div>
+          {isLoading && (
+            <span className="text-[9px] text-muted-foreground/40 font-mono">Initializing working set…</span>
           )}
-          <span className="text-[10px] text-muted-foreground/30 font-mono">
-            {grooves.length}{totalCount > grooves.length ? `/${totalCount}` : ''} nodes · {clusters.length} clusters · {new Set(grooves.map(g => g.genre)).size} genres
-          </span>
+          {!isLoading && scene && (
+            <span className="text-[10px] text-muted-foreground/30 font-mono">
+              {scene.grooves.length}/{scene.totalCount} sampled nodes · {scene.clusters.length} clusters · {scene.genreCount} genres
+            </span>
+          )}
         </div>
       </header>
 
-      {/* Main */}
       <div className="flex flex-1 min-h-0">
-        {/* Canvas Field */}
         <div className="flex-1 relative">
-          <GrooveField
-            grooves={grooves}
-            selected={selected}
-            hovered={hovered}
-            onHover={handleHover}
-            onClick={handleSelect}
-            viewMode={viewMode}
-            currentStep={currentStep}
-            trajectory={trajectory}
-            clusters={clusters}
-            grooveMap={grooveMap}
-          />
-          {/* Trajectory distance meter */}
-          {trajectory.length >= 2 && (
+          {scene && (
+            <GrooveField
+              grooves={scene.grooves}
+              selectedId={selectedId}
+              onSelect={handleSelect}
+              viewMode={viewMode}
+              trajectory={trajectory}
+              clusters={scene.clusters}
+              sculptorActive={sculptorActive}
+              sculptorValues={sculptorValues}
+            />
+          )}
+
+          {trajectoryStats && (
             <div className="absolute top-3 left-3 bg-black/70 border border-white/10 rounded-lg px-3 py-2 pointer-events-auto z-10">
               <div className="flex items-center gap-3">
                 <div>
                   <p className="text-[9px] text-muted-foreground/60 font-mono uppercase tracking-wider">Trajectory</p>
                   <p className="text-xs font-mono text-foreground">
-                    {trajectory.length} stops · Σd = {trajectory.reduce((sum, tp, i) => {
-                      if (i === 0) return 0;
-                      return sum + grooveDistance(tp.groove, trajectory[i - 1].groove);
-                    }, 0).toFixed(2)}
+                    {trajectory.length} stops · Σd = {trajectoryStats.totalDistance.toFixed(2)}
                   </p>
                   <p className="text-[9px] font-mono text-muted-foreground/40 mt-0.5">
-                    Last hop: {grooveDistance(trajectory[trajectory.length - 1].groove, trajectory[trajectory.length - 2].groove).toFixed(3)}
+                    Last hop: {trajectoryStats.lastHop.toFixed(3)}
                   </p>
                 </div>
                 <button
-                  onClick={() => setTrajectory(selected ? [{ groove: selected, timestamp: Date.now() }] : [])}
+                  onClick={clearTrajectory}
                   className="text-[9px] font-mono text-muted-foreground/50 hover:text-foreground border border-white/10 rounded px-2 py-1 transition-colors"
                 >
                   Clear
@@ -231,29 +219,37 @@ export default function GrooveIntelligenceLab() {
               </div>
             </div>
           )}
-          {/* Meta text */}
+
           <div className="absolute bottom-12 left-4 right-16 text-center pointer-events-none">
             <p className="text-[10px] text-white/15 font-mono tracking-wider">
-              Each point represents a human performance embedded in perceptual rhythm space. Scroll to zoom · Shift+drag to pan.
+              Sampled, precomputed groove field. Scroll to zoom · Shift+drag to pan.
             </p>
           </div>
+
+          {!scene && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="rounded-lg border border-white/10 bg-black/40 px-4 py-3 text-sm font-mono text-muted-foreground">
+                {loadError ?? "No groove scene available."}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right Panel */}
         <aside className="w-72 border-l border-white/5 p-4 overflow-y-auto shrink-0 flex flex-col gap-5">
           <GrooveSculptor
             values={sculptorValues}
             onChange={setSculptorValues}
             active={sculptorActive}
-            onToggle={() => setSculptorActive(a => !a)}
+            onToggle={() => setSculptorActive(current => !current)}
           />
           <div className="h-px bg-white/5" />
-          <GrooveDNA
-            groove={selected}
-            allGrooves={grooves}
-            onSelectGroove={handleSelect}
-            currentStep={currentStep}
-          />
+          {scene && (
+            <GrooveDNA
+              groove={selected}
+              grooveMap={scene.grooveMap}
+              onSelectGroove={handleSelect}
+            />
+          )}
         </aside>
       </div>
     </div>

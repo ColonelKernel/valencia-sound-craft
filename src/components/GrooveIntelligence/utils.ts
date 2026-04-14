@@ -3,13 +3,15 @@ import type { RawGroove, NormalizedGroove } from "./types";
 // --- Normalization ---
 function clamp01(v: number) { return Math.max(0, Math.min(1, v)); }
 
-export function normalizeGrooves(raw: RawGroove[]): NormalizedGroove[] {
+export const MAX_RENDERED_GROOVES = 280;
+
+export function normalizeGrooves(raw: RawGroove[], reference: RawGroove[] = raw): NormalizedGroove[] {
   const ranges = {
-    bpm: extent(raw, g => g.bpm),
-    density: extent(raw, g => g.note_density),
-    syncopation: extent(raw, g => g.syncopation),
-    swing: extent(raw, g => g.swing_ratio),
-    velocity: extent(raw, g => g.velocity_variance),
+    bpm: extent(reference, g => g.bpm),
+    density: extent(reference, g => g.note_density),
+    syncopation: extent(reference, g => g.syncopation),
+    swing: extent(reference, g => g.swing_ratio),
+    velocity: extent(reference, g => g.velocity_variance),
   };
 
   return raw.map(g => {
@@ -38,13 +40,74 @@ export function normalizeGrooves(raw: RawGroove[]): NormalizedGroove[] {
       norm_swing: nw,
       norm_velocity: nv,
       px, py,
-      cx: px, cy: py,
-      tx: px, ty: py,
       radius: 3 + nv * 6,
       color: syncopationColor(ns),
       glowIntensity: nw,
+      similar: [],
     };
   });
+}
+
+export function sampleGrooveSet(raw: RawGroove[], limit = MAX_RENDERED_GROOVES): RawGroove[] {
+  if (raw.length <= limit) return raw;
+
+  const genreGroups = new Map<string, RawGroove[]>();
+  for (const groove of raw) {
+    const key = groove.genre || "unknown";
+    const group = genreGroups.get(key);
+    if (group) group.push(groove);
+    else genreGroups.set(key, [groove]);
+  }
+
+  const orderedGroups = [...genreGroups.entries()].sort(([a], [b]) => a.localeCompare(b));
+  const allocations = new Map<string, number>();
+  let assigned = 0;
+
+  for (const [genre, items] of orderedGroups) {
+    const share = Math.max(1, Math.floor((items.length / raw.length) * limit));
+    const allocation = Math.min(items.length, share);
+    allocations.set(genre, allocation);
+    assigned += allocation;
+  }
+
+  while (assigned > limit) {
+    const next = orderedGroups
+      .map(([genre, items]) => ({ genre, room: allocations.get(genre)! - 1, size: items.length }))
+      .filter(item => item.room > 0)
+      .sort((a, b) => b.room - a.room || b.size - a.size)[0];
+
+    if (!next) break;
+    allocations.set(next.genre, allocations.get(next.genre)! - 1);
+    assigned -= 1;
+  }
+
+  while (assigned < limit) {
+    const next = orderedGroups
+      .map(([genre, items]) => ({ genre, remaining: items.length - allocations.get(genre)! }))
+      .filter(item => item.remaining > 0)
+      .sort((a, b) => b.remaining - a.remaining)[0];
+
+    if (!next) break;
+    allocations.set(next.genre, allocations.get(next.genre)! + 1);
+    assigned += 1;
+  }
+
+  const sample: RawGroove[] = [];
+  for (const [genre, items] of orderedGroups) {
+    const count = allocations.get(genre) ?? 0;
+    if (count <= 0) continue;
+    if (count >= items.length) {
+      sample.push(...items);
+      continue;
+    }
+
+    const step = items.length / count;
+    for (let i = 0; i < count; i++) {
+      sample.push(items[Math.min(items.length - 1, Math.floor(i * step))]);
+    }
+  }
+
+  return sample.slice(0, limit);
 }
 
 function extent(arr: RawGroove[], fn: (g: RawGroove) => number): [number, number] {
@@ -112,14 +175,4 @@ export function noise2D(x: number, y: number, t: number): [number, number] {
   const s1 = Math.sin(x * 12.9898 + y * 78.233 + t * 0.3) * 43758.5453;
   const s2 = Math.sin(x * 63.7264 + y * 10.873 + t * 0.5) * 28461.2319;
   return [(s1 - Math.floor(s1)) - 0.5, (s2 - Math.floor(s2)) - 0.5];
-}
-
-// K nearest
-export function kNearest(grooves: NormalizedGroove[], target: NormalizedGroove, k: number): NormalizedGroove[] {
-  return grooves
-    .filter(g => g.id !== target.id)
-    .map(g => ({ g, d: grooveDistance(target, g) }))
-    .sort((a, b) => a.d - b.d)
-    .slice(0, k)
-    .map(x => x.g);
 }

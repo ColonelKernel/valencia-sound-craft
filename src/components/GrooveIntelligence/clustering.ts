@@ -29,11 +29,21 @@ export function clusterGrooves(grooves: NormalizedGroove[], k: number): Cluster[
   if (grooves.length === 0) return [];
   k = Math.min(k, grooves.length);
 
-  // Initialize centroids with k-means++ style
+  // Initialize centroids deterministically for stable layouts.
   const centroids: number[][] = [];
   const indices = new Set<number>();
-  indices.add(Math.floor(Math.random() * grooves.length));
-  centroids.push(featureVec(grooves[[...indices][0]]));
+  let firstIdx = 0;
+  let minCenterDist = Infinity;
+  for (let i = 0; i < grooves.length; i++) {
+    const groove = grooves[i];
+    const dist = Math.hypot(groove.px - 0.5, groove.py - 0.5);
+    if (dist < minCenterDist) {
+      minCenterDist = dist;
+      firstIdx = i;
+    }
+  }
+  indices.add(firstIdx);
+  centroids.push(featureVec(grooves[firstIdx]));
 
   while (centroids.length < k) {
     let maxDist = -1;

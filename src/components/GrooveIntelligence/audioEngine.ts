@@ -170,11 +170,57 @@ export interface PlaybackState {
   playing: boolean;
   currentStep: number;
   pattern: DrumPattern | null;
+  grooveId: string | null;
 }
 
 let _loopTimer: number | null = null;
 let _currentStep = -1;
+let _currentPattern: DrumPattern | null = null;
+let _currentGrooveId: string | null = null;
 let _onStepChange: ((step: number) => void) | null = null;
+const _stepListeners = new Set<(step: number) => void>();
+const _stateListeners = new Set<(state: PlaybackState) => void>();
+
+function emitStep(step: number) {
+  _onStepChange?.(step);
+  for (const listener of _stepListeners) listener(step);
+}
+
+function emitState() {
+  const snapshot: PlaybackState = {
+    playing: _loopTimer !== null,
+    currentStep: _currentStep,
+    pattern: _currentPattern,
+    grooveId: _currentGrooveId,
+  };
+
+  for (const listener of _stateListeners) listener(snapshot);
+}
+
+export function subscribePlaybackSteps(listener: (step: number) => void) {
+  _stepListeners.add(listener);
+  listener(_currentStep);
+  return () => {
+    _stepListeners.delete(listener);
+  };
+}
+
+export function subscribePlaybackState(listener: (state: PlaybackState) => void) {
+  _stateListeners.add(listener);
+  listener(getPlaybackState());
+  return () => {
+    _stateListeners.delete(listener);
+  };
+}
+
+export function getPlaybackState(): PlaybackState {
+  return {
+    playing: _loopTimer !== null,
+    currentStep: _currentStep,
+    pattern: _currentPattern,
+    grooveId: _currentGrooveId,
+  };
+}
 
 export function stopPlayback() {
   if (_loopTimer !== null) {
@@ -182,17 +228,22 @@ export function stopPlayback() {
     _loopTimer = null;
   }
   _currentStep = -1;
-  _onStepChange?.(- 1);
+  _currentPattern = null;
+  _currentGrooveId = null;
+  emitStep(-1);
+  emitState();
 }
 
 export function startPlayback(
   groove: NormalizedGroove,
   pattern: DrumPattern,
-  onStep: (step: number) => void
+  onStep?: (step: number) => void
 ) {
   stopPlayback();
   const ac = getCtx();
-  _onStepChange = onStep;
+  _onStepChange = onStep ?? null;
+  _currentPattern = pattern;
+  _currentGrooveId = groove.id;
 
   const bpm = groove.bpm;
   // 16th note interval: 60 / bpm / 4
@@ -200,6 +251,7 @@ export function startPlayback(
   const swingAmount = groove.norm_swing * 0.06; // max 60ms swing
 
   _currentStep = 0;
+  emitState();
 
   const tick = () => {
     const step = _currentStep % 16;
@@ -215,7 +267,7 @@ export function startPlayback(
     for (const h of pattern.hihat)  if (h.step === step) synthHihat(ac, schedTime, h.vel);
     for (const h of pattern.perc)   if (h.step === step) synthPerc(ac, schedTime, h.vel);
 
-    onStep(step);
+    emitStep(step);
     _currentStep++;
   };
 

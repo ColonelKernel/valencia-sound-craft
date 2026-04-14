@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 interface Props {
   values: { energy: number; swing: number; syncopation: number; dynamics: number };
   onChange: (v: Props["values"]) => void;
@@ -28,7 +30,30 @@ function Slider({ label, value, onChange, color }: { label: string; value: numbe
 }
 
 export default function GrooveSculptor({ values, onChange, active, onToggle }: Props) {
-  const update = (key: keyof typeof values) => (v: number) => onChange({ ...values, [key]: v });
+  const [draftValues, setDraftValues] = useState(values);
+
+  useEffect(() => {
+    setDraftValues(values);
+  }, [values]);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      const changed = (
+        draftValues.energy !== values.energy ||
+        draftValues.swing !== values.swing ||
+        draftValues.syncopation !== values.syncopation ||
+        draftValues.dynamics !== values.dynamics
+      );
+
+      if (changed) onChange(draftValues);
+    }, 150);
+
+    return () => window.clearTimeout(id);
+  }, [draftValues, onChange, values]);
+
+  const update = (key: keyof typeof values) => (v: number) => {
+    setDraftValues(prev => ({ ...prev, [key]: v }));
+  };
 
   return (
     <div>
@@ -44,10 +69,10 @@ export default function GrooveSculptor({ values, onChange, active, onToggle }: P
 
       {active && (
         <div className="mt-4 space-y-4 animate-fade-in">
-          <Slider label="Energy" value={values.energy} onChange={update("energy")} color="hsl(30, 90%, 55%)" />
-          <Slider label="Swing" value={values.swing} onChange={update("swing")} color="hsl(180, 70%, 50%)" />
-          <Slider label="Syncopation" value={values.syncopation} onChange={update("syncopation")} color="hsl(280, 70%, 60%)" />
-          <Slider label="Dynamics" value={values.dynamics} onChange={update("dynamics")} color="hsl(350, 80%, 55%)" />
+          <Slider label="Energy" value={draftValues.energy} onChange={update("energy")} color="hsl(30, 90%, 55%)" />
+          <Slider label="Swing" value={draftValues.swing} onChange={update("swing")} color="hsl(180, 70%, 50%)" />
+          <Slider label="Syncopation" value={draftValues.syncopation} onChange={update("syncopation")} color="hsl(280, 70%, 60%)" />
+          <Slider label="Dynamics" value={draftValues.dynamics} onChange={update("dynamics")} color="hsl(350, 80%, 55%)" />
         </div>
       )}
     </div>
