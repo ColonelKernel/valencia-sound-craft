@@ -20,11 +20,9 @@ interface Props {
   mode: "streams" | "revenue";
 }
 
-interface WeeklyTrendPoint {
-  period: string;
-  label: string;
+interface AlbumCatalogEntry {
+  name: string;
   playcount: number;
-  listeners: number;
 }
 
 interface LastFmData {
@@ -34,7 +32,7 @@ interface LastFmData {
   tags: string[];
   bio: string;
   similar: string[];
-  weeklyTrend?: WeeklyTrendPoint[];
+  albumCatalog?: AlbumCatalogEntry[];
 }
 
 const LABEL_CONFIG: Record<AcquisitionLabel, { color: string; bg: string }> = {
