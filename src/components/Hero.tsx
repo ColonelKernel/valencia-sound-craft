@@ -15,7 +15,7 @@ const Hero = () => {
           height={1080}
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(5,5,5,0.97)_0%,rgba(5,5,5,0.88)_45%,rgba(5,5,5,0.55)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(0,0,0,0.95)_0%,rgba(0,0,0,0.85)_50%,rgba(0,0,0,0.45)_100%)]" />
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-28 md:py-32">
