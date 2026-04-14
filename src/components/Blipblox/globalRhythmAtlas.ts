@@ -979,6 +979,64 @@ function buildProxyTemplate(country: string, region: string, continent: RhythmCo
   };
 }
 
+function inferTags(template: RhythmTemplate, metadata: CountryMetadata): RhythmTag[] {
+  if (template.tags && template.tags.length > 0) {
+    return [...template.tags];
+  }
+
+  const tags: RhythmTag[] = [];
+  const uniqueGroups = new Set(template.subdivision);
+
+  // Structure tags
+  if (uniqueGroups.size > 1) {
+    tags.push("asymmetric");
+  }
+  if (template.subdivision.every((g) => g === 3)) {
+    tags.push("ternary");
+  } else if (template.subdivision.every((g) => g === 2 || g === 4)) {
+    tags.push("binary");
+  }
+  if (template.meter === "12/8" || template.meter === "6/8") {
+    tags.push("compound");
+  }
+  if (template.cycleLength === 12 && template.meter === "12/8") {
+    tags.push("12-beat-cycle");
+  }
+
+  // Rhythmic concept tags
+  if (metadata.continent === "Africa" || template.timbreProfile === "djembe") {
+    tags.push("polyrhythm");
+  }
+  if (template.timbreProfile === "conga/clave" || template.tradition.toLowerCase().includes("clave")) {
+    tags.push("clave-based");
+  }
+  if (template.timbreProfile === "tabla" || template.tradition.toLowerCase().includes("tala")) {
+    tags.push("cycle-based");
+  }
+
+  // Performance tags
+  if (template.tradition.toLowerCase().includes("dance") || template.tradition.toLowerCase().includes("compás") || template.tradition.toLowerCase().includes("compas")) {
+    tags.push("dance-driven");
+  }
+  if (template.tradition.toLowerCase().includes("call") || metadata.continent === "Africa") {
+    tags.push("call-response");
+  }
+
+  // Instrumentation tags
+  const handPercussion = ["djembe", "tabla", "darbuka", "cajón", "conga/clave"];
+  if (handPercussion.includes(template.timbreProfile)) {
+    tags.push("hand-percussion");
+  }
+  if (template.instruments.length >= 3) {
+    tags.push("ensemble");
+  }
+  if (template.timbreProfile === "neutral kit") {
+    tags.push("drum-kit-adapted");
+  }
+
+  return tags.length > 0 ? tags : ["binary"];
+}
+
 function hydrateTemplate(template: RhythmTemplate, metadata: CountryMetadata): Rhythm {
   const timbreProfile = template.classification === "proxy"
     ? getTimbreProfile(metadata.country, metadata.region, metadata.continent)
@@ -1003,6 +1061,7 @@ function hydrateTemplate(template: RhythmTemplate, metadata: CountryMetadata): R
     timbreProfile,
     confidence: template.classification === "proxy" ? "low" : template.confidence,
     classification: template.classification,
+    tags: inferTags(template, metadata),
     source: { ...template.source },
   };
 }
