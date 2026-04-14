@@ -280,6 +280,10 @@ const GlobalRhythmMap = ({
             {countryMarkers.length} visible countries
           </span>
           <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/80 px-2 py-1 text-muted-foreground">
+            <Volume2 className="w-3 h-3" />
+            Hover to preview
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card/80 px-2 py-1 text-muted-foreground">
             Marker size = rhythm count
           </span>
           <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-emerald-100">
