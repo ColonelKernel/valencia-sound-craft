@@ -86,6 +86,7 @@ export interface RhythmLibraryFilters {
   meter?: string | "All";
   feel?: TimeFeel | "All";
   tempoBand?: RhythmTempoBand | "All";
+  tag?: RhythmTag | "All";
   search?: string;
 }
 
