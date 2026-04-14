@@ -918,6 +918,7 @@ const GlobalRhythmEngine = ({
 
   return (
     <div className="space-y-5 rounded-[1.75rem] border border-border/70 bg-card p-4 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.85)] sm:p-5 md:p-6">
+      {/* ── HEADER ── */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="flex items-center gap-2 text-xl font-bold">
@@ -925,7 +926,7 @@ const GlobalRhythmEngine = ({
             Global Rhythm Atlas Engine
           </h3>
           <p className="mt-2 max-w-3xl text-xs text-muted-foreground sm:text-sm">
-            Atlas-backed rhythm selection, documented cultural structures, and a full-width playable sequencer.
+            Click a continent or country on the map to filter rhythms. Select a rhythm to load the sequencer.
           </p>
         </div>
 
@@ -962,6 +963,235 @@ const GlobalRhythmEngine = ({
         </div>
       </div>
 
+      {/* ── 🌍 INTERACTIVE MAP (PRIMARY) ── */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Continent</span>
+          {(["All", "Africa", "Asia", "Europe", "North America", "South America", "Oceania"] as const).map(
+            (continent) => (
+              <button
+                key={continent}
+                type="button"
+                onClick={() => setContinentFilter(continent as RhythmContinent | "All")}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  continentFilter === continent
+                    ? "border-primary/30 bg-primary/10 text-foreground"
+                    : "border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
+                {continent}
+              </button>
+            ),
+          )}
+        </div>
+
+        <GlobalRhythmMap
+          rhythms={visibleAtlasRhythms}
+          selectedCountry={rhythmState.country}
+          onCountrySelect={handleMapSelect}
+        />
+      </div>
+
+      {/* ── 🎛️ RHYTHM BROWSER ── */}
+      <div className="space-y-4 rounded-2xl border border-border bg-secondary/20 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Rhythm Browser</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Filter by continent, region, meter, feel, tags, or search. Click a rhythm to load the sequencer.
+            </p>
+          </div>
+          <span className="rounded-full border border-border bg-card/60 px-3 py-1 text-[11px] text-muted-foreground">
+            {filteredDefinitions.length} rhythms
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-2xl border border-border bg-card/70 px-3 py-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search rhythm, country, or instrument"
+            className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Meter</label>
+            <select
+              value={meterFilter}
+              onChange={(event) => setMeterFilter(event.target.value)}
+              className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
+            >
+              <option value="All">All meters</option>
+              {RHYTHM_LIBRARY_METERS.map((meter) => (
+                <option key={meter} value={meter}>{meter}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Feel</label>
+            <select
+              value={feelFilter}
+              onChange={(event) => setFeelFilter(event.target.value as TimeFeel | "All")}
+              className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
+            >
+              <option value="All">All feels</option>
+              {RHYTHM_LIBRARY_FEELS.map((feel) => (
+                <option key={feel} value={feel}>{FEEL_LABELS[feel]}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Tempo Band</label>
+            <select
+              value={tempoBandFilter}
+              onChange={(event) => setTempoBandFilter(event.target.value as RhythmTempoBand | "All")}
+              className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
+            >
+              <option value="All">All tempi</option>
+              {(Object.keys(TEMPO_BAND_LABELS) as RhythmTempoBand[]).map((band) => (
+                <option key={band} value={band}>{TEMPO_BAND_LABELS[band]}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Tag filter */}
+        <div className="space-y-2">
+          <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Tags</div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setTagFilter("All")}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-medium",
+                tagFilter === "All"
+                  ? "border-primary/30 bg-primary/10 text-foreground"
+                  : "border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
+            >
+              All
+            </button>
+            {GLOBAL_RHYTHM_TAGS.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setTagFilter(tag)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium",
+                  tagFilter === tag
+                    ? "border-primary/30 bg-primary/10 text-foreground"
+                    : "border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Region pills */}
+        <div className="space-y-2">
+          <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Region</div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setBrowserRegion("All")}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs font-medium",
+                browserRegion === "All"
+                  ? "border-primary/30 bg-primary/10 text-foreground"
+                  : "border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground",
+              )}
+            >
+              All
+            </button>
+            {RHYTHM_LIBRARY_REGIONS.map((region) => (
+              <button
+                key={region}
+                type="button"
+                onClick={() => setBrowserRegion(region)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium",
+                  browserRegion === region
+                    ? "border-primary/30 bg-primary/10 text-foreground"
+                    : "border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
+                {region === "global" ? "Global" : region.replace(/_/g, " ")}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Country + Rhythm columns */}
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
+          <div className="space-y-2">
+            <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Country</div>
+            <div className="max-h-[20rem] space-y-2 overflow-y-auto pr-1">
+              {regionCountries.map((country) => (
+                <button
+                  key={country}
+                  type="button"
+                  onClick={() => {
+                    setBrowserCountry(country);
+                    const nextDefinition = filteredDefinitions.find((definition) => definition.country === country);
+                    if (nextDefinition) {
+                      loadRhythmDefinition(nextDefinition, { syncBrowser: true });
+                    }
+                  }}
+                  className={cn(
+                    "w-full rounded-2xl border px-3 py-2 text-left text-sm",
+                    browserCountry === country
+                      ? "border-primary/30 bg-primary/10 text-foreground"
+                      : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  {country}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Rhythm</div>
+            <div className="max-h-[20rem] space-y-2 overflow-y-auto pr-1">
+              {browserRhythms.map((definition) => (
+                <button
+                  key={definition.id}
+                  type="button"
+                  onClick={() => loadRhythmDefinition(definition, { syncBrowser: true })}
+                  className={cn(
+                    "w-full rounded-2xl border px-3 py-3 text-left",
+                    definition.id === activeDefinition.id
+                      ? "border-primary/30 bg-primary/10 text-foreground"
+                      : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  <div className="text-sm font-medium">{definition.name}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {definition.meter} · {definition.grouping.join(" + ")} · {FEEL_LABELS[definition.feel]}
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {definition.atlasRhythm.tags.slice(0, 3).map((tag) => (
+                      <span key={tag} className="rounded-full border border-border bg-card/60 px-2 py-0.5 text-[9px] text-muted-foreground">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── QUICK PLAY ── */}
       <div className="flex flex-wrap gap-2">
         {quickPlayRhythms.map((definition) => (
           <button
@@ -980,6 +1210,7 @@ const GlobalRhythmEngine = ({
         ))}
       </div>
 
+      {/* ── TRANSPORT + CONTROLS ── */}
       <div className="grid gap-3 xl:grid-cols-4">
         <div className="rounded-2xl border border-border bg-secondary/30 p-4">
           <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Transport</p>
@@ -1093,6 +1324,7 @@ const GlobalRhythmEngine = ({
         </div>
       </div>
 
+      {/* ── 🥁 STEP SEQUENCER ── */}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
         <div className="rounded-2xl border border-border bg-secondary/15 p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1171,6 +1403,21 @@ const GlobalRhythmEngine = ({
             </div>
           </div>
 
+          {/* Tags display */}
+          <div className="rounded-xl border border-border bg-card/80 p-3">
+            <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Tags</div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {activeDefinition.atlasRhythm.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-primary/20 bg-primary/8 px-2.5 py-0.5 text-[10px] font-medium text-foreground"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
           <div className="rounded-xl border border-border bg-card/80 p-3">
             <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Instrument Roles</div>
             <div className="mt-2 grid gap-2 text-sm text-foreground">
@@ -1215,211 +1462,22 @@ const GlobalRhythmEngine = ({
         </div>
       </div>
 
-      {showAtlas && (
-        <div className="grid gap-4 xl:grid-cols-[minmax(340px,0.9fr)_minmax(0,1.1fr)]">
-          <div className="space-y-4 rounded-2xl border border-border bg-secondary/20 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Rhythm Browser</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Region to country to rhythm, with filters that stay aligned with the atlas.
-                </p>
-              </div>
-              <span className="rounded-full border border-border bg-card/60 px-3 py-1 text-[11px] text-muted-foreground">
-                {filteredDefinitions.length} rhythms
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 rounded-2xl border border-border bg-card/70 px-3 py-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search rhythm, country, or instrument"
-                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-              />
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-                  Meter
-                </label>
-                <select
-                  value={meterFilter}
-                  onChange={(event) => setMeterFilter(event.target.value)}
-                  className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
-                >
-                  <option value="All">All meters</option>
-                  {RHYTHM_LIBRARY_METERS.map((meter) => (
-                    <option key={meter} value={meter}>{meter}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-                  Feel
-                </label>
-                <select
-                  value={feelFilter}
-                  onChange={(event) => setFeelFilter(event.target.value as TimeFeel | "All")}
-                  className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
-                >
-                  <option value="All">All feels</option>
-                  {RHYTHM_LIBRARY_FEELS.map((feel) => (
-                    <option key={feel} value={feel}>{FEEL_LABELS[feel]}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-                  Tempo Band
-                </label>
-                <select
-                  value={tempoBandFilter}
-                  onChange={(event) => setTempoBandFilter(event.target.value as RhythmTempoBand | "All")}
-                  className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
-                >
-                  <option value="All">All tempi</option>
-                  {(Object.keys(TEMPO_BAND_LABELS) as RhythmTempoBand[]).map((band) => (
-                    <option key={band} value={band}>{TEMPO_BAND_LABELS[band]}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-                  Atlas Scope
-                </label>
-                <select
-                  value={continentFilter}
-                  onChange={(event) => setContinentFilter(event.target.value as RhythmContinent | "All")}
-                  className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
-                >
-                  <option value="All">All continents</option>
-                  {unique(GLOBAL_RHYTHM_ATLAS.map((rhythm) => rhythm.continent)).map((continent) => (
-                    <option key={continent} value={continent}>{continent}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Region</div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setBrowserRegion("All")}
-                  className={cn(
-                    "rounded-full border px-3 py-1.5 text-xs font-medium",
-                    browserRegion === "All"
-                      ? "border-primary/30 bg-primary/10 text-foreground"
-                      : "border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground",
-                  )}
-                >
-                  All
-                </button>
-                {RHYTHM_LIBRARY_REGIONS.map((region) => (
-                  <button
-                    key={region}
-                    type="button"
-                    onClick={() => setBrowserRegion(region)}
-                    className={cn(
-                      "rounded-full border px-3 py-1.5 text-xs font-medium",
-                      browserRegion === region
-                        ? "border-primary/30 bg-primary/10 text-foreground"
-                        : "border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground",
-                    )}
-                  >
-                    {region === "global" ? "Global" : region.replace(/_/g, " ")}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
-              <div className="space-y-2">
-                <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Country</div>
-                <div className="max-h-[20rem] space-y-2 overflow-y-auto pr-1">
-                  {regionCountries.map((country) => (
-                    <button
-                      key={country}
-                      type="button"
-                      onClick={() => {
-                        setBrowserCountry(country);
-                        const nextDefinition = filteredDefinitions.find((definition) => definition.country === country);
-                        if (nextDefinition) {
-                          loadRhythmDefinition(nextDefinition, { syncBrowser: true });
-                        }
-                      }}
-                      className={cn(
-                        "w-full rounded-2xl border px-3 py-2 text-left text-sm",
-                        browserCountry === country
-                          ? "border-primary/30 bg-primary/10 text-foreground"
-                          : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground",
-                      )}
-                    >
-                      {country}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Rhythm</div>
-                <div className="max-h-[20rem] space-y-2 overflow-y-auto pr-1">
-                  {browserRhythms.map((definition) => (
-                    <button
-                      key={definition.id}
-                      type="button"
-                      onClick={() => loadRhythmDefinition(definition, { syncBrowser: true })}
-                      className={cn(
-                        "w-full rounded-2xl border px-3 py-3 text-left",
-                        definition.id === activeDefinition.id
-                          ? "border-primary/30 bg-primary/10 text-foreground"
-                          : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground",
-                      )}
-                    >
-                      <div className="text-sm font-medium">{definition.name}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {definition.meter} · {definition.grouping.join(" + ")} · {FEEL_LABELS[definition.feel]}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-secondary/20 p-3">
-            <GlobalRhythmMap
-              rhythms={visibleAtlasRhythms}
-              selectedCountry={rhythmState.country}
-              onCountrySelect={handleMapSelect}
-            />
-          </div>
-        </div>
-      )}
-
+      {/* ── WORKSPACE PANELS ── */}
       <div className="space-y-3">
         <div>
           <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Workspace Panels</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Open the atlas, morphing, hardware, or export layers as needed.
+            Open morphing, hardware, or export layers as needed.
           </p>
         </div>
 
         <div className="flex gap-2 overflow-x-auto pb-1">
           {[
-            { id: "atlas", label: "Atlas", icon: <Sparkles className="h-3.5 w-3.5" /> },
             { id: "morph", label: "Morph", icon: <Shuffle className="h-3.5 w-3.5" /> },
             { id: "hardware", label: "Hardware", icon: <Zap className="h-3.5 w-3.5" /> },
             { id: "export", label: "Export", icon: <Download className="h-3.5 w-3.5" /> },
           ].map((tab) => {
             const isActive =
-              (tab.id === "atlas" && showAtlas) ||
               (tab.id === "morph" && showMorph) ||
               (tab.id === "hardware" && showBlipblox) ||
               (tab.id === "export" && showExport);
@@ -1429,7 +1487,6 @@ const GlobalRhythmEngine = ({
                 key={tab.id}
                 type="button"
                 onClick={() => {
-                  if (tab.id === "atlas") setShowAtlas((value) => !value);
                   if (tab.id === "morph") setShowMorph((value) => !value);
                   if (tab.id === "hardware") setShowBlipblox((value) => !value);
                   if (tab.id === "export") setShowExport((value) => !value);
