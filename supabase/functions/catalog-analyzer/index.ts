@@ -12,21 +12,27 @@ serve(async (req) => {
   }
 
   try {
-    const { artistName, genre, catalogSize } = await req.json();
+    const { artistName, genre, catalogSize, streamingData } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are a music industry analyst. Analyze artist catalogs and return ONLY valid JSON with this exact structure:
-{
-  "trendSummary": "string - 2-3 sentence analysis of the artist's streaming trajectory",
-  "portfolioFit": number between 0-100,
-  "riskFactors": ["string array of 2-4 risk factors"],
-  "recommendedActions": ["string array of 2-4 actionable recommendations"],
-  "comparableArtists": ["string array of 3-5 comparable artists"]
-}
-Do not include any text outside the JSON object.`;
+    const contextBlock = streamingData
+      ? `\nStreaming context: Total streams: ${streamingData.totalStreams}, MoM Growth: ${streamingData.momGrowth}%, Volatility: ${streamingData.volatility}, Catalog segment: ${streamingData.segment}`
+      : "";
 
-    const userPrompt = `Analyze the catalog of ${artistName}. Genre: ${genre}. Catalog size: approximately ${catalogSize} tracks. Provide streaming trend analysis, portfolio fit score, risk factors, recommended actions, and comparable artists.`;
+    const systemPrompt = `You are a senior music catalog investment analyst at a publishing acquisition firm. Write concise, decision-oriented analysis as if preparing an internal analyst memo. Return ONLY valid JSON with this exact structure:
+{
+  "investmentSummary": "string - 2-3 sentence executive summary of catalog investment potential",
+  "growthOutlook": "string - 2-3 sentence forward-looking growth assessment",
+  "riskAssessment": "string - 2-3 sentence risk analysis covering market, trend, and catalog-specific risks",
+  "catalogType": "string - one of: front, mid, back",
+  "recommendedStrategy": "string - 2-3 sentence actionable strategy recommendation (acquire, hold, pass, or monitor)"
+}
+Do not include any text outside the JSON object. Use professional financial language.`;
+
+    const userPrompt = `Evaluate the catalog of ${artistName} for potential acquisition or portfolio inclusion.
+Genre: ${genre}. Catalog size: approximately ${catalogSize} tracks.${contextBlock}
+Provide investment-grade analysis covering growth outlook, risk assessment, catalog classification, and recommended strategy.`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -66,8 +72,6 @@ Do not include any text outside the JSON object.`;
 
     const aiData = await response.json();
     const content = aiData.choices?.[0]?.message?.content ?? "";
-
-    // Extract JSON from the response (handle markdown code blocks)
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Invalid AI response format");
 
