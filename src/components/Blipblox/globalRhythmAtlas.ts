@@ -489,12 +489,32 @@ const DOCUMENTED_TEMPLATES: Record<string, RhythmTemplate> = {
     timbreProfile: "neutral kit",
     confidence: "high",
     classification: "documented",
+    tags: ["compound", "12-beat-cycle", "dance-driven", "hand-percussion", "polyrhythm"],
     source: {
       title: "Bombo Leguero Patterns",
       type: "pdf",
     },
   },
   brazil_samba_de_roda: {
+    id: "brazil-samba-de-roda",
+    name: "Samba de Roda",
+    tradition: "Bahian samba de roda",
+    meter: "2/4",
+    subdivision: [4, 4],
+    cycleLength: 8,
+    bpmRange: [96, 132],
+    instruments: ["Surdo", "Agogo", "Palmas"],
+    hitUnits: [0, 2, 4, 5, 6],
+    accentUnits: [0, 4, 6],
+    timbreProfile: "surdo",
+    confidence: "high",
+    classification: "documented",
+    tags: ["binary", "dance-driven", "ensemble", "call-response"],
+    source: {
+      title: "Samba de Roda Ensemble",
+      type: "pdf",
+    },
+  },
     id: "brazil-samba-de-roda",
     name: "Samba de Roda",
     tradition: "Bahian samba de roda",
@@ -1165,6 +1185,7 @@ export function filterAtlasRhythms(filters: {
   country?: string;
   continent?: RhythmContinent | "All";
   meter?: string | "All";
+  tag?: RhythmTag | "All";
 } = {}): Rhythm[] {
   return GLOBAL_RHYTHM_ATLAS.filter((rhythm) => {
     if (filters.country && rhythm.country !== filters.country) {
@@ -1179,8 +1200,22 @@ export function filterAtlasRhythms(filters: {
       return false;
     }
 
+    if (filters.tag && filters.tag !== "All" && !rhythm.tags.includes(filters.tag)) {
+      return false;
+    }
+
     return true;
   });
+}
+
+export function filterByContinent(rhythms: Rhythm[], selectedContinent?: RhythmContinent | "All"): Rhythm[] {
+  if (!selectedContinent || selectedContinent === "All") return rhythms;
+  return rhythms.filter((r) => r.continent === selectedContinent);
+}
+
+export function filterByTag(rhythms: Rhythm[], tag?: RhythmTag | "All"): Rhythm[] {
+  if (!tag || tag === "All") return rhythms;
+  return rhythms.filter((r) => r.tags.includes(tag));
 }
 
 export const GLOBAL_RHYTHM_ATLAS: Rhythm[] = COUNTRY_METADATA.map((metadata) =>
@@ -1189,6 +1224,24 @@ export const GLOBAL_RHYTHM_ATLAS: Rhythm[] = COUNTRY_METADATA.map((metadata) =>
 
 export const GLOBAL_RHYTHM_METERS = unique(GLOBAL_RHYTHM_ATLAS.map((rhythm) => rhythm.meter)).sort();
 export const GLOBAL_RHYTHM_CONTINENTS = unique(GLOBAL_RHYTHM_ATLAS.map((rhythm) => rhythm.continent)).sort() as RhythmContinent[];
+export const GLOBAL_RHYTHM_TAGS = unique(GLOBAL_RHYTHM_ATLAS.flatMap((rhythm) => rhythm.tags)).sort() as RhythmTag[];
+
+// Indexed lookups for performance
+export const ATLAS_BY_CONTINENT = new Map<RhythmContinent, Rhythm[]>();
+GLOBAL_RHYTHM_ATLAS.forEach((rhythm) => {
+  const list = ATLAS_BY_CONTINENT.get(rhythm.continent) || [];
+  list.push(rhythm);
+  ATLAS_BY_CONTINENT.set(rhythm.continent, list);
+});
+
+export const ATLAS_BY_TAG = new Map<RhythmTag, Rhythm[]>();
+GLOBAL_RHYTHM_ATLAS.forEach((rhythm) => {
+  rhythm.tags.forEach((tag) => {
+    const list = ATLAS_BY_TAG.get(tag) || [];
+    list.push(rhythm);
+    ATLAS_BY_TAG.set(tag, list);
+  });
+});
 
 export function validateGlobalRhythmAtlas(): string[] {
   const errors: string[] = [];
