@@ -17,6 +17,7 @@ const MapTool = lazy(() => import("@/features/map/Tool"));
 const CircleTool = lazy(() => import("@/features/circle/Tool"));
 const TonnetzTool = lazy(() => import("@/features/tonnetz/Tool"));
 const MusicAnalyticsPage = lazy(() => import("./pages/MusicAnalyticsPage"));
+const GrooveIntelligencePage = lazy(() => import("./pages/GrooveIntelligencePage"));
 
 const routeFallback = (
   <div className="min-h-screen bg-background pt-24">
