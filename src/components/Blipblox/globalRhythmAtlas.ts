@@ -712,6 +712,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "djembe",
     confidence: "medium",
     classification: "regional",
+    tags: ["compound", "12-beat-cycle", "polyrhythm", "call-response", "hand-percussion"],
     source: {
       title: "African Rhythms and Calls",
       type: "pdf",
@@ -731,6 +732,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "tupan",
     confidence: "medium",
     classification: "regional",
+    tags: ["asymmetric", "dance-driven", "hand-percussion"],
     source: {
       title: "Balkan Rhythms Overview",
       type: "academic",
@@ -750,6 +752,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "darbuka",
     confidence: "medium",
     classification: "regional",
+    tags: ["binary", "cycle-based", "dance-driven", "hand-percussion"],
     source: {
       title: "Arab percussion field reference",
       type: "field",
@@ -769,6 +772,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "tabla",
     confidence: "medium",
     classification: "regional",
+    tags: ["binary", "cycle-based", "improvisational", "hand-percussion"],
     source: {
       title: "Indian Rhythms and Odd Meters",
       type: "academic",
@@ -788,6 +792,7 @@ const REGIONAL_TEMPLATES: Record<RegionalGroupId, RhythmTemplate> = {
     timbreProfile: "conga/clave",
     confidence: "medium",
     classification: "regional",
+    tags: ["binary", "clave-based", "dance-driven", "hand-percussion"],
     source: {
       title: "Claves in the Caribbean",
       type: "pdf",
