@@ -18,7 +18,7 @@ const REPEL_DIST = 0.04;
 const REPEL_FORCE = 0.0003;
 const MORPH_LERP = 0.06;
 
-export default function GrooveField({ grooves, selected, hovered, onHover, onClick, viewMode }: Props) {
+export default function GrooveField({ grooves, selected, hovered, onHover, onClick, viewMode, currentStep = -1 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const timeRef = useRef(0);
