@@ -19,9 +19,16 @@ export function normalizeGrooves(raw: RawGroove[]): NormalizedGroove[] {
     const nw = norm(g.swing_ratio, ranges.swing);
     const nv = norm(g.velocity_variance, ranges.velocity);
 
-    // Blend axes for organic feel
-    const px = 0.6 * nb + 0.4 * nd;
-    const py = 0.55 * ns + 0.45 * nw;
+    // Perceptual spreading — power curve pushes clustered values apart
+    const spread = (v: number, exp: number) => Math.pow(v, exp);
+    const sb = spread(nb, 0.7);
+    const sd = spread(nd, 0.6);
+    const ss = spread(ns, 0.5); // strongest spread for narrow syncopation
+    const sw = spread(nw, 0.6);
+
+    // Blend axes with spread values for even distribution
+    const px = 0.5 * sb + 0.3 * sd + 0.2 * sw;
+    const py = 0.4 * ss + 0.3 * sw + 0.3 * spread(nv, 0.6);
 
     return {
       ...g,
