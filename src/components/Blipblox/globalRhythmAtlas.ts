@@ -60,10 +60,24 @@ type RhythmTemplate = Omit<Rhythm, "country" | "region" | "continent" | "midiPat
 
 type RegionalGroupId =
   | "west_africa_timeline"
+  | "east_africa_ngoma"
+  | "central_africa_polyrhythm"
+  | "southern_africa_pulse"
+  | "north_africa_maqsum"
   | "balkan_seven"
   | "middle_east_maqsum"
   | "south_asia_tala"
-  | "caribbean_clave";
+  | "southeast_asia_gamelan"
+  | "east_asia_pulse"
+  | "central_asia_pulse"
+  | "caribbean_clave"
+  | "central_america_marimba"
+  | "andean_huayno"
+  | "northern_europe_march"
+  | "western_europe_waltz"
+  | "southern_europe_compound"
+  | "eastern_europe_dance"
+  | "oceania_log_drum";
 
 export const CANONICAL_COUNTRY_LIST = [
   "Afghanistan",
