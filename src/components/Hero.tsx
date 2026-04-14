@@ -25,7 +25,7 @@ const Hero = () => {
           </p>
 
           <div className="space-y-5">
-            <h1 className="text-5xl font-bold leading-[1.05] text-primary-foreground md:text-6xl lg:text-7xl">
+            <h1 className="text-5xl font-bold leading-[1.05] text-primary-foreground md:text-6xl lg:text-7xl [text-shadow:_0_2px_12px_rgba(0,0,0,0.8)]">
               Music Producer, Guitarist &amp; Creative Technologist
             </h1>
 
