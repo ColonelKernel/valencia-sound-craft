@@ -12,6 +12,7 @@ import { type Rhythm, type RhythmContinent, getPlaybackVelocityPattern } from ".
 interface GlobalRhythmMapProps {
   rhythms: Rhythm[];
   selectedCountry?: string;
+  focusContinent?: RhythmContinent | "All";
   onCountrySelect?: (rhythm: Rhythm) => void;
   onCountryHover?: (rhythm: Rhythm | null) => void;
 }
@@ -120,6 +121,35 @@ function getMarkerRadius(rhythmCount: number, maxRhythmCount: number, isSelected
 
   return isSelected ? baseRadius + 1.5 : baseRadius;
 }
+
+const CONTINENT_ZOOM: Record<RhythmContinent, number> = {
+  "North America": 3,
+  "South America": 3,
+  Europe: 4,
+  Africa: 3,
+  Asia: 3,
+  Oceania: 3,
+};
+
+const FocusContinent = ({ continent }: { continent?: RhythmContinent | "All" }) => {
+  const map = useMap();
+  const prevRef = useRef<RhythmContinent | "All" | undefined>(continent);
+
+  useEffect(() => {
+    if (continent === prevRef.current) return;
+    prevRef.current = continent;
+
+    if (!continent || continent === "All") {
+      map.flyTo([18, 10], 2, { duration: 0.6 });
+      return;
+    }
+
+    const anchor = CONTINENT_ANCHORS[continent];
+    map.flyTo([anchor.lat, anchor.lng], CONTINENT_ZOOM[continent], { duration: 0.6 });
+  }, [continent, map]);
+
+  return null;
+};
 
 const FocusSelectedCountry = ({ marker }: { marker: CountryRhythmMarker | null }) => {
   const map = useMap();
