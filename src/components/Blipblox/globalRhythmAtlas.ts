@@ -52,7 +52,7 @@ export type CountryMetadata = {
   continent: RhythmContinent;
 };
 
-type RhythmTemplate = Omit<Rhythm, "country" | "region" | "continent" | "midiPattern" | "accents"> & {
+type RhythmTemplate = Omit<Rhythm, "country" | "region" | "continent" | "midiPattern" | "accents" | "tags"> & {
   hitUnits: number[];
   accentUnits: number[];
   tags?: RhythmTag[];
