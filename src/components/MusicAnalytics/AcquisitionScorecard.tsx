@@ -1,5 +1,8 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from "recharts";
 import type { ArtistMonthly } from "@/lib/musicDataService";
 import {
   buildArtistComparison,
@@ -16,6 +19,11 @@ interface Props {
   mode: "streams" | "revenue";
 }
 
+interface AlbumCatalogEntry {
+  name: string;
+  playcount: number;
+}
+
 interface LastFmData {
   name: string;
   listeners: number;
@@ -23,6 +31,7 @@ interface LastFmData {
   tags: string[];
   bio: string;
   similar: string[];
+  albumCatalog?: AlbumCatalogEntry[];
 }
 
 const LABEL_CONFIG: Record<AcquisitionLabel, { color: string; bg: string }> = {
@@ -57,7 +66,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
     setLastfm(null);
 
     supabase.functions
-      .invoke("lastfm-artist", { body: { artist: selectedArtist } })
+      .invoke("lastfm-artist", { body: { artist: selectedArtist, includeWeekly: true } })
       .then(({ data: d, error: e }) => {
         if (cancelled) return;
         if (e) {
@@ -270,6 +279,63 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
               </div>
             )}
           </div>
+
+          {/* Album Catalog Depth Chart */}
+          {lastfm?.albumCatalog && lastfm.albumCatalog.length > 0 && (
+            <div className="rounded-xl border border-border/50 bg-card p-5">
+              <h5 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-4">
+                Album Catalog Depth (Last.fm)
+              </h5>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={lastfm.albumCatalog}
+                    layout="vertical"
+                    margin={{ top: 5, right: 20, bottom: 5, left: 10 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} horizontal={false} />
+                    <XAxis
+                      type="number"
+                      tickFormatter={(v) => {
+                        if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+                        if (v >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+                        return v.toString();
+                      }}
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={120}
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                      }}
+                      formatter={(val: number) => [val.toLocaleString(), "Plays"]}
+                    />
+                    <Bar
+                      dataKey="playcount"
+                      fill="hsl(var(--foreground))"
+                      fillOpacity={0.75}
+                      radius={[0, 4, 4, 0]}
+                      name="Playcount"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-[10px] text-muted-foreground/50 mt-2">
+                Catalog depth analysis — top albums ranked by all-time playcount. Wider distribution indicates healthier back-catalog performance.
+              </p>
+            </div>
+          )}
 
           {/* Streaming metrics summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

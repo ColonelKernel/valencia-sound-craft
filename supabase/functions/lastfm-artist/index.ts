@@ -8,13 +8,17 @@ const corsHeaders = {
 
 const LASTFM_BASE = "https://ws.audioscrobbler.com/2.0/";
 
+interface LastFmTag { name: string }
+interface LastFmArtist { name: string }
+interface LastFmAlbum { name: string; playcount: string }
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { artist } = await req.json();
+    const { artist, includeWeekly } = await req.json();
     if (!artist || typeof artist !== "string") {
       return new Response(
         JSON.stringify({ error: "artist is required" }),
@@ -30,36 +34,62 @@ serve(async (req) => {
       );
     }
 
-    const url = `${LASTFM_BASE}?method=artist.getinfo&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json`;
-    const response = await fetch(url);
+    // Fetch artist info
+    const infoUrl = `${LASTFM_BASE}?method=artist.getinfo&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json`;
+    const infoResp = await fetch(infoUrl);
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("Last.fm API error:", response.status, text);
+    if (!infoResp.ok) {
+      const text = await infoResp.text();
+      console.error("Last.fm API error:", infoResp.status, text);
       return new Response(
-        JSON.stringify({ error: `Last.fm API error: ${response.status}` }),
+        JSON.stringify({ error: `Last.fm API error: ${infoResp.status}` }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
-
-    if (data.error) {
+    const infoData = await infoResp.json();
+    if (infoData.error) {
       return new Response(
-        JSON.stringify({ error: data.message ?? "Artist not found" }),
+        JSON.stringify({ error: infoData.message ?? "Artist not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const artistInfo = data.artist;
-    const result = {
+    const artistInfo = infoData.artist;
+    const result: Record<string, unknown> = {
       name: artistInfo?.name ?? artist,
       listeners: parseInt(artistInfo?.stats?.listeners ?? "0", 10),
       playcount: parseInt(artistInfo?.stats?.playcount ?? "0", 10),
-      tags: (artistInfo?.tags?.tag ?? []).map((t: { name: string }) => t.name).slice(0, 5),
+      tags: (artistInfo?.tags?.tag ?? []).map((t: LastFmTag) => t.name).slice(0, 5),
       bio: artistInfo?.bio?.summary?.replace(/<[^>]*>/g, "")?.slice(0, 300) ?? "",
-      similar: (artistInfo?.similar?.artist ?? []).map((a: { name: string }) => a.name).slice(0, 5),
+      similar: (artistInfo?.similar?.artist ?? []).map((a: LastFmArtist) => a.name).slice(0, 5),
     };
+
+    // Fetch album catalog data for depth analysis
+    if (includeWeekly) {
+      try {
+        const albumUrl = `${LASTFM_BASE}?method=artist.gettopalbums&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_API_KEY}&format=json&limit=15`;
+        const albumResp = await fetch(albumUrl);
+
+        if (albumResp.ok) {
+          const albumData = await albumResp.json();
+          const albums = (albumData?.topalbums?.album ?? []) as LastFmAlbum[];
+          result.albumCatalog = albums
+            .filter((a) => a.name && a.name !== "(null)")
+            .map((a) => ({
+              name: a.name,
+              playcount: parseInt(a.playcount ?? "0", 10),
+            }))
+            .slice(0, 12);
+        } else {
+          await albumResp.text();
+          result.albumCatalog = [];
+        }
+      } catch (e) {
+        console.error("Album fetch error:", e);
+        result.albumCatalog = [];
+      }
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
