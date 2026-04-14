@@ -22,8 +22,10 @@ import PatternMorpher from "./PatternMorpher";
 import GlobalRhythmMap from "./GlobalRhythmMap";
 import {
   GLOBAL_RHYTHM_ATLAS,
+  GLOBAL_RHYTHM_TAGS,
   type Rhythm,
   type RhythmContinent,
+  type RhythmTag,
   validateRhythm,
 } from "./globalRhythmAtlas";
 import { adaptiveEngine, type RegionId, type VariationType } from "./adaptiveEngine";
