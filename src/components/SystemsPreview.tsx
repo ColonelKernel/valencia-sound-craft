@@ -6,7 +6,7 @@ const previewCards = [
     to: "/groove-intelligence",
     icon: Brain,
     title: "Groove Intelligence Lab",
-    description: "Navigate rhythmic feel space — 300 grooves projected into a perceptual particle field with AI narratives and real-time synthesis.",
+    description: "Browse a lightweight groove atlas with responsive feel cards, quick playback previews, and an optional desktop field view.",
     featured: true,
   },
   {
@@ -83,7 +83,7 @@ const SystemsPreview = () => (
                 <div className={featured ? "flex-1" : ""}>
                   <div className="flex items-center gap-2">
                     <card.icon className={`h-5 w-5 ${featured ? "text-emerald-400" : "text-primary"}`} />
-                    {featured && <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded-full">New — Research Tool</span>}
+                    {featured && <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded-full">Responsive Groove Atlas</span>}
                   </div>
                   <h3 className={`mt-4 font-semibold text-foreground ${featured ? "text-2xl" : "text-lg"}`}>{card.title}</h3>
                   <p className={`mt-2 leading-6 text-muted-foreground ${featured ? "text-base max-w-2xl" : "text-sm"}`}>{card.description}</p>
@@ -96,7 +96,7 @@ const SystemsPreview = () => (
                       : "text-sm text-foreground"
                   }`}
                 >
-                  {featured ? "Launch Lab" : "Open tool"}
+                  {featured ? "Open Groove Atlas" : "Open tool"}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -109,4 +109,3 @@ const SystemsPreview = () => (
 );
 
 export default SystemsPreview;
-
