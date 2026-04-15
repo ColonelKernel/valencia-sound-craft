@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, lazy, Suspense } from "react";
+import { useMemo, useState, useCallback, useRef, lazy, Suspense } from "react";
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
 
@@ -11,6 +11,7 @@ import ChordDetail from "./ChordDetail";
 import ChordFretboard from "./ChordFretboard";
 import { generateChordAtlas, filterChords, type ChordFilterCategory } from "./chordEngine";
 import { getPositionZones, type PositionSystemType } from "./positionEngine";
+import TransitionPanel from "./TransitionPanel";
 
 const ImprovPanel = lazy(() => import("./ImprovPanel"));
 
@@ -26,7 +27,7 @@ const ChordAtlasTool = () => {
   const [positionSystem, setPositionSystem] = useState<PositionSystemType>("caged");
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [stayInPosition, setStayInPosition] = useState(false);
-
+  const prevChordRef = useRef<typeof selectedChord>(null);
   const isHandMode = mode === "hand";
   const handMappingEnabled = isHandMode || showFingers;
 
@@ -60,8 +61,14 @@ const ChordAtlasTool = () => {
   }, [activeZoneId, availableZones, isHandMode]);
 
   const handleSelect = useCallback((i: number) => {
-    setSelectedIndex((prev) => (prev === i ? null : i));
-  }, []);
+    setSelectedIndex((prev) => {
+      // Track previous chord for transition analysis
+      if (prev !== null && prev !== i) {
+        prevChordRef.current = filteredChords[prev] ?? null;
+      }
+      return prev === i ? null : i;
+    });
+  }, [filteredChords]);
 
   const handleFilterChange = useCallback((f: ChordFilterCategory) => {
     setFilter(f);
@@ -98,6 +105,8 @@ const ChordAtlasTool = () => {
     />
   );
 
+  const prevChord = prevChordRef.current;
+
   const handMappingDetail = (
     <div className="space-y-5">
       <div>
@@ -108,9 +117,16 @@ const ChordAtlasTool = () => {
         </p>
       </div>
 
-      <div className="rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm text-muted-foreground">
-        Pick a chord in the center grid to see how the shape maps to the neck, then switch position systems in the left panel.
-      </div>
+      {/* Transition analysis */}
+      {prevChord && selectedChord && prevChord.name !== selectedChord.name ? (
+        <TransitionPanel fromChord={prevChord} toChord={selectedChord} />
+      ) : (
+        <div className="rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm text-muted-foreground">
+          {selectedChord
+            ? "Select another chord to see transition analysis."
+            : "Pick two chords in sequence to see how your fingers move between them."}
+        </div>
+      )}
 
       {selectedChord ? <ChordDetail chord={selectedChord} /> : null}
     </div>
