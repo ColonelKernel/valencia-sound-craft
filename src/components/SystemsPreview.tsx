@@ -3,13 +3,6 @@ import { Link } from "react-router-dom";
 
 const previewCards = [
   {
-    to: "/groove-intelligence",
-    icon: Brain,
-    title: "Groove Intelligence Lab",
-    description: "Browse a lightweight groove atlas with responsive feel cards, quick playback previews, and an optional desktop field view.",
-    featured: true,
-  },
-  {
     to: "/tools/rhythm",
     icon: Globe2,
     title: "Rhythm Engine",
