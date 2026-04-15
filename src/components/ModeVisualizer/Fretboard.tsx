@@ -20,6 +20,12 @@ function noteMatchesChord(note: string, chordNotes: string[]): boolean {
   return !!(enh && chordNotes.includes(enh));
 }
 
+interface FretSpanOverlay {
+  startFret: number;
+  endFret: number;
+  mode: "hard" | "soft";
+}
+
 interface FretboardProps {
   scaleNotes: string[];
   root: string;
@@ -34,6 +40,7 @@ interface FretboardProps {
   chordFilter: string[] | null;
   onNoteClick?: (note: string, octave: number) => void;
   timbre?: InstrumentTimbre;
+  fretSpanOverlay?: FretSpanOverlay | null;
 }
 
 const FRET_COUNT = 22;
@@ -99,6 +106,7 @@ const Fretboard = ({
   chordFilter,
   onNoteClick,
   timbre = 'piano',
+  fretSpanOverlay,
 }: FretboardProps) => {
   const [positionOverride, setPositionOverride] = useState<number | null>(null);
 
@@ -135,17 +143,46 @@ const Fretboard = ({
       <div className="min-w-[900px]">
         <div className="flex">
           <div className="w-10 shrink-0" />
-          {displayFrets.map((fret) => (
-            <div key={fret} className="flex-1 text-center text-[10px] text-muted-foreground font-mono">
-              {fret}
-            </div>
-          ))}
+          {displayFrets.map((fret) => {
+            const inSpan = fretSpanOverlay && fret >= fretSpanOverlay.startFret && fret <= fretSpanOverlay.endFret;
+            return (
+              <div key={fret} className={`flex-1 text-center text-[10px] font-mono ${inSpan ? "text-amber-400 font-semibold" : "text-muted-foreground"}`}>
+                {fret}
+              </div>
+            );
+          })}
         </div>
 
         <div
           className="relative rounded-lg border border-stone-700 overflow-hidden"
           style={{ background: "linear-gradient(180deg, hsl(30 20% 12%) 0%, hsl(25 25% 10%) 100%)" }}
         >
+          {/* Fret span zone background overlay */}
+          {fretSpanOverlay && (
+            <div className="absolute inset-0 flex pointer-events-none z-0" aria-hidden="true">
+              {/* Offset for the string label column */}
+              <div className="w-10 shrink-0" />
+              {displayFrets.map((fret) => {
+                const inZone = fret >= fretSpanOverlay.startFret && fret <= fretSpanOverlay.endFret;
+                const isEdge = fret === fretSpanOverlay.startFret || fret === fretSpanOverlay.endFret;
+                return (
+                  <div
+                    key={fret}
+                    className="flex-1 h-full"
+                    style={{
+                      background: inZone
+                        ? fretSpanOverlay.mode === "hard"
+                          ? "hsla(45, 70%, 50%, 0.08)"
+                          : "hsla(200, 70%, 50%, 0.06)"
+                        : undefined,
+                      borderLeft: fret === fretSpanOverlay.startFret ? `2px solid hsla(45, 70%, 50%, ${fretSpanOverlay.mode === "hard" ? 0.4 : 0.25})` : undefined,
+                      borderRight: fret === fretSpanOverlay.endFret ? `2px solid hsla(45, 70%, 50%, ${fretSpanOverlay.mode === "hard" ? 0.4 : 0.25})` : undefined,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
           {strings.map((stringTuning, displayIdx) => {
             // Find original string index for fingerMap lookup
             const origIdx = tuning.indexOf(stringTuning);
@@ -201,12 +238,14 @@ const Fretboard = ({
                     >
                       {inScale ? (() => {
 const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter);
-                        const finalStyle = dimmedByChord
+                        const dimmedBySpan = fretSpanOverlay && fretSpanOverlay.mode === "hard" && (fret < fretSpanOverlay.startFret || fret > fretSpanOverlay.endFret);
+                        const dimmed = dimmedByChord || dimmedBySpan;
+                        const finalStyle = dimmed
                           ? 'bg-stone-800 text-stone-500 border border-stone-700'
                           : circleStyle;
                         return (
                           <div
-                            className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all duration-150 ${finalStyle} ${isHovered && !dimmedByChord ? "scale-125" : "hover:scale-110"}`}
+                            className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all duration-150 ${finalStyle} ${isHovered && !dimmed ? "scale-125" : "hover:scale-110"}`}
                             onMouseEnter={() => onNoteHover(displayNote)}
                             onMouseLeave={() => onNoteHover(null)}
                             onClick={() => {
