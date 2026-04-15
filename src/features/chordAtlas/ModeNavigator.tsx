@@ -10,6 +10,7 @@ import {
   type PositionRecommendation,
 } from "./progressionAnalyzer";
 import type { PositionSystemType, PositionZone } from "./positionEngine";
+import { filterNotesToFretSpan } from "./positionEngine";
 
 interface ModeNavigatorProps {
   rootKey: string;
@@ -17,6 +18,9 @@ interface ModeNavigatorProps {
   positionSystem: PositionSystemType;
   onPositionSelect: (zone: PositionZone) => void;
   onChordHighlight: (notes: string[] | null) => void;
+  /** If set, filter highlighted notes to this fret range */
+  fretSpanStart?: number;
+  fretSpanEnd?: number;
 }
 
 const EXAMPLE_PROGRESSIONS = [
@@ -34,6 +38,8 @@ const ModeNavigator = memo(({
   positionSystem,
   onPositionSelect,
   onChordHighlight,
+  fretSpanStart,
+  fretSpanEnd,
 }: ModeNavigatorProps) => {
   const [inputText, setInputText] = useState("Am7 D7 Gmaj7");
   const [activeChordIdx, setActiveChordIdx] = useState<number | null>(null);
@@ -53,11 +59,15 @@ const ModeNavigator = memo(({
   const handleChordHover = useCallback((idx: number | null) => {
     setActiveChordIdx(idx);
     if (idx !== null && analysis.assignments[idx]) {
-      onChordHighlight(analysis.assignments[idx].primaryMode.notes);
+      let notes = analysis.assignments[idx].primaryMode.notes;
+      if (fretSpanStart !== undefined && fretSpanEnd !== undefined) {
+        notes = filterNotesToFretSpan(notes, fretSpanStart, fretSpanEnd);
+      }
+      onChordHighlight(notes);
     } else {
       onChordHighlight(null);
     }
-  }, [analysis.assignments, onChordHighlight]);
+  }, [analysis.assignments, onChordHighlight, fretSpanStart, fretSpanEnd]);
 
   const handlePositionLock = useCallback((posIdx: number) => {
     setLockedPosition(prev => prev === posIdx ? null : posIdx);

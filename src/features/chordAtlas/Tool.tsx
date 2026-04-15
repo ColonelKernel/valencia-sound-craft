@@ -10,7 +10,7 @@ import ChordGrid from "./ChordGrid";
 import ChordDetail from "./ChordDetail";
 import ChordFretboard from "./ChordFretboard";
 import { generateChordAtlas, filterChords, type ChordFilterCategory } from "./chordEngine";
-import { getPositionZones, type PositionSystemType } from "./positionEngine";
+import { getPositionZones, createFretSpanZone, type PositionSystemType, type ConstraintMode } from "./positionEngine";
 import TransitionPanel from "./TransitionPanel";
 import LearningMode from "./LearningMode";
 import ModeNavigator from "./ModeNavigator";
@@ -33,6 +33,11 @@ const ChordAtlasTool = () => {
   const prevChordRef = useRef<typeof selectedChord>(null);
   const [learningNotes, setLearningNotes] = useState<string[] | null>(null);
   const [learningActive, setLearningActive] = useState(false);
+  // Fret span constraint
+  const [spanEnabled, setSpanEnabled] = useState(false);
+  const [fretSpan, setFretSpan] = useState<3 | 4 | 5>(5);
+  const [anchorFret, setAnchorFret] = useState(5);
+  const [constraintMode, setConstraintMode] = useState<ConstraintMode>("hard");
   const isHandMode = mode === "hand";
   const handMappingEnabled = isHandMode || showFingers;
 
@@ -53,7 +58,16 @@ const ChordAtlasTool = () => {
     [positionSystem, tool.key]
   );
 
+  // Fret span zone overrides position zone when enabled
+  const fretSpanZone = useMemo(() => {
+    if (!spanEnabled) return null;
+    return createFretSpanZone({ span: fretSpan, anchorFret, constraintMode });
+  }, [spanEnabled, fretSpan, anchorFret, constraintMode]);
+
   const activeZone = useMemo(() => {
+    // Fret span zone takes priority
+    if (fretSpanZone) return fretSpanZone;
+
     if (activeZoneId) {
       return availableZones.find((z) => z.id === activeZoneId) ?? null;
     }
@@ -63,7 +77,7 @@ const ChordAtlasTool = () => {
     }
 
     return null;
-  }, [activeZoneId, availableZones, isHandMode]);
+  }, [fretSpanZone, activeZoneId, availableZones, isHandMode]);
 
   const handleSelect = useCallback((i: number) => {
     setSelectedIndex((prev) => {
@@ -111,6 +125,14 @@ const ChordAtlasTool = () => {
       stayInPosition={stayInPosition}
       onStayInPositionChange={setStayInPosition}
       forceHandMode={isHandMode}
+      fretSpan={fretSpan}
+      onFretSpanChange={setFretSpan}
+      anchorFret={anchorFret}
+      onAnchorFretChange={setAnchorFret}
+      constraintMode={constraintMode}
+      onConstraintModeChange={setConstraintMode}
+      spanEnabled={spanEnabled}
+      onSpanEnabledChange={setSpanEnabled}
     />
   );
 
@@ -251,6 +273,8 @@ const ChordAtlasTool = () => {
               positionSystem={positionSystem}
               onPositionSelect={(zone) => setActiveZoneId(zone.id)}
               onChordHighlight={setNavigatorChordHighlight}
+              fretSpanStart={spanEnabled ? anchorFret : undefined}
+              fretSpanEnd={spanEnabled ? anchorFret + fretSpan - 1 : undefined}
             />
           </aside>
         </div>

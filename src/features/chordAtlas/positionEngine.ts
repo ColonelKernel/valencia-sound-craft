@@ -109,6 +109,54 @@ export function getPositionZones(system: PositionSystemType, root: string): Posi
   }
 }
 
+// ─── Custom Fret Span Zone ──────────────────────────────────
+
+export type ConstraintMode = "hard" | "soft";
+
+export interface FretSpanConfig {
+  span: 3 | 4 | 5;
+  anchorFret: number;
+  constraintMode: ConstraintMode;
+}
+
+export function createFretSpanZone(config: FretSpanConfig): PositionZone {
+  return {
+    id: `span-${config.anchorFret}-${config.span}`,
+    label: `${config.span}-Fret Zone`,
+    startFret: config.anchorFret,
+    endFret: config.anchorFret + config.span - 1,
+    system: "caged",
+    description: `Frets ${config.anchorFret}–${config.anchorFret + config.span - 1} (${config.constraintMode} constraint)`,
+  };
+}
+
+/**
+ * Filter notes to only those playable within a fret span on standard guitar tuning.
+ * Returns the subset of `notes` that appear on at least one string within the fret range.
+ */
+export function filterNotesToFretSpan(
+  notes: string[],
+  startFret: number,
+  endFret: number
+): string[] {
+  const TUNING = [4, 9, 2, 7, 11, 4]; // E A D G B E semitone indices
+  const reachable = new Set<string>();
+
+  for (let s = 0; s < 6; s++) {
+    // Include open string (fret 0) only if startFret is 0
+    const lo = startFret === 0 ? 0 : startFret;
+    for (let f = lo; f <= endFret; f++) {
+      const pitch = (TUNING[s] + f) % 12;
+      reachable.add(CHROMATIC[pitch]);
+    }
+  }
+
+  return notes.filter(n => {
+    const norm = ENHARMONIC[n] || n;
+    return reachable.has(norm);
+  });
+}
+
 // ─── Finger Cost Model ─────────────────────────────────────
 export interface FingerAssignment {
   string: number;
