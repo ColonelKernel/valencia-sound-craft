@@ -12,6 +12,7 @@ import ChordFretboard from "./ChordFretboard";
 import { generateChordAtlas, filterChords, type ChordFilterCategory } from "./chordEngine";
 import { getPositionZones, type PositionSystemType } from "./positionEngine";
 import TransitionPanel from "./TransitionPanel";
+import LearningMode from "./LearningMode";
 
 const ImprovPanel = lazy(() => import("./ImprovPanel"));
 
@@ -28,6 +29,8 @@ const ChordAtlasTool = () => {
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [stayInPosition, setStayInPosition] = useState(false);
   const prevChordRef = useRef<typeof selectedChord>(null);
+  const [learningNotes, setLearningNotes] = useState<string[] | null>(null);
+  const [learningActive, setLearningActive] = useState(false);
   const isHandMode = mode === "hand";
   const handMappingEnabled = isHandMode || showFingers;
 
@@ -107,6 +110,10 @@ const ChordAtlasTool = () => {
 
   const prevChord = prevChordRef.current;
 
+  const handleLearningNotesChange = useCallback((notes: string[] | null) => {
+    setLearningNotes(notes);
+  }, []);
+
   const handMappingDetail = (
     <div className="space-y-5">
       <div>
@@ -117,18 +124,42 @@ const ChordAtlasTool = () => {
         </p>
       </div>
 
-      {/* Transition analysis */}
-      {prevChord && selectedChord && prevChord.name !== selectedChord.name ? (
-        <TransitionPanel fromChord={prevChord} toChord={selectedChord} />
-      ) : (
-        <div className="rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm text-muted-foreground">
-          {selectedChord
-            ? "Select another chord to see transition analysis."
-            : "Pick two chords in sequence to see how your fingers move between them."}
-        </div>
+      {/* Learning Mode toggle */}
+      {selectedChord && (
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={learningActive}
+            onChange={(e) => {
+              setLearningActive(e.target.checked);
+              if (!e.target.checked) setLearningNotes(null);
+            }}
+            className="rounded border-border accent-primary"
+          />
+          <span className="text-xs font-medium text-foreground">📖 Learning Mode</span>
+        </label>
       )}
 
-      {selectedChord ? <ChordDetail chord={selectedChord} /> : null}
+      {/* Learning Mode steps */}
+      {learningActive && selectedChord ? (
+        <LearningMode
+          chord={selectedChord}
+          onVisibleNotesChange={handleLearningNotesChange}
+        />
+      ) : null}
+
+      {/* Transition analysis */}
+      {!learningActive && prevChord && selectedChord && prevChord.name !== selectedChord.name ? (
+        <TransitionPanel fromChord={prevChord} toChord={selectedChord} />
+      ) : !learningActive ? (
+        <div className="rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm text-muted-foreground">
+          {selectedChord
+            ? "Select another chord to see transition analysis, or enable Learning Mode above."
+            : "Pick a chord to start. Enable Learning Mode for step-by-step finger placement."}
+        </div>
+      ) : null}
+
+      {selectedChord && !learningActive ? <ChordDetail chord={selectedChord} /> : null}
     </div>
   );
 
@@ -198,7 +229,7 @@ const ChordAtlasTool = () => {
                 rootKey={tool.key}
                 mode={tool.mode}
                 selectedChord={selectedChord}
-                overrideChordFilter={null}
+                overrideChordFilter={learningActive && learningNotes ? learningNotes : null}
                 showFingers={handMappingEnabled}
                 activeZone={activeZone}
                 stayInPosition={stayInPosition || isHandMode}
