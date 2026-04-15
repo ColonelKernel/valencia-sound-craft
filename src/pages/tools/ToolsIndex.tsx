@@ -35,6 +35,12 @@ const toolCards = [
     title: "Tonnetz",
     description: "Navigate harmonic space with the same key, tempo, and transport as the rest of the app.",
   },
+  {
+    to: "/tools/chord-atlas",
+    icon: Music2,
+    title: "Chord Atlas",
+    description: "Map every chord in any key to the guitar neck with voicings, functions, and interval colors.",
+  },
 ];
 
 const ToolsIndex = () => (

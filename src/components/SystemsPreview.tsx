@@ -32,6 +32,12 @@ const previewCards = [
     title: "Tonnetz",
     description: "Neo-Riemannian harmonic motion with shared tempo, transport, and tonal center.",
   },
+  {
+    to: "/tools/chord-atlas",
+    icon: Music2,
+    title: "Chord Atlas",
+    description: "Map every chord in any key to the guitar neck — voicings, harmonic functions, and interval colors.",
+  },
 ];
 
 const SystemsPreview = () => (

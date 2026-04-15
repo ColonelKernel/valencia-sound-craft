@@ -20,6 +20,7 @@ const toolLinks = [
   { label: "Map", to: "/tools/map" },
   { label: "Circle", to: "/tools/circle" },
   { label: "Tonnetz", to: "/tools/tonnetz" },
+  { label: "Chord Atlas", to: "/tools/chord-atlas" },
 ];
 
 const socialLinks = [

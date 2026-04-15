@@ -9,6 +9,7 @@ const TOOL_LINKS = [
   { to: "/tools/map", label: "Map" },
   { to: "/tools/circle", label: "Circle" },
   { to: "/tools/tonnetz", label: "Tonnetz" },
+  { to: "/tools/chord-atlas", label: "Chord Atlas" },
 ];
 
 const ToolSubnav = () => (
