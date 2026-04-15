@@ -38,6 +38,8 @@ const ModeNavigator = memo(({
   positionSystem,
   onPositionSelect,
   onChordHighlight,
+  fretSpanStart,
+  fretSpanEnd,
 }: ModeNavigatorProps) => {
   const [inputText, setInputText] = useState("Am7 D7 Gmaj7");
   const [activeChordIdx, setActiveChordIdx] = useState<number | null>(null);
