@@ -174,3 +174,55 @@ export function analyzeTransition(
 
   return { anchors, movers, totalMovement, positionShift: Math.abs(toCenter - fromCenter) };
 }
+
+// ─── Voicing → FingerAssignment helper ──────────────────────
+
+const FINGER_ORDER: (0 | 1 | 2 | 3 | 4)[] = [1, 2, 3, 4];
+const STRING_NAMES = ["E", "A", "D", "G", "B", "e"];
+
+/**
+ * Convert a voicing fret array (e.g. ["x",3,2,0,0,0]) to FingerAssignment[].
+ * Uses a simple left-to-right ascending fret → ascending finger heuristic.
+ */
+export function voicingToFingerAssignments(
+  frets: (number | "x")[],
+  notes: string[]
+): FingerAssignment[] {
+  const assignments: FingerAssignment[] = [];
+  // Collect fretted (non-open, non-muted) positions
+  const fretted: { string: number; fret: number; note: string }[] = [];
+
+  for (let s = 0; s < frets.length; s++) {
+    const f = frets[s];
+    if (f === "x") continue;
+    if (f === 0) {
+      assignments.push({ string: s, fret: 0, finger: 0, note: notes[s % notes.length] || STRING_NAMES[s] });
+    } else {
+      fretted.push({ string: s, fret: f, note: notes[s % notes.length] || STRING_NAMES[s] });
+    }
+  }
+
+  // Sort by fret ascending, then string ascending
+  fretted.sort((a, b) => a.fret - b.fret || a.string - b.string);
+
+  // Check for barre (multiple strings on same lowest fret)
+  const minFret = fretted.length > 0 ? fretted[0].fret : 0;
+  const barreCount = fretted.filter((f) => f.fret === minFret).length;
+  const isBarre = barreCount >= 2;
+
+  let fingerIdx = 0;
+  for (const f of fretted) {
+    let finger: 0 | 1 | 2 | 3 | 4;
+    if (isBarre && f.fret === minFret) {
+      finger = 1; // barre index
+    } else {
+      // Assign next available finger (skip 1 if barre uses it)
+      const startIdx = isBarre ? 1 : 0;
+      finger = FINGER_ORDER[Math.min(startIdx + fingerIdx, 3)];
+      fingerIdx++;
+    }
+    assignments.push({ string: f.string, fret: f.fret, finger, note: f.note });
+  }
+
+  return assignments;
+}
