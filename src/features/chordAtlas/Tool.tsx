@@ -80,13 +80,17 @@ const ChordAtlasTool = () => {
     setSelectedIndex(null);
   }, []);
 
-  const handleModeChange = useCallback((nextMode: "atlas" | "hand" | "improv") => {
+  const handleModeChange = useCallback((nextMode: "atlas" | "hand" | "improv" | "navigator") => {
     setMode(nextMode);
 
     if (nextMode === "hand") {
       setShowFingers(true);
       setStayInPosition(true);
       setActiveZoneId((prev) => prev ?? getPositionZones(positionSystem, tool.key)[0]?.id ?? null);
+    }
+    if (nextMode === "navigator") {
+      setShowFingers(true);
+      setStayInPosition(true);
     }
   }, [positionSystem, tool.key]);
 
