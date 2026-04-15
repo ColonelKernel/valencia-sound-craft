@@ -100,6 +100,15 @@ const ChordFretboard = memo(({
         onNoteHover={setHoveredNote}
         chordFilter={chordFilter}
         timbre="guitar"
+        fretSpanOverlay={
+          fretSpanControls?.spanEnabled
+            ? {
+                startFret: fretSpanControls.anchorFret,
+                endFret: fretSpanControls.anchorFret + fretSpanControls.fretSpan - 1,
+                mode: fretSpanControls.constraintMode,
+              }
+            : null
+        }
       />
 
       {/* Fret Span Controls — rendered below fretboard */}
