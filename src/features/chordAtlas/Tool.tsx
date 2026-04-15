@@ -10,7 +10,7 @@ import ChordGrid from "./ChordGrid";
 import ChordDetail from "./ChordDetail";
 import ChordFretboard from "./ChordFretboard";
 import { generateChordAtlas, filterChords, type ChordFilterCategory } from "./chordEngine";
-import { getPositionZones, type PositionSystemType } from "./positionEngine";
+import { getPositionZones, createFretSpanZone, type PositionSystemType, type ConstraintMode } from "./positionEngine";
 import TransitionPanel from "./TransitionPanel";
 import LearningMode from "./LearningMode";
 import ModeNavigator from "./ModeNavigator";
