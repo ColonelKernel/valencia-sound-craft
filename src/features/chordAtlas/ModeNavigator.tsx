@@ -10,6 +10,7 @@ import {
   type PositionRecommendation,
 } from "./progressionAnalyzer";
 import type { PositionSystemType, PositionZone } from "./positionEngine";
+import { filterNotesToFretSpan } from "./positionEngine";
 
 interface ModeNavigatorProps {
   rootKey: string;
@@ -17,6 +18,9 @@ interface ModeNavigatorProps {
   positionSystem: PositionSystemType;
   onPositionSelect: (zone: PositionZone) => void;
   onChordHighlight: (notes: string[] | null) => void;
+  /** If set, filter highlighted notes to this fret range */
+  fretSpanStart?: number;
+  fretSpanEnd?: number;
 }
 
 const EXAMPLE_PROGRESSIONS = [
