@@ -136,6 +136,13 @@ const ChordAtlasTool = () => {
     />
   );
 
+  const fretSpanControls = {
+    spanEnabled, onSpanEnabledChange: setSpanEnabled,
+    fretSpan, onFretSpanChange: setFretSpan,
+    anchorFret, onAnchorFretChange: setAnchorFret,
+    constraintMode, onConstraintModeChange: setConstraintMode,
+  };
+
   const prevChord = prevChordRef.current;
 
   const handleLearningNotesChange = useCallback((notes: string[] | null) => {

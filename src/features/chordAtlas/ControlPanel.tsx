@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { ALL_ROOTS, MODE_CATEGORIES } from "@/components/ModeVisualizer/scaleData";
 import type { ChordFilterCategory } from "./chordEngine";
-import { getPositionZones, type PositionSystemType, type ConstraintMode } from "./positionEngine";
+import { getPositionZones, type PositionSystemType } from "./positionEngine";
 
 interface ControlPanelProps {
   rootKey: string;
