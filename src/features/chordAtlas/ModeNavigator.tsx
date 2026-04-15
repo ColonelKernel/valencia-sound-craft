@@ -59,11 +59,15 @@ const ModeNavigator = memo(({
   const handleChordHover = useCallback((idx: number | null) => {
     setActiveChordIdx(idx);
     if (idx !== null && analysis.assignments[idx]) {
-      onChordHighlight(analysis.assignments[idx].primaryMode.notes);
+      let notes = analysis.assignments[idx].primaryMode.notes;
+      if (fretSpanStart !== undefined && fretSpanEnd !== undefined) {
+        notes = filterNotesToFretSpan(notes, fretSpanStart, fretSpanEnd);
+      }
+      onChordHighlight(notes);
     } else {
       onChordHighlight(null);
     }
-  }, [analysis.assignments, onChordHighlight]);
+  }, [analysis.assignments, onChordHighlight, fretSpanStart, fretSpanEnd]);
 
   const handlePositionLock = useCallback((posIdx: number) => {
     setLockedPosition(prev => prev === posIdx ? null : posIdx);
