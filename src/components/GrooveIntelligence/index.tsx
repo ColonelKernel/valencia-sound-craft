@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Compass, Music2, Sparkles } from "lucide-react";
 import type { NormalizedGroove, RawGroove } from "./types";
@@ -22,13 +22,49 @@ interface GrooveScene {
   genreCount: number;
 }
 
-function prepareSample(raw: RawGroove[], reference: RawGroove[]) {
-  const normalized = normalizeGrooves(raw, reference);
+/**
+ * Build the full scene from raw data.
+ *
+ * Previously this called prepareSample() 3× (for field/desktop/mobile), running
+ * buildSimilarityCache (O(n²)) independently each time — ~7,500 redundant distance
+ * computations. Now we normalize once, compute similarity once, and filter subsets.
+ */
+function buildScene(data: RawGroove[]): GrooveScene {
+  const t0 = performance.now();
+
+  const fieldRaw = sampleGrooveSet(data, FIELD_LIMIT);
+  const desktopRaw = sampleGrooveSet(fieldRaw, DESKTOP_LIMIT);
+  const mobileRaw = sampleGrooveSet(desktopRaw, MOBILE_LIMIT);
+
+  // Normalize once against the full dataset (preserves global feature ranges).
+  const normalized = normalizeGrooves(fieldRaw, data);
+  // O(n²) similarity runs exactly once for the 80-node field set.
   const similarity = buildSimilarityCache(normalized, 5);
-  return normalized.map(groove => ({
+  const fieldGrooves = normalized.map(groove => ({
     ...groove,
     similar: similarity.neighbors.get(groove.id) ?? [],
   }));
+  const fieldGrooveMap = new Map(fieldGrooves.map(g => [g.id, g]));
+
+  // Subset by ID lookup — O(n) each, no recomputation.
+  const desktopIds = new Set(desktopRaw.map(g => g.id));
+  const mobileIds = new Set(mobileRaw.map(g => g.id));
+  const desktopGrooves = fieldGrooves.filter(g => desktopIds.has(g.id));
+  const mobileGrooves = fieldGrooves.filter(g => mobileIds.has(g.id));
+
+  console.log(
+    `[GrooveIntelligence] Scene built in ${(performance.now() - t0).toFixed(1)}ms` +
+    ` — field:${fieldGrooves.length} desktop:${desktopGrooves.length} mobile:${mobileGrooves.length}`
+  );
+
+  return {
+    mobileGrooves,
+    desktopGrooves,
+    fieldGrooves,
+    fieldGrooveMap,
+    totalCount: data.length,
+    genreCount: new Set(fieldGrooves.map(g => g.genre)).size,
+  };
 }
 
 function useDesktopFieldAvailability() {
@@ -47,7 +83,7 @@ function useDesktopFieldAvailability() {
   return isDesktop;
 }
 
-function GrooveListCard({
+const GrooveListCard = memo(function GrooveListCard({
   groove,
   selected,
   onSelect,
@@ -113,7 +149,7 @@ function GrooveListCard({
       </div>
     </button>
   );
-}
+});
 
 export default function GrooveIntelligenceLab() {
   const [scene, setScene] = useState<GrooveScene | null>(null);
@@ -132,23 +168,7 @@ export default function GrooveIntelligenceLab() {
       .then(response => response.json())
       .then((data: RawGroove[]) => {
         if (cancelled) return;
-
-        const fieldRaw = sampleGrooveSet(data, FIELD_LIMIT);
-        const desktopRaw = sampleGrooveSet(fieldRaw, DESKTOP_LIMIT);
-        const mobileRaw = sampleGrooveSet(desktopRaw, MOBILE_LIMIT);
-
-        const fieldGrooves = prepareSample(fieldRaw, data);
-        const desktopGrooves = prepareSample(desktopRaw, data);
-        const mobileGrooves = prepareSample(mobileRaw, data);
-
-        setScene({
-          mobileGrooves,
-          desktopGrooves,
-          fieldGrooves,
-          fieldGrooveMap: new Map(fieldGrooves.map(groove => [groove.id, groove])),
-          totalCount: data.length,
-          genreCount: new Set(fieldGrooves.map(groove => groove.genre)).size,
-        });
+        setScene(buildScene(data));
       })
       .catch(error => {
         console.error("Failed to load groove data:", error);
