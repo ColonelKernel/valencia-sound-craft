@@ -106,6 +106,7 @@ const Fretboard = ({
   chordFilter,
   onNoteClick,
   timbre = 'piano',
+  fretSpanOverlay,
 }: FretboardProps) => {
   const [positionOverride, setPositionOverride] = useState<number | null>(null);
 
