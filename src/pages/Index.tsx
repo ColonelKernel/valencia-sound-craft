@@ -20,7 +20,7 @@ interface SectionFallbackProps {
 const SectionFallback = ({ id, className = "bg-background" }: SectionFallbackProps) => (
   <section id={id} className={`section-padding ${className}`}>
     <div className="container mx-auto">
-      <div className="h-24 rounded-[1.75rem] border border-border/70 bg-card/45" />
+      <div className="h-24 rounded-xl border border-border/70 bg-card/45" />
     </div>
   </section>
 );
@@ -29,15 +29,15 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <RouteHead
-        title="Valencia Sound Craft"
-        description="Music systems design, creative technology, and direct-linkable rhythm and harmony tools."
+        title="ZS — Music, Data & Interactive Systems"
+        description="Creative technologist building systems for understanding, generating, and interacting with music — from intelligent engines to playable audiovisual instruments."
         canonicalPath="/"
         jsonLd={createToolStructuredData({
-          name: "Valencia Sound Craft",
+          name: "ZS — Music, Data & Interactive Systems",
           description:
-            "A creative music technology site featuring portfolio work and interactive rhythm and harmony tools.",
+            "A creative music technology site featuring interactive rhythm and harmony systems, analytics dashboards, and sound design tools.",
           canonicalPath: "/",
-          educationalUse: ["music technology", "composition", "practice"],
+          educationalUse: ["music technology", "composition", "data analysis"],
         })}
       />
       <Navbar />
@@ -51,7 +51,7 @@ const Index = () => {
         <SystemsPreview />
         <AnalyticsPreview />
 
-        <Suspense fallback={<SectionFallback id="portfolio" className="bg-secondary/50" />}>
+        <Suspense fallback={<SectionFallback id="audio" className="bg-secondary/50" />}>
           <Portfolio />
         </Suspense>
         <Suspense fallback={<SectionFallback id="about" className="bg-background" />}>

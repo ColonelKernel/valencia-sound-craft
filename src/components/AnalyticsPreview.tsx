@@ -30,11 +30,11 @@ const metrics = [
         <AreaChart data={sparkData.acquisition}>
           <defs>
             <linearGradient id="sparkAcq" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+              <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="v" stroke="hsl(var(--primary))" strokeWidth={1.5} fill="url(#sparkAcq)" dot={false} />
+          <Area type="monotone" dataKey="v" stroke="hsl(var(--foreground))" strokeWidth={1.5} fill="url(#sparkAcq)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     ),
@@ -73,7 +73,7 @@ const metrics = [
     spark: (
       <ResponsiveContainer width="100%" height={40}>
         <BarChart data={sparkData.catalog}>
-          <Bar dataKey="v" fill="hsl(var(--foreground))" opacity={0.4} radius={[2, 2, 0, 0]} />
+          <Bar dataKey="v" fill="hsl(var(--foreground))" opacity={0.3} radius={[2, 2, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     ),
@@ -81,24 +81,24 @@ const metrics = [
 ];
 
 const AnalyticsPreview = () => (
-  <section className="section-padding border-y border-border/70 bg-secondary/50 scroll-mt-24">
+  <section id="analytics-preview" className="section-padding border-y border-border/70 bg-background scroll-mt-24">
     <div className="container mx-auto space-y-8">
       <div className="space-y-4">
-        <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Intelligence</p>
+        <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Analytics Lab</p>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-3">
             <h2 className="text-4xl font-bold tracking-tight md:text-5xl">
-              Music Catalog Intelligence Platform
+              Music Catalog Intelligence
             </h2>
             <p className="text-sm text-muted-foreground md:text-base">
-              Investment-grade analytics for evaluating music catalogs as financial assets.
-              Real streaming data, acquisition scoring, and AI-driven insights.
+              A collection of tools and dashboards for analyzing music performance, audience behavior,
+              and catalog dynamics. Designed to simulate real-world music platform and catalog analytics environments.
             </p>
           </div>
 
           <Link
             to="/music-analytics"
-            className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-5 py-3 text-sm font-semibold text-foreground hover:bg-primary/15"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary px-5 py-3 text-sm font-semibold text-foreground hover:bg-accent transition-colors"
           >
             Open Dashboard
             <ArrowRight className="h-4 w-4" />
@@ -110,20 +110,16 @@ const AnalyticsPreview = () => (
         {metrics.map((m) => (
           <article
             key={m.label}
-            className="rounded-[1.5rem] border border-border/70 bg-card/75 p-5 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)]"
+            className="rounded-xl border border-border/70 bg-card/75 p-5 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)]"
           >
-            <m.icon className="h-5 w-5 text-primary" />
+            <m.icon className="h-5 w-5 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold text-foreground">{m.label}</h3>
-            <p className="mt-1 text-xs font-medium text-primary/80">{m.value}</p>
+            <p className="mt-1 text-xs font-medium text-muted-foreground">{m.value}</p>
             <div className="mt-3">{m.spark}</div>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{m.desc}</p>
           </article>
         ))}
       </div>
-
-      <p className="text-[11px] text-muted-foreground/60">
-        Built using real streaming data, public APIs, and simplified financial modeling
-      </p>
     </div>
   </section>
 );
