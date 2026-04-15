@@ -58,7 +58,16 @@ const ChordAtlasTool = () => {
     [positionSystem, tool.key]
   );
 
+  // Fret span zone overrides position zone when enabled
+  const fretSpanZone = useMemo(() => {
+    if (!spanEnabled) return null;
+    return createFretSpanZone({ span: fretSpan, anchorFret, constraintMode });
+  }, [spanEnabled, fretSpan, anchorFret, constraintMode]);
+
   const activeZone = useMemo(() => {
+    // Fret span zone takes priority
+    if (fretSpanZone) return fretSpanZone;
+
     if (activeZoneId) {
       return availableZones.find((z) => z.id === activeZoneId) ?? null;
     }
@@ -68,7 +77,7 @@ const ChordAtlasTool = () => {
     }
 
     return null;
-  }, [activeZoneId, availableZones, isHandMode]);
+  }, [fretSpanZone, activeZoneId, availableZones, isHandMode]);
 
   const handleSelect = useCallback((i: number) => {
     setSelectedIndex((prev) => {
