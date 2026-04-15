@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { ALL_ROOTS, MODE_CATEGORIES } from "@/components/ModeVisualizer/scaleData";
 import type { ChordFilterCategory } from "./chordEngine";
-import { getPositionZones, type PositionSystemType } from "./positionEngine";
+import { getPositionZones, type PositionSystemType, type ConstraintMode } from "./positionEngine";
 
 interface ControlPanelProps {
   rootKey: string;
@@ -19,6 +19,15 @@ interface ControlPanelProps {
   stayInPosition: boolean;
   onStayInPositionChange: (v: boolean) => void;
   forceHandMode?: boolean;
+  // Fret span constraint
+  fretSpan: 3 | 4 | 5;
+  onFretSpanChange: (v: 3 | 4 | 5) => void;
+  anchorFret: number;
+  onAnchorFretChange: (v: number) => void;
+  constraintMode: ConstraintMode;
+  onConstraintModeChange: (v: ConstraintMode) => void;
+  spanEnabled: boolean;
+  onSpanEnabledChange: (v: boolean) => void;
 }
 
 const FILTER_OPTIONS: { value: ChordFilterCategory; label: string }[] = [
@@ -51,6 +60,14 @@ const ControlPanel = memo(({
   stayInPosition,
   onStayInPositionChange,
   forceHandMode = false,
+  fretSpan,
+  onFretSpanChange,
+  anchorFret,
+  onAnchorFretChange,
+  constraintMode,
+  onConstraintModeChange,
+  spanEnabled,
+  onSpanEnabledChange,
 }: ControlPanelProps) => {
   const zones = getPositionZones(positionSystem, rootKey);
   const fingerToggleChecked = forceHandMode ? true : showFingers;
