@@ -10,6 +10,7 @@ import ChordGrid from "./ChordGrid";
 import ChordDetail from "./ChordDetail";
 import ChordFretboard from "./ChordFretboard";
 import { generateChordAtlas, filterChords, type ChordFilterCategory } from "./chordEngine";
+import { getPositionZones, type PositionSystemType } from "./positionEngine";
 
 const ImprovPanel = lazy(() => import("./ImprovPanel"));
 
@@ -20,6 +21,12 @@ const ChordAtlasTool = () => {
   const [filter, setFilter] = useState<ChordFilterCategory>("all");
   const [mode, setMode] = useState<"atlas" | "improv">("atlas");
   const [improvChordHighlight, setImprovChordHighlight] = useState<string[] | null>(null);
+
+  // Biomechanical state
+  const [showFingers, setShowFingers] = useState(false);
+  const [positionSystem, setPositionSystem] = useState<PositionSystemType>("caged");
+  const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
+  const [stayInPosition, setStayInPosition] = useState(false);
 
   const allChords = useMemo(
     () => generateChordAtlas(tool.key, tool.mode),
@@ -33,7 +40,13 @@ const ChordAtlasTool = () => {
 
   const selectedChord = selectedIndex !== null ? filteredChords[selectedIndex] ?? null : null;
 
-  // For fretboard: use improv highlight if in improv mode, else selected chord
+  // Resolve active zone object
+  const activeZone = useMemo(() => {
+    if (!activeZoneId) return null;
+    const zones = getPositionZones(positionSystem, tool.key);
+    return zones.find((z) => z.id === activeZoneId) ?? null;
+  }, [activeZoneId, positionSystem, tool.key]);
+
   const fretboardChordFilter = mode === "improv" && improvChordHighlight
     ? improvChordHighlight
     : selectedChord?.notes ?? null;
@@ -47,6 +60,25 @@ const ChordAtlasTool = () => {
     setSelectedIndex(null);
   }, []);
 
+  const controlPanel = (
+    <ControlPanel
+      rootKey={tool.key}
+      mode={tool.mode}
+      filter={filter}
+      onKeyChange={tool.setKey}
+      onModeChange={tool.setMode}
+      onFilterChange={handleFilterChange}
+      showFingers={showFingers}
+      onShowFingersChange={setShowFingers}
+      positionSystem={positionSystem}
+      onPositionSystemChange={setPositionSystem}
+      activeZoneId={activeZoneId}
+      onActiveZoneChange={setActiveZoneId}
+      stayInPosition={stayInPosition}
+      onStayInPositionChange={setStayInPosition}
+    />
+  );
+
   return (
     <ToolPageLayout
       meta={chordAtlasToolMeta}
@@ -58,9 +90,12 @@ const ChordAtlasTool = () => {
           <p>
             Exploring chords in <strong className="text-foreground">{tool.key} {tool.mode}</strong> at{" "}
             <strong className="text-foreground">{tool.tempo} BPM</strong>.
+            {showFingers && activeZone
+              ? ` Hand position: ${activeZone.label} (frets ${activeZone.startFret}–${activeZone.endFret}).`
+              : ""}
             {mode === "improv"
-              ? " Improvisation engine active — hover chords in the solo map to see scale overlays on the fretboard."
-              : " Select any chord to see its voicings, intervals, substitutions, and fretboard mapping."}
+              ? " Improvisation engine active."
+              : " Select any chord to see voicings, intervals, and fretboard mapping."}
           </p>
         </div>
       }
@@ -91,16 +126,7 @@ const ChordAtlasTool = () => {
 
       {mode === "atlas" ? (
         <ChordAtlasToolUI
-          controls={
-            <ControlPanel
-              rootKey={tool.key}
-              mode={tool.mode}
-              filter={filter}
-              onKeyChange={tool.setKey}
-              onModeChange={tool.setMode}
-              onFilterChange={handleFilterChange}
-            />
-          }
+          controls={controlPanel}
           chordGrid={
             <>
               <ChordGrid
@@ -113,6 +139,9 @@ const ChordAtlasTool = () => {
                 mode={tool.mode}
                 selectedChord={selectedChord}
                 overrideChordFilter={null}
+                showFingers={showFingers}
+                activeZone={activeZone}
+                stayInPosition={stayInPosition}
               />
             </>
           }
@@ -135,17 +164,13 @@ const ChordAtlasTool = () => {
               mode={tool.mode}
               selectedChord={null}
               overrideChordFilter={improvChordHighlight}
+              showFingers={showFingers}
+              activeZone={activeZone}
+              stayInPosition={stayInPosition}
             />
           </div>
           <aside className="space-y-4 rounded-xl border border-border/70 bg-card/70 p-4">
-            <ControlPanel
-              rootKey={tool.key}
-              mode={tool.mode}
-              filter={filter}
-              onKeyChange={tool.setKey}
-              onModeChange={tool.setMode}
-              onFilterChange={handleFilterChange}
-            />
+            {controlPanel}
           </aside>
         </div>
       )}
