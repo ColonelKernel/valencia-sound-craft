@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Brain, Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
+import { BarChart3, Brain, Instagram, Linkedin, Menu, MessageCircle, Music, Sparkles, X, Youtube } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -41,6 +41,7 @@ const Navbar = () => {
   const [activeHref, setActiveHref] = useState<string | null>(null);
   const isToolsRoute = location.pathname.startsWith("/tools");
   const isAnalyticsRoute = location.pathname === "/music-analytics";
+  const isMusicIntelligenceRoute = location.pathname === "/music-intelligence";
   const isHomePage = location.pathname === "/";
 
   useEffect(() => {
@@ -137,6 +138,22 @@ const Navbar = () => {
           )}
         />
       </Link>
+      <Link
+        to="/music-intelligence"
+        className={cn(
+          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
+          isMusicIntelligenceRoute ? "text-foreground" : "text-emerald-300 hover:text-emerald-200",
+        )}
+      >
+        <Sparkles size={14} />
+        AMIE
+        <span
+          className={cn(
+            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
+            isMusicIntelligenceRoute ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+          )}
+        />
+      </Link>
     </>
   );
 
@@ -167,7 +184,7 @@ const Navbar = () => {
       </NavLink>
     ));
 
-  const renderAnalyticsNav = () => (
+  const renderFeatureNav = (label: string) => (
     <>
       <Link
         to="/"
@@ -175,7 +192,7 @@ const Navbar = () => {
       >
         Home
       </Link>
-      <span className="text-sm font-medium text-foreground px-0.5 py-1.5">Analytics</span>
+      <span className="text-sm font-medium text-foreground px-0.5 py-1.5">{label}</span>
     </>
   );
 
@@ -197,7 +214,9 @@ const Navbar = () => {
           {isToolsRoute
             ? renderToolLinks()
             : isAnalyticsRoute
-              ? renderAnalyticsNav()
+              ? renderFeatureNav("Analytics")
+              : isMusicIntelligenceRoute
+                ? renderFeatureNav("AMIE")
               : renderHomeLinks()}
 
           <div className="ml-2 flex items-center gap-3 border-l border-border pl-4">
@@ -264,6 +283,22 @@ const Navbar = () => {
                       </div>
                     </>
                   )
+                : isMusicIntelligenceRoute
+                  ? (
+                      <>
+                        <Link
+                          to="/"
+                          onClick={() => setMenuOpen(false)}
+                          className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                        >
+                          Home
+                        </Link>
+                        <div className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
+                          <Sparkles size={14} />
+                          AMIE
+                        </div>
+                      </>
+                    )
                 : (
                     <>
                       {normalizedHomeLinks.map((link) => {
@@ -299,6 +334,14 @@ const Navbar = () => {
                       >
                         <BarChart3 size={14} />
                         Analytics
+                      </Link>
+                      <Link
+                        to="/music-intelligence"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-emerald-300 hover:bg-secondary/70"
+                      >
+                        <Sparkles size={14} />
+                        AMIE
                       </Link>
                     </>
                   )}
