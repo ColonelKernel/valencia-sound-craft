@@ -33,6 +33,11 @@ const ChordAtlasTool = () => {
   const prevChordRef = useRef<typeof selectedChord>(null);
   const [learningNotes, setLearningNotes] = useState<string[] | null>(null);
   const [learningActive, setLearningActive] = useState(false);
+  // Fret span constraint
+  const [spanEnabled, setSpanEnabled] = useState(false);
+  const [fretSpan, setFretSpan] = useState<3 | 4 | 5>(5);
+  const [anchorFret, setAnchorFret] = useState(5);
+  const [constraintMode, setConstraintMode] = useState<ConstraintMode>("hard");
   const isHandMode = mode === "hand";
   const handMappingEnabled = isHandMode || showFingers;
 
