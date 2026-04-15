@@ -20,6 +20,12 @@ function noteMatchesChord(note: string, chordNotes: string[]): boolean {
   return !!(enh && chordNotes.includes(enh));
 }
 
+interface FretSpanOverlay {
+  startFret: number;
+  endFret: number;
+  mode: "hard" | "soft";
+}
+
 interface FretboardProps {
   scaleNotes: string[];
   root: string;
@@ -34,6 +40,7 @@ interface FretboardProps {
   chordFilter: string[] | null;
   onNoteClick?: (note: string, octave: number) => void;
   timbre?: InstrumentTimbre;
+  fretSpanOverlay?: FretSpanOverlay | null;
 }
 
 const FRET_COUNT = 22;
