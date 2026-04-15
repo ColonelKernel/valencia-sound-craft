@@ -238,7 +238,9 @@ const Fretboard = ({
                     >
                       {inScale ? (() => {
 const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter);
-                        const finalStyle = dimmedByChord
+                        const dimmedBySpan = fretSpanOverlay && fretSpanOverlay.mode === "hard" && (fret < fretSpanOverlay.startFret || fret > fretSpanOverlay.endFret);
+                        const dimmed = dimmedByChord || dimmedBySpan;
+                        const finalStyle = dimmed
                           ? 'bg-stone-800 text-stone-500 border border-stone-700'
                           : circleStyle;
                         return (
