@@ -125,6 +125,14 @@ const ChordAtlasTool = () => {
       stayInPosition={stayInPosition}
       onStayInPositionChange={setStayInPosition}
       forceHandMode={isHandMode}
+      fretSpan={fretSpan}
+      onFretSpanChange={setFretSpan}
+      anchorFret={anchorFret}
+      onAnchorFretChange={setAnchorFret}
+      constraintMode={constraintMode}
+      onConstraintModeChange={setConstraintMode}
+      spanEnabled={spanEnabled}
+      onSpanEnabledChange={setSpanEnabled}
     />
   );
 
