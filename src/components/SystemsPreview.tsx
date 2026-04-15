@@ -1,14 +1,7 @@
-import { ArrowRight, Brain, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
+import { ArrowRight, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const previewCards = [
-  {
-    to: "/groove-intelligence",
-    icon: Brain,
-    title: "Groove Intelligence Lab",
-    description: "Browse a lightweight groove atlas with responsive feel cards, quick playback previews, and an optional desktop field view.",
-    featured: true,
-  },
   {
     to: "/tools/rhythm",
     icon: Globe2,

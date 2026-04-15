@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Brain, Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
+import { BarChart3, Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -105,22 +105,6 @@ const Navbar = () => {
           </a>
         );
       })}
-      <Link
-        to="/groove-intelligence"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/groove-intelligence" ? "text-foreground" : "text-emerald-400 hover:text-emerald-300",
-        )}
-      >
-        <Brain size={14} />
-        Groove Lab
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            location.pathname === "/groove-intelligence" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
       <Link
         to="/music-analytics"
         className={cn(
@@ -284,14 +268,6 @@ const Navbar = () => {
                           </a>
                         );
                       })}
-                      <Link
-                        to="/groove-intelligence"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-emerald-400 hover:bg-secondary/70"
-                      >
-                        <Brain size={14} />
-                        Groove Lab
-                      </Link>
                       <Link
                         to="/music-analytics"
                         onClick={() => setMenuOpen(false)}
