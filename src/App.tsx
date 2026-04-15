@@ -19,6 +19,7 @@ const TonnetzTool = lazy(() => import("@/features/tonnetz/Tool"));
 const MusicAnalyticsPage = lazy(() => import("./pages/MusicAnalyticsPage"));
 const GrooveIntelligencePage = lazy(() => import("./pages/GrooveIntelligencePage"));
 const MusicIntelligencePage = lazy(() => import("./pages/MusicIntelligencePage"));
+const TransitSynthPage = lazy(() => import("./pages/TransitSynthPage"));
 
 const routeFallback = (
   <div className="min-h-screen bg-background pt-24">
@@ -46,6 +47,7 @@ const App = () => (
               </Route>
               <Route path="/music-analytics" element={<MusicAnalyticsPage />} />
               <Route path="/music-intelligence" element={<MusicIntelligencePage />} />
+              <Route path="/transit-synth" element={<TransitSynthPage />} />
               <Route path="/groove-intelligence" element={<GrooveIntelligencePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

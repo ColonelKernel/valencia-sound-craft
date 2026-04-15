@@ -42,6 +42,7 @@ const Navbar = () => {
   const isToolsRoute = location.pathname.startsWith("/tools");
   const isAnalyticsRoute = location.pathname === "/music-analytics";
   const isMusicIntelligenceRoute = location.pathname === "/music-intelligence";
+  const isTransitSynthRoute = location.pathname === "/transit-synth";
   const isHomePage = location.pathname === "/";
 
   useEffect(() => {
@@ -217,6 +218,8 @@ const Navbar = () => {
               ? renderFeatureNav("Analytics")
               : isMusicIntelligenceRoute
                 ? renderFeatureNav("AMIE")
+                : isTransitSynthRoute
+                  ? renderFeatureNav("TransitSynth")
               : renderHomeLinks()}
 
           <div className="ml-2 flex items-center gap-3 border-l border-border pl-4">
@@ -296,6 +299,21 @@ const Navbar = () => {
                         <div className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
                           <Sparkles size={14} />
                           AMIE
+                        </div>
+                      </>
+                    )
+                : isTransitSynthRoute
+                  ? (
+                      <>
+                        <Link
+                          to="/"
+                          onClick={() => setMenuOpen(false)}
+                          className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                        >
+                          Home
+                        </Link>
+                        <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
+                          TransitSynth
                         </div>
                       </>
                     )

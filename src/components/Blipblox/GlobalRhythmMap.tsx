@@ -80,6 +80,19 @@ const CONFIDENCE_PRIORITY: Record<Rhythm["confidence"], number> = {
   low: 2,
 };
 
+function formatDisplayLabel(value: string) {
+  return value
+    .split(/([ /-])/)
+    .map((segment) => {
+      if (segment === " " || segment === "/" || segment === "-") {
+        return segment;
+      }
+
+      return segment.charAt(0).toLocaleUpperCase() + segment.slice(1);
+    })
+    .join("");
+}
+
 function getPreviewRhythm(hovered: Rhythm | null, selectedCountry: string | undefined, rhythms: Rhythm[]) {
   if (hovered) {
     return hovered;
@@ -467,7 +480,7 @@ const GlobalRhythmMap = ({
                   "rounded-full border px-2 py-0.5 text-[10px]",
                   CLASSIFICATION_BADGES[previewRhythm.classification],
                 )}>
-                  {previewRhythm.classification}
+                  {formatDisplayLabel(previewRhythm.classification)}
                 </span>
                 {previewMarker && (
                   <span className="rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
@@ -482,7 +495,7 @@ const GlobalRhythmMap = ({
                 {previewRhythm.name} · {previewRhythm.tradition}
               </p>
               <p className="text-[10px] text-muted-foreground mt-1">
-                {previewRhythm.confidence} confidence · {previewRhythm.timbreProfile} · {previewRhythm.instruments.join(" · ")}
+                {formatDisplayLabel(previewRhythm.confidence)} confidence · {formatDisplayLabel(previewRhythm.timbreProfile)} · {previewRhythm.instruments.join(" · ")}
               </p>
             </div>
             <div className="rounded-lg border border-border bg-card px-3 py-2 text-[10px] text-muted-foreground max-w-xs">
@@ -547,7 +560,7 @@ const GlobalRhythmMap = ({
                       {rhythm.continent} · {rhythm.region}
                     </p>
                     <p className="text-slate-500">
-                      {rhythm.meter} · {rhythm.classification} · {rhythm.confidence}
+                      {rhythm.meter} · {formatDisplayLabel(rhythm.classification)} · {formatDisplayLabel(rhythm.confidence)}
                     </p>
                     <p className="text-slate-500">
                       {marker.rhythmCount} rhythm{marker.rhythmCount === 1 ? "" : "s"} in dataset

@@ -1,4 +1,4 @@
-import { ArrowRight, Brain, Globe2, Hexagon, Music2, RadioTower, Sparkles, Waves } from "lucide-react";
+import { ArrowRight, Brain, Globe2, Hexagon, Music2, RadioTower, Sparkles, TrainFront, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const previewCards = [
@@ -14,6 +14,12 @@ const previewCards = [
     icon: Sparkles,
     title: "Adaptive Music Intelligence Engine",
     description: "Hybrid music recommendation demo blending audio features, listening behavior, explainability, and artist-style controls.",
+  },
+  {
+    to: "/transit-synth",
+    icon: TrainFront,
+    title: "TransitSynth",
+    description: "Playable cities engine that maps transit graphs to pitch, rhythm, sequencing, and real-time synthesis.",
   },
   {
     to: "/tools/rhythm",
