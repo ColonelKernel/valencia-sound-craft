@@ -125,16 +125,15 @@ const ChordAtlasTool = () => {
       stayInPosition={stayInPosition}
       onStayInPositionChange={setStayInPosition}
       forceHandMode={isHandMode}
-      fretSpan={fretSpan}
-      onFretSpanChange={setFretSpan}
-      anchorFret={anchorFret}
-      onAnchorFretChange={setAnchorFret}
-      constraintMode={constraintMode}
-      onConstraintModeChange={setConstraintMode}
-      spanEnabled={spanEnabled}
-      onSpanEnabledChange={setSpanEnabled}
     />
   );
+
+  const fretSpanControls = {
+    spanEnabled, onSpanEnabledChange: setSpanEnabled,
+    fretSpan, onFretSpanChange: setFretSpan,
+    anchorFret, onAnchorFretChange: setAnchorFret,
+    constraintMode, onConstraintModeChange: setConstraintMode,
+  };
 
   const prevChord = prevChordRef.current;
 
@@ -264,6 +263,7 @@ const ChordAtlasTool = () => {
               showFingers={handMappingEnabled}
               activeZone={activeZone}
               stayInPosition={stayInPosition}
+              fretSpanControls={fretSpanControls}
             />
           </div>
           <aside className="space-y-4 rounded-xl border border-border/70 bg-card/70 p-4 max-h-[80vh] overflow-y-auto">
@@ -298,6 +298,7 @@ const ChordAtlasTool = () => {
               showFingers={handMappingEnabled}
               activeZone={activeZone}
               stayInPosition={stayInPosition}
+              fretSpanControls={fretSpanControls}
             />
           </div>
           <aside className="space-y-4 rounded-xl border border-border/70 bg-card/70 p-4">
@@ -322,6 +323,7 @@ const ChordAtlasTool = () => {
                 showFingers={handMappingEnabled}
                 activeZone={activeZone}
                 stayInPosition={stayInPosition || isHandMode}
+                fretSpanControls={fretSpanControls}
               />
             </>
           }
