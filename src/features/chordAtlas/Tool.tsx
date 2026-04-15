@@ -263,6 +263,7 @@ const ChordAtlasTool = () => {
               showFingers={handMappingEnabled}
               activeZone={activeZone}
               stayInPosition={stayInPosition}
+              fretSpanControls={fretSpanControls}
             />
           </div>
           <aside className="space-y-4 rounded-xl border border-border/70 bg-card/70 p-4 max-h-[80vh] overflow-y-auto">
@@ -297,6 +298,7 @@ const ChordAtlasTool = () => {
               showFingers={handMappingEnabled}
               activeZone={activeZone}
               stayInPosition={stayInPosition}
+              fretSpanControls={fretSpanControls}
             />
           </div>
           <aside className="space-y-4 rounded-xl border border-border/70 bg-card/70 p-4">
@@ -321,6 +323,7 @@ const ChordAtlasTool = () => {
                 showFingers={handMappingEnabled}
                 activeZone={activeZone}
                 stayInPosition={stayInPosition || isHandMode}
+                fretSpanControls={fretSpanControls}
               />
             </>
           }
