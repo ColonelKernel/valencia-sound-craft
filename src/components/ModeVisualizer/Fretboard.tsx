@@ -143,11 +143,14 @@ const Fretboard = ({
       <div className="min-w-[900px]">
         <div className="flex">
           <div className="w-10 shrink-0" />
-          {displayFrets.map((fret) => (
-            <div key={fret} className="flex-1 text-center text-[10px] text-muted-foreground font-mono">
-              {fret}
-            </div>
-          ))}
+          {displayFrets.map((fret) => {
+            const inSpan = fretSpanOverlay && fret >= fretSpanOverlay.startFret && fret <= fretSpanOverlay.endFret;
+            return (
+              <div key={fret} className={`flex-1 text-center text-[10px] font-mono ${inSpan ? "text-amber-400 font-semibold" : "text-muted-foreground"}`}>
+                {fret}
+              </div>
+            );
+          })}
         </div>
 
         <div
