@@ -13,6 +13,7 @@ import { generateChordAtlas, filterChords, type ChordFilterCategory } from "./ch
 import { getPositionZones, type PositionSystemType } from "./positionEngine";
 import TransitionPanel from "./TransitionPanel";
 import LearningMode from "./LearningMode";
+import ModeNavigator from "./ModeNavigator";
 
 const ImprovPanel = lazy(() => import("./ImprovPanel"));
 
@@ -21,7 +22,8 @@ const ChordAtlasTool = () => {
   const tool = useTool();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [filter, setFilter] = useState<ChordFilterCategory>("all");
-  const [mode, setMode] = useState<"atlas" | "hand" | "improv">("atlas");
+  const [mode, setMode] = useState<"atlas" | "hand" | "improv" | "navigator">("atlas");
+  const [navigatorChordHighlight, setNavigatorChordHighlight] = useState<string[] | null>(null);
   const [improvChordHighlight, setImprovChordHighlight] = useState<string[] | null>(null);
 
   const [showFingers, setShowFingers] = useState(false);
@@ -78,13 +80,17 @@ const ChordAtlasTool = () => {
     setSelectedIndex(null);
   }, []);
 
-  const handleModeChange = useCallback((nextMode: "atlas" | "hand" | "improv") => {
+  const handleModeChange = useCallback((nextMode: "atlas" | "hand" | "improv" | "navigator") => {
     setMode(nextMode);
 
     if (nextMode === "hand") {
       setShowFingers(true);
       setStayInPosition(true);
       setActiveZoneId((prev) => prev ?? getPositionZones(positionSystem, tool.key)[0]?.id ?? null);
+    }
+    if (nextMode === "navigator") {
+      setShowFingers(true);
+      setStayInPosition(true);
     }
   }, [positionSystem, tool.key]);
 
@@ -213,32 +219,42 @@ const ChordAtlasTool = () => {
         >
           Improvisation Engine
         </button>
+        <button
+          onClick={() => handleModeChange("navigator")}
+          className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+            mode === "navigator"
+              ? "border-primary/30 bg-primary/10 text-foreground"
+              : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
+          }`}
+        >
+          Mode Navigator
+        </button>
       </div>
 
-      {mode !== "improv" ? (
-        <ChordAtlasToolUI
-          controls={controlPanel}
-          chordGrid={
-            <>
-              <ChordGrid
-                chords={filteredChords}
-                selectedIndex={selectedIndex}
-                onSelect={handleSelect}
-              />
-              <ChordFretboard
-                rootKey={tool.key}
-                mode={tool.mode}
-                selectedChord={selectedChord}
-                overrideChordFilter={learningActive && learningNotes ? learningNotes : null}
-                showFingers={handMappingEnabled}
-                activeZone={activeZone}
-                stayInPosition={stayInPosition || isHandMode}
-              />
-            </>
-          }
-          detail={isHandMode ? handMappingDetail : <ChordDetail chord={selectedChord} />}
-        />
-      ) : (
+      {mode === "navigator" ? (
+        <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+          <div className="space-y-4">
+            <ChordFretboard
+              rootKey={tool.key}
+              mode={tool.mode}
+              selectedChord={null}
+              overrideChordFilter={navigatorChordHighlight}
+              showFingers={handMappingEnabled}
+              activeZone={activeZone}
+              stayInPosition={stayInPosition}
+            />
+          </div>
+          <aside className="space-y-4 rounded-xl border border-border/70 bg-card/70 p-4 max-h-[80vh] overflow-y-auto">
+            <ModeNavigator
+              rootKey={tool.key}
+              mode={tool.mode}
+              positionSystem={positionSystem}
+              onPositionSelect={(zone) => setActiveZoneId(zone.id)}
+              onChordHighlight={setNavigatorChordHighlight}
+            />
+          </aside>
+        </div>
+      ) : mode === "improv" ? (
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-4">
             <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading improvisation engine…</div>}>
@@ -264,6 +280,29 @@ const ChordAtlasTool = () => {
             {controlPanel}
           </aside>
         </div>
+      ) : (
+        <ChordAtlasToolUI
+          controls={controlPanel}
+          chordGrid={
+            <>
+              <ChordGrid
+                chords={filteredChords}
+                selectedIndex={selectedIndex}
+                onSelect={handleSelect}
+              />
+              <ChordFretboard
+                rootKey={tool.key}
+                mode={tool.mode}
+                selectedChord={selectedChord}
+                overrideChordFilter={learningActive && learningNotes ? learningNotes : null}
+                showFingers={handMappingEnabled}
+                activeZone={activeZone}
+                stayInPosition={stayInPosition || isHandMode}
+              />
+            </>
+          }
+          detail={isHandMode ? handMappingDetail : <ChordDetail chord={selectedChord} />}
+        />
       )}
     </ToolPageLayout>
   );
