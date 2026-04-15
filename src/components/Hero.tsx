@@ -1,4 +1,5 @@
-import { ArrowRight, BarChart3, Headphones, Wrench } from "lucide-react";
+import heroImage from "@/assets/hero-photo.jpg";
+import { BarChart3, Headphones, Wrench } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Hero = () => {
@@ -7,16 +8,17 @@ const Hero = () => {
       id="hero"
       className="relative flex min-h-screen items-center overflow-hidden scroll-mt-24"
     >
-      {/* Abstract background — network/graph motif */}
-      <div className="absolute inset-0 bg-background">
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)`,
-            backgroundSize: '48px 48px',
-          }}
+      {/* Photo background with overlay */}
+      <div className="absolute inset-0">
+        <img
+          src={heroImage}
+          alt="Zach Scheffler"
+          width={1920}
+          height={1080}
+          className="h-full w-full object-cover"
         />
-        <div className="absolute top-1/4 -right-32 w-[600px] h-[600px] rounded-full bg-primary/[0.03] blur-3xl" />
-        <div className="absolute bottom-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-primary/[0.02] blur-3xl" />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
       </div>
 
       <div className="relative z-10 container mx-auto px-6 py-28 md:py-32">
