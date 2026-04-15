@@ -273,6 +273,8 @@ const ChordAtlasTool = () => {
               positionSystem={positionSystem}
               onPositionSelect={(zone) => setActiveZoneId(zone.id)}
               onChordHighlight={setNavigatorChordHighlight}
+              fretSpanStart={spanEnabled ? anchorFret : undefined}
+              fretSpanEnd={spanEnabled ? anchorFret + fretSpan - 1 : undefined}
             />
           </aside>
         </div>
