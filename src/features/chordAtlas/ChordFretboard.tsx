@@ -50,7 +50,7 @@ const ChordFretboard = memo(({ rootKey, mode, selectedChord, overrideChordFilter
         showFingers={false}
         hoveredNote={hoveredNote}
         onNoteHover={setHoveredNote}
-        chordFilter={selectedChord?.notes ?? null}
+        chordFilter={overrideChordFilter ?? selectedChord?.notes ?? null}
         timbre="guitar"
       />
     </div>
