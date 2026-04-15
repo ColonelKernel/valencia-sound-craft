@@ -22,7 +22,8 @@ const ChordAtlasTool = () => {
   const tool = useTool();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [filter, setFilter] = useState<ChordFilterCategory>("all");
-  const [mode, setMode] = useState<"atlas" | "hand" | "improv">("atlas");
+  const [mode, setMode] = useState<"atlas" | "hand" | "improv" | "navigator">("atlas");
+  const [navigatorChordHighlight, setNavigatorChordHighlight] = useState<string[] | null>(null);
   const [improvChordHighlight, setImprovChordHighlight] = useState<string[] | null>(null);
 
   const [showFingers, setShowFingers] = useState(false);
