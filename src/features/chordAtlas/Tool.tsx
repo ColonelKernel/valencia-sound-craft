@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, lazy, Suspense } from "react";
+import { useMemo, useState, useCallback, useRef, lazy, Suspense } from "react";
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
 
@@ -11,6 +11,7 @@ import ChordDetail from "./ChordDetail";
 import ChordFretboard from "./ChordFretboard";
 import { generateChordAtlas, filterChords, type ChordFilterCategory } from "./chordEngine";
 import { getPositionZones, type PositionSystemType } from "./positionEngine";
+import TransitionPanel from "./TransitionPanel";
 
 const ImprovPanel = lazy(() => import("./ImprovPanel"));
 
