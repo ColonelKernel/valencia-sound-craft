@@ -19,15 +19,6 @@ interface ControlPanelProps {
   stayInPosition: boolean;
   onStayInPositionChange: (v: boolean) => void;
   forceHandMode?: boolean;
-  // Fret span constraint
-  fretSpan: 3 | 4 | 5;
-  onFretSpanChange: (v: 3 | 4 | 5) => void;
-  anchorFret: number;
-  onAnchorFretChange: (v: number) => void;
-  constraintMode: ConstraintMode;
-  onConstraintModeChange: (v: ConstraintMode) => void;
-  spanEnabled: boolean;
-  onSpanEnabledChange: (v: boolean) => void;
 }
 
 const FILTER_OPTIONS: { value: ChordFilterCategory; label: string }[] = [
