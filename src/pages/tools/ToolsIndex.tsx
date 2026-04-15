@@ -85,7 +85,7 @@ const ToolsIndex = () => (
       </section>
 
       <section className="px-6 pb-20">
-        <div className="container mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="container mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {toolCards.map((card) => (
             <article
               key={card.to}
