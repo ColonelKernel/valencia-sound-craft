@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { ALL_ROOTS, MODE_CATEGORIES } from "@/components/ModeVisualizer/scaleData";
 import type { ChordFilterCategory } from "./chordEngine";
-import { getPositionZones, type PositionSystemType, type PositionZone } from "./positionEngine";
+import { getPositionZones, type PositionSystemType } from "./positionEngine";
 
 interface ControlPanelProps {
   rootKey: string;
@@ -10,7 +10,6 @@ interface ControlPanelProps {
   onKeyChange: (key: string) => void;
   onModeChange: (mode: string) => void;
   onFilterChange: (filter: ChordFilterCategory) => void;
-  // Biomechanical layer
   showFingers: boolean;
   onShowFingersChange: (v: boolean) => void;
   positionSystem: PositionSystemType;
@@ -19,6 +18,7 @@ interface ControlPanelProps {
   onActiveZoneChange: (id: string | null) => void;
   stayInPosition: boolean;
   onStayInPositionChange: (v: boolean) => void;
+  forceHandMode?: boolean;
 }
 
 const FILTER_OPTIONS: { value: ChordFilterCategory; label: string }[] = [
@@ -50,12 +50,13 @@ const ControlPanel = memo(({
   onActiveZoneChange,
   stayInPosition,
   onStayInPositionChange,
+  forceHandMode = false,
 }: ControlPanelProps) => {
   const zones = getPositionZones(positionSystem, rootKey);
+  const fingerToggleChecked = forceHandMode ? true : showFingers;
 
   return (
     <div className="space-y-5">
-      {/* Key & Mode */}
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Key & Mode</h3>
         <div className="mt-2 space-y-2">
@@ -84,7 +85,6 @@ const ControlPanel = memo(({
         </div>
       </div>
 
-      {/* Chord Filter */}
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Chord Filter</h3>
         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -104,24 +104,23 @@ const ControlPanel = memo(({
         </div>
       </div>
 
-      {/* ─── Biomechanical Layer ──────────────────────────── */}
       <div className="border-t border-border/50 pt-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          🖐️ Hand Position
-        </h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hand Position</h3>
 
-        {/* Finger tracking toggle */}
-        <label className="mt-3 flex items-center gap-2 cursor-pointer">
+        <label className={`mt-3 flex items-center gap-2 ${forceHandMode ? "cursor-default" : "cursor-pointer"}`}>
           <input
             type="checkbox"
-            checked={showFingers}
+            checked={fingerToggleChecked}
+            disabled={forceHandMode}
             onChange={(e) => onShowFingersChange(e.target.checked)}
-            className="rounded border-border accent-primary"
+            className="rounded border-border accent-primary disabled:opacity-60"
           />
           <span className="text-xs text-foreground">Show finger numbers</span>
         </label>
+        {forceHandMode && (
+          <p className="mt-1 text-[11px] text-muted-foreground">Always on while Hand Mapping Engine is selected.</p>
+        )}
 
-        {/* Stay in position toggle */}
         <label className="mt-2 flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -132,8 +131,7 @@ const ControlPanel = memo(({
           <span className="text-xs text-foreground">Stay in position</span>
         </label>
 
-        {/* Position system selector */}
-        {showFingers && (
+        {fingerToggleChecked && (
           <div className="mt-3 space-y-2">
             <div className="flex flex-wrap gap-1.5">
               {POSITION_SYSTEMS.map((ps) => (
@@ -154,13 +152,12 @@ const ControlPanel = memo(({
               ))}
             </div>
 
-            {/* Zone selector */}
             <div className="space-y-1">
               <button
                 onClick={() => onActiveZoneChange(null)}
-                className={`w-full text-left rounded-md px-2.5 py-1.5 text-[11px] transition-colors ${
+                className={`w-full rounded-md px-2.5 py-1.5 text-left text-[11px] transition-colors ${
                   activeZoneId === null
-                    ? "bg-primary/10 text-foreground font-medium"
+                    ? "bg-primary/10 font-medium text-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
@@ -170,16 +167,14 @@ const ControlPanel = memo(({
                 <button
                   key={zone.id}
                   onClick={() => onActiveZoneChange(zone.id)}
-                  className={`w-full text-left rounded-md px-2.5 py-1.5 text-[11px] transition-colors ${
+                  className={`w-full rounded-md px-2.5 py-1.5 text-left text-[11px] transition-colors ${
                     activeZoneId === zone.id
-                      ? "bg-primary/10 text-foreground font-medium"
+                      ? "bg-primary/10 font-medium text-foreground"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
                   {zone.label}
-                  <span className="ml-1 text-muted-foreground">
-                    (frets {zone.startFret}–{zone.endFret})
-                  </span>
+                  <span className="ml-1 text-muted-foreground">(frets {zone.startFret}–{zone.endFret})</span>
                 </button>
               ))}
             </div>
@@ -187,11 +182,8 @@ const ControlPanel = memo(({
         )}
       </div>
 
-      {/* Interval Legend */}
       <div className="border-t border-border/50 pt-4">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Interval Legend
-        </h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interval Legend</h3>
         <div className="mt-2 space-y-1.5 text-[11px]">
           <div className="flex items-center gap-2">
             <span className="inline-block h-3 w-3 rounded-full bg-amber-500" />

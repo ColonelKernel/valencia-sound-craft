@@ -19,14 +19,16 @@ const ChordAtlasTool = () => {
   const tool = useTool();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [filter, setFilter] = useState<ChordFilterCategory>("all");
-  const [mode, setMode] = useState<"atlas" | "improv">("atlas");
+  const [mode, setMode] = useState<"atlas" | "hand" | "improv">("atlas");
   const [improvChordHighlight, setImprovChordHighlight] = useState<string[] | null>(null);
 
-  // Biomechanical state
   const [showFingers, setShowFingers] = useState(false);
   const [positionSystem, setPositionSystem] = useState<PositionSystemType>("caged");
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [stayInPosition, setStayInPosition] = useState(false);
+
+  const isHandMode = mode === "hand";
+  const handMappingEnabled = isHandMode || showFingers;
 
   const allChords = useMemo(
     () => generateChordAtlas(tool.key, tool.mode),
@@ -40,16 +42,22 @@ const ChordAtlasTool = () => {
 
   const selectedChord = selectedIndex !== null ? filteredChords[selectedIndex] ?? null : null;
 
-  // Resolve active zone object
-  const activeZone = useMemo(() => {
-    if (!activeZoneId) return null;
-    const zones = getPositionZones(positionSystem, tool.key);
-    return zones.find((z) => z.id === activeZoneId) ?? null;
-  }, [activeZoneId, positionSystem, tool.key]);
+  const availableZones = useMemo(
+    () => getPositionZones(positionSystem, tool.key),
+    [positionSystem, tool.key]
+  );
 
-  const fretboardChordFilter = mode === "improv" && improvChordHighlight
-    ? improvChordHighlight
-    : selectedChord?.notes ?? null;
+  const activeZone = useMemo(() => {
+    if (activeZoneId) {
+      return availableZones.find((z) => z.id === activeZoneId) ?? null;
+    }
+
+    if (isHandMode) {
+      return availableZones[0] ?? null;
+    }
+
+    return null;
+  }, [activeZoneId, availableZones, isHandMode]);
 
   const handleSelect = useCallback((i: number) => {
     setSelectedIndex((prev) => (prev === i ? null : i));
@@ -59,6 +67,16 @@ const ChordAtlasTool = () => {
     setFilter(f);
     setSelectedIndex(null);
   }, []);
+
+  const handleModeChange = useCallback((nextMode: "atlas" | "hand" | "improv") => {
+    setMode(nextMode);
+
+    if (nextMode === "hand") {
+      setShowFingers(true);
+      setStayInPosition(true);
+      setActiveZoneId((prev) => prev ?? getPositionZones(positionSystem, tool.key)[0]?.id ?? null);
+    }
+  }, [positionSystem, tool.key]);
 
   const controlPanel = (
     <ControlPanel
@@ -76,7 +94,26 @@ const ChordAtlasTool = () => {
       onActiveZoneChange={setActiveZoneId}
       stayInPosition={stayInPosition}
       onStayInPositionChange={setStayInPosition}
+      forceHandMode={isHandMode}
     />
+  );
+
+  const handMappingDetail = (
+    <div className="space-y-5">
+      <div>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">Biomechanical layer</p>
+        <h3 className="mt-1 text-2xl font-bold text-foreground">Hand Mapping Engine</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Finger numbers, active position zones, and stay-in-position guidance are now active.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm text-muted-foreground">
+        Pick a chord in the center grid to see how the shape maps to the neck, then switch position systems in the left panel.
+      </div>
+
+      {selectedChord ? <ChordDetail chord={selectedChord} /> : null}
+    </div>
   );
 
   return (
@@ -84,26 +121,23 @@ const ChordAtlasTool = () => {
       meta={chordAtlasToolMeta}
       eyebrow="Chord Atlas"
       title="Chord Atlas"
-      description="Navigate every chord in any key. See harmonic functions, voicings, and interval colors mapped to the guitar neck."
+      description="Navigate every chord in any key. See harmonic functions, voicings, interval colors, and hand-position intelligence mapped to the guitar neck."
       summary={
         <div className="space-y-3">
           <p>
-            Exploring chords in <strong className="text-foreground">{tool.key} {tool.mode}</strong> at{" "}
-            <strong className="text-foreground">{tool.tempo} BPM</strong>.
-            {showFingers && activeZone
-              ? ` Hand position: ${activeZone.label} (frets ${activeZone.startFret}–${activeZone.endFret}).`
-              : ""}
-            {mode === "improv"
-              ? " Improvisation engine active."
-              : " Select any chord to see voicings, intervals, and fretboard mapping."}
+            Exploring chords in <strong className="text-foreground">{tool.key} {tool.mode}</strong> at <strong className="text-foreground">{tool.tempo} BPM</strong>.
+            {isHandMode
+              ? " Hand Mapping Engine active — finger assignments and position zones are locked on."
+              : mode === "improv"
+                ? " Improvisation engine active."
+                : " Select any chord to see voicings, intervals, and fretboard mapping."}
           </p>
         </div>
       }
     >
-      {/* Mode Toggle */}
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <button
-          onClick={() => setMode("atlas")}
+          onClick={() => handleModeChange("atlas")}
           className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
             mode === "atlas"
               ? "border-primary/30 bg-primary/10 text-foreground"
@@ -113,7 +147,17 @@ const ChordAtlasTool = () => {
           Chord Atlas
         </button>
         <button
-          onClick={() => setMode("improv")}
+          onClick={() => handleModeChange("hand")}
+          className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+            mode === "hand"
+              ? "border-primary/30 bg-primary/10 text-foreground"
+              : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
+          }`}
+        >
+          Hand Mapping Engine
+        </button>
+        <button
+          onClick={() => handleModeChange("improv")}
           className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
             mode === "improv"
               ? "border-primary/30 bg-primary/10 text-foreground"
@@ -124,7 +168,7 @@ const ChordAtlasTool = () => {
         </button>
       </div>
 
-      {mode === "atlas" ? (
+      {mode !== "improv" ? (
         <ChordAtlasToolUI
           controls={controlPanel}
           chordGrid={
@@ -139,18 +183,18 @@ const ChordAtlasTool = () => {
                 mode={tool.mode}
                 selectedChord={selectedChord}
                 overrideChordFilter={null}
-                showFingers={showFingers}
+                showFingers={handMappingEnabled}
                 activeZone={activeZone}
-                stayInPosition={stayInPosition}
+                stayInPosition={stayInPosition || isHandMode}
               />
             </>
           }
-          detail={<ChordDetail chord={selectedChord} />}
+          detail={isHandMode ? handMappingDetail : <ChordDetail chord={selectedChord} />}
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-4">
-            <Suspense fallback={<div className="text-sm text-muted-foreground p-4">Loading improvisation engine…</div>}>
+            <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading improvisation engine…</div>}>
               <ImprovPanel
                 atlasChords={allChords}
                 rootKey={tool.key}
@@ -164,7 +208,7 @@ const ChordAtlasTool = () => {
               mode={tool.mode}
               selectedChord={null}
               overrideChordFilter={improvChordHighlight}
-              showFingers={showFingers}
+              showFingers={handMappingEnabled}
               activeZone={activeZone}
               stayInPosition={stayInPosition}
             />
