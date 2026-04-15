@@ -245,7 +245,7 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
                           : circleStyle;
                         return (
                           <div
-                            className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all duration-150 ${finalStyle} ${isHovered && !dimmedByChord ? "scale-125" : "hover:scale-110"}`}
+                            className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all duration-150 ${finalStyle} ${isHovered && !dimmed ? "scale-125" : "hover:scale-110"}`}
                             onMouseEnter={() => onNoteHover(displayNote)}
                             onMouseLeave={() => onNoteHover(null)}
                             onClick={() => {
