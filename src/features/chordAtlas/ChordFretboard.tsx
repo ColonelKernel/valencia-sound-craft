@@ -8,9 +8,10 @@ interface ChordFretboardProps {
   rootKey: string;
   mode: string;
   selectedChord: ChordAtlasEntry | null;
+  overrideChordFilter?: string[] | null;
 }
 
-const ChordFretboard = memo(({ rootKey, mode, selectedChord }: ChordFretboardProps) => {
+const ChordFretboard = memo(({ rootKey, mode, selectedChord, overrideChordFilter }: ChordFretboardProps) => {
   const [hoveredNote, setHoveredNote] = useState<string | null>(null);
   const scaleNotes = getScaleNotes(rootKey, mode);
   const tuning = TUNING_PRESETS[0].guitar; // Standard tuning
@@ -49,7 +50,7 @@ const ChordFretboard = memo(({ rootKey, mode, selectedChord }: ChordFretboardPro
         showFingers={false}
         hoveredNote={hoveredNote}
         onNoteHover={setHoveredNote}
-        chordFilter={selectedChord?.notes ?? null}
+        chordFilter={overrideChordFilter ?? selectedChord?.notes ?? null}
         timbre="guitar"
       />
     </div>
