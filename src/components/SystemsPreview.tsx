@@ -1,107 +1,88 @@
 import { ArrowRight, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const previewCards = [
+const systems = [
   {
     to: "/tools/rhythm",
     icon: Globe2,
-    title: "Rhythm Engine",
-    description: "Atlas-backed sequencing, cultural rhythm identity, and direct-play composition tools.",
+    title: "TransitSynth / Rhythm Atlas",
+    description: "A system for exploring and generating rhythm through structured pattern spaces — mapping topology to sound.",
   },
   {
     to: "/tools/harmony",
     icon: Music2,
     title: "Harmony Lab",
-    description: "Mode visualization, chord building, notation, and practice tools in one workspace.",
+    description: "Mode visualization, chord building, notation, and practice tools — a hybrid recommendation system combining audio features and metadata.",
   },
   {
     to: "/tools/map",
     icon: RadioTower,
     title: "Rhythm Map",
-    description: "Go from geographic selection to playable rhythm state without hidden UI steps.",
+    description: "Geographic selection to playable rhythm state — generative engine driven by cultural pattern data.",
   },
   {
     to: "/tools/circle",
     icon: Waves,
     title: "Circle of Fifths",
-    description: "Interactive key relationships with shared global key and mode state.",
+    description: "Interactive key relationships with shared global key, mode, and transport state.",
   },
   {
     to: "/tools/tonnetz",
     icon: Hexagon,
     title: "Tonnetz",
-    description: "Neo-Riemannian harmonic motion with shared tempo, transport, and tonal center.",
+    description: "Neo-Riemannian harmonic navigation with bi-directional sync and real-time voicing.",
   },
   {
     to: "/tools/chord-atlas",
     icon: Music2,
     title: "Chord Atlas",
-    description: "Map every chord in any key to the guitar neck — voicings, harmonic functions, and interval colors.",
+    description: "Map every chord in any key to the guitar neck — voicings, harmonic functions, and position-constrained improvisation.",
   },
 ];
 
 const SystemsPreview = () => (
-  <section id="systems" className="section-padding !pb-8 border-y border-border/70 bg-secondary/50 scroll-mt-24">
+  <section id="systems" className="section-padding border-y border-border/70 bg-secondary/50 scroll-mt-24">
     <div className="container mx-auto space-y-8">
       <div className="space-y-4">
-        <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Systems</p>
+        <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Featured Systems</p>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-3">
             <h2 className="text-4xl font-bold tracking-tight md:text-5xl">
-              Interactive Music Tools, Routed as One System
+              Interactive Music Systems
             </h2>
             <p className="text-sm text-muted-foreground md:text-base">
-              Open each workspace directly, share links to exact tools, and keep rhythm, harmony,
-              and transport state connected across the app.
+              Each project is a playable system — not a portfolio piece. Open any tool directly,
+              share links, and keep state connected across the app.
             </p>
           </div>
 
           <Link
             to="/tools"
-            className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-5 py-3 text-sm font-semibold text-foreground hover:bg-primary/15"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary px-5 py-3 text-sm font-semibold text-foreground hover:bg-accent transition-colors"
           >
-            Explore Tools
+            Open All Systems
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {previewCards.map((card) => {
-          const featured = 'featured' in card && card.featured;
-          return (
-            <article
-              key={card.to}
-              className={`rounded-[1.5rem] border p-5 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)] ${
-                featured
-                  ? "md:col-span-2 xl:col-span-3 border-emerald-500/30 bg-emerald-950/20"
-                  : "border-border/70 bg-card/75"
-              }`}
+        {systems.map((card) => (
+          <article
+            key={card.to}
+            className="group rounded-xl border border-border/70 bg-card/75 p-6 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)] hover:border-foreground/15 transition-colors"
+          >
+            <card.icon className="h-5 w-5 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-semibold text-foreground">{card.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{card.description}</p>
+            <Link
+              to={card.to}
+              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground group-hover:gap-3 transition-all"
             >
-              <div className={featured ? "flex flex-col md:flex-row md:items-center md:gap-8" : ""}>
-                <div className={featured ? "flex-1" : ""}>
-                  <div className="flex items-center gap-2">
-                    <card.icon className={`h-5 w-5 ${featured ? "text-emerald-400" : "text-primary"}`} />
-                    {featured && <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded-full">Responsive Groove Atlas</span>}
-                  </div>
-                  <h3 className={`mt-4 font-semibold text-foreground ${featured ? "text-2xl" : "text-lg"}`}>{card.title}</h3>
-                  <p className={`mt-2 leading-6 text-muted-foreground ${featured ? "text-base max-w-2xl" : "text-sm"}`}>{card.description}</p>
-                </div>
-                <Link
-                  to={card.to}
-                  className={`mt-5 md:mt-0 inline-flex items-center gap-2 font-medium hover:text-primary ${
-                    featured
-                      ? "text-base text-emerald-400 hover:text-emerald-300 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-5 py-3"
-                      : "text-sm text-foreground"
-                  }`}
-                >
-                  {featured ? "Open Groove Atlas" : "Open tool"}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </article>
-          );
-        })}
+              Open System <ArrowRight className="h-4 w-4" />
+            </Link>
+          </article>
+        ))}
       </div>
     </div>
   </section>

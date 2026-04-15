@@ -13,29 +13,9 @@ const globalPulseTracks = [
 
 const embeds = [
   {
-    title: "Spotify – Artist",
+    title: "Spotify",
     src: "https://open.spotify.com/embed/artist/3np4vEs0UOE5zFEXmFEc9L?utm_source=generator&theme=0",
     height: 352,
-  },
-  {
-    title: "Spotify – Album",
-    src: "https://open.spotify.com/embed/album/2gVtu10BAvTcuPJBD8gNhO?utm_source=generator&theme=0",
-    height: 352,
-  },
-  {
-    title: "YouTube",
-    src: "https://www.youtube.com/embed/3aFWd74ffGE",
-    height: 315,
-  },
-  {
-    title: "YouTube",
-    src: "https://www.youtube.com/embed/cnGRi_fasyE",
-    height: 315,
-  },
-  {
-    title: "YouTube",
-    src: "https://www.youtube.com/embed/KtgLL1YZW4c",
-    height: 315,
   },
   {
     title: "SoundCloud",
@@ -49,15 +29,15 @@ const Portfolio = () => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <section id="portfolio" className="section-padding !pt-8 bg-secondary/50" ref={ref}>
+    <section id="audio" className="section-padding !pt-8 bg-secondary/50" ref={ref}>
       <div className="container mx-auto">
         <button
           onClick={() => setExpanded(prev => !prev)}
           className="fade-up mb-10 w-full flex items-center justify-between group"
         >
           <div className="text-left">
-            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">Selected Work</p>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Portfolio</h2>
+            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">Audio</p>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Selected Audio Work</h2>
           </div>
           <div className="shrink-0 ml-4 w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:bg-accent transition-colors">
             {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -68,10 +48,7 @@ const Portfolio = () => {
           <>
             <div className="fade-up grid md:grid-cols-2 gap-6">
               {embeds.map((embed) => (
-                <div key={embed.title} className="rounded-sm overflow-hidden border border-border bg-card">
-                  <p className="px-4 py-3 text-sm font-display font-semibold border-b border-border">
-                    {embed.title}
-                  </p>
+                <div key={embed.title} className="rounded-lg overflow-hidden border border-border bg-card">
                   <iframe
                     title={embed.title}
                     src={embed.src}

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
+import { BarChart3, Linkedin, Instagram, Menu, Music, X, Youtube } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 
 const normalizedHomeLinks = [
   { label: "Home", href: "#hero" },
-  { label: "Services", href: "#services" },
-  { label: "Interactive Tools", href: "#systems" },
-  { label: "Work", href: "#portfolio" },
+  { label: "Systems", href: "#systems" },
+  { label: "Analytics", href: "#analytics-preview" },
+  { label: "Audio", href: "#audio" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
 ];
@@ -25,14 +25,9 @@ const toolLinks = [
 
 const socialLinks = [
   { icon: Linkedin, href: "https://www.linkedin.com/in/zscheff/", label: "LinkedIn" },
-  {
-    icon: Music,
-    href: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L?si=65RGI1x2TsSZK57Ip69JOQ",
-    label: "Spotify",
-  },
+  { icon: Music, href: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L", label: "Spotify" },
   { icon: Instagram, href: "https://www.instagram.com/streetcarscandal/", label: "Instagram" },
   { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
-  { icon: MessageCircle, href: "https://wa.me/15104356431", label: "WhatsApp" },
 ];
 
 const Navbar = () => {
@@ -59,11 +54,7 @@ const Navbar = () => {
 
       normalizedHomeLinks.forEach((link) => {
         const section = document.querySelector(link.href);
-
-        if (!section) {
-          return;
-        }
-
+        if (!section) return;
         if (scrollPosition >= (section as HTMLElement).offsetTop) {
           nextActiveHref = link.href;
         }
@@ -106,22 +97,6 @@ const Navbar = () => {
           </a>
         );
       })}
-      <Link
-        to="/music-analytics"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          isAnalyticsRoute ? "text-foreground" : "text-primary hover:text-primary/80",
-        )}
-      >
-        <BarChart3 size={14} />
-        Analytics
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            isAnalyticsRoute ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
     </>
   );
 
@@ -237,16 +212,8 @@ const Navbar = () => {
               : isAnalyticsRoute
                 ? (
                     <>
-                      <Link
-                        to="/"
-                        onClick={() => setMenuOpen(false)}
-                        className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                      >
-                        Home
-                      </Link>
-                      <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
-                        Analytics
-                      </div>
+                      <Link to="/" onClick={() => setMenuOpen(false)} className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground">Home</Link>
+                      <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">Analytics</div>
                     </>
                   )
                 : (
@@ -269,14 +236,6 @@ const Navbar = () => {
                           </a>
                         );
                       })}
-                      <Link
-                        to="/music-analytics"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-primary hover:bg-secondary/70"
-                      >
-                        <BarChart3 size={14} />
-                        Analytics
-                      </Link>
                     </>
                   )}
           </div>
