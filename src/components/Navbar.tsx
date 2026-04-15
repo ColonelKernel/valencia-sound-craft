@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Brain, Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
+import { BarChart3, Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";

@@ -1,4 +1,4 @@
-import { ArrowRight, Brain, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
+import { ArrowRight, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const previewCards = [
