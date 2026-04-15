@@ -35,6 +35,12 @@ const toolCards = [
     title: "Tonnetz",
     description: "Navigate harmonic space with the same key, tempo, and transport as the rest of the app.",
   },
+  {
+    to: "/tools/chord-atlas",
+    icon: Music2,
+    title: "Chord Atlas",
+    description: "Map every chord in any key to the guitar neck with voicings, functions, and interval colors.",
+  },
 ];
 
 const ToolsIndex = () => (
@@ -79,7 +85,7 @@ const ToolsIndex = () => (
       </section>
 
       <section className="px-6 pb-20">
-        <div className="container mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="container mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {toolCards.map((card) => (
             <article
               key={card.to}
