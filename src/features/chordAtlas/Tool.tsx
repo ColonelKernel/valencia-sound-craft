@@ -27,7 +27,7 @@ const ChordAtlasTool = () => {
   const [positionSystem, setPositionSystem] = useState<PositionSystemType>("caged");
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [stayInPosition, setStayInPosition] = useState(false);
-
+  const prevChordRef = useRef<typeof selectedChord>(null);
   const isHandMode = mode === "hand";
   const handMappingEnabled = isHandMode || showFingers;
 
