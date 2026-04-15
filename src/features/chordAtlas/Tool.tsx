@@ -13,6 +13,7 @@ import { generateChordAtlas, filterChords, type ChordFilterCategory } from "./ch
 import { getPositionZones, type PositionSystemType } from "./positionEngine";
 import TransitionPanel from "./TransitionPanel";
 import LearningMode from "./LearningMode";
+import ModeNavigator from "./ModeNavigator";
 
 const ImprovPanel = lazy(() => import("./ImprovPanel"));
 
