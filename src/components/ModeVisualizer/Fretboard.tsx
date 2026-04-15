@@ -154,6 +154,32 @@ const Fretboard = ({
           className="relative rounded-lg border border-stone-700 overflow-hidden"
           style={{ background: "linear-gradient(180deg, hsl(30 20% 12%) 0%, hsl(25 25% 10%) 100%)" }}
         >
+          {/* Fret span zone background overlay */}
+          {fretSpanOverlay && (
+            <div className="absolute inset-0 flex pointer-events-none z-0" aria-hidden="true">
+              {/* Offset for the string label column */}
+              <div className="w-10 shrink-0" />
+              {displayFrets.map((fret) => {
+                const inZone = fret >= fretSpanOverlay.startFret && fret <= fretSpanOverlay.endFret;
+                const isEdge = fret === fretSpanOverlay.startFret || fret === fretSpanOverlay.endFret;
+                return (
+                  <div
+                    key={fret}
+                    className="flex-1 h-full"
+                    style={{
+                      background: inZone
+                        ? fretSpanOverlay.mode === "hard"
+                          ? "hsla(45, 70%, 50%, 0.08)"
+                          : "hsla(200, 70%, 50%, 0.06)"
+                        : undefined,
+                      borderLeft: fret === fretSpanOverlay.startFret ? `2px solid hsla(45, 70%, 50%, ${fretSpanOverlay.mode === "hard" ? 0.4 : 0.25})` : undefined,
+                      borderRight: fret === fretSpanOverlay.endFret ? `2px solid hsla(45, 70%, 50%, ${fretSpanOverlay.mode === "hard" ? 0.4 : 0.25})` : undefined,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
           {strings.map((stringTuning, displayIdx) => {
             // Find original string index for fingerMap lookup
             const origIdx = tuning.indexOf(stringTuning);
