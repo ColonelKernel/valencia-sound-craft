@@ -199,6 +199,104 @@ const ControlPanel = memo(({
         )}
       </div>
 
+      {/* Fret Span Constraint */}
+      <div className="border-t border-border/50 pt-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Fret Span Zone</h3>
+
+        <label className="mt-3 flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={spanEnabled}
+            onChange={(e) => onSpanEnabledChange(e.target.checked)}
+            className="rounded border-border accent-primary"
+          />
+          <span className="text-xs text-foreground">Enable fret span constraint</span>
+        </label>
+
+        {spanEnabled && (
+          <div className="mt-3 space-y-3">
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground">Span Width</label>
+              <div className="mt-1 flex gap-1.5">
+                {([3, 4, 5] as const).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => onFretSpanChange(s)}
+                    className={`flex-1 rounded-md border py-1.5 text-xs font-medium transition-colors ${
+                      fretSpan === s
+                        ? "border-primary/30 bg-primary/10 text-foreground"
+                        : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    {s} frets
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground">
+                Anchor Fret: {anchorFret} → {anchorFret + fretSpan - 1}
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={17}
+                value={anchorFret}
+                onChange={(e) => onAnchorFretChange(Number(e.target.value))}
+                className="mt-1 w-full accent-primary"
+              />
+              <div className="flex justify-between text-[9px] text-muted-foreground">
+                <span>0</span>
+                <span>5</span>
+                <span>10</span>
+                <span>15</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground">Constraint Mode</label>
+              <div className="mt-1 flex gap-1.5">
+                <button
+                  onClick={() => onConstraintModeChange("hard")}
+                  className={`flex-1 rounded-md border py-1.5 text-[10px] font-medium transition-colors ${
+                    constraintMode === "hard"
+                      ? "border-primary/30 bg-primary/10 text-foreground"
+                      : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  🔒 Hard
+                </button>
+                <button
+                  onClick={() => onConstraintModeChange("soft")}
+                  className={`flex-1 rounded-md border py-1.5 text-[10px] font-medium transition-colors ${
+                    constraintMode === "soft"
+                      ? "border-primary/30 bg-primary/10 text-foreground"
+                      : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  🔓 Soft
+                </button>
+              </div>
+              <p className="mt-1 text-[9px] text-muted-foreground">
+                {constraintMode === "hard"
+                  ? "Strictly block notes outside zone"
+                  : "Prefer notes in zone, allow escape notes"}
+              </p>
+            </div>
+
+            {/* Finger mapping legend */}
+            <div className="rounded-md border border-border/50 bg-secondary/30 px-2.5 py-2 text-[10px] text-muted-foreground">
+              <div className="font-medium text-foreground mb-1">Finger Assignment</div>
+              <div>Index → fret {anchorFret}</div>
+              <div>Middle → fret {anchorFret + 1}</div>
+              <div>Ring → fret {anchorFret + 2}</div>
+              {fretSpan >= 4 && <div>Pinky → fret {anchorFret + 3}{fretSpan === 5 ? `–${anchorFret + 4}` : ""}</div>}
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="border-t border-border/50 pt-4">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interval Legend</h3>
         <div className="mt-2 space-y-1.5 text-[11px]">
