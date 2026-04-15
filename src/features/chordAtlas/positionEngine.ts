@@ -106,6 +106,7 @@ export function getPositionZones(system: PositionSystemType, root: string): Posi
     case "caged": return getCAGEDPositions(root);
     case "3nps": return get3NPSPositions(root);
     case "pentatonic": return getPentatonicPositions(root);
+  }
 }
 
 // ─── Custom Fret Span Zone ──────────────────────────────────
