@@ -51,14 +51,6 @@ const ControlPanel = memo(({
   stayInPosition,
   onStayInPositionChange,
   forceHandMode = false,
-  fretSpan,
-  onFretSpanChange,
-  anchorFret,
-  onAnchorFretChange,
-  constraintMode,
-  onConstraintModeChange,
-  spanEnabled,
-  onSpanEnabledChange,
 }: ControlPanelProps) => {
   const zones = getPositionZones(positionSystem, rootKey);
   const fingerToggleChecked = forceHandMode ? true : showFingers;
