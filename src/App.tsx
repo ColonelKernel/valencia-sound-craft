@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GlobalMusicProvider } from "@/state/globalMusicState";
+import { ThemeProvider } from "@/hooks/useTheme";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -28,8 +29,9 @@ const routeFallback = (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <GlobalMusicProvider>
-      <TooltipProvider>
+    <ThemeProvider>
+      <GlobalMusicProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -50,9 +52,10 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </GlobalMusicProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </GlobalMusicProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
