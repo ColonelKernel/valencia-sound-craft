@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Linkedin, Instagram, Menu, Music, X, Youtube } from "lucide-react";
+import { BarChart3, Linkedin, Instagram, Menu, Moon, Music, Sun, X, Youtube } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/useTheme";
 
 const normalizedHomeLinks = [
   { label: "Home", href: "#hero" },
@@ -32,6 +33,7 @@ const socialLinks = [
 
 const Navbar = () => {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState<string | null>(null);
@@ -173,18 +175,37 @@ const Navbar = () => {
                 <socialLink.icon size={16} />
               </a>
             ))}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="text-muted-foreground hover:text-foreground"
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMenuOpen((value) => !value)}
-          className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground md:hidden"
-          aria-expanded={menuOpen}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground"
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen((value) => !value)}
+            className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground"
+            aria-expanded={menuOpen}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {menuOpen && (
