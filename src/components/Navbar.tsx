@@ -196,15 +196,16 @@ const Navbar = () => {
             {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           </button>
 
-        <button
-          type="button"
-          onClick={() => setMenuOpen((value) => !value)}
-          className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground md:hidden"
-          aria-expanded={menuOpen}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((value) => !value)}
+            className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground"
+            aria-expanded={menuOpen}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
       {menuOpen && (
