@@ -1,32 +1,32 @@
-import { Cpu, BarChart3, AudioWaveform } from "lucide-react";
+import { BarChart3, Music2, Layout } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 const pillars = [
   {
-    icon: Cpu,
-    title: "Interactive Music Systems",
+    icon: BarChart3,
+    title: "Data Analysis",
     points: [
-      "Generative engines and real-time audiovisual tools",
+      "Streaming analytics dashboards and catalog intelligence",
+      "Recommendation systems and behavioral modeling",
+      "Time-series forecasting and reporting tools",
+    ],
+  },
+  {
+    icon: Music2,
+    title: "Digital Music Tools",
+    points: [
+      "Generative engines and real-time audiovisual instruments",
       "Playable interfaces — maps, rhythm engines, synthesis systems",
       "Position-constrained improvisation and fretboard intelligence",
     ],
   },
   {
-    icon: BarChart3,
-    title: "Music Data & Analytics",
+    icon: Layout,
+    title: "Web Design",
     points: [
-      "Streaming analytics dashboards and recommendation systems",
-      "Catalog intelligence, segmentation, and reporting tools",
-      "Time-series modeling and behavioral pattern analysis",
-    ],
-  },
-  {
-    icon: AudioWaveform,
-    title: "Audio & Sound Design",
-    points: [
-      "System-driven composition and hybrid audio workflows",
-      "Sound as data and structure — generative and reactive",
-      "Multi-genre production across electronic, rock, jazz, and Latin",
+      "Editorial, product-grade interfaces with motion and interaction",
+      "Custom React + TypeScript applications and design systems",
+      "Performance-tuned, responsive, and SEO-ready builds",
     ],
   },
 ];
