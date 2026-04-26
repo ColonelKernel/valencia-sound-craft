@@ -130,7 +130,7 @@ export default function StreamingDashboard({
     return (
       <div className="flex items-center gap-3 text-muted-foreground">
         <div className="h-4 w-4 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
-        Fetching chart data…
+        Loading catalog data...
       </div>
     );
   }

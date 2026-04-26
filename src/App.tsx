@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { TOOL_ROUTE_BY_SLUG } from "@/lib/toolRoutes";
 import { GlobalMusicProvider } from "@/state/globalMusicState";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -16,6 +17,7 @@ const HarmonyTool = lazy(() => import("@/features/harmony/Tool"));
 const MapTool = lazy(() => import("@/features/map/Tool"));
 const CircleTool = lazy(() => import("@/features/circle/Tool"));
 const TonnetzTool = lazy(() => import("@/features/tonnetz/Tool"));
+const ChordAtlasTool = lazy(() => import("@/features/chordAtlas/Tool"));
 const MusicAnalyticsPage = lazy(() => import("./pages/MusicAnalyticsPage"));
 const GrooveIntelligencePage = lazy(() => import("./pages/GrooveIntelligencePage"));
 const MusicIntelligencePage = lazy(() => import("./pages/MusicIntelligencePage"));
@@ -37,13 +39,14 @@ const App = () => (
           <Suspense fallback={routeFallback}>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/tools" element={<ToolsLayout />}>
+              <Route path={TOOL_ROUTE_BY_SLUG.overview.path} element={<ToolsLayout />}>
                 <Route index element={<ToolsIndex />} />
-                <Route path="rhythm" element={<RhythmTool />} />
-                <Route path="harmony" element={<HarmonyTool />} />
-                <Route path="map" element={<MapTool />} />
-                <Route path="circle" element={<CircleTool />} />
-                <Route path="tonnetz" element={<TonnetzTool />} />
+                <Route path={TOOL_ROUTE_BY_SLUG.rhythm.segment} element={<RhythmTool />} />
+                <Route path={TOOL_ROUTE_BY_SLUG.harmony.segment} element={<HarmonyTool />} />
+                <Route path={TOOL_ROUTE_BY_SLUG.map.segment} element={<MapTool />} />
+                <Route path={TOOL_ROUTE_BY_SLUG.circle.segment} element={<CircleTool />} />
+                <Route path={TOOL_ROUTE_BY_SLUG.tonnetz.segment} element={<TonnetzTool />} />
+                <Route path={TOOL_ROUTE_BY_SLUG["chord-atlas"].segment} element={<ChordAtlasTool />} />
               </Route>
               <Route path="/music-analytics" element={<MusicAnalyticsPage />} />
               <Route path="/music-intelligence" element={<MusicIntelligencePage />} />

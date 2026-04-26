@@ -1,16 +1,17 @@
-import { Component, useEffect, useState, useCallback, type ReactNode, type ErrorInfo } from "react";
+import { Component, Suspense, lazy, useCallback, useState, type ReactNode, type ErrorInfo } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import RouteHead from "@/components/seo/RouteHead";
-import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataService";
-import StreamingDashboard from "@/components/MusicAnalytics/StreamingDashboard";
-import ArtistComparison from "@/components/MusicAnalytics/ArtistComparison";
-import CatalogSegmentation from "@/components/MusicAnalytics/CatalogSegmentation";
-import VolatilityPanel from "@/components/MusicAnalytics/VolatilityPanel";
-import PortfolioBuilder from "@/components/MusicAnalytics/PortfolioBuilder";
-import CatalogAnalyzer from "@/components/MusicAnalytics/CatalogAnalyzer";
-import AcquisitionScorecard from "@/components/MusicAnalytics/AcquisitionScorecard";
+import { getMusicAnalyticsData } from "@/lib/musicDataService";
+
+const StreamingDashboard = lazy(() => import("@/components/MusicAnalytics/StreamingDashboard"));
+const ArtistComparison = lazy(() => import("@/components/MusicAnalytics/ArtistComparison"));
+const CatalogSegmentation = lazy(() => import("@/components/MusicAnalytics/CatalogSegmentation"));
+const VolatilityPanel = lazy(() => import("@/components/MusicAnalytics/VolatilityPanel"));
+const PortfolioBuilder = lazy(() => import("@/components/MusicAnalytics/PortfolioBuilder"));
+const CatalogAnalyzer = lazy(() => import("@/components/MusicAnalytics/CatalogAnalyzer"));
+const AcquisitionScorecard = lazy(() => import("@/components/MusicAnalytics/AcquisitionScorecard"));
 
 // Error boundary to catch DOM reconciliation crashes
 class TabErrorBoundary extends Component<
@@ -65,33 +66,12 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export default function MusicAnalyticsPage() {
-  const [data, setData] = useState<ArtistMonthly[]>([]);
-  const [artists, setArtists] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const [mode, setMode] = useState<ViewMode>("streams");
   const [tab, setTab] = useState<Tab>("overview");
   const [selectedArtist, setSelectedArtist] = useState<string>("all");
   const [compareArtists, setCompareArtists] = useState<string[]>([]);
   const [portfolio, setPortfolio] = useState<string[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchAndParseChartData()
-      .then((result) => {
-        if (cancelled) return;
-        setData(result.monthly);
-        setArtists(result.topArtists);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(err.message ?? "Failed to load chart data");
-        setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, []);
+  const { monthly: data, topArtists: artists } = getMusicAnalyticsData();
 
   const toggleCompareArtist = useCallback((artist: string) => {
     setCompareArtists((prev) =>
@@ -105,11 +85,100 @@ export default function MusicAnalyticsPage() {
     );
   }, []);
 
+  const activeTabContent = (
+    <>
+      {tab === "overview" && (
+        <StreamingDashboard
+          data={data}
+          artists={artists}
+          loading={false}
+          error={null}
+          selectedArtist={selectedArtist}
+          onSelectArtist={setSelectedArtist}
+          mode={mode}
+        />
+      )}
+
+      {tab === "acquisition" && (
+        <AcquisitionScorecard data={data} artists={artists} mode={mode} />
+      )}
+
+      {tab === "compare" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-border/50 bg-card p-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+              Select 2-4 artists to compare
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {artists.map((artist) => (
+                <button
+                  key={artist}
+                  onClick={() => toggleCompareArtist(artist)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    compareArtists.includes(artist)
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
+                  }`}
+                >
+                  {artist}
+                </button>
+              ))}
+            </div>
+          </div>
+          <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
+        </div>
+      )}
+
+      {tab === "segments" && (
+        <CatalogSegmentation data={data} artists={artists} mode={mode} />
+      )}
+
+      {tab === "risk" && (
+        <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
+      )}
+
+      {tab === "portfolio" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-border/50 bg-card p-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+              Build your portfolio
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {artists.map((artist) => (
+                <button
+                  key={artist}
+                  onClick={() => togglePortfolioArtist(artist)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    portfolio.includes(artist)
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
+                  }`}
+                >
+                  {portfolio.includes(artist) ? `Selected: ${artist}` : artist}
+                </button>
+              ))}
+            </div>
+          </div>
+          <PortfolioBuilder
+            data={data}
+            portfolio={portfolio}
+            onRemove={(artist) => setPortfolio((prev) => prev.filter((item) => item !== artist))}
+            mode={mode}
+          />
+        </div>
+      )}
+
+      {tab === "ai" && (
+        <CatalogAnalyzer artists={artists} data={data} />
+      )}
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <RouteHead
         title="Music Catalog Intelligence – Valencia Sound Craft"
-        description="Advanced catalog analytics dashboard for music investment decisions. Real streaming data, forecasting, and AI-powered analysis."
+        description="Advanced catalog analytics dashboard for music investment decisions, built on a curated local dataset with forecasting and AI-powered analysis."
         canonicalPath="/music-analytics"
       />
       <Navbar />
@@ -183,17 +252,18 @@ export default function MusicAnalyticsPage() {
                 </div>
 
                 {/* Artist filter (overview & risk tabs) */}
-                <select
-                  value={selectedArtist}
-                  onChange={(e) => setSelectedArtist(e.target.value)}
-                  className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20"
-                  style={{ display: (tab === "overview" || tab === "risk") ? "block" : "none" }}
-                >
-                  <option value="all">All Artists</option>
-                  {artists.map((a) => (
-                    <option key={a} value={a}>{a}</option>
-                  ))}
-                </select>
+                {(tab === "overview" || tab === "risk") && (
+                  <select
+                    value={selectedArtist}
+                    onChange={(event) => setSelectedArtist(event.target.value)}
+                    className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20"
+                  >
+                    <option value="all">All Artists</option>
+                    {artists.map((artist) => (
+                      <option key={artist} value={artist}>{artist}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
           </div>
@@ -202,99 +272,21 @@ export default function MusicAnalyticsPage() {
         {/* Content */}
         <section className="py-8 md:py-12">
           <div className="container mx-auto px-6">
-            {/* Use display:none instead of unmounting to avoid Recharts DOM reconciliation crash */}
-            <div style={{ display: tab === "overview" ? "block" : "none" }}>
-              <StreamingDashboard
-                data={data}
-                artists={artists}
-                loading={loading}
-                error={error}
-                selectedArtist={selectedArtist}
-                onSelectArtist={setSelectedArtist}
-                mode={mode}
-              />
-            </div>
-
-            <div style={{ display: tab === "acquisition" ? "block" : "none" }}>
-              {(tab === "acquisition" || data.length > 0) && (
-                <AcquisitionScorecard data={data} artists={artists} mode={mode} />
-              )}
-            </div>
-
-            <div style={{ display: tab === "compare" ? "block" : "none" }}>
-              <div className="space-y-6">
-                <div className="rounded-xl border border-border/50 bg-card p-4">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                    Select 2–4 artists to compare
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {artists.map((a) => (
-                      <button
-                        key={a}
-                        onClick={() => toggleCompareArtist(a)}
-                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                          compareArtists.includes(a)
-                            ? "border-foreground bg-foreground text-background"
-                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                        }`}
-                      >
-                        {a}
-                      </button>
-                    ))}
+            <TabErrorBoundary resetKey={`${tab}:${mode}`}>
+              <Suspense
+                fallback={
+                  <div className="rounded-xl border border-border/50 bg-card p-6 text-sm text-muted-foreground">
+                    Loading analytics workspace...
                   </div>
-                </div>
-                <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
-              </div>
-            </div>
-
-            <div style={{ display: tab === "segments" ? "block" : "none" }}>
-              <CatalogSegmentation data={data} artists={artists} mode={mode} />
-            </div>
-
-            <div style={{ display: tab === "risk" ? "block" : "none" }}>
-              <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
-            </div>
-
-            <div style={{ display: tab === "portfolio" ? "block" : "none" }}>
-              <div className="space-y-6">
-                <div className="rounded-xl border border-border/50 bg-card p-4">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                    Build your portfolio
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {artists.map((a) => (
-                      <button
-                        key={a}
-                        onClick={() => togglePortfolioArtist(a)}
-                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                          portfolio.includes(a)
-                            ? "border-foreground bg-foreground text-background"
-                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                        }`}
-                      >
-                        {portfolio.includes(a) ? `✓ ${a}` : a}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <PortfolioBuilder
-                  data={data}
-                  portfolio={portfolio}
-                  onRemove={(a) => setPortfolio((prev) => prev.filter((x) => x !== a))}
-                  mode={mode}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: tab === "ai" ? "block" : "none" }}>
-              {tab === "ai" && (
-                <CatalogAnalyzer artists={artists} data={data} />
-              )}
-            </div>
+                }
+              >
+                {activeTabContent}
+              </Suspense>
+            </TabErrorBoundary>
 
             {/* Footer label */}
             <p className="mt-12 text-[10px] text-muted-foreground/60 text-center">
-              Built using real streaming data, public APIs, and simplified financial modeling
+              Built using a compact local catalog dataset, simplified financial modeling, and on-demand analysis tools
             </p>
           </div>
         </section>

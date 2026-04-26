@@ -14,6 +14,20 @@ export interface RawGroove {
   time_signature?: string;
 }
 
+export interface GrooveNormalizationRanges {
+  bpm: [number, number];
+  density: [number, number];
+  syncopation: [number, number];
+  swing: [number, number];
+  velocity: [number, number];
+}
+
+export interface GrooveDatasetPayload {
+  totalCount: number;
+  referenceRanges: GrooveNormalizationRanges;
+  grooves: RawGroove[];
+}
+
 export interface NormalizedGroove extends RawGroove {
   norm_bpm: number;
   norm_density: number;

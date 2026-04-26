@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Compass, Music2, Sparkles } from "lucide-react";
-import type { NormalizedGroove, RawGroove } from "./types";
+import type { GrooveDatasetPayload, GrooveNormalizationRanges, NormalizedGroove, RawGroove } from "./types";
 import { normalizeGrooves, sampleGrooveSet } from "./utils";
 import { buildSimilarityCache } from "./clustering";
 import { stopPlayback } from "./audioEngine";
@@ -22,7 +22,7 @@ interface GrooveScene {
   genreCount: number;
 }
 
-function prepareSample(raw: RawGroove[], reference: RawGroove[]) {
+function prepareSample(raw: RawGroove[], reference: RawGroove[] | GrooveNormalizationRanges) {
   const normalized = normalizeGrooves(raw, reference);
   const similarity = buildSimilarityCache(normalized, 5);
   return normalized.map(groove => ({
@@ -128,25 +128,31 @@ export default function GrooveIntelligenceLab() {
     setIsLoading(true);
     setLoadError(null);
 
-    fetch("/data/egmd.json")
-      .then(response => response.json())
-      .then((data: RawGroove[]) => {
+    fetch("/data/groove-intelligence.json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Unable to load groove dataset (${response.status})`);
+        }
+
+        return response.json();
+      })
+      .then((payload: GrooveDatasetPayload) => {
         if (cancelled) return;
 
-        const fieldRaw = sampleGrooveSet(data, FIELD_LIMIT);
+        const fieldRaw = sampleGrooveSet(payload.grooves, FIELD_LIMIT);
         const desktopRaw = sampleGrooveSet(fieldRaw, DESKTOP_LIMIT);
         const mobileRaw = sampleGrooveSet(desktopRaw, MOBILE_LIMIT);
 
-        const fieldGrooves = prepareSample(fieldRaw, data);
-        const desktopGrooves = prepareSample(desktopRaw, data);
-        const mobileGrooves = prepareSample(mobileRaw, data);
+        const fieldGrooves = prepareSample(fieldRaw, payload.referenceRanges);
+        const desktopGrooves = prepareSample(desktopRaw, payload.referenceRanges);
+        const mobileGrooves = prepareSample(mobileRaw, payload.referenceRanges);
 
         setScene({
           mobileGrooves,
           desktopGrooves,
           fieldGrooves,
           fieldGrooveMap: new Map(fieldGrooves.map(groove => [groove.id, groove])),
-          totalCount: data.length,
+          totalCount: payload.totalCount,
           genreCount: new Set(fieldGrooves.map(groove => groove.genre)).size,
         });
       })

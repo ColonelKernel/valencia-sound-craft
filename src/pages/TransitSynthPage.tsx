@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import {
   CircleDot,
   GitBranch,
@@ -203,6 +211,15 @@ function TransitMapCanvas({
     }));
   };
 
+  const handleStationKeyDown = (event: ReactKeyboardEvent<SVGGElement>, stationId: string) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    onStationSelect(stationId);
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
@@ -283,9 +300,16 @@ function TransitMapCanvas({
                 <g
                   key={station.id}
                   transform={`translate(${point.x} ${point.y})`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Preview ${station.name}`}
+                  aria-pressed={selected}
                   onMouseEnter={() => onStationHover(station.id)}
                   onMouseLeave={onStationLeave}
+                  onFocus={() => onStationHover(station.id)}
+                  onBlur={onStationLeave}
                   onClick={() => onStationSelect(station.id)}
+                  onKeyDown={(event) => handleStationKeyDown(event, station.id)}
                   className="cursor-pointer"
                 >
                   {(active || hovered || selected) && (

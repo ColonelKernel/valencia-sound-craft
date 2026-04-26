@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type WheelEvent } from "react";
+import { useCallback, useMemo, useState, type KeyboardEvent, type WheelEvent } from "react";
 import type { NormalizedGroove } from "./types";
 
 interface Props {
@@ -22,6 +22,7 @@ function getTransform(zoom: number) {
 
 export default function GrooveField({ grooves, selectedId, onSelect }: Props) {
   const [zoom, setZoom] = useState(1);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
 
   const selectedGroove = useMemo(() => (
     grooves.find(groove => groove.id === selectedId) ?? null
@@ -36,6 +37,15 @@ export default function GrooveField({ grooves, selectedId, onSelect }: Props) {
     setZoom(current => clampZoom(current + delta));
   }, []);
 
+  const handleGrooveKeyDown = useCallback((event: KeyboardEvent<SVGGElement>, groove: NormalizedGroove) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    onSelect(groove);
+  }, [onSelect]);
+
   if (grooves.length === 0) return null;
 
   return (
@@ -44,7 +54,7 @@ export default function GrooveField({ grooves, selectedId, onSelect }: Props) {
         <div>
           <p className="text-sm font-semibold text-foreground">Static Groove Field</p>
           <p className="text-xs text-muted-foreground">
-            {grooves.length} sampled nodes. Click a point to sync the detail panel.
+            {grooves.length} sampled nodes. Click or press Enter on a point to sync the detail panel.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -96,21 +106,30 @@ export default function GrooveField({ grooves, selectedId, onSelect }: Props) {
               const x = groove.px * 100;
               const y = (1 - groove.py) * 100;
               const selected = groove.id === selectedId;
+              const focused = groove.id === focusedId;
               const radius = selected ? 1.7 : 1.15;
+              const highlighted = selected || focused;
 
               return (
                 <g
                   key={groove.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select ${groove.genre} groove at ${groove.bpm} BPM`}
+                  aria-pressed={selected}
                   onClick={() => onSelect(groove)}
+                  onFocus={() => setFocusedId(groove.id)}
+                  onBlur={() => setFocusedId(null)}
+                  onKeyDown={(event) => handleGrooveKeyDown(event, groove)}
                   style={{ cursor: "pointer" }}
                 >
-                  {selected && (
+                  {highlighted && (
                     <circle
                       cx={x}
                       cy={y}
                       r={radius + 1.6}
                       fill="none"
-                      stroke="rgba(255,255,255,0.75)"
+                      stroke={selected ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.55)"}
                       strokeWidth="0.4"
                     />
                   )}

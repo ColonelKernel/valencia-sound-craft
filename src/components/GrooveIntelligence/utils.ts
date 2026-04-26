@@ -1,18 +1,29 @@
-import type { RawGroove, NormalizedGroove } from "./types";
+import type { GrooveNormalizationRanges, NormalizedGroove, RawGroove } from "./types";
 
 // --- Normalization ---
 function clamp01(v: number) { return Math.max(0, Math.min(1, v)); }
 
 export const MAX_RENDERED_GROOVES = 280;
 
-export function normalizeGrooves(raw: RawGroove[], reference: RawGroove[] = raw): NormalizedGroove[] {
-  const ranges = {
-    bpm: extent(reference, g => g.bpm),
-    density: extent(reference, g => g.note_density),
-    syncopation: extent(reference, g => g.syncopation),
-    swing: extent(reference, g => g.swing_ratio),
-    velocity: extent(reference, g => g.velocity_variance),
-  };
+function resolveRanges(reference: RawGroove[] | GrooveNormalizationRanges): GrooveNormalizationRanges {
+  if (Array.isArray(reference)) {
+    return {
+      bpm: extent(reference, g => g.bpm),
+      density: extent(reference, g => g.note_density),
+      syncopation: extent(reference, g => g.syncopation),
+      swing: extent(reference, g => g.swing_ratio),
+      velocity: extent(reference, g => g.velocity_variance),
+    };
+  }
+
+  return reference;
+}
+
+export function normalizeGrooves(
+  raw: RawGroove[],
+  reference: RawGroove[] | GrooveNormalizationRanges = raw,
+): NormalizedGroove[] {
+  const ranges = resolveRanges(reference);
 
   return raw.map(g => {
     const nb = norm(g.bpm, ranges.bpm);

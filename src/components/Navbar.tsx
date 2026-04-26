@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BarChart3, Brain, Instagram, Linkedin, Menu, MessageCircle, Music, Sparkles, X, Youtube } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
+import { TOOL_NAV_ROUTES } from "@/lib/toolRoutes";
 import { cn } from "@/lib/utils";
 
 const normalizedHomeLinks = [
@@ -11,15 +12,6 @@ const normalizedHomeLinks = [
   { label: "Work", href: "#portfolio" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
-];
-
-const toolLinks = [
-  { label: "Overview", to: "/tools", end: true },
-  { label: "Rhythm", to: "/tools/rhythm" },
-  { label: "Harmony", to: "/tools/harmony" },
-  { label: "Map", to: "/tools/map" },
-  { label: "Circle", to: "/tools/circle" },
-  { label: "Tonnetz", to: "/tools/tonnetz" },
 ];
 
 const socialLinks = [
@@ -159,10 +151,10 @@ const Navbar = () => {
   );
 
   const renderToolLinks = () =>
-    toolLinks.map((link) => (
+    TOOL_NAV_ROUTES.map((link) => (
       <NavLink
-        key={link.to}
-        to={link.to}
+        key={link.path}
+        to={link.path}
         end={link.end}
         className={({ isActive }) =>
           cn(
@@ -253,10 +245,10 @@ const Navbar = () => {
         <div className="border-b border-border bg-background/96 px-6 pb-6 pt-2 backdrop-blur-xl md:hidden">
           <div className="space-y-2">
             {isToolsRoute
-              ? toolLinks.map((link) => (
+              ? TOOL_NAV_ROUTES.map((link) => (
                   <NavLink
-                    key={link.to}
-                    to={link.to}
+                    key={link.path}
+                    to={link.path}
                     end={link.end}
                     onClick={() => setMenuOpen(false)}
                     className={({ isActive }) =>
