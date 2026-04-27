@@ -912,6 +912,258 @@ const GlobalRhythmEngine = ({
 
   const hasActiveSteps = compositePlayback.pattern.some((step) => step === 1);
   const playbackSummary = `${activeDefinition.meter} · ${activeDefinition.grouping.join("+")} · ${FEEL_LABELS[activeDefinition.feel]}`;
+  const showLegacySequencerPlacement = false;
+  const transportControls = (
+    <div className="grid gap-3 xl:grid-cols-4">
+      <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Transport</p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setPlaying((value) => !value)}
+            disabled={!hasActiveSteps}
+            className={cn(
+              "inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl px-5 text-base font-semibold shadow-[0_16px_36px_-22px_rgba(255,255,255,0.35)]",
+              playing
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : "bg-primary text-primary-foreground hover:bg-primary/90",
+              !hasActiveSteps && "cursor-not-allowed opacity-50 shadow-none",
+            )}
+          >
+            {playing ? <Square size={18} /> : <Play size={18} />}
+            {playing ? "Stop" : "Play"}
+          </button>
+
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-foreground">
+              {playing ? "Transport running" : "Ready to play"}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {playbackSummary}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Tempo</p>
+        <div className="mt-4 flex items-center gap-3">
+          <input
+            type="range"
+            min={40}
+            max={220}
+            value={rhythmState.tempo}
+            onChange={(event) => {
+              const tempo = Number(event.target.value);
+              setRhythmState((currentState) => ({ ...currentState, tempo }));
+            }}
+            className="w-full accent-primary"
+          />
+          <span className="min-w-14 rounded-full border border-border bg-card px-3 py-1.5 text-center text-sm font-semibold text-foreground">
+            {rhythmState.tempo}
+          </span>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Suggested range {activeDefinition.tempoRange[0]}-{activeDefinition.tempoRange[1]} BPM
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Swing</p>
+        <div className="mt-4 flex items-center gap-3">
+          <Slider
+            value={[swing * 100]}
+            onValueChange={([value]) => setSwing(value / 100)}
+            min={0}
+            max={30}
+            step={1}
+            className="flex-1"
+          />
+          <span className="min-w-16 rounded-full border border-border bg-card px-3 py-1.5 text-center text-sm font-semibold text-foreground">
+            {Math.round(swing * 100)}%
+          </span>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Push the offbeats later without changing the cycle structure.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">Adaptive Mode</p>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={adaptiveMode}
+              onChange={(event) => {
+                setAdaptiveMode(event.target.checked);
+                adaptiveEngine.reset();
+                setLastVariationType(null);
+              }}
+              className="accent-primary"
+            />
+            Active
+          </label>
+        </div>
+
+        <div className="mt-4 flex items-center gap-3">
+          <span className="w-14 text-xs text-muted-foreground">Strength</span>
+          <Slider
+            value={[variationStrength * 100]}
+            onValueChange={([value]) => setVariationStrength(value / 100)}
+            min={10}
+            max={100}
+            step={1}
+            className="flex-1"
+          />
+          <span className="w-12 text-right text-xs text-muted-foreground">
+            {Math.round(variationStrength * 100)}%
+          </span>
+        </div>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          Keeps the groove centered while letting the engine suggest small variations.
+        </p>
+      </div>
+    </div>
+  );
+  const sequencerWorkspace = (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+      <div className="rounded-2xl border border-border bg-secondary/15 p-4 sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+              <Music className="h-3.5 w-3.5" />
+              Playable Sequencer
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Full-width lanes with native grouping, direct painting, velocity shaping, and visible downbeats.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setRhythmState((currentState) => ({
+                ...currentState,
+                layers: currentState.layers.map((layer) => ({
+                  ...layer,
+                  pattern: new Array(layer.pattern.length).fill(0),
+                  velocity: new Array(layer.velocity.length).fill(0),
+                })),
+              }));
+            }}
+            className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            Clear Pattern
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <StepSequencer
+            pattern={compositePlayback.pattern}
+            velocityPattern={compositePlayback.velocity}
+            layers={effectiveLayers}
+            grouping={activeDefinition.grouping}
+            pulseSteps={activeDefinition.pulse}
+            accentSteps={activeDefinition.accentMap}
+            onLayersChange={handleLayersChange}
+            onStepPreview={handleStepPreview}
+            currentStep={currentStep}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-3 rounded-2xl border border-border bg-secondary/20 p-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+            Rhythm Identity Panel
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-foreground">
+            {activeDefinition.name} - {activeDefinition.country}
+          </h4>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {activeDefinition.tradition}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-[11px]">
+          <div className="rounded-xl border border-border bg-card/80 p-3">
+            <div className="text-muted-foreground">Meter</div>
+            <div className="mt-1 font-medium text-foreground">{activeDefinition.meter}</div>
+          </div>
+          <div className="rounded-xl border border-border bg-card/80 p-3">
+            <div className="text-muted-foreground">Grouping</div>
+            <div className="mt-1 font-medium text-foreground">{activeDefinition.grouping.join(" + ")}</div>
+          </div>
+          <div className="rounded-xl border border-border bg-card/80 p-3">
+            <div className="text-muted-foreground">Feel</div>
+            <div className="mt-1 font-medium text-foreground">{FEEL_LABELS[activeDefinition.feel]}</div>
+          </div>
+          <div className="rounded-xl border border-border bg-card/80 p-3">
+            <div className="text-muted-foreground">Region</div>
+            <div className="mt-1 font-medium text-foreground">{activeDefinition.regionLabel}</div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card/80 p-3">
+          <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Tags</div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {activeDefinition.atlasRhythm.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full border border-primary/20 bg-primary/8 px-2.5 py-0.5 text-[10px] font-medium text-foreground"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card/80 p-3">
+          <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Instrument Roles</div>
+          <div className="mt-2 grid gap-2 text-sm text-foreground">
+            <div>Low: {activeDefinition.instrumentRoles.low || "n/a"}</div>
+            <div>Mid: {activeDefinition.instrumentRoles.mid || "n/a"}</div>
+            <div>High: {activeDefinition.instrumentRoles.high || "n/a"}</div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card/80 p-3">
+          <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Sources</div>
+          <div className="mt-2 space-y-2 text-sm text-foreground">
+            {activeDefinition.sources.slice(0, 4).map((source) => (
+              <div key={`${source.title}-${source.detail}`} className="rounded-lg border border-white/6 bg-black/10 px-3 py-2">
+                <div className="font-medium">{source.title}</div>
+                <div className="text-xs text-muted-foreground">{source.detail}</div>
+                {source.url && (
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 inline-flex text-xs text-primary hover:underline"
+                  >
+                    Open reference
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {activeValidationErrors.length > 0 && (
+          <div className={cn("rounded-xl border p-3 text-[11px]", getValidationTone(activeValidationErrors))}>
+            <div className="font-medium text-foreground">Validation</div>
+            <div className="mt-2 space-y-1 text-foreground/90">
+              {activeValidationErrors.map((error) => (
+                <p key={error}>{error}</p>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-5 rounded-[1.75rem] border border-border/70 bg-card p-4 shadow-[0_24px_70px_-42px_rgba(0,0,0,0.85)] sm:p-5 md:p-6">
@@ -959,6 +1211,10 @@ const GlobalRhythmEngine = ({
           )}
         </div>
       </div>
+
+      {/* ── TRANSPORT + PLAYABLE SEQUENCER ── */}
+      {transportControls}
+      {sequencerWorkspace}
 
       {/* ── 🌍 INTERACTIVE MAP (PRIMARY) ── */}
       <div className="space-y-3">
@@ -1212,6 +1468,8 @@ const GlobalRhythmEngine = ({
         ))}
       </div>
 
+      {showLegacySequencerPlacement && (
+      <>
       {/* ── TRANSPORT + CONTROLS ── */}
       <div className="grid gap-3 xl:grid-cols-4">
         <div className="rounded-2xl border border-border bg-secondary/30 p-4">
@@ -1463,6 +1721,8 @@ const GlobalRhythmEngine = ({
           )}
         </div>
       </div>
+      </>
+      )}
 
       {/* ── WORKSPACE PANELS ── */}
       <div className="space-y-3">

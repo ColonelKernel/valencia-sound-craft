@@ -41,8 +41,9 @@ describe("globalRhythmAtlas", () => {
     expect(japan?.timbreProfile).toBe("taiko");
     expect(japan?.classification).toBe("documented");
 
-    expect(luxembourg?.classification).toBe("proxy");
-    expect(luxembourg?.meter).toBe("4/4");
+    expect(luxembourg?.classification).toBe("regional");
+    expect(luxembourg?.meter).toBe("3/4");
+    expect(luxembourg?.name).toBe("Western European Waltz");
 
     expect(coteDIvoire?.classification).toBe("regional");
   });
