@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback, useRef, lazy, Suspense } from "react";
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
+import { useLanguage } from "@/i18n/site";
 
 import { chordAtlasToolMeta } from "./toolData";
 import { useTool } from "./useTool";
@@ -18,6 +19,7 @@ import ModeNavigator from "./ModeNavigator";
 const ImprovPanel = lazy(() => import("./ImprovPanel"));
 
 const ChordAtlasTool = () => {
+  const { t } = useLanguage();
   useToolPerformance("chord-atlas-route");
   const tool = useTool();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -144,10 +146,10 @@ const ChordAtlasTool = () => {
   const handMappingDetail = (
     <div className="space-y-5">
       <div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Biomechanical layer</p>
-        <h3 className="mt-1 text-2xl font-bold text-foreground">Hand Mapping Engine</h3>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">{t("tools.chordAtlas.handEyebrow")}</p>
+        <h3 className="mt-1 text-2xl font-bold text-foreground">{t("tools.chordAtlas.handTitle")}</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Finger numbers, active position zones, and stay-in-position guidance are now active.
+          {t("tools.chordAtlas.handCopy")}
         </p>
       </div>
 
@@ -163,7 +165,7 @@ const ChordAtlasTool = () => {
             }}
             className="rounded border-border accent-primary"
           />
-          <span className="text-xs font-medium text-foreground">📖 Learning Mode</span>
+          <span className="text-xs font-medium text-foreground">{t("tools.chordAtlas.learning")}</span>
         </label>
       )}
 
@@ -181,8 +183,8 @@ const ChordAtlasTool = () => {
       ) : !learningActive ? (
         <div className="rounded-lg border border-border/50 bg-secondary/30 px-3 py-3 text-sm text-muted-foreground">
           {selectedChord
-            ? "Select another chord to see transition analysis, or enable Learning Mode above."
-            : "Pick a chord to start. Enable Learning Mode for step-by-step finger placement."}
+            ? t("tools.chordAtlas.transitionFallbackSelected")
+            : t("tools.chordAtlas.transitionFallbackEmpty")}
         </div>
       ) : null}
 
@@ -193,18 +195,18 @@ const ChordAtlasTool = () => {
   return (
     <ToolPageLayout
       meta={chordAtlasToolMeta}
-      eyebrow="Chord Atlas"
-      title="Chord Atlas"
-      description="Navigate every chord in any key. See harmonic functions, voicings, interval colors, and hand-position intelligence mapped to the guitar neck."
+      eyebrow={t("tools.chordAtlas.title")}
+      title={t("tools.chordAtlas.title")}
+      description={t("tools.chordAtlas.routeDescription")}
       summary={
         <div className="space-y-3">
           <p>
-            Exploring chords in <strong className="text-foreground">{tool.key} {tool.mode}</strong> at <strong className="text-foreground">{tool.tempo} BPM</strong>.
+            {t("tools.chordAtlas.summaryPrefix")} <strong className="text-foreground">{tool.key} {tool.mode}</strong> at <strong className="text-foreground">{tool.tempo} BPM</strong>.
             {isHandMode
-              ? " Hand Mapping Engine active — finger assignments and position zones are locked on."
+              ? ` ${t("tools.chordAtlas.handActive")}`
               : mode === "improv"
-                ? " Improvisation engine active."
-                : " Select any chord to see voicings, intervals, and fretboard mapping."}
+                ? ` ${t("tools.chordAtlas.improvActive")}`
+                : ` ${t("tools.chordAtlas.selectAny")}`}
           </p>
         </div>
       }
@@ -218,7 +220,7 @@ const ChordAtlasTool = () => {
               : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
         >
-          Chord Atlas
+          {t("tools.chordAtlas.mode.atlas")}
         </button>
         <button
           onClick={() => handleModeChange("hand")}
@@ -228,7 +230,7 @@ const ChordAtlasTool = () => {
               : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
         >
-          Hand Mapping Engine
+          {t("tools.chordAtlas.mode.hand")}
         </button>
         <button
           onClick={() => handleModeChange("improv")}
@@ -238,7 +240,7 @@ const ChordAtlasTool = () => {
               : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
         >
-          Improvisation Engine
+          {t("tools.chordAtlas.mode.improv")}
         </button>
         <button
           onClick={() => handleModeChange("navigator")}
@@ -248,7 +250,7 @@ const ChordAtlasTool = () => {
               : "border-border bg-card/70 text-muted-foreground hover:bg-accent hover:text-foreground"
           }`}
         >
-          Mode Navigator
+          {t("tools.chordAtlas.mode.navigator")}
         </button>
       </div>
 
@@ -281,7 +283,7 @@ const ChordAtlasTool = () => {
       ) : mode === "improv" ? (
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-4">
-            <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading improvisation engine…</div>}>
+            <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">{t("tools.chordAtlas.loadingImprov")}</div>}>
               <ImprovPanel
                 atlasChords={allChords}
                 rootKey={tool.key}

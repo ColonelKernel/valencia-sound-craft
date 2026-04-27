@@ -1,8 +1,11 @@
 import heroImage from "@/assets/hero-photo.jpg";
+import { useLanguage } from "@/i18n/site";
 import { BarChart3, Headphones, Wrench } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Hero = () => {
+  const { t } = useLanguage();
+
   return (
     <section
       id="hero"
@@ -24,20 +27,18 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-6 py-28 md:py-32">
         <div className="max-w-3xl space-y-8">
           <p className="text-xs font-medium uppercase tracking-[0.34em] text-white/60">
-            Creative Technologist
+            {t("hero.eyebrow")}
           </p>
 
           <div className="space-y-6">
             <h1 className="text-4xl font-bold leading-[1.08] text-white md:text-5xl lg:text-6xl [text-shadow:_0_2px_20px_rgba(0,0,0,0.6)]">
-              Music, Data, and
+              {t("hero.titleLine1")}
               <br />
-              Interactive Systems
+              {t("hero.titleLine2")}
             </h1>
 
             <p className="max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-              I design and build systems for understanding, generating, and interacting
-              with music — from intelligent recommendation engines to playable
-              audiovisual instruments.
+              {t("hero.description")}
             </p>
           </div>
 
@@ -46,19 +47,19 @@ const Hero = () => {
               to="/tools"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-[0_18px_40px_-24px_rgba(255,255,255,0.55)] hover:bg-white/90 transition-colors"
             >
-              <Wrench size={15} /> Explore Tools
+              <Wrench size={15} /> {t("hero.exploreTools")}
             </Link>
             <Link
               to="/music-analytics"
               className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 px-6 py-3.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
             >
-              <BarChart3 size={15} /> View Analytics
+              <BarChart3 size={15} /> {t("hero.viewAnalytics")}
             </Link>
             <a
               href="#audio"
               className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 px-6 py-3.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
             >
-              <Headphones size={15} /> Listen
+              <Headphones size={15} /> {t("hero.listen")}
             </a>
           </div>
         </div>

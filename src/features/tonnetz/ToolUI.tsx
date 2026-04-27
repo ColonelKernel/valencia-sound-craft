@@ -1,22 +1,26 @@
 import { type ReactNode } from "react";
+import { useLanguage } from "@/i18n/site";
 
 interface TonnetzToolUIProps {
   tool: ReactNode;
 }
 
-const TonnetzToolUI = ({ tool }: TonnetzToolUIProps) => (
+const TonnetzToolUI = ({ tool }: TonnetzToolUIProps) => {
+  const { t } = useLanguage();
+
+  return (
   <section aria-labelledby="tonnetz-tool-section" className="space-y-4">
     <header className="space-y-2">
       <h2 id="tonnetz-tool-section" className="text-2xl font-semibold text-foreground">
-        Harmonic Space
+        {t("tools.tonnetz.uiTitle")}
       </h2>
       <p className="text-sm text-muted-foreground">
-        Tonnetz transformations now follow the shared tonal center and transport timing used across the rest of the tool suite.
+        {t("tools.tonnetz.uiCopy")}
       </p>
     </header>
     {tool}
   </section>
-);
+  );
+};
 
 export default TonnetzToolUI;
-

@@ -5,6 +5,7 @@ import Hero from "@/components/Hero";
 import RouteHead, { createToolStructuredData } from "@/components/seo/RouteHead";
 import SystemsPreview from "@/components/SystemsPreview";
 import AnalyticsPreview from "@/components/AnalyticsPreview";
+import { useLanguage } from "@/i18n/site";
 
 const Services = lazy(() => import("@/components/Services"));
 const Portfolio = lazy(() => import("@/components/Portfolio"));
@@ -26,16 +27,17 @@ const SectionFallback = ({ id, className = "bg-background" }: SectionFallbackPro
 );
 
 const Index = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen">
       <RouteHead
-        title="ZS — Music, Data & Interactive Systems"
-        description="Creative technologist building systems for understanding, generating, and interacting with music — from intelligent engines to playable audiovisual instruments."
+        title={t("seo.home.title")}
+        description={t("seo.home.description")}
         canonicalPath="/"
         jsonLd={createToolStructuredData({
-          name: "ZS — Music, Data & Interactive Systems",
-          description:
-            "A creative music technology site featuring interactive rhythm and harmony systems, analytics dashboards, and sound design tools.",
+          name: t("seo.home.schemaName"),
+          description: t("seo.home.schemaDescription"),
           canonicalPath: "/",
           educationalUse: ["music technology", "composition", "data analysis"],
         })}

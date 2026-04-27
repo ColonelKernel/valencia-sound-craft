@@ -1,11 +1,15 @@
+import { useLanguage } from "@/i18n/site";
+
 const Footer = () => {
+  const { t } = useLanguage();
+
   return (
     <footer className="border-t border-border bg-background px-6 py-12">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
         <div className="flex flex-col items-center md:items-start gap-1">
           <span className="font-display font-bold text-foreground">ZS</span>
           <span className="text-xs text-muted-foreground/60">
-            Building at the intersection of music, data, and interaction.
+            {t("footer.tagline")}
           </span>
         </div>
 
@@ -16,7 +20,7 @@ const Footer = () => {
           <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">YouTube</a>
         </div>
 
-        <p>© {new Date().getFullYear()} All rights reserved.</p>
+        <p>© {new Date().getFullYear()} {t("common.rights")}</p>
       </div>
     </footer>
   );

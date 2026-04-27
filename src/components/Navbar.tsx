@@ -1,18 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BarChart3, Brain, Instagram, Linkedin, Menu, MessageCircle, Music, Sparkles, X, Youtube } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
+import { useLanguage, type TranslationKey } from "@/i18n/site";
 import { TOOL_NAV_ROUTES } from "@/lib/toolRoutes";
 import { cn } from "@/lib/utils";
-
-const normalizedHomeLinks = [
-  { label: "Home", href: "#hero" },
-  { label: "Services", href: "#services" },
-  { label: "Interactive Tools", href: "#systems" },
-  { label: "Work", href: "#portfolio" },
-  { label: "About", href: "#about" },
-  { label: "Contact", href: "#contact" },
-];
 
 const socialLinks = [
   { icon: Linkedin, href: "https://www.linkedin.com/in/zscheff/", label: "LinkedIn" },
@@ -27,6 +19,7 @@ const socialLinks = [
 ];
 
 const Navbar = () => {
+  const { language, t, toggleLanguage } = useLanguage();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -36,6 +29,29 @@ const Navbar = () => {
   const isMusicIntelligenceRoute = location.pathname === "/music-intelligence";
   const isTransitSynthRoute = location.pathname === "/transit-synth";
   const isHomePage = location.pathname === "/";
+  const normalizedHomeLinks = useMemo(
+    () => [
+      { label: t("common.home"), href: "#hero" },
+      { label: t("common.services"), href: "#services" },
+      { label: t("common.interactiveTools"), href: "#systems" },
+      { label: t("common.work"), href: "#portfolio" },
+      { label: t("common.about"), href: "#about" },
+      { label: t("common.contact"), href: "#contact" },
+    ],
+    [t],
+  );
+
+  const languageToggle = (
+    <button
+      type="button"
+      onClick={toggleLanguage}
+      className="rounded-full border border-border/80 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+      aria-label={language === "en" ? t("common.switchToSpanish") : t("common.switchToEnglish")}
+      title={language === "en" ? t("common.switchToSpanish") : t("common.switchToEnglish")}
+    >
+      {language === "en" ? t("common.spanish") : t("common.english")}
+    </button>
+  );
 
   useEffect(() => {
     if (!isHomePage) {
@@ -73,7 +89,7 @@ const Navbar = () => {
       window.removeEventListener("scroll", updateNavigationState);
       window.removeEventListener("resize", updateNavigationState);
     };
-  }, [isHomePage]);
+  }, [isHomePage, normalizedHomeLinks]);
 
   const renderHomeLinks = () => (
     <>
@@ -89,7 +105,7 @@ const Navbar = () => {
               isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {link.label}
+            {t(link.labelKey as TranslationKey)}
             <span
               className={cn(
                 "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
@@ -183,7 +199,7 @@ const Navbar = () => {
         to="/"
         className="group relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-0.5 py-1.5"
       >
-        Home
+        {t("common.home")}
       </Link>
       <span className="text-sm font-medium text-foreground px-0.5 py-1.5">{label}</span>
     </>
@@ -207,7 +223,7 @@ const Navbar = () => {
           {isToolsRoute
             ? renderToolLinks()
             : isAnalyticsRoute
-              ? renderFeatureNav("Analytics")
+              ? renderFeatureNav(t("common.analytics"))
               : isMusicIntelligenceRoute
                 ? renderFeatureNav("AMIE")
                 : isTransitSynthRoute
@@ -215,6 +231,7 @@ const Navbar = () => {
               : renderHomeLinks()}
 
           <div className="ml-2 flex items-center gap-3 border-l border-border pl-4">
+            {languageToggle}
             {socialLinks.map((socialLink) => (
               <a
                 key={socialLink.label}
@@ -235,7 +252,7 @@ const Navbar = () => {
           onClick={() => setMenuOpen((value) => !value)}
           className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground md:hidden"
           aria-expanded={menuOpen}
-          aria-label="Toggle menu"
+          aria-label={t("nav.toggleMenu")}
         >
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -260,7 +277,7 @@ const Navbar = () => {
                       )
                     }
                   >
-                    {link.label}
+                    {t(link.labelKey as TranslationKey)}
                   </NavLink>
                 ))
               : isAnalyticsRoute
@@ -271,10 +288,10 @@ const Navbar = () => {
                         onClick={() => setMenuOpen(false)}
                         className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
                       >
-                        Home
+                        {t("common.home")}
                       </Link>
                       <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
-                        Analytics
+                        {t("common.analytics")}
                       </div>
                     </>
                   )
@@ -286,7 +303,7 @@ const Navbar = () => {
                           onClick={() => setMenuOpen(false)}
                           className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
                         >
-                          Home
+                          {t("common.home")}
                         </Link>
                         <div className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
                           <Sparkles size={14} />
@@ -302,7 +319,7 @@ const Navbar = () => {
                           onClick={() => setMenuOpen(false)}
                           className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
                         >
-                          Home
+                          {t("common.home")}
                         </Link>
                         <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
                           TransitSynth
@@ -358,6 +375,7 @@ const Navbar = () => {
           </div>
 
           <div className="mt-4 flex items-center gap-4 border-t border-border pt-4">
+            {languageToggle}
             {socialLinks.map((socialLink) => (
               <a
                 key={socialLink.label}

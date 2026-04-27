@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
+import { useLanguage } from "@/i18n/site";
 import AudioPlaylist from "./AudioPlaylist";
 
 const globalPulseTracks = [
@@ -26,6 +27,7 @@ const embeds = [
 
 const Portfolio = () => {
   const ref = useFadeIn();
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -36,8 +38,8 @@ const Portfolio = () => {
           className="fade-up mb-10 w-full flex items-center justify-between group"
         >
           <div className="text-left">
-            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">Audio</p>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Selected Audio Work</h2>
+            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">{t("portfolio.eyebrow")}</p>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">{t("portfolio.title")}</h2>
           </div>
           <div className="shrink-0 ml-4 w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:bg-accent transition-colors">
             {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}

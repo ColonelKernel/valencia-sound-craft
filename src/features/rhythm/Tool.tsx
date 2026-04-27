@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback } from "react";
 
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
+import { useLanguage } from "@/i18n/site";
 
 import { rhythmToolMeta } from "./toolData";
 import { useTool } from "./useTool";
@@ -17,6 +18,7 @@ const loadingCard = (
 );
 
 const RhythmTool = () => {
+  const { t } = useLanguage();
   useToolPerformance("rhythm-route");
   const tool = useTool();
   const handleRhythmChange = useCallback(
@@ -29,18 +31,17 @@ const RhythmTool = () => {
   return (
     <ToolPageLayout
       meta={rhythmToolMeta}
-      eyebrow="Rhythm"
-      title="Rhythm Engine"
-      description="A routed, shared-state rhythm workspace that keeps the atlas, browser, tempo, and transport in sync."
+      eyebrow={t("tools.rhythm.label")}
+      title={t("tools.rhythm.title")}
+      description={t("tools.rhythm.routeDescription")}
       summary={
         <div className="space-y-3">
           <p>
-            This route keeps the rhythm browser, map selection, sequencer, and playback transport on one shared state model.
-            The active rhythm is <strong className="text-foreground">{tool.summaryLabel}</strong> at{" "}
+            {t("tools.rhythm.summary1")} {t("tools.rhythm.activePrefix")} <strong className="text-foreground">{tool.summaryLabel}</strong> {t("tools.rhythm.at")}{" "}
             <strong className="text-foreground">{tool.tempo} BPM</strong>.
           </p>
           <p>
-            Rhythm selection updates the global region and rhythm identifiers directly, so the map and sequencer describe the same musical object instead of competing states.
+            {t("tools.rhythm.summary2")}
           </p>
         </div>
       }

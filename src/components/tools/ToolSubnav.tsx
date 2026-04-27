@@ -1,10 +1,14 @@
 import { NavLink } from "react-router-dom";
 
+import { useLanguage, type TranslationKey } from "@/i18n/site";
 import { TOOL_NAV_ROUTES } from "@/lib/toolRoutes";
 import { cn } from "@/lib/utils";
 
-const ToolSubnav = () => (
-  <nav aria-label="Tool navigation" className="overflow-x-auto pb-1">
+const ToolSubnav = () => {
+  const { t } = useLanguage();
+
+  return (
+  <nav aria-label={t("common.tools")} className="overflow-x-auto pb-1">
     <div className="flex min-w-max items-center gap-2">
       {TOOL_NAV_ROUTES.map((link) => (
         <NavLink
@@ -20,11 +24,12 @@ const ToolSubnav = () => (
             )
           }
         >
-          {link.label}
+          {t(link.labelKey as TranslationKey)}
         </NavLink>
       ))}
     </div>
   </nav>
-);
+  );
+};
 
 export default ToolSubnav;

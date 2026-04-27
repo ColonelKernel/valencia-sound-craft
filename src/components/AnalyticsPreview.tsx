@@ -1,6 +1,7 @@
-import { ArrowRight, BarChart3, TrendingUp, Shield, Target } from "lucide-react";
+import { ArrowRight, BarChart3, TrendingUp, Shield, Target, type LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Area, AreaChart, Bar, BarChart, Line, LineChart, ResponsiveContainer } from "recharts";
+import { useLanguage, type TranslationKey } from "@/i18n/site";
 
 const sparkData = {
   acquisition: [
@@ -23,8 +24,8 @@ const sparkData = {
 
 const metrics = [
   {
-    icon: Target, label: "Acquisition Scoring", value: "0–100",
-    desc: "Weighted model evaluating growth, volatility, longevity & momentum",
+    icon: Target, label: "analytics.metric.acquisition.label", value: "analytics.metric.acquisition.value",
+    desc: "analytics.metric.acquisition.desc",
     spark: (
       <ResponsiveContainer width="100%" height={40}>
         <AreaChart data={sparkData.acquisition}>
@@ -40,8 +41,8 @@ const metrics = [
     ),
   },
   {
-    icon: TrendingUp, label: "Revenue Forecasting", value: "Linear Regression",
-    desc: "Stream-to-revenue projections with confidence bands",
+    icon: TrendingUp, label: "analytics.metric.revenue.label", value: "analytics.metric.revenue.value",
+    desc: "analytics.metric.revenue.desc",
     spark: (
       <ResponsiveContainer width="100%" height={40}>
         <LineChart data={sparkData.revenue}>
@@ -51,8 +52,8 @@ const metrics = [
     ),
   },
   {
-    icon: Shield, label: "Risk Analysis", value: "Rolling Variance",
-    desc: "Volatility tracking and catalog diversification scoring",
+    icon: Shield, label: "analytics.metric.risk.label", value: "analytics.metric.risk.value",
+    desc: "analytics.metric.risk.desc",
     spark: (
       <ResponsiveContainer width="100%" height={40}>
         <AreaChart data={sparkData.risk}>
@@ -68,8 +69,8 @@ const metrics = [
     ),
   },
   {
-    icon: BarChart3, label: "Catalog Depth", value: "Album Distribution",
-    desc: "Playcount concentration across discography",
+    icon: BarChart3, label: "analytics.metric.catalog.label", value: "analytics.metric.catalog.value",
+    desc: "analytics.metric.catalog.desc",
     spark: (
       <ResponsiveContainer width="100%" height={40}>
         <BarChart data={sparkData.catalog}>
@@ -78,21 +79,23 @@ const metrics = [
       </ResponsiveContainer>
     ),
   },
-];
+] satisfies Array<{ icon: LucideIcon; label: TranslationKey; value: TranslationKey; desc: TranslationKey; spark: JSX.Element }>;
 
-const AnalyticsPreview = () => (
+const AnalyticsPreview = () => {
+  const { t } = useLanguage();
+
+  return (
   <section id="analytics-preview" className="section-padding border-y border-border/70 bg-background scroll-mt-24">
     <div className="container mx-auto space-y-8">
       <div className="space-y-4">
-        <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Analytics Lab</p>
+        <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">{t("analytics.eyebrow")}</p>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-3">
             <h2 className="text-4xl font-bold tracking-tight md:text-5xl">
-              Music Catalog Intelligence
+              {t("analytics.title")}
             </h2>
             <p className="text-sm text-muted-foreground md:text-base">
-              A collection of tools and dashboards for analyzing music performance, audience behavior,
-              and catalog dynamics. Designed to simulate real-world music platform and catalog analytics environments.
+              {t("analytics.description")}
             </p>
           </div>
 
@@ -100,7 +103,7 @@ const AnalyticsPreview = () => (
             to="/music-analytics"
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary px-5 py-3 text-sm font-semibold text-foreground hover:bg-accent transition-colors"
           >
-            Open Dashboard
+            {t("analytics.open")}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -113,15 +116,16 @@ const AnalyticsPreview = () => (
             className="rounded-xl border border-border/70 bg-card/75 p-5 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)]"
           >
             <m.icon className="h-5 w-5 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold text-foreground">{m.label}</h3>
-            <p className="mt-1 text-xs font-medium text-muted-foreground">{m.value}</p>
+            <h3 className="mt-4 text-lg font-semibold text-foreground">{t(m.label)}</h3>
+            <p className="mt-1 text-xs font-medium text-muted-foreground">{t(m.value)}</p>
             <div className="mt-3">{m.spark}</div>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">{m.desc}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{t(m.desc)}</p>
           </article>
         ))}
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export default AnalyticsPreview;
