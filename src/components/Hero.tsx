@@ -1,6 +1,5 @@
 import heroImage from "@/assets/hero-photo.jpg";
 import { ArrowRight, Headphones } from "lucide-react";
-import { Link } from "react-router-dom";
 
 import HeroRhythmPreview from "@/components/HeroRhythmPreview";
 
@@ -56,12 +55,6 @@ const Hero = () => {
               >
                 <Headphones size={16} /> Listen to Work
               </a>
-              <Link
-                to="/tools/rhythm"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-foreground/12 bg-foreground/6 px-6 py-3.5 text-sm font-medium text-foreground/82 hover:bg-foreground/12 hover:text-foreground"
-              >
-                Try the Rhythm Engine
-              </Link>
             </div>
 
             <p className="max-w-xl text-sm text-foreground/52">

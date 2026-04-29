@@ -3,7 +3,6 @@ import { lazy, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import RouteHead, { createToolStructuredData } from "@/components/seo/RouteHead";
-import SystemsPreview from "@/components/SystemsPreview";
 
 const Services = lazy(() => import("@/components/Services"));
 const Portfolio = lazy(() => import("@/components/Portfolio"));
@@ -42,7 +41,6 @@ const Index = () => {
       <Navbar />
       <main>
         <Hero />
-        <SystemsPreview />
 
         <Suspense fallback={<SectionFallback id="services" className="bg-background" />}>
           <Services />

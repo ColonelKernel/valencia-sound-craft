@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, Square, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
 
 import StepSequencer from "@/components/Blipblox/StepSequencer";
-import { buildCompositePattern, type SequencerLayer } from "@/components/Blipblox/rhythmEngineModel";
+import { buildCompositePattern, type SequencerLayer } from "@/components/Blipblox/sequencerTypes";
 import { cn } from "@/lib/utils";
 
 const HERO_STEP_COUNT = 8;
@@ -261,13 +260,6 @@ const HeroRhythmPreview = () => {
           {playing ? <Square size={18} /> : <Play size={18} />}
           {playing ? "Stop Preview" : "Play Rhythm"}
         </button>
-
-        <Link
-          to="/tools/rhythm"
-          className="inline-flex items-center justify-center rounded-2xl border border-foreground/18 px-4 py-3 text-sm font-medium text-foreground/80 hover:bg-foreground/10 hover:text-foreground"
-        >
-          Open the full rhythm system
-        </Link>
       </div>
     </div>
   );

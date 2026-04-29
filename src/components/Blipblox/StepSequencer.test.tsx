@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import type { SequencerLayer } from "./rhythmEngineModel";
+import type { SequencerLayer } from "./sequencerTypes";
 import StepSequencer from "./StepSequencer";
 
 const pattern = [1, 0, 0, 1, 0, 0, 0, 0];

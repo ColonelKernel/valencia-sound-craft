@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-import { buildCompositePattern, type SequencerLayer } from "./rhythmEngineModel";
+import { buildCompositePattern, type SequencerLayer } from "./sequencerTypes";
 
 interface StepSequencerProps {
   pattern: number[];
