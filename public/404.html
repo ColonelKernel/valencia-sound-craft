@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0e17" />
+    <meta name="robots" content="noindex, follow" />
+    <title>Page not found — Zach Scheffler Research</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: #0a0e17;
+        color: #f2f5f7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+        background:
+          radial-gradient(circle at 12% 14%, rgb(64 180 172 / 18%), transparent 34rem),
+          radial-gradient(circle at 88% 86%, rgb(200 139 69 / 13%), transparent 30rem),
+          #0a0e17;
+      }
+
+      main {
+        width: min(100%, 42rem);
+        padding: clamp(2rem, 6vw, 4rem);
+        border: 1px solid rgb(255 255 255 / 12%);
+        border-radius: 1.5rem;
+        background: rgb(15 22 35 / 82%);
+        box-shadow: 0 2rem 5rem rgb(0 0 0 / 25%);
+      }
+
+      p {
+        max-width: 34rem;
+        margin: 0 0 1.5rem;
+        color: #b8c3cc;
+        font-size: 1.08rem;
+        line-height: 1.7;
+      }
+
+      .eyebrow {
+        margin-bottom: 0.8rem;
+        color: #73d4cb;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0 0 1rem;
+        font-size: clamp(2.4rem, 8vw, 4.5rem);
+        line-height: 1;
+        letter-spacing: -0.045em;
+      }
+
+      a {
+        display: inline-flex;
+        min-height: 2.8rem;
+        align-items: center;
+        padding: 0.7rem 1rem;
+        border-radius: 999px;
+        background: #73d4cb;
+        color: #07110f;
+        font-weight: 750;
+        text-decoration: none;
+      }
+
+      a:hover {
+        background: #a2e6df;
+      }
+
+      a:focus-visible {
+        outline: 3px solid #f2b76d;
+        outline-offset: 4px;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        a {
+          transition: background 160ms ease, transform 160ms ease;
+        }
+
+        a:hover {
+          transform: translateY(-2px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">404 · Page not found</p>
+      <h1>This route has moved.</h1>
+      <p>
+        The portfolio is now a focused research dossier on interpretable DAW state,
+        audio outcomes, and musician-centered creative systems.
+      </p>
+      <a href="/">Return to the research dossier</a>
+    </main>
+  </body>
+</html>
