@@ -6,6 +6,7 @@ import {
   education,
   profileLinks,
   researchQuestions,
+  researchTrajectory,
   supportingProjects,
   type EvidenceLink,
   type ResearchCaseStudy,
@@ -385,6 +386,36 @@ const Index = () => {
                   <p className="support-caveat">{project.caveat}</p>
                   {project.link && <LinkList links={[project.link]} label={`${project.title} link`} />}
                 </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="trajectory" className="research-agenda page-section page-shell" aria-labelledby="trajectory-title">
+          <header className="section-intro">
+            <p className="section-kicker">Proposed research trajectory</p>
+            <h2 id="trajectory-title">
+              A doctoral research trajectory that extends the four observation regimes above.
+            </h2>
+            <p>
+              Three stages that build toward a program aligned with music information retrieval, audio effects
+              and processing, machine learning, and music production practice—same qualifiers, same honesty about
+              observability that the systems above already carry.
+            </p>
+          </header>
+          <div className="question-grid">
+            {researchTrajectory.map((stage) => (
+              <article key={stage.number}>
+                <span>{stage.number}</span>
+                <h3>{stage.title}</h3>
+                <p>{stage.summary}</p>
+                <p className="mini-label">{stage.signals.join(" · ")}</p>
+                {stage.boundary && (
+                  <p className="support-caveat">
+                    <strong>Boundary </strong>
+                    {stage.boundary}
+                  </p>
+                )}
               </article>
             ))}
           </div>
