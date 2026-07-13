@@ -102,6 +102,29 @@ test("honors reduced-motion preferences", async ({ page }) => {
   expect(movingElements).toBe(0);
 });
 
+test("bridges case studies to a proposed research trajectory", async ({ page }) => {
+  await page.goto("/");
+
+  const trajectory = page.locator("#trajectory");
+  await expect(trajectory).toBeAttached();
+  await expect(trajectory.locator("h2")).toContainText(/research trajectory|research/i);
+
+  const trajectoryText = await trajectory.innerText();
+  expect(trajectoryText).toContain("acoustic outcomes");
+  expect(trajectoryText).toContain("creativity-supporting");
+
+  const sectionOrder = await page.evaluate(() => {
+    const ids = ["projects", "trajectory", "background"];
+    return ids.map((id) => document.getElementById(id)?.getBoundingClientRect().top ?? -1);
+  });
+  expect(sectionOrder[0]).toBeLessThan(sectionOrder[1]);
+  expect(sectionOrder[1]).toBeLessThan(sectionOrder[2]);
+
+  await page.getByRole("link", { name: "Trajectory" }).first().click();
+  await expect(page).toHaveURL(/#trajectory$/);
+  await expect(trajectory).toBeInViewport();
+});
+
 test("does not expose retired portfolio behavior or private paths", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("form")).toHaveCount(0);

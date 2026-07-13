@@ -52,6 +52,14 @@ export interface ResearchQuestion {
   description: string;
 }
 
+export interface ResearchTrajectoryStage {
+  number: string;
+  title: string;
+  summary: string;
+  signals: string[];
+  boundary?: string;
+}
+
 export interface EducationEntry {
   year: string;
   institution: string;
@@ -83,6 +91,48 @@ export const researchQuestions: ResearchQuestion[] = [
     title: "Supporting creative prediction",
     description:
       "How can interpretable predictions offer useful next actions while keeping musicians in control of musical intent and revision?",
+  },
+];
+
+export const researchTrajectory: ResearchTrajectoryStage[] = [
+  {
+    number: "01",
+    title: "A consented, cross-DAW corpus with aligned renders",
+    summary:
+      "Extend the adapter platform into a small, ethically sourced dataset that pairs session state and rendered audio across the four DAWs. Publish the schema, the adapter bundles, and a provenance-aware alignment protocol so the dataset can be audited and reused rather than trusted on assertion.",
+    signals: [
+      "Consent-first collection with contributor-visible provenance",
+      "Adapter-conditioned observation regimes preserved end to end",
+      "Open schema, adapter bundles, and evaluation splits",
+    ],
+    boundary:
+      "Not a large-scale scrape and not a leaderboard benchmark—a small, honest, reproducible corpus that the field can inspect.",
+  },
+  {
+    number: "02",
+    title: "State-to-audio relationships that survive the plug-in boundary",
+    summary:
+      "Study which production-state features explain measurable acoustic outcomes across sessions, and which relationships remain specific to a DAW, plug-in, or session. Report DAW-dependent and DAW-independent effects with their observation-regime caveats intact instead of aggregating them away.",
+    signals: [
+      "Controlled A/B interventions on effect parameters and routing",
+      "Perceptual and non-perceptual acoustic outcome measurement",
+      "Cross-adapter analysis with uncertainty preserved",
+    ],
+    boundary:
+      "Not a claim that any single mapping generalizes across plug-in versions or listening contexts without measurement.",
+  },
+  {
+    number: "03",
+    title: "Interpretable, editable predictions inside real workflows",
+    summary:
+      "Move from synthetic proofs of concept to creativity-supporting prediction that a musician can inspect, edit, and reject inside a real DAW session. Evaluate the interaction with practicing producers, not only with symbolic benchmarks, and treat control as the constraint on the design of every suggestion.",
+    signals: [
+      "Prediction interfaces with per-suggestion explanations",
+      "Musician-facing evaluation alongside symbolic metrics",
+      "Real-time controllability as a first-class success criterion",
+    ],
+    boundary:
+      "Not an automatic mixing tool. The musician remains the author; the system is a collaborator that must be interruptible and reversible.",
   },
 ];
 

@@ -5,6 +5,7 @@ import {
   education,
   profileLinks,
   researchQuestions,
+  researchTrajectory,
   supportingProjects,
 } from "./research";
 
@@ -13,6 +14,7 @@ const allContent = {
   education,
   profileLinks,
   researchQuestions,
+  researchTrajectory,
   supportingProjects,
 };
 
@@ -135,5 +137,29 @@ describe("research dossier content", () => {
     expect(education[0]?.link?.href).toBe(
       "https://remix.berklee.edu/graduate-studies-production-technology/433/",
     );
+  });
+
+  it("bridges research questions to a doctoral trajectory with three stages", () => {
+    expect(researchTrajectory).toHaveLength(3);
+    expect(researchTrajectory.map((stage) => stage.number)).toEqual(["01", "02", "03"]);
+
+    for (const stage of researchTrajectory) {
+      expect(stage.title.trim()).not.toBe("");
+      expect(stage.summary.trim()).not.toBe("");
+      expect(stage.signals.length).toBeGreaterThan(0);
+      expect(stage.signals.length).toBeLessThanOrEqual(4);
+      for (const signal of stage.signals) {
+        expect(signal.trim()).not.toBe("");
+      }
+      if (stage.boundary !== undefined) {
+        expect(stage.boundary.trim()).not.toBe("");
+      }
+    }
+
+    const trajectoryBody = researchTrajectory
+      .map((stage) => `${stage.summary} ${stage.signals.join(" ")} ${stage.boundary ?? ""}`)
+      .join(" ");
+    expect(trajectoryBody).toContain("acoustic outcomes");
+    expect(trajectoryBody).toContain("creativity-supporting");
   });
 });
