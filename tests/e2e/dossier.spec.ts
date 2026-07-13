@@ -102,6 +102,19 @@ test("honors reduced-motion preferences", async ({ page }) => {
   expect(movingElements).toBe(0);
 });
 
+test("leads with an About section that introduces the person before the work", async ({ page }) => {
+  await page.goto("/");
+
+  const about = page.locator("#background");
+  await expect(about).toBeAttached();
+  await expect(about.locator(".section-kicker").first()).toHaveText("About");
+  await expect(about.locator("h2")).toContainText("Zach");
+
+  await page.getByRole("link", { name: "About" }).first().click();
+  await expect(page).toHaveURL(/#background$/);
+  await expect(about).toBeInViewport();
+});
+
 test("bridges case studies to a proposed research trajectory", async ({ page }) => {
   await page.goto("/");
 
@@ -114,11 +127,12 @@ test("bridges case studies to a proposed research trajectory", async ({ page }) 
   expect(trajectoryText).toContain("creativity-supporting");
 
   const sectionOrder = await page.evaluate(() => {
-    const ids = ["projects", "trajectory", "background"];
+    const ids = ["background", "research", "projects", "trajectory"];
     return ids.map((id) => document.getElementById(id)?.getBoundingClientRect().top ?? -1);
   });
   expect(sectionOrder[0]).toBeLessThan(sectionOrder[1]);
   expect(sectionOrder[1]).toBeLessThan(sectionOrder[2]);
+  expect(sectionOrder[2]).toBeLessThan(sectionOrder[3]);
 
   await page.getByRole("link", { name: "Trajectory" }).first().click();
   await expect(page).toHaveURL(/#trajectory$/);

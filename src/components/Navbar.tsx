@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
 const sectionLinks = [
+  { label: "About", href: "#background" },
   { label: "Research", href: "#research" },
   { label: "Projects", href: "#projects" },
   { label: "Trajectory", href: "#trajectory" },
-  { label: "Background", href: "#background" },
 ];
 
 const Navbar = () => {
