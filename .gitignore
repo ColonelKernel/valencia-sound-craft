@@ -1,3 +1,8 @@
+# Environment
+.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log
@@ -11,12 +16,17 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
+.lighthouseci/
+playwright-report/
+test-results/
 .lovable/logs/
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
+.claude/
 .DS_Store
 *.suo
 *.ntvs*

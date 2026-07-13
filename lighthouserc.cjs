@@ -1,28 +1,26 @@
 module.exports = {
   ci: {
     collect: {
-      numberOfRuns: 1,
-      url: [
-        "http://127.0.0.1:4173/",
-        "http://127.0.0.1:4173/tools",
-        "http://127.0.0.1:4173/tools/rhythm",
-        "http://127.0.0.1:4173/tools/harmony",
-      ],
+      numberOfRuns: 3,
+      url: ["http://127.0.0.1:4173/"],
       startServerCommand: "npm run preview -- --host 127.0.0.1 --port 4173",
       startServerReadyPattern: "Local:",
     },
     assert: {
       assertions: {
+        "categories:performance": ["error", { minScore: 0.95 }],
+        "categories:accessibility": ["error", { minScore: 0.95 }],
+        "categories:best-practices": ["error", { minScore: 0.95 }],
         "categories:seo": ["error", { minScore: 0.95 }],
-        "categories:best-practices": ["warn", { minScore: 0.9 }],
-        "categories:performance": ["warn", { minScore: 0.8 }],
-        "largest-contentful-paint": ["warn", { maxNumericValue: 3000 }],
-        "first-contentful-paint": ["warn", { maxNumericValue: 2200 }],
+        "total-byte-weight": ["error", { maxNumericValue: 1572864 }],
+        "resource-summary:script:size": ["error", { maxNumericValue: 204800 }],
+        "largest-contentful-paint": ["error", { maxNumericValue: 2500 }],
+        "first-contentful-paint": ["error", { maxNumericValue: 1800 }],
       },
     },
     upload: {
-      target: "temporary-public-storage",
+      target: "filesystem",
+      outputDir: ".lighthouseci/reports",
     },
   },
 };
-

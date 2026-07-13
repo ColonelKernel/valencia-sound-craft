@@ -1,397 +1,81 @@
-import { useEffect, useMemo, useState } from "react";
-import { BarChart3, Brain, Instagram, Linkedin, Menu, MessageCircle, Music, Sparkles, X, Youtube } from "lucide-react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
-import { useLanguage, type TranslationKey } from "@/i18n/site";
-import { TOOL_NAV_ROUTES } from "@/lib/toolRoutes";
-import { cn } from "@/lib/utils";
-
-const socialLinks = [
-  { icon: Linkedin, href: "https://www.linkedin.com/in/zscheff/", label: "LinkedIn" },
-  {
-    icon: Music,
-    href: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L?si=65RGI1x2TsSZK57Ip69JOQ",
-    label: "Spotify",
-  },
-  { icon: Instagram, href: "https://www.instagram.com/streetcarscandal/", label: "Instagram" },
-  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
-  { icon: MessageCircle, href: "https://wa.me/15104356431", label: "WhatsApp" },
+const sectionLinks = [
+  { label: "Research", href: "#research" },
+  { label: "Projects", href: "#projects" },
+  { label: "Background", href: "#background" },
 ];
 
 const Navbar = () => {
-  const { language, t, toggleLanguage } = useLanguage();
-  const location = useLocation();
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeHref, setActiveHref] = useState<string | null>(null);
-  const isToolsRoute = location.pathname.startsWith("/tools");
-  const isAnalyticsRoute = location.pathname === "/music-analytics";
-  const isMusicIntelligenceRoute = location.pathname === "/music-intelligence";
-  const isTransitSynthRoute = location.pathname === "/transit-synth";
-  const isHomePage = location.pathname === "/";
-  const normalizedHomeLinks = useMemo(
-    () => [
-      { label: t("common.home"), href: "#hero" },
-      { label: t("common.services"), href: "#services" },
-      { label: t("common.interactiveTools"), href: "#systems" },
-      { label: t("common.work"), href: "#portfolio" },
-      { label: t("common.about"), href: "#about" },
-      { label: t("common.contact"), href: "#contact" },
-    ],
-    [t],
-  );
-
-  const languageToggle = (
-    <button
-      type="button"
-      onClick={toggleLanguage}
-      className="rounded-full border border-border/80 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-      aria-label={language === "en" ? t("common.switchToSpanish") : t("common.switchToEnglish")}
-      title={language === "en" ? t("common.switchToSpanish") : t("common.switchToEnglish")}
-    >
-      {language === "en" ? t("common.spanish") : t("common.english")}
-    </button>
-  );
 
   useEffect(() => {
-    if (!isHomePage) {
-      setScrolled(true);
-      setActiveHref(null);
-      return;
-    }
+    if (!menuOpen) return;
 
-    const updateNavigationState = () => {
-      setScrolled(window.scrollY > 40);
-
-      const scrollPosition = window.scrollY + 140;
-      let nextActiveHref: string | null = null;
-
-      normalizedHomeLinks.forEach((link) => {
-        const section = document.querySelector(link.href);
-
-        if (!section) {
-          return;
-        }
-
-        if (scrollPosition >= (section as HTMLElement).offsetTop) {
-          nextActiveHref = link.href;
-        }
-      });
-
-      setActiveHref(nextActiveHref);
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
     };
 
-    updateNavigationState();
-    window.addEventListener("scroll", updateNavigationState, { passive: true });
-    window.addEventListener("resize", updateNavigationState);
-
-    return () => {
-      window.removeEventListener("scroll", updateNavigationState);
-      window.removeEventListener("resize", updateNavigationState);
-    };
-  }, [isHomePage, normalizedHomeLinks]);
-
-  const renderHomeLinks = () => (
-    <>
-      {normalizedHomeLinks.map((link) => {
-        const isActive = activeHref === link.href;
-        return (
-          <a
-            key={link.href}
-            href={link.href}
-            aria-current={isActive ? "page" : undefined}
-            className={cn(
-              "group relative text-sm font-medium transition-colors px-0.5 py-1.5",
-              isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {t(link.labelKey as TranslationKey)}
-            <span
-              className={cn(
-                "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-                isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-              )}
-            />
-          </a>
-        );
-      })}
-      <Link
-        to="/groove-intelligence"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/groove-intelligence" ? "text-foreground" : "text-emerald-400 hover:text-emerald-300",
-        )}
-      >
-        <Brain size={14} />
-        Groove Lab
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            location.pathname === "/groove-intelligence" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
-      <Link
-        to="/music-analytics"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          isAnalyticsRoute ? "text-foreground" : "text-primary hover:text-primary/80",
-        )}
-      >
-        <BarChart3 size={14} />
-        Analytics
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            isAnalyticsRoute ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
-      <Link
-        to="/music-intelligence"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          isMusicIntelligenceRoute ? "text-foreground" : "text-emerald-300 hover:text-emerald-200",
-        )}
-      >
-        <Sparkles size={14} />
-        AMIE
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            isMusicIntelligenceRoute ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
-    </>
-  );
-
-  const renderToolLinks = () =>
-    TOOL_NAV_ROUTES.map((link) => (
-      <NavLink
-        key={link.path}
-        to={link.path}
-        end={link.end}
-        className={({ isActive }) =>
-          cn(
-            "group relative text-sm font-medium transition-colors px-0.5 py-1.5",
-            isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-          )
-        }
-      >
-        {({ isActive }) => (
-          <>
-            {link.label}
-            <span
-              className={cn(
-                "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-                isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-              )}
-            />
-          </>
-        )}
-      </NavLink>
-    ));
-
-  const renderFeatureNav = (label: string) => (
-    <>
-      <Link
-        to="/"
-        className="group relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-0.5 py-1.5"
-      >
-        {t("common.home")}
-      </Link>
-      <span className="text-sm font-medium text-foreground px-0.5 py-1.5">{label}</span>
-    </>
-  );
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
 
   return (
-    <nav
-      className={cn(
-        "fixed left-0 right-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-200 ease-out",
-        scrolled
-          ? "border-b border-border bg-background/88 backdrop-blur-xl"
-          : "border-b border-transparent bg-transparent",
-      )}
-    >
-      <div className="container mx-auto flex h-16 items-center justify-between px-6">
-        <Link to="/" className="font-display text-lg font-bold tracking-tight text-foreground">
-          ZS
-        </Link>
+    <header className="site-header">
+      <nav className="site-nav page-shell" aria-label="Primary navigation">
+        <a className="wordmark" href="#top">
+          ZS<span aria-hidden="true">/</span>Research
+        </a>
 
-        <div className="hidden items-center gap-6 md:flex">
-          {isToolsRoute
-            ? renderToolLinks()
-            : isAnalyticsRoute
-              ? renderFeatureNav(t("common.analytics"))
-              : isMusicIntelligenceRoute
-                ? renderFeatureNav("AMIE")
-                : isTransitSynthRoute
-                  ? renderFeatureNav("TransitSynth")
-              : renderHomeLinks()}
-
-          <div className="ml-2 flex items-center gap-3 border-l border-border pl-4">
-            {languageToggle}
-            {socialLinks.map((socialLink) => (
-              <a
-                key={socialLink.label}
-                href={socialLink.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground"
-                aria-label={socialLink.label}
-              >
-                <socialLink.icon size={16} />
-              </a>
-            ))}
-          </div>
+        <div className="desktop-nav">
+          {sectionLinks.map((link) => (
+            <a key={link.href} href={link.href}>
+              {link.label}
+            </a>
+          ))}
+          <span className="nav-divider" aria-hidden="true" />
+          <a href="https://github.com/ColonelKernel" target="_blank" rel="noreferrer">
+            GitHub <span aria-hidden="true">↗</span>
+          </a>
+          <a href="https://www.linkedin.com/in/zscheff/" target="_blank" rel="noreferrer">
+            LinkedIn <span aria-hidden="true">↗</span>
+          </a>
         </div>
 
         <button
+          className="menu-button"
           type="button"
-          onClick={() => setMenuOpen((value) => !value)}
-          className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground md:hidden"
           aria-expanded={menuOpen}
-          aria-label={t("nav.toggleMenu")}
+          aria-controls="mobile-navigation"
+          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+          onClick={() => setMenuOpen((open) => !open)}
         >
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          <span />
+          <span />
         </button>
-      </div>
+      </nav>
 
-      {menuOpen && (
-        <div className="border-b border-border bg-background/96 px-6 pb-6 pt-2 backdrop-blur-xl md:hidden">
-          <div className="space-y-2">
-            {isToolsRoute
-              ? TOOL_NAV_ROUTES.map((link) => (
-                  <NavLink
-                    key={link.path}
-                    to={link.path}
-                    end={link.end}
-                    onClick={() => setMenuOpen(false)}
-                    className={({ isActive }) =>
-                      cn(
-                        "block rounded-2xl px-4 py-3 text-sm font-medium",
-                        isActive
-                          ? "bg-secondary text-foreground"
-                          : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
-                      )
-                    }
-                  >
-                    {t(link.labelKey as TranslationKey)}
-                  </NavLink>
-                ))
-              : isAnalyticsRoute
-                ? (
-                    <>
-                      <Link
-                        to="/"
-                        onClick={() => setMenuOpen(false)}
-                        className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                      >
-                        {t("common.home")}
-                      </Link>
-                      <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
-                        {t("common.analytics")}
-                      </div>
-                    </>
-                  )
-                : isMusicIntelligenceRoute
-                  ? (
-                      <>
-                        <Link
-                          to="/"
-                          onClick={() => setMenuOpen(false)}
-                          className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                        >
-                          {t("common.home")}
-                        </Link>
-                        <div className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
-                          <Sparkles size={14} />
-                          AMIE
-                        </div>
-                      </>
-                    )
-                : isTransitSynthRoute
-                  ? (
-                      <>
-                        <Link
-                          to="/"
-                          onClick={() => setMenuOpen(false)}
-                          className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                        >
-                          {t("common.home")}
-                        </Link>
-                        <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
-                          TransitSynth
-                        </div>
-                      </>
-                    )
-                : (
-                    <>
-                      {normalizedHomeLinks.map((link) => {
-                        const isActive = activeHref === link.href;
-                        return (
-                          <a
-                            key={link.href}
-                            href={link.href}
-                            onClick={() => setMenuOpen(false)}
-                            className={cn(
-                              "block rounded-2xl px-4 py-3 text-sm font-medium",
-                              isActive
-                                ? "bg-secondary text-foreground"
-                                : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
-                            )}
-                          >
-                            {link.label}
-                          </a>
-                        );
-                      })}
-                      <Link
-                        to="/groove-intelligence"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-emerald-400 hover:bg-secondary/70"
-                      >
-                        <Brain size={14} />
-                        Groove Lab
-                      </Link>
-                      <Link
-                        to="/music-analytics"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-primary hover:bg-secondary/70"
-                      >
-                        <BarChart3 size={14} />
-                        Analytics
-                      </Link>
-                      <Link
-                        to="/music-intelligence"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-emerald-300 hover:bg-secondary/70"
-                      >
-                        <Sparkles size={14} />
-                        AMIE
-                      </Link>
-                    </>
-                  )}
-          </div>
-
-          <div className="mt-4 flex items-center gap-4 border-t border-border pt-4">
-            {languageToggle}
-            {socialLinks.map((socialLink) => (
-              <a
-                key={socialLink.label}
-                href={socialLink.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground"
-                aria-label={socialLink.label}
-              >
-                <socialLink.icon size={18} />
-              </a>
-            ))}
-          </div>
+      <div id="mobile-navigation" className={`mobile-nav ${menuOpen ? "is-open" : ""}`} hidden={!menuOpen}>
+        <div className="page-shell">
+          {[...sectionLinks, { label: "GitHub ↗", href: "https://github.com/ColonelKernel" }, { label: "LinkedIn ↗", href: "https://www.linkedin.com/in/zscheff/" }].map(
+            (link) => {
+              const external = link.href.startsWith("http");
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noreferrer" : undefined}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </a>
+              );
+            },
+          )}
         </div>
-      )}
-    </nav>
+      </div>
+    </header>
   );
 };
 

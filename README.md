@@ -1,125 +1,41 @@
-# 🌍 Global Rhythm Explorer
+# Zach Scheffler — Research Dossier
 
-An interactive system for exploring, generating, and visualizing rhythmic structures from around the world.
+An evidence-led portfolio focused on interpretable DAW state, audio outcomes, and musician-controlled intelligent production systems. The site is tailored to the MTG–Steinberg PhD research topic while remaining an honest, public record of implemented work and current limitations.
 
----
+## Site structure
 
-## 🧠 Overview
+- Research agenda: representation, state-to-audio relationships, and interpretable prediction
+- Session State Analyzer: one cross-DAW program spanning Cubase, Ableton Live, REAPER, and Logic Pro
+- Improspira / Improv Partner: workshop provenance and the later evaluated continuation
+- AutoHarm / Autoharmonizer: editable browser and Max harmony workflows
+- Supporting prototypes and research background
 
-The **Global Rhythm Explorer** is a cross-cultural rhythm engine that combines:
+Claims, links, evaluation contexts, and limitations live in `src/content/research.ts`. Keep metrics qualified there rather than embedding unsupported marketing copy in components.
 
-- Music theory
-- Cultural research
-- Interactive audio systems
-- Generative pattern logic
-
-It is designed as both:
-- 🎓 An educational tool  
-- 🎛️ A creative system for musicians and technologists  
-
-This project lives within the broader ecosystem of:
-
-👉 **zachscheffler.com**
-
----
-
-## 🚀 Features
-
-### 🎛️ Rhythm Generator
-Generate rhythmic patterns based on:
-
-- Region / Country
-- Time signature
-- BPM range
-- Complexity level
-
-Supports:
-- Simple meters (4/4, 3/4)
-- Compound meters (6/8, 12/8)
-- Asymmetric meters (5/8, 7/8, 11/8)
-- Polyrhythms (e.g., 3:2, 4:3)
-
----
-
-### 🗺️ Global Map Visualizer
-- Interactive world map interface
-- Hover → view regional rhythm data
-- Click → load rhythm into generator
-
-Purpose:
-- Connect rhythm to geography and culture
-- Provide intuitive exploration of global styles
-
----
-
-### 🎧 Audio Engine
-- Real-time playback using Web Audio / Strudel
-- Multi-layer percussion system:
-  - Low (kick / bass drum)
-  - Mid (conga / snare)
-  - High (bells / claps)
-
-Supports:
-- Looping
-- Tempo changes
-- Pattern switching
-
----
-
-### 📊 Visualization System
-- Step sequencer grid
-- Pulse grouping display (e.g., `2+3`, `3+2+2`)
-- Polyrhythm overlays
-
----
-
-## 🧩 Data Model
-
-Each rhythm is represented as structured data:
-
-```json
-{
-  "region": "West Africa",
-  "country": "Mali",
-  "style": "Djembe Ensemble",
-  "meter": "12/8",
-  "feel": "Polyrhythmic",
-  "instruments": ["Djembe", "Dunun"]
-}
-```
-
-## Lovable Preview Sync
-
-Lovable is connected to `main`, so preview-bound changes need to land on `main` before the UI can update.
-
-Use the local dev server for fast iteration:
+## Local development
 
 ```bash
+npm install
 npm run dev
 ```
 
-Use the guarded sync command when you want Lovable to pick up the latest edits:
+The production-quality gates are:
 
 ```bash
-npm run lovable:sync -- --message "Describe the change"
+npm run typecheck
+npm run lint
+npm test
+npm run build
+npm run e2e
+npm run lighthouse
 ```
 
-What this does:
+The production application has only React and ReactDOM runtime dependencies. The repository now contains just the shipped dossier — earlier Lovable scaffolding, unused UI kits, interactive tool subsystems, and the Supabase integration have been removed rather than merely firewalled out of the build graph.
 
-- Verifies the current branch is `main`
-- Runs `npm run build`
-- Stages all changes with `git add -A`
-- Commits with your message
-- Pushes to `origin/main`
+## Publishing safeguards
 
-If Lovable looks stale and there are no code changes to push, force a rebuild with an empty commit:
-
-```bash
-npm run lovable:rebuild -- --message "trigger rebuild"
-```
-
-Quick checks:
-
-- `npm run lovable:status` shows whether the current checkout is aligned with `main`
-- GitHub Actions will show the build result and upload the build log artifact for every push to `main`
-- If the deploy is green but the preview still looks old, hard refresh the Lovable preview
+- Do not add workshop spreadsheets, internal documents, collaborator portraits, third-party manuals, private filesystem paths, or unlicensed session material.
+- Keep synthetic, in-sample, heuristic, and pending-validation labels attached to the results they qualify.
+- Public profile links are limited to GitHub and LinkedIn; no email or application documents are published without explicit approval.
+- Deployment is intentionally separate from local implementation and verification.
+- Environment files (`.env`) are untracked; the site uses no runtime secrets.
