@@ -22,11 +22,18 @@ playwright-report/
 test-results/
 .lovable/logs/
 
+# Ralph Wiggum runtime state (constitution, specs, scripts, history are tracked)
+/PROMPT_build.md
+/PROMPT_plan.md
+/IMPLEMENTATION_PLAN.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.claude/
+# Ignore .claude/ children except commands/ (Ralph slash commands)
+.claude/*
+!.claude/commands/
 .DS_Store
 *.suo
 *.ntvs*
