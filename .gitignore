@@ -27,6 +27,9 @@ test-results/
 /PROMPT_plan.md
 /IMPLEMENTATION_PLAN.md
 
+# Private application deliverables (thesis proposal, motivation letter drafts)
+proposal/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
