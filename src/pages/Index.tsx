@@ -336,6 +336,49 @@ const Index = () => {
           </div>
         </section>
 
+        <section id="background" className="background-section">
+          <div className="page-shell background-grid">
+            <div className="portrait-frame">
+              <img
+                src="/media/zach-scheffler.webp"
+                srcSet="/media/zach-scheffler-480.webp 480w, /media/zach-scheffler.webp 720w, /media/zach-scheffler-960.webp 960w"
+                sizes="(max-width: 860px) min(480px, 100vw - 36px), 34vw"
+                alt="Zach Scheffler playing guitar outdoors"
+                width="720"
+                height="960"
+                loading="lazy"
+              />
+              <div className="portrait-caption">
+                <span>Musician</span>
+                <span>Producer</span>
+                <span>Research engineer</span>
+              </div>
+            </div>
+            <div className="background-copy">
+              <p className="section-kicker">About</p>
+              <h2>Zach Scheffler — musician, producer, and applied data scientist.</h2>
+              <p className="background-lead">
+                A path that joins music production and performance with applied data science and public-policy
+                research. That mix shapes how I frame technical systems: as evidence-bearing tools used by
+                people, inside institutions and creative workflows.
+              </p>
+              <ol className="education-list">
+                {education.map((item) => (
+                  <li key={`${item.year}-${item.institution}`}>
+                    <time>{item.year}</time>
+                    <div>
+                      <h3>{item.credential}</h3>
+                      <p>{item.institution}</p>
+                      {item.detail && <small>{item.detail}</small>}
+                      {item.link && <LinkList links={[item.link]} label={`${item.credential} link`} />}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </section>
+
         <section id="research" className="research-agenda page-section page-shell">
           <header className="section-intro">
             <p className="section-kicker">Research agenda</p>
@@ -418,49 +461,6 @@ const Index = () => {
                 )}
               </article>
             ))}
-          </div>
-        </section>
-
-        <section id="background" className="background-section">
-          <div className="page-shell background-grid">
-            <div className="portrait-frame">
-              <img
-                src="/media/zach-scheffler.webp"
-                srcSet="/media/zach-scheffler-480.webp 480w, /media/zach-scheffler.webp 720w, /media/zach-scheffler-960.webp 960w"
-                sizes="(max-width: 860px) min(480px, 100vw - 36px), 34vw"
-                alt="Zach Scheffler playing guitar outdoors"
-                width="720"
-                height="960"
-                loading="lazy"
-              />
-              <div className="portrait-caption">
-                <span>Musician</span>
-                <span>Producer</span>
-                <span>Research engineer</span>
-              </div>
-            </div>
-            <div className="background-copy">
-              <p className="section-kicker">Research background</p>
-              <h2>Technical methods grounded in the realities of making music.</h2>
-              <p className="background-lead">
-                My path combines music production and performance with applied data science and public-policy research.
-                That mix shapes how I frame technical systems: as evidence-bearing tools used by people, inside institutions
-                and creative workflows.
-              </p>
-              <ol className="education-list">
-                {education.map((item) => (
-                  <li key={`${item.year}-${item.institution}`}>
-                    <time>{item.year}</time>
-                    <div>
-                      <h3>{item.credential}</h3>
-                      <p>{item.institution}</p>
-                      {item.detail && <small>{item.detail}</small>}
-                      {item.link && <LinkList links={[item.link]} label={`${item.credential} link`} />}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
           </div>
         </section>
       </main>
