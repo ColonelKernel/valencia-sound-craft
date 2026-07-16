@@ -28,7 +28,10 @@ interface FetchResult {
 let cache: FetchResult | null = null;
 
 const DATA_URL =
-  "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv";
+  // Self-hosted slim of the TidyTuesday 2020-01-21 spotify_songs.csv (all
+// 32,833 rows, only the three columns this service reads — regenerate with
+// scripts/slim-spotify-csv.mjs). No third-party dependency at runtime.
+  "/data/spotify_songs.csv";
 
 export async function fetchAndParseChartData(): Promise<FetchResult> {
   if (cache) return cache;

@@ -1,15 +1,10 @@
-import { motion } from "framer-motion";
-
 const AnalyticsHero = () => (
   <section className="relative overflow-hidden border-b border-border/30">
     <div className="absolute inset-0 bg-gradient-to-b from-foreground/[0.03] via-transparent to-transparent" />
     <div className="container mx-auto px-6 py-14 md:py-20 relative z-10">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-3xl"
-      >
+      {/* Static on purpose: this copy is the route's LCP element, and an
+          opacity-from-zero entrance pushed LCP past 20s on throttled runs. */}
+      <div className="max-w-3xl">
         <p className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-3">
           Catalog Intelligence Platform
         </p>
@@ -24,7 +19,7 @@ const AnalyticsHero = () => (
           Demonstration dataset derived from public Spotify popularity data (2020 sample);
           stream counts are modeled proxies, not live streaming figures.
         </p>
-      </motion.div>
+      </div>
     </div>
   </section>
 );

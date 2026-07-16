@@ -241,3 +241,62 @@ vitest 42/42 ✅ · build ✅ · e2e **18/18** ✅.
 
 **Gates:** typecheck ✅ · lint ✅ (0 errors, 7 warnings) · vitest 42/42 ✅ ·
 build ✅ · e2e **18/18** ✅.
+
+### 005 — Performance budget (2026-07-16)
+
+**Initial graph on `/`: 435 KB → 110.6 KB gzip** (entry 52.2 + react-core
+44.5 + cjs-helpers 0.2 + css 13.6). Two structural fixes:
+- The catch-all `"vendor"` manualChunks rule was the root cause of the
+  monolith: recharts' **lodash (443 modules)**, framer-motion's
+  **motion-dom (220)**, the **jspdf/html2canvas/canvg PDF stack**, core-js,
+  and papaparse all landed in one chunk imported by the entry. New strategy:
+  pin ONLY react/react-dom/scheduler (`react-core`) + the cjs-helpers pin;
+  everything else co-locates with its consumers.
+- **@tanstack/react-query removed entirely** — zero useQuery/useMutation
+  callers; only the provider existed. Dependency count 25 → 24.
+
+**Budget gate:** `npm run budget` = analyze-mode build +
+`scripts/check-bundle-budget.mjs`: walks the entry's static-import graph
+from the bundle report, gzips it, fails > 150 KB, and fails if any of
+recharts/leaflet/framer-motion/motion-dom/@supabase/jspdf/abcjs/lodash/
+html2canvas/canvg appears in the initial graph. Negative-tested (budget
+poisoned to 10 KB → exit 1) and restored.
+
+**Assets:**
+- Hero 349 KB JPEG → **154 KB webp 1050w + 113 KB webp 750w srcset**
+  (cwebp q45 — the 65% black overlay hides compression), moved to `public/`
+  and **preloaded from index.html** with imagesrcset. Largest image on `/`
+  = 154 KB ≤ 200 KB ✓. SpiralofDoubt art 87 → 64 KB webp.
+- **Fonts self-hosted**: the render-blocking Google Fonts `@import` in
+  index.css (criterion violation) replaced with three variable woff2s in
+  `public/fonts/` (Space Grotesk 22 KB, DM Sans 62 KB + italic 76 KB, OFL
+  license note included) with `@font-face` weight ranges + preloads. Zero
+  third-party font origins.
+- **Dataset self-hosted and slimmed**: the analytics page fetched an 8 MB
+  CSV from raw.githubusercontent.com at runtime. `scripts/slim-spotify-csv.
+  mjs` regenerates `public/data/spotify_songs.csv` keeping all 32,833 rows
+  but only the 3 columns the service reads → **819 KB local** (identical
+  derived numbers, no third-party runtime dependency).
+- Zero `.wav` references in src/index.html (the only grep hit is
+  `sound.wave`, an oscillator type).
+
+**LCP fix:** the analytics hero copy is that route's LCP element; its
+framer-motion opacity-from-zero entrance pushed throttled LCP past 20 s.
+Hero is now static (only that one component — framer-motion stays for the
+chart components). LCP 20.5 s → 6.2 s on simulated slow-4G.
+
+**Lighthouse (perf category, machine load avg ~22-25 — flagged for an
+idle re-run per spec):**
+- **Desktop: `/` 99 · `/tools` 100 · `/tools/rhythm` 99 ·
+  `/music-analytics` 96 — all ≥ 95 ✓**
+- Mobile (simulated slow-4G): `/` 86 · `/tools` 97 · `/tools/rhythm` 82 ·
+  `/music-analytics` 61. The mobile scores are bounded by the SPA
+  architecture: lazy-route LCP waits on entry → page-chunk → render chain
+  under 1.6 Mbps simulation. Reaching ≥95 mobile would need
+  prerendering/SSG of route shells — flagged as future work, out of this
+  spec's scope. Reports in the session scratchpad (lh-*.json).
+- `lighthouserc.cjs` upload target switched from temporary-public-storage
+  (published reports to a public URL!) to filesystem.
+
+**Gates:** typecheck ✅ · lint ✅ (0 errors) · vitest 42/42 ✅ · build ✅ ·
+budget ✅ (110.6/150 KB) · e2e **18/18** ✅.

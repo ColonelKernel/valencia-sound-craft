@@ -19,14 +19,13 @@ export default defineConfig(({ mode }) => ({
     mode === "analyze" && bundleReportPlugin(),
   ].filter(Boolean),
   build: {
+    manifest: true,
     rollupOptions: {
       output: {
         manualChunks(id) {
           // Rollup's synthetic CommonJS helper module is imported by every
-          // chunk that touches a CJS dep. Left unassigned it gets merged
-          // into whichever vendor chunk uses it most (historically
-          // map-vendor), forcing leaflet onto every route. Pin it to its
-          // own tiny chunk instead.
+          // chunk that touches a CJS dep; pinned to its own tiny chunk so it
+          // never drags a vendor chunk into unrelated routes.
           if (id.includes("commonjsHelpers")) {
             return "cjs-helpers";
           }
@@ -35,48 +34,18 @@ export default defineConfig(({ mode }) => ({
             return undefined;
           }
 
-          // react-leaflet must live with leaflet: if it lands in the shared
-          // "vendor" chunk, vendor (and therefore the entry) statically
-          // depends on map-vendor and the map stack loads on every route.
-          if (id.includes("leaflet")) {
-            return "map-vendor";
+          // Pin ONLY the truly app-wide core. Everything else deliberately
+          // returns undefined so Rollup co-locates each dependency with its
+          // actual consumers — a library used by one lazy route ships with
+          // that route, not with the entry. (The old catch-all "vendor"
+          // chunk put recharts' lodash, framer-motion's motion-dom, and the
+          // jspdf PDF stack on every page.) `npm run budget` enforces the
+          // resulting initial-graph size and bans heavy libs from it.
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) {
+            return "react-core";
           }
 
-          if (id.includes("abcjs")) {
-            return "notation-vendor";
-          }
-
-          if (id.includes("react-router-dom") || id.includes("@tanstack/react-query")) {
-            return "app-vendor";
-          }
-
-          if (id.includes("lucide-react")) {
-            return "ui-vendor";
-          }
-
-          if (
-            id.includes("recharts") ||
-            id.includes("victory-vendor") ||
-            id.includes("d3-") ||
-            id.includes("internmap") ||
-            id.includes("delaunator")
-          ) {
-            return "charts-vendor";
-          }
-
-          if (id.includes("framer-motion")) {
-            return "motion-vendor";
-          }
-
-          if (id.includes("@supabase")) {
-            return "supabase-vendor";
-          }
-
-          if (id.includes("node_modules/zod/")) {
-            return "forms-vendor";
-          }
-
-          return "vendor";
+          return undefined;
         },
       },
     },
