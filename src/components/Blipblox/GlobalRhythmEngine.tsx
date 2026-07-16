@@ -13,6 +13,7 @@ import {
 
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { normalizeMode } from "@/music-core/modeAliases";
 
 import StepSequencer from "./StepSequencer";
 import PatternMorpher from "./PatternMorpher";
@@ -317,6 +318,7 @@ const GlobalRhythmEngine = ({
   onRegionChange,
   onRhythmChange,
 }: GlobalRhythmEngineProps) => {
+  const normalizedMode = normalizeMode(mode);
   const controlledDefinition = selectedRhythmId
     ? getRhythmDefinitionById(selectedRhythmId)
     : null;
@@ -331,7 +333,10 @@ const GlobalRhythmEngine = ({
   const initialComposite = buildCompositePattern(initialDefinition.layers);
 
   const [rhythmState, setRhythmState] = useState<GlobalRhythmState>(() =>
-    createGlobalRhythmState(initialDefinition, embeddedPreset?.bpm ?? initialDefinition.defaultTempo),
+    createGlobalRhythmState(
+      initialDefinition,
+      controlledTempo ?? embeddedPreset?.bpm ?? initialDefinition.defaultTempo,
+    ),
   );
   const [playing, setPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -372,6 +377,7 @@ const GlobalRhythmEngine = ({
   const swingRef = useRef(swing);
   const adaptiveModeRef = useRef(adaptiveMode);
   const variationStrengthRef = useRef(variationStrength);
+  const userTempoTouchedRef = useRef(false);
   const previousControlledTempoRef = useRef(controlledTempo);
   const previousControlledPlayingRef = useRef(controlledPlaying);
   const previousSelectedRegionRef = useRef(selectedRegion);
@@ -603,7 +609,10 @@ const GlobalRhythmEngine = ({
       const nextDefinition = browserRhythms[0];
 
       if (nextDefinition) {
-        setRhythmState(createGlobalRhythmState(nextDefinition));
+        setRhythmState(createGlobalRhythmState(
+          nextDefinition,
+          userTempoTouchedRef.current ? rhythmStateRef.current.tempo : undefined,
+        ));
       }
     }
   }, [activeDefinition.id, browserRhythms, selectedRhythmId]);
@@ -642,8 +651,12 @@ const GlobalRhythmEngine = ({
     options?: { tempo?: number; syncBrowser?: boolean },
   ) => {
     const composite = buildCompositePattern(definition.layers);
+    // Once the user has explicitly set a tempo, rhythm selection keeps it
+    // (and therefore never emits onTempoChange from the load path).
+    const nextTempo = options?.tempo
+      ?? (userTempoTouchedRef.current ? rhythmStateRef.current.tempo : definition.defaultTempo);
 
-    setRhythmState(createGlobalRhythmState(definition, options?.tempo ?? definition.defaultTempo));
+    setRhythmState(createGlobalRhythmState(definition, nextTempo));
     setPlaying(false);
     setCurrentStep(-1);
     setMorphAmount(0);
@@ -659,6 +672,10 @@ const GlobalRhythmEngine = ({
   }, []);
 
   useEffect(() => {
+    if (!embeddedPreset) {
+      return;
+    }
+
     const nextDefinition = getDefinitionForPreset(embeddedPreset);
 
     if (!nextDefinition) {
@@ -666,7 +683,7 @@ const GlobalRhythmEngine = ({
     }
 
     loadRhythmDefinition(nextDefinition, {
-      tempo: embeddedPreset?.bpm ?? nextDefinition.defaultTempo,
+      tempo: embeddedPreset.bpm,
       syncBrowser: true,
     });
   }, [embeddedPreset, loadRhythmDefinition]);
@@ -897,7 +914,7 @@ const GlobalRhythmEngine = ({
       rhythm: activeDefinition,
       state: rhythmState,
       composite: compositePlayback,
-      harmonic: generateHarmonic(compositePlayback.pattern, compositePlayback.velocity, root, mode),
+      harmonic: generateHarmonic(compositePlayback.pattern, compositePlayback.velocity, root, normalizedMode),
     };
 
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -908,7 +925,7 @@ const GlobalRhythmEngine = ({
     anchor.download = `${activeDefinition.country.toLowerCase().replace(/[^a-z0-9]+/g, "-")}_atlas.json`;
     anchor.click();
     URL.revokeObjectURL(url);
-  }, [activeDefinition, compositePlayback, mode, rhythmState, root]);
+  }, [activeDefinition, compositePlayback, normalizedMode, rhythmState, root]);
 
   const hasActiveSteps = compositePlayback.pattern.some((step) => step === 1);
   const playbackSummary = `${activeDefinition.meter} · ${activeDefinition.grouping.join("+")} · ${FEEL_LABELS[activeDefinition.feel]}`;
@@ -1254,6 +1271,7 @@ const GlobalRhythmEngine = ({
               value={rhythmState.tempo}
               onChange={(event) => {
                 const tempo = Number(event.target.value);
+                userTempoTouchedRef.current = true;
                 setRhythmState((currentState) => ({ ...currentState, tempo }));
               }}
               className="w-full accent-primary"
@@ -1557,7 +1575,7 @@ const GlobalRhythmEngine = ({
 
       {showBlipblox && (
         <Suspense fallback={<div className="p-3 text-xs text-muted-foreground">Loading Blipblox…</div>}>
-          <BlipbloxConnector root={root} mode={mode} presets={DRUM_PRESETS} />
+          <BlipbloxConnector root={root} mode={normalizedMode} presets={DRUM_PRESETS} />
         </Suspense>
       )}
 

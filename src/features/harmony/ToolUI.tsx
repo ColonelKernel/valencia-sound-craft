@@ -11,7 +11,7 @@ const HarmonyToolUI = ({ workspace }: HarmonyToolUIProps) => (
         Shared Harmony Workspace
       </h2>
       <p className="text-sm text-muted-foreground">
-        Key, mode, tempo, and transport now come from the shared store, while the existing visualizer and builders keep their established workflow.
+        Key, mode, tempo, and playback stay in step with the other tools, so the visualizer and progression builder always reflect what you are working on.
       </p>
     </header>
     {workspace}

@@ -109,7 +109,7 @@ export default function MusicAnalyticsPage() {
     <div className="min-h-screen bg-background">
       <RouteHead
         title="Music Catalog Intelligence – Valencia Sound Craft"
-        description="Advanced catalog analytics dashboard for music investment decisions. Real streaming data, forecasting, and AI-powered analysis."
+        description="Catalog analytics dashboard for music investment analysis. Demonstration dataset derived from public Spotify popularity data, with forecasting and AI-assisted analysis."
         canonicalPath="/music-analytics"
       />
       <Navbar />
@@ -134,6 +134,10 @@ export default function MusicAnalyticsPage() {
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">
                 Evaluate music catalogs as financial assets. Forecast performance, assess risk,
                 and generate AI-powered investment memos.
+              </p>
+              <p className="mt-4 text-xs text-muted-foreground/80 leading-relaxed max-w-2xl">
+                Demonstration dataset derived from public Spotify popularity data (2020 sample);
+                stream counts are modeled proxies, not live streaming figures.
               </p>
             </motion.div>
           </div>
@@ -202,99 +206,103 @@ export default function MusicAnalyticsPage() {
         {/* Content */}
         <section className="py-8 md:py-12">
           <div className="container mx-auto px-6">
-            {/* Use display:none instead of unmounting to avoid Recharts DOM reconciliation crash */}
-            <div style={{ display: tab === "overview" ? "block" : "none" }}>
-              <StreamingDashboard
-                data={data}
-                artists={artists}
-                loading={loading}
-                error={error}
-                selectedArtist={selectedArtist}
-                onSelectArtist={setSelectedArtist}
-                mode={mode}
-              />
-            </div>
-
-            <div style={{ display: tab === "acquisition" ? "block" : "none" }}>
-              {(tab === "acquisition" || data.length > 0) && (
-                <AcquisitionScorecard data={data} artists={artists} mode={mode} />
-              )}
-            </div>
-
-            <div style={{ display: tab === "compare" ? "block" : "none" }}>
-              <div className="space-y-6">
-                <div className="rounded-xl border border-border/50 bg-card p-4">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                    Select 2–4 artists to compare
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {artists.map((a) => (
-                      <button
-                        key={a}
-                        onClick={() => toggleCompareArtist(a)}
-                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                          compareArtists.includes(a)
-                            ? "border-foreground bg-foreground text-background"
-                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                        }`}
-                      >
-                        {a}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
-              </div>
-            </div>
-
-            <div style={{ display: tab === "segments" ? "block" : "none" }}>
-              <CatalogSegmentation data={data} artists={artists} mode={mode} />
-            </div>
-
-            <div style={{ display: tab === "risk" ? "block" : "none" }}>
-              <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
-            </div>
-
-            <div style={{ display: tab === "portfolio" ? "block" : "none" }}>
-              <div className="space-y-6">
-                <div className="rounded-xl border border-border/50 bg-card p-4">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                    Build your portfolio
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {artists.map((a) => (
-                      <button
-                        key={a}
-                        onClick={() => togglePortfolioArtist(a)}
-                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                          portfolio.includes(a)
-                            ? "border-foreground bg-foreground text-background"
-                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                        }`}
-                      >
-                        {portfolio.includes(a) ? `✓ ${a}` : a}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <PortfolioBuilder
+            {/* Mount only the active tab. All tabs previously stayed mounted behind
+                display:none to dodge a Recharts DOM reconciliation crash; instead we
+                keep TabErrorBoundary around the active tab and give every chart
+                wrapper an explicit min-height so ResponsiveContainer always mounts
+                into a sized parent. */}
+            <TabErrorBoundary resetKey={tab}>
+              {tab === "overview" && (
+                <StreamingDashboard
                   data={data}
-                  portfolio={portfolio}
-                  onRemove={(a) => setPortfolio((prev) => prev.filter((x) => x !== a))}
+                  artists={artists}
+                  loading={loading}
+                  error={error}
+                  selectedArtist={selectedArtist}
+                  onSelectArtist={setSelectedArtist}
                   mode={mode}
                 />
-              </div>
-            </div>
+              )}
 
-            <div style={{ display: tab === "ai" ? "block" : "none" }}>
+              {tab === "acquisition" && (
+                <AcquisitionScorecard data={data} artists={artists} mode={mode} />
+              )}
+
+              {tab === "compare" && (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-border/50 bg-card p-4">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+                      Select 2–4 artists to compare
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {artists.map((a) => (
+                        <button
+                          key={a}
+                          onClick={() => toggleCompareArtist(a)}
+                          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                            compareArtists.includes(a)
+                              ? "border-foreground bg-foreground text-background"
+                              : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
+                          }`}
+                        >
+                          {a}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
+                </div>
+              )}
+
+              {tab === "segments" && (
+                <CatalogSegmentation data={data} artists={artists} mode={mode} />
+              )}
+
+              {tab === "risk" && (
+                <VolatilityPanel data={data} artists={artists} selectedArtist={selectedArtist} />
+              )}
+
+              {tab === "portfolio" && (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-border/50 bg-card p-4">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
+                      Build your portfolio
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {artists.map((a) => (
+                        <button
+                          key={a}
+                          onClick={() => togglePortfolioArtist(a)}
+                          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                            portfolio.includes(a)
+                              ? "border-foreground bg-foreground text-background"
+                              : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
+                          }`}
+                        >
+                          {portfolio.includes(a) ? `✓ ${a}` : a}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <PortfolioBuilder
+                    data={data}
+                    portfolio={portfolio}
+                    onRemove={(a) => setPortfolio((prev) => prev.filter((x) => x !== a))}
+                    mode={mode}
+                  />
+                </div>
+              )}
+
               {tab === "ai" && (
                 <CatalogAnalyzer artists={artists} data={data} />
               )}
-            </div>
+            </TabErrorBoundary>
 
             {/* Footer label */}
             <p className="mt-12 text-[10px] text-muted-foreground/60 text-center">
-              Built using real streaming data, public APIs, and simplified financial modeling
+              Demonstration dataset derived from public Spotify popularity data (2020 sample).
+              Stream counts are modeled proxies — not live streaming figures — combined with
+              simplified financial modeling for illustration.
             </p>
           </div>
         </section>

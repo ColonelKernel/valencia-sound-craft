@@ -33,14 +33,6 @@ const Footer = () => {
             Instagram
           </a>
           <a
-            href="https://youtube.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            YouTube
-          </a>
-          <a
             href="https://wa.me/15104356431"
             target="_blank"
             rel="noopener noreferrer"

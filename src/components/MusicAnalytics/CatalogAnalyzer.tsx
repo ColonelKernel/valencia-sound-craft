@@ -17,6 +17,18 @@ interface Props {
   data: ArtistMonthly[];
 }
 
+function isAnalysisResult(value: unknown): value is AnalysisResult {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.investmentSummary === "string" &&
+    typeof v.growthOutlook === "string" &&
+    typeof v.riskAssessment === "string" &&
+    typeof v.catalogType === "string" &&
+    typeof v.recommendedStrategy === "string"
+  );
+}
+
 export default function CatalogAnalyzer({ artists, data }: Props) {
   const [artistName, setArtistName] = useState(artists[0] ?? "");
   const [genre, setGenre] = useState("Pop");
@@ -33,7 +45,10 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
     setResult(null);
 
     try {
-      // Find streaming context for the selected artist
+      // Streaming context for the selected artist: these are the SAME
+      // buildArtistComparison aggregates rendered on the dashboard tabs
+      // (total, robust complete-month MoM growth, volatility label, segment),
+      // so the memo cannot contradict the displayed KPIs.
       const comp = comparisons.find((c) => c.artist === artistName);
       const streamingData = comp ? {
         totalStreams: comp.total,
@@ -46,11 +61,24 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
         body: { artistName, genre, catalogSize: Number(catalogSize), streamingData },
       });
 
-      if (fnError) throw new Error(fnError.message ?? "Analysis failed");
-      const parsed: AnalysisResult = typeof fnData === "string" ? JSON.parse(fnData) : fnData;
+      // Honest failure states: if the function errors or returns something
+      // that isn't a well-formed memo, say the analysis is unavailable —
+      // never substitute canned text presented as AI output.
+      if (fnError) throw new Error("AI analysis unavailable. Please try again later.");
+
+      let parsed: unknown;
+      try {
+        parsed = typeof fnData === "string" ? JSON.parse(fnData) : fnData;
+      } catch {
+        throw new Error("AI analysis unavailable — the service returned an unexpected response.");
+      }
+
+      if (!isAnalysisResult(parsed)) {
+        throw new Error("AI analysis unavailable — the service returned an unexpected response.");
+      }
       setResult(parsed);
     } catch (err: any) {
-      setError(err.message ?? "Analysis failed. Please try again.");
+      setError(err.message ?? "AI analysis unavailable. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -153,6 +181,10 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
               </div>
             ))}
           </div>
+
+          <p className="text-[11px] text-muted-foreground/70">
+            AI-generated educational demonstration based on modeled data — not investment advice.
+          </p>
         </motion.div>
       )}
     </div>

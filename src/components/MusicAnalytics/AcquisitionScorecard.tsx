@@ -196,7 +196,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
     y += 10;
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text("Built using real streaming data, public APIs, and simplified financial modeling", 14, y);
+    doc.text("Demonstration dataset derived from public Spotify popularity data (2020 sample); modeled proxies, not live streaming figures.", 14, y);
     y += 4;
     doc.text("Valencia Sound Craft — Music Catalog Intelligence Platform", 14, y);
 
@@ -411,7 +411,8 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
               <h5 className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-4">
                 Album Catalog Depth (Last.fm)
               </h5>
-              <div className="h-64">
+              {/* Explicit min-height so ResponsiveContainer always mounts into a sized parent */}
+              <div className="h-64 min-h-[256px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={lastfm.albumCatalog}

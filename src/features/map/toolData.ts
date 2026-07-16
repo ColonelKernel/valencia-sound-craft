@@ -3,7 +3,7 @@ import { createToolStructuredData, type RouteMetaConfig } from "@/components/seo
 export const mapToolMeta: RouteMetaConfig = {
   title: "Rhythm Map | Valencia Sound Craft",
   description:
-    "Explore the global rhythm atlas by route, country, and cultural rhythm structure with shared playback state.",
+    "Explore a world rhythm atlas by country and tradition, and hear each groove play as you browse.",
   canonicalPath: "/tools/map",
   jsonLd: createToolStructuredData({
     name: "Valencia Sound Craft Rhythm Map",

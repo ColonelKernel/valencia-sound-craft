@@ -31,16 +31,16 @@ const RhythmTool = () => {
       meta={rhythmToolMeta}
       eyebrow="Rhythm"
       title="Rhythm Engine"
-      description="A routed, shared-state rhythm workspace that keeps the atlas, browser, tempo, and transport in sync."
+      description="A rhythm workspace that keeps the atlas, browser, tempo, and playback in sync."
       summary={
         <div className="space-y-3">
           <p>
-            This route keeps the rhythm browser, map selection, sequencer, and playback transport on one shared state model.
+            The rhythm browser, map, sequencer, and playback all work from the same groove.
             The active rhythm is <strong className="text-foreground">{tool.summaryLabel}</strong> at{" "}
             <strong className="text-foreground">{tool.tempo} BPM</strong>.
           </p>
           <p>
-            Rhythm selection updates the global region and rhythm identifiers directly, so the map and sequencer describe the same musical object instead of competing states.
+            Choose a rhythm anywhere — the browser, the map, the sequencer — and every view follows, so you are always hearing and seeing the same groove.
           </p>
         </div>
       }

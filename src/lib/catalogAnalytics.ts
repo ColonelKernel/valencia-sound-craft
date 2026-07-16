@@ -15,6 +15,34 @@ export function formatMetric(n: number, mode: "streams" | "revenue"): string {
   return `${prefix}${Math.round(v)}`;
 }
 
+/* ── Month-over-month growth (robust to a sparse final bucket) ── */
+/**
+ * The modeled dataset buckets streams by release month, so the most recent
+ * bucket often has thin track coverage and reads as a huge artificial drop.
+ * Robust rule: drop the final bucket when its total falls below half the
+ * median of the preceding (up to six) buckets — an outlier vs the trailing
+ * median — leaving only complete months.
+ */
+export function dropSparseFinalBucket(monthlyStreams: number[]): number[] {
+  if (monthlyStreams.length < 4) return monthlyStreams;
+  const trailing = monthlyStreams
+    .slice(-7, -1)
+    .filter((v) => v > 0)
+    .sort((a, b) => a - b);
+  if (!trailing.length) return monthlyStreams;
+  const median = trailing[Math.floor(trailing.length / 2)];
+  const last = monthlyStreams[monthlyStreams.length - 1];
+  return last < median * 0.5 ? monthlyStreams.slice(0, -1) : monthlyStreams;
+}
+
+/** MoM growth (%) over the last two complete month buckets. */
+export function robustMoMGrowth(monthlyStreams: number[]): number {
+  const series = dropSparseFinalBucket(monthlyStreams);
+  const last = series[series.length - 1] ?? 0;
+  const prev = series[series.length - 2] ?? last;
+  return prev > 0 ? ((last - prev) / prev) * 100 : 0;
+}
+
 /* ── Volatility (std deviation of monthly streams) ── */
 export function computeVolatility(monthlyStreams: number[]): number {
   if (monthlyStreams.length < 2) return 0;
@@ -217,9 +245,7 @@ export function buildArtistComparison(
       .sort((a, b) => a.month.localeCompare(b.month));
     const monthlyStreams = rows.map((r) => r.streams);
     const total = monthlyStreams.reduce((s, v) => s + v, 0);
-    const last = monthlyStreams[monthlyStreams.length - 1] ?? 0;
-    const prev = monthlyStreams[monthlyStreams.length - 2] ?? last;
-    const momGrowth = prev > 0 ? ((last - prev) / prev) * 100 : 0;
+    const momGrowth = robustMoMGrowth(monthlyStreams);
     const vol = volatilityScore(monthlyStreams);
     const points = rows.map((r, i) => ({ x: i, y: r.streams }));
     const fc = forecast(points, 3);

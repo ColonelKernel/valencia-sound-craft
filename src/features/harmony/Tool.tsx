@@ -15,7 +15,7 @@ const HarmonyTool = () => {
       meta={harmonyToolMeta}
       eyebrow="Harmony"
       title="Harmony Lab"
-      description="A direct harmony route for visualizing scales, building progressions, and practicing with shared tempo and transport."
+      description="Visualize scales, build chord progressions, and practice — always in time with the rest of the music system."
       summary={
         <div className="space-y-3">
           <p>
@@ -23,7 +23,7 @@ const HarmonyTool = () => {
             <strong className="text-foreground">{tool.tempo} BPM</strong>.
           </p>
           <p>
-            The active chord progression is stored globally, so other harmony routes can reflect the same musical context without requiring the old one-page tool switcher.
+            Your chord progression travels with you — open the circle of fifths or the Tonnetz and the same key and harmony are already there.
           </p>
         </div>
       }

@@ -18,7 +18,7 @@ const RhythmToolUI = ({ summaryLabel, tempo, source, engine, legacyWorkspace }: 
         <p className="text-sm text-muted-foreground">
           Current rhythm: {summaryLabel}. Shared tempo: {tempo} BPM.
         </p>
-        <p className="text-xs text-muted-foreground">Source thread: {source}</p>
+        <p className="text-xs text-muted-foreground">Source: {source}</p>
       </header>
       {engine}
     </section>
@@ -27,7 +27,7 @@ const RhythmToolUI = ({ summaryLabel, tempo, source, engine, legacyWorkspace }: 
       <header className="space-y-2">
         <h2 className="text-2xl font-semibold text-foreground">Classic Groove Workspace</h2>
         <p className="text-sm text-muted-foreground">
-          The original drum-machine editor remains available inside the new route structure so legacy workflows stay intact.
+          The full drum-machine editor — program grooves step by step, with the same rhythm and tempo as the engine above.
         </p>
       </header>
       {legacyWorkspace}

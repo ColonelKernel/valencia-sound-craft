@@ -4,11 +4,11 @@ import { useFadeIn } from "@/hooks/useFadeIn";
 import AudioPlaylist from "./AudioPlaylist";
 
 const globalPulseTracks = [
-  { title: "Ride", src: "/audio/5_Step_v13.wav" },
-  { title: "Activate", src: "/audio/Activate_v14.wav" },
-  { title: "Feeling Low", src: "/audio/Feeling_Low_v10.wav" },
-  { title: "Odysseus", src: "/audio/Odysseus_v12.wav" },
-  { title: "Spiral of Doubt", src: "/audio/Spiral_of_Doubt_FINAL_v14.wav" },
+  { title: "Ride", src: "/audio/5_Step_v13.m4a" },
+  { title: "Activate", src: "/audio/Activate_v14.m4a" },
+  { title: "Feeling Low", src: "/audio/Feeling_Low_v10.m4a" },
+  { title: "Odysseus", src: "/audio/Odysseus_v12.m4a" },
+  { title: "Spiral of Doubt", src: "/audio/Spiral_of_Doubt_FINAL_v14.m4a" },
 ];
 
 const embeds = [

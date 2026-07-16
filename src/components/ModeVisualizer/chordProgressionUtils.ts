@@ -634,8 +634,22 @@ export function downloadMidi(chords: ProgressionChord[], bpm: number, beatsPerCh
 }
 
 // ─── Audio Playback ─────────────────────────────────────────
+// Lazy shared AudioContext (mirrors audioSynth's private singleton).
+// Browsers cap concurrent AudioContexts, so playback helpers must reuse one.
+let audioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
 export function playChordTones(notes: string[], duration = 0.8, timbre: InstrumentTimbre = 'piano') {
-  const ctx = new AudioContext();
+  const ctx = getAudioContext();
   const NOTE_FREQ: Record<string, number> = {
     'C': 261.63, 'C#': 277.18, 'Db': 277.18,
     'D': 293.66, 'D#': 311.13, 'Eb': 311.13,
@@ -816,7 +830,7 @@ export function playChordTonesExpressive(
 ) {
   const voiced = applyVoicing(notes, voicing);
   const ep = getExpressivePlaybackParams(params);
-  const ctx = new AudioContext();
+  const ctx = getAudioContext();
   const NOTE_FREQ: Record<string, number> = {
     'C': 261.63, 'C#': 277.18, 'Db': 277.18,
     'D': 293.66, 'D#': 311.13, 'Eb': 311.13,

@@ -12,6 +12,7 @@ const GlobalRhythmEngine = lazy(() => import("@/components/Blipblox/GlobalRhythm
 const MapTool = () => {
   useToolPerformance("map-route");
   const tool = useTool();
+  const regionLabel = tool.activeDefinition?.regionLabel ?? tool.region;
   const handleRhythmChange = useCallback(
     (next: { rhythmId: string; region: string }) => {
       tool.setRhythm(next.rhythmId, next.region);
@@ -24,14 +25,14 @@ const MapTool = () => {
       meta={mapToolMeta}
       eyebrow="Atlas"
       title="Rhythm Map"
-      description="A direct URL into the atlas-first experience, backed by the same rhythm state and playback transport as the sequencer."
+      description="An atlas-first view of world rhythms, playing the same groove and tempo as the sequencer."
       summary={
         <div className="space-y-3">
           <p>
-            The map route exposes readable rhythm metadata alongside the interactive atlas so search engines and musicians can both understand the current state without opening hidden controls.
+            The map pairs the interactive atlas with a clear description of each rhythm, so you can see where a groove comes from and what is playing at a glance.
           </p>
           <p>
-            The selected region is <strong className="text-foreground">{tool.region}</strong>, and the active rhythm stays synchronized with the rhythm route through the shared store.
+            You are exploring <strong className="text-foreground">{regionLabel}</strong>, and the rhythm you pick here follows you into the Rhythm Engine.
           </p>
         </div>
       }

@@ -11,7 +11,7 @@ const CircleToolUI = ({ tool }: CircleToolUIProps) => (
         Shared Harmonic Center
       </h2>
       <p className="text-sm text-muted-foreground">
-        Selecting a key here updates the harmony route and Tonnetz immediately through the global music store.
+        Select a key and the harmony lab and Tonnetz update instantly to match.
       </p>
     </header>
     {tool}

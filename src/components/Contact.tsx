@@ -1,14 +1,55 @@
 import { useState, FormEvent } from "react";
 import { useFadeIn } from "@/hooks/useFadeIn";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type Status = "idle" | "submitting" | "success" | "error";
 
 const Contact = () => {
   const ref = useFadeIn();
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [projectType, setProjectType] = useState("");
+  const [message, setMessage] = useState("");
+  // Honeypot: humans never see or fill this field.
+  const [company, setCompany] = useState("");
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    setValidationError(null);
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedMessage = message.trim();
+
+    if (!trimmedName || !trimmedEmail || !trimmedMessage) {
+      setValidationError("Please fill in your name, email, and message.");
+      return;
+    }
+    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      setValidationError("Please enter a valid email address.");
+      return;
+    }
+
+    // Honeypot filled: silently drop, pretend success.
+    if (company) {
+      setStatus("success");
+      return;
+    }
+
+    setStatus("submitting");
+    const { error } = await supabase.from("contact_messages").insert({
+      name: trimmedName,
+      email: trimmedEmail,
+      project_type: projectType || null,
+      message: trimmedMessage,
+    });
+
+    setStatus(error ? "error" : "success");
   };
 
   return (
@@ -22,7 +63,7 @@ const Contact = () => {
           </p>
         </div>
 
-        {submitted ? (
+        {status === "success" ? (
           <div className="fade-up text-center py-16 border border-border rounded-sm">
             <p className="text-xl font-display font-semibold mb-2">Thank you!</p>
             <p className="text-muted-foreground text-sm">Your message has been sent. I'll be in touch soon.</p>
@@ -31,25 +72,31 @@ const Contact = () => {
           <form onSubmit={handleSubmit} className="fade-up space-y-5">
             <div className="grid sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                <label htmlFor="contact-name" className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
                   Name
                 </label>
                 <input
+                  id="contact-name"
                   type="text"
                   required
                   maxLength={100}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow"
                   placeholder="Your name"
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                <label htmlFor="contact-email" className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
                   Email
                 </label>
                 <input
+                  id="contact-email"
                   type="email"
                   required
                   maxLength={255}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow"
                   placeholder="your@email.com"
                 />
@@ -57,11 +104,14 @@ const Contact = () => {
             </div>
 
             <div>
-              <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
+              <label htmlFor="contact-project-type" className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
                 Project Type
               </label>
               <select
+                id="contact-project-type"
                 required
+                value={projectType}
+                onChange={(e) => setProjectType(e.target.value)}
                 className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow appearance-none"
               >
                 <option value="">Select a project type</option>
@@ -74,23 +124,69 @@ const Contact = () => {
             </div>
 
             <div>
-              <label className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
+              <label htmlFor="contact-message" className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
                 Message
               </label>
               <textarea
+                id="contact-message"
                 required
                 maxLength={1000}
                 rows={5}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow resize-none"
                 placeholder="Tell me about your project..."
               />
             </div>
 
+            {/* Honeypot — hidden from humans, bots tend to fill it. */}
+            <div className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+              <label htmlFor="contact-company">Company</label>
+              <input
+                id="contact-company"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+              />
+            </div>
+
+            {validationError && (
+              <p className="text-sm text-destructive" role="alert">
+                {validationError}
+              </p>
+            )}
+
+            {status === "error" && (
+              <p className="text-sm text-destructive" role="alert">
+                Something went wrong sending your message. Please reach out via{" "}
+                <a
+                  href="https://www.linkedin.com/in/zscheff/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2"
+                >
+                  LinkedIn
+                </a>{" "}
+                instead.
+              </p>
+            )}
+
             <button
               type="submit"
-              className="w-full inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3.5 text-sm font-medium rounded-sm hover:bg-foreground/90 transition-colors"
+              disabled={status === "submitting"}
+              className="w-full inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3.5 text-sm font-medium rounded-sm hover:bg-foreground/90 transition-colors disabled:opacity-60 disabled:pointer-events-none"
             >
-              Send Message <Send size={15} />
+              {status === "submitting" ? (
+                <>
+                  Sending... <Loader2 size={15} className="animate-spin" />
+                </>
+              ) : (
+                <>
+                  Send Message <Send size={15} />
+                </>
+              )}
             </button>
 
             <p className="text-center text-xs text-muted-foreground pt-2">

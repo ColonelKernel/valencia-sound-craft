@@ -11,7 +11,7 @@ const TonnetzToolUI = ({ tool }: TonnetzToolUIProps) => (
         Harmonic Space
       </h2>
       <p className="text-sm text-muted-foreground">
-        Tonnetz transformations now follow the shared tonal center and transport timing used across the rest of the tool suite.
+        Tonnetz moves follow the same key and timing as the rest of the tools, so what you hear here fits what you play everywhere else.
       </p>
     </header>
     {tool}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Brain, Linkedin, Instagram, Menu, MessageCircle, Music, X, Youtube } from "lucide-react";
+import { BarChart3, Brain, Linkedin, Instagram, Menu, MessageCircle, Music, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ const normalizedHomeLinks = [
   { label: "Interactive Tools", href: "#systems" },
   { label: "Work", href: "#portfolio" },
   { label: "About", href: "#about" },
+  { label: "Research", href: "https://research.zachscheffler.com" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -30,7 +31,6 @@ const socialLinks = [
     label: "Spotify",
   },
   { icon: Instagram, href: "https://www.instagram.com/streetcarscandal/", label: "Instagram" },
-  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
   { icon: MessageCircle, href: "https://wa.me/15104356431", label: "WhatsApp" },
 ];
 
@@ -57,6 +57,10 @@ const Navbar = () => {
       let nextActiveHref: string | null = null;
 
       normalizedHomeLinks.forEach((link) => {
+        if (!link.href.startsWith("#")) {
+          return;
+        }
+
         const section = document.querySelector(link.href);
 
         if (!section) {

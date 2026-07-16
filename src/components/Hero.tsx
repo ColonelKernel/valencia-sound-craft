@@ -11,9 +11,10 @@ const Hero = () => {
         <img
           src={heroImage}
           alt="Music production studio"
-          width={1920}
-          height={1080}
+          width={1200}
+          height={1600}
           className="h-full w-full object-cover"
+          {...{ fetchpriority: "high" }}
         />
         <div className="absolute inset-0 bg-black/65" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.35)_0%,transparent_100%)]" />

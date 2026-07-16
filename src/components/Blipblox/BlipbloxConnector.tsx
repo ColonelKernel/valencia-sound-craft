@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Usb, Play, Square, Upload, ChevronDown, ChevronRight, Zap, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGlobalMusic } from '@/state/globalMusicState';
 import { blipbloxEngine, type BlipbloxMidiDevice, type BlipbloxDeviceType } from './blipbloxEngine';
 import { translateForMyTracks, translateForSK2, translateForAfterDark, getDeviceNote } from './deviceProfiles';
 import { mapGroove, normalizeMeter, splitPolyrhythm } from './rhythmTranslator';
@@ -46,12 +47,14 @@ function resizeStepSequence(values: number[], targetLength: number): number[] {
 }
 
 const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets = [] }: BlipbloxConnectorProps) => {
+  const sharedTempo = useGlobalMusic((state) => state.tempo);
   const [outputs, setOutputs] = useState<BlipbloxMidiDevice[]>([]);
   const [selectedOutputId, setSelectedOutputId] = useState<string>('');
   const [deviceType, setDeviceType] = useState<BlipbloxDeviceType>('mytracks');
   const [channel, setChannel] = useState(0);
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
-  const [bpm, setBpm] = useState(120);
+  // Initialize from the shared tempo; the BPM input below keeps local override.
+  const [bpm, setBpm] = useState(sharedTempo);
   const [stepMode, setStepMode] = useState<16 | 32>(16);
   const [midiSupported, setMidiSupported] = useState(true);
   const [currentStep, setCurrentStep] = useState(-1);

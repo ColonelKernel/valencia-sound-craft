@@ -299,9 +299,8 @@ const ModeVisualizer = ({
                     root={root}
                     timbre={timbre}
                     onSelectKey={(nextRoot, nextMode) => {
-                      setRoot(nextRoot);
-                      setMode(nextMode);
-                      setSelectedChord(null);
+                      handleRootChange(nextRoot);
+                      handleModeChange(nextMode);
                     }}
                   />
                 </div>

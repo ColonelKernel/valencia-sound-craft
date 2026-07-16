@@ -9,13 +9,13 @@ const toolCards = [
     to: "/tools/rhythm",
     icon: Globe2,
     title: "Rhythm Engine",
-    description: "Play, browse, and sequence global rhythm structures from a shared atlas-backed state.",
+    description: "Play, browse, and sequence rhythms from around the world.",
   },
   {
     to: "/tools/harmony",
     icon: Music2,
     title: "Harmony Lab",
-    description: "Visualize scales, build progressions, and practice against the shared transport.",
+    description: "Visualize scales, build progressions, and practice in time with the whole system.",
   },
   {
     to: "/tools/map",
@@ -27,7 +27,7 @@ const toolCards = [
     to: "/tools/circle",
     icon: Waves,
     title: "Circle of Fifths",
-    description: "Explore related keys while updating the shared tonal center.",
+    description: "Explore related keys — your key choice follows you into every other tool.",
   },
   {
     to: "/tools/tonnetz",
@@ -41,7 +41,7 @@ const ToolsIndex = () => (
   <>
     <RouteHead
       title="Music Tools | Valencia Sound Craft"
-      description="Explore the full Valencia Sound Craft tool system through direct routes for rhythm, harmony, map, circle, and Tonnetz workspaces."
+      description="Interactive music tools for rhythm, harmony, and theory: a world rhythm engine, harmony lab, rhythm map, circle of fifths, and Tonnetz — all playing in sync."
       canonicalPath="/tools"
       jsonLd={createToolStructuredData({
         name: "Valencia Sound Craft Tools",
@@ -58,10 +58,10 @@ const ToolsIndex = () => (
           <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Tools</p>
           <div className="max-w-4xl space-y-4">
             <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-              One Music System, Multiple Direct Routes
+              One Music System, Five Connected Tools
             </h1>
             <p className="text-base text-muted-foreground md:text-lg">
-              Open the exact workspace you need without going through a page-level dropdown. The routes below share musical state so key, rhythm, tempo, and transport stay coherent across the app.
+              Open any tool directly and start playing. Key, rhythm, tempo, and playback stay in sync across all of them, so you can move between tools without losing your place.
             </p>
           </div>
           <ToolSubnav />
@@ -72,7 +72,7 @@ const ToolsIndex = () => (
         <div className="container mx-auto">
           <article className="rounded-[1.5rem] border border-border/70 bg-card/70 p-5 text-sm leading-7 text-muted-foreground shadow-[0_20px_50px_-40px_rgba(0,0,0,0.75)]">
             <p>
-              The tool system now exposes semantic pages for rhythm, harmony, atlas navigation, the circle of fifths, and Tonnetz exploration. Each page includes readable content, metadata, and direct-link routing so the experience is easier to navigate and index.
+              Each tool lives on its own page, so you can bookmark it, share a link to it, or jump straight into it. Whatever you set in one tool — key, rhythm, tempo — carries over to the rest, whether you are exploring world rhythms on the map or building progressions in the harmony lab.
             </p>
           </article>
         </div>
@@ -93,7 +93,7 @@ const ToolsIndex = () => (
                 className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
               >
                 <Compass className="h-4 w-4" />
-                Open route
+                Open tool
               </Link>
             </article>
           ))}

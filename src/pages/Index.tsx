@@ -4,8 +4,9 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import RouteHead, { createToolStructuredData } from "@/components/seo/RouteHead";
 import SystemsPreview from "@/components/SystemsPreview";
-import AnalyticsPreview from "@/components/AnalyticsPreview";
+import { useInView } from "@/hooks/useInView";
 
+const AnalyticsPreview = lazy(() => import("@/components/AnalyticsPreview"));
 const Services = lazy(() => import("@/components/Services"));
 const Portfolio = lazy(() => import("@/components/Portfolio"));
 const About = lazy(() => import("@/components/About"));
@@ -24,6 +25,20 @@ const SectionFallback = ({ id, className = "bg-background" }: SectionFallbackPro
     </div>
   </section>
 );
+
+const DeferredAnalyticsPreview = () => {
+  const { ref, inView } = useInView<HTMLDivElement>();
+
+  return (
+    <div ref={ref} className="min-h-[36rem]">
+      {inView && (
+        <Suspense fallback={<SectionFallback className="bg-secondary/50" />}>
+          <AnalyticsPreview />
+        </Suspense>
+      )}
+    </div>
+  );
+};
 
 const Index = () => {
   return (
@@ -49,7 +64,7 @@ const Index = () => {
         </Suspense>
 
         <SystemsPreview />
-        <AnalyticsPreview />
+        <DeferredAnalyticsPreview />
 
         <Suspense fallback={<SectionFallback id="portfolio" className="bg-secondary/50" />}>
           <Portfolio />

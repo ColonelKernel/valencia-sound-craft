@@ -42,6 +42,32 @@ export default defineConfig(({ mode }) => ({
             return "ui-vendor";
           }
 
+          if (
+            id.includes("recharts") ||
+            id.includes("victory-vendor") ||
+            id.includes("d3-") ||
+            id.includes("internmap") ||
+            id.includes("delaunator")
+          ) {
+            return "charts-vendor";
+          }
+
+          if (id.includes("framer-motion")) {
+            return "motion-vendor";
+          }
+
+          if (id.includes("@supabase")) {
+            return "supabase-vendor";
+          }
+
+          if (
+            id.includes("react-hook-form") ||
+            id.includes("@hookform") ||
+            id.includes("node_modules/zod/")
+          ) {
+            return "forms-vendor";
+          }
+
           return "vendor";
         },
       },

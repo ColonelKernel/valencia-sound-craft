@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from "lucide-react";
-import spiralArt from "@/assets/SpiralofDoubt.png";
+import spiralArt from "@/assets/SpiralofDoubt.jpg";
 
 interface Track {
   title: string;
@@ -19,6 +19,7 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const isPlayingRef = useRef(isPlaying);
+  const hasMountedRef = useRef(false);
 
   const current = tracks[currentIndex];
 
@@ -51,6 +52,12 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
   }, [currentIndex, tracks.length]);
 
   useEffect(() => {
+    // Skip the initial mount so preload="none" keeps the first track
+    // from downloading before the user presses play.
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
     const audio = audioRef.current;
     if (!audio) return;
     audio.load();
@@ -95,7 +102,7 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
         <Volume2 className="w-4 h-4 text-primary" />
         {title}
       </p>
-      <audio ref={audioRef} src={current.src} preload="metadata" />
+      <audio ref={audioRef} src={current.src} preload="none" />
 
       {/* Now playing + controls */}
       <div className="relative px-4 py-3 border-b border-border">

@@ -11,7 +11,7 @@ const MapToolUI = ({ engine }: MapToolUIProps) => (
         Atlas-Driven Rhythm Selection
       </h2>
       <p className="text-sm text-muted-foreground">
-        Country selection, browser filters, and the active sequencer all resolve to one shared rhythm identity.
+        Pick a country on the map, filter the browser, or play the sequencer — they all follow the same rhythm.
       </p>
     </header>
     {engine}

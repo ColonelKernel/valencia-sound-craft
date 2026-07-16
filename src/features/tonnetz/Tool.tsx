@@ -15,7 +15,7 @@ const TonnetzTool = () => {
       meta={tonnetzToolMeta}
       eyebrow="Harmony"
       title="Tonnetz"
-      description="A direct harmonic-space route with shared key, tempo, and transport state."
+      description="Navigate harmonic space with the same key, tempo, and playback as the rest of the tools."
       summary={
         <div className="space-y-3">
           <p>
@@ -23,7 +23,7 @@ const TonnetzTool = () => {
             <strong className="text-foreground">{tool.tempo} BPM</strong>.
           </p>
           <p>
-            Shared tempo and transport let Tonnetz playback cooperate with the rhythm and harmony routes instead of running as an isolated subsystem.
+            Tempo and playback stay locked to the rhythm and harmony tools, so the Tonnetz always plays in time with everything else.
           </p>
         </div>
       }

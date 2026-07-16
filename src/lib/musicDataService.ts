@@ -1,5 +1,13 @@
 import Papa from "papaparse";
 
+/**
+ * DEMONSTRATION DATASET — NOT LIVE STREAMING DATA.
+ *
+ * Source: the public 2020 TidyTuesday Spotify songs sample. "Streams" are
+ * modeled proxies (track_popularity × 1,000,000) bucketed by album release
+ * month; when release dates are missing, months are synthesized. Any
+ * user-facing copy must describe this as modeled demonstration data.
+ */
 export interface ChartRow {
   artist: string;
   date: string;

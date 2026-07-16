@@ -3,7 +3,7 @@ import { createToolStructuredData, type RouteMetaConfig } from "@/components/seo
 export const harmonyToolMeta: RouteMetaConfig = {
   title: "Harmony Lab | Valencia Sound Craft",
   description:
-    "Mode visualization, chord progression building, metronome control, and reference tools on a shared harmonic state model.",
+    "Visualize modes, build chord progressions, and practice with a metronome and theory references in one connected workspace.",
   canonicalPath: "/tools/harmony",
   jsonLd: createToolStructuredData({
     name: "Valencia Sound Craft Harmony Lab",

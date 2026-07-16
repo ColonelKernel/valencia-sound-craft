@@ -110,7 +110,8 @@ export default function ArtistComparison({ data, selectedArtists, mode }: Props)
 
       {/* Overlay line chart */}
       <div className="rounded-xl border border-border/50 bg-card p-4 md:p-6">
-        <div className="h-72 md:h-80">
+        {/* Explicit min-height so ResponsiveContainer always mounts into a sized parent */}
+        <div className="h-72 md:h-80 min-h-[288px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />

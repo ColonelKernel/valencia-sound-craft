@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import type { ArtistMonthly } from "@/lib/musicDataService";
 import { forecast } from "@/lib/linearRegression";
-import { formatMetric } from "@/lib/catalogAnalytics";
+import { formatMetric, robustMoMGrowth } from "@/lib/catalogAnalytics";
 
 interface Props {
   data: ArtistMonthly[];
@@ -47,9 +47,11 @@ export default function StreamingDashboard({
   const metrics = useMemo(() => {
     if (!filtered.length) return null;
     const total = filtered.reduce((s, r) => s + r.streams, 0);
-    const last = filtered[filtered.length - 1]?.streams ?? 0;
-    const prev = filtered[filtered.length - 2]?.streams ?? last;
-    const momGrowth = prev > 0 ? ((last - prev) / prev) * 100 : 0;
+    // MoM growth over the last two COMPLETE month buckets: the final bucket
+    // is often sparse (thin release coverage) and would otherwise show a
+    // large artificial drop. robustMoMGrowth drops it when it is an outlier
+    // vs the trailing median.
+    const momGrowth = robustMoMGrowth(filtered.map((r) => r.streams));
     const points = filtered.map((r, i) => ({ x: i, y: r.streams }));
     const fc = forecast(points, 6);
     const projected6m = fc.reduce((s, f) => s + f.y, 0);
@@ -105,6 +107,8 @@ export default function StreamingDashboard({
     return artists.map((artist) => {
       const rows = data.filter((r) => r.artist === artist);
       const total = rows.reduce((s, r) => s + r.streams, 0);
+      // "Peak era": the release-month bucket with the highest modeled stream
+      // total (data is bucketed by album release date, not play date).
       const peakRow = rows.reduce((best, r) => (r.streams > best.streams ? r : best), rows[0]);
       const sorted = [...rows].sort((a, b) => a.month.localeCompare(b.month));
       const last3 = sorted.slice(-3);
@@ -151,7 +155,7 @@ export default function StreamingDashboard({
           {[
             { label: `Total ${mode === "revenue" ? "Revenue" : "Streams"}`, value: formatMetric(metrics.total, mode), color: "text-foreground" },
             {
-              label: "MoM Growth",
+              label: "MoM Growth (complete months)",
               value: `${metrics.momGrowth >= 0 ? "+" : ""}${metrics.momGrowth.toFixed(1)}%`,
               color: metrics.momGrowth >= 0 ? "text-emerald-400" : "text-red-400",
             },
@@ -184,7 +188,8 @@ export default function StreamingDashboard({
         <h3 className="text-sm font-medium text-muted-foreground mb-4">
           Monthly {mode === "revenue" ? "Revenue" : "Streams"} — Actual vs Forecast
         </h3>
-        <div className="h-72 md:h-96">
+        {/* Explicit min-height so ResponsiveContainer always mounts into a sized parent */}
+        <div className="h-72 md:h-96 min-h-[288px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
@@ -264,7 +269,12 @@ export default function StreamingDashboard({
               >
                 Total {mode === "revenue" ? "Rev" : "Streams"} {sortKey === "total" && "▾"}
               </th>
-              <th className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Peak Month</th>
+              <th
+                className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider"
+                title="Release-month bucket with the highest modeled stream total — reflects the catalog era of the artist's most popular releases, not a streaming peak."
+              >
+                Peak Era
+              </th>
               <th className="text-center p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Trend</th>
               <th
                 className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors"

@@ -3,7 +3,7 @@ import { createToolStructuredData, type RouteMetaConfig } from "@/components/seo
 export const rhythmToolMeta: RouteMetaConfig = {
   title: "Rhythm Engine | Valencia Sound Craft",
   description:
-    "Playable global rhythm sequencing with atlas-backed rhythm identity, shared transport, and unified tempo state.",
+    "Play and sequence rhythms from around the world — a rhythm atlas, browser, and step sequencer that stay in sync.",
   canonicalPath: "/tools/rhythm",
   jsonLd: createToolStructuredData({
     name: "Valencia Sound Craft Rhythm Engine",

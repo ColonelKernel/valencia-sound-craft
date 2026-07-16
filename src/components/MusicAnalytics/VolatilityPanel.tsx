@@ -91,7 +91,8 @@ export default function VolatilityPanel({ data, artists, selectedArtist }: Props
       {/* Rolling variance chart */}
       <div className="rounded-xl border border-border/50 bg-card p-4 md:p-6">
         <p className="text-xs font-medium text-muted-foreground mb-4">Rolling Variance (3-month window)</p>
-        <div className="h-48 md:h-56">
+        {/* Explicit min-height so ResponsiveContainer always mounts into a sized parent */}
+        <div className="h-48 md:h-56 min-h-[192px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />

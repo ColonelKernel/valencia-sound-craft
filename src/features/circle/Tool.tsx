@@ -15,7 +15,7 @@ const CircleTool = () => {
       meta={circleToolMeta}
       eyebrow="Harmony"
       title="Circle of Fifths"
-      description="A dedicated harmony route that shares the current key and mode with the rest of the music system."
+      description="Explore key relationships — the key and mode you choose here carry across the whole music system."
       summary={
         <div className="space-y-3">
           <p>
@@ -23,7 +23,7 @@ const CircleTool = () => {
             <strong className="text-foreground">{tool.mode}</strong>.
           </p>
           <p>
-            Any key choice made in this route propagates to the harmony workspace and the Tonnetz, keeping the system musically coherent across direct links.
+            Pick a key here and the harmony lab and Tonnetz follow along, so everything you play stays in the same musical world.
           </p>
         </div>
       }
