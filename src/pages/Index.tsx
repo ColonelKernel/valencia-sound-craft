@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import {
   caseStudies,
+  dossierCycle,
   education,
   profileLinks,
   researchQuestions,
@@ -284,7 +285,7 @@ const Index = () => {
         <section id="top" className="hero-section">
           <div className="hero-grid page-shell">
             <div className="hero-copy">
-              <p className="hero-kicker">Zach Scheffler · Research portfolio · 2026</p>
+              <p className="hero-kicker">Zach Scheffler · Research portfolio · {dossierCycle}</p>
               <h1>Interpretable DAW State for Intelligent Music Production.</h1>
               <p className="hero-deck">
                 I build provenance-aware systems for representing and comparing production state—audio effects,
@@ -480,7 +481,7 @@ const Index = () => {
           </nav>
         </div>
         <div className="page-shell footer-bottom">
-          <p>© 2026 Zach Scheffler</p>
+          <p>© {new Date().getFullYear()} Zach Scheffler</p>
           <a href="#top">Back to top ↑</a>
         </div>
       </footer>

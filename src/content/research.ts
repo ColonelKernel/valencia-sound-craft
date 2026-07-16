@@ -73,6 +73,8 @@ export interface ProfileLink {
   href: string;
 }
 
+export const dossierCycle = "2026";
+
 export const researchQuestions: ResearchQuestion[] = [
   {
     number: "01",
