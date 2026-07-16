@@ -274,6 +274,13 @@ fi
 # Get current branch
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "main")
 
+# Hard guard: never run the loop on main (or detached HEAD)
+if [ "$CURRENT_BRANCH" = "main" ] || [ -z "$CURRENT_BRANCH" ]; then
+    echo -e "${RED}Error: refusing to run the Ralph loop on '${CURRENT_BRANCH:-detached HEAD}'.${NC}"
+    echo -e "${RED}Create a feature branch first: git checkout -b <spec-slug>${NC}"
+    exit 1
+fi
+
 # Check for work sources
 HAS_PLAN=false
 HAS_SPECS=false
@@ -402,7 +409,7 @@ while true; do
                 echo -e "${RED}  - Simplifying the current spec${NC}"
                 echo -e "${RED}  - Manually fixing blocking issues${NC}"
                 echo ""
-                CONSECUTIVE_FAILURES=0
+                exit 1
             fi
         fi
     else
@@ -416,13 +423,17 @@ while true; do
         print_latest_output "$LOG_FILE" "Claude"
     fi
 
-    # Push changes after each iteration (if any)
-    git push origin "$CURRENT_BRANCH" 2>/dev/null || {
-        if git log origin/$CURRENT_BRANCH..HEAD --oneline 2>/dev/null | grep -q .; then
-            echo -e "${YELLOW}Push failed, creating remote branch...${NC}"
-            git push -u origin "$CURRENT_BRANCH" 2>/dev/null || true
-        fi
-    }
+    # Push changes after each iteration (if any) — never to main (defense in depth)
+    if [ "$CURRENT_BRANCH" = "main" ]; then
+        echo -e "${RED}Refusing to push: current branch is main.${NC}"
+    else
+        git push origin "$CURRENT_BRANCH" 2>/dev/null || {
+            if git log origin/$CURRENT_BRANCH..HEAD --oneline 2>/dev/null | grep -q .; then
+                echo -e "${YELLOW}Push failed, creating remote branch...${NC}"
+                git push -u origin "$CURRENT_BRANCH" 2>/dev/null || true
+            fi
+        }
+    fi
 
     # Brief pause between iterations
     echo ""

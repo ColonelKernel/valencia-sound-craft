@@ -6,7 +6,7 @@
 > reviewed by faculty, and its content is treated as a research claim.
 
 ## Version
-1.0.0
+1.0.1
 
 ---
 
@@ -208,7 +208,7 @@ npm run typecheck   # tsc -b
 npm run lint        # eslint over the live-graph files, configs, and tests
 npm test            # vitest — includes src/content/research.test.ts
 npm run build       # vite production build
-npm run e2e         # Playwright — 12 tests over the dossier + retired-route 404s
+npm run e2e         # Playwright — the dossier e2e suite + retired-route 404s
 ```
 
 For UI-affecting changes, additionally: run `npm run dev`, drive the actual
@@ -253,4 +253,7 @@ Do not start the loop yourself from an interactive session.
 ---
 
 **Created:** 2026-07-13
-**Version:** 1.0.0
+**Version:** 1.0.1
+
+**Changelog:**
+- 1.0.1 (2026-07-16): Ralph loop gained hard main-branch/failure-stop guards; quality-gates e2e description synced (no hardcoded test count).

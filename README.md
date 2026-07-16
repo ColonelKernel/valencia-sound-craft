@@ -30,7 +30,7 @@ npm run e2e
 npm run lighthouse
 ```
 
-The production application has only React and ReactDOM runtime dependencies. The repository now contains just the shipped dossier — earlier Lovable scaffolding, unused UI kits, interactive tool subsystems, and the Supabase integration have been removed rather than merely firewalled out of the build graph.
+The production application has only React and ReactDOM runtime dependencies. On `main`, the repository contains just the shipped dossier — earlier Lovable scaffolding, unused UI kits, interactive tool subsystems, and the Supabase integration have been removed rather than merely firewalled out of the build graph (historical branches on the remote may still contain older material).
 
 ## Publishing safeguards
 
@@ -38,4 +38,4 @@ The production application has only React and ReactDOM runtime dependencies. The
 - Keep synthetic, in-sample, heuristic, and pending-validation labels attached to the results they qualify.
 - Public profile links are limited to GitHub and LinkedIn; no email or application documents are published without explicit approval.
 - Deployment is intentionally separate from local implementation and verification.
-- Environment files (`.env`) are untracked; the site uses no runtime secrets.
+- Environment files (`.env`) are untracked on `main`, and no runtime secrets exist in the shipped app.
