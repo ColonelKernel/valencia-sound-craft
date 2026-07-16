@@ -1,5 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
+import { getQuickPlayRhythms } from "../../src/components/Blipblox/rhythmEngineModel";
+
 /**
  * Cross-tool shared state (src/state/globalMusicState.tsx) lives in memory
  * above the router, so it only survives client-side navigation. Every test
@@ -9,6 +11,18 @@ import { test, expect, type Page } from "@playwright/test";
  */
 
 const toolNav = (page: Page) => page.getByRole("navigation", { name: "Tool navigation" });
+
+// The rhythm route mounts two GlobalRhythmEngine instances (standalone +
+// embedded DrumMachine preview); every engine locator must scope here.
+const engineSection = (page: Page) =>
+  page.locator('section[aria-labelledby="rhythm-engine-section"]');
+
+// A quick-play rhythm that differs from the store default (flamenco_buleria
+// at 110 BPM) in both identity and default tempo, resolved from the same
+// library the engine renders — keeps the tests deterministic.
+const altRhythm = getQuickPlayRhythms(10).find(
+  (definition) => definition.id !== "flamenco_buleria" && definition.defaultTempo !== 110,
+);
 
 async function navigateViaToolNav(page: Page, linkName: string, expectedPath: string) {
   await toolNav(page).getByRole("link", { name: linkName, exact: true }).click();
@@ -110,4 +124,71 @@ test("rhythm selected on the map route is the active rhythm on the rhythm route"
     `Current rhythm: ${rhythmName} from ${country}`,
     { timeout: 20_000 },
   );
+});
+
+test("an untouched tempo adopts the selected rhythm's default", async ({ page }) => {
+  expect(altRhythm).toBeDefined();
+
+  await page.goto("/tools/rhythm");
+  await expect(
+    engineSection(page).getByRole("heading", { name: "Global Rhythm Atlas Engine" }),
+  ).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(/Shared tempo:/)).toContainText("Shared tempo: 110 BPM");
+
+  await engineSection(page)
+    .getByRole("button", { name: `${altRhythm!.country} · ${altRhythm!.name}` })
+    .click();
+
+  await expect(page.getByText(/Shared tempo:/)).toContainText(
+    `Shared tempo: ${altRhythm!.defaultTempo} BPM`,
+  );
+});
+
+test("a user-set tempo survives rhythm selection", async ({ page }) => {
+  expect(altRhythm).toBeDefined();
+
+  await page.goto("/tools/rhythm");
+  await expect(
+    engineSection(page).getByRole("heading", { name: "Global Rhythm Atlas Engine" }),
+  ).toBeVisible({ timeout: 20_000 });
+
+  // "End" jumps the engine's native range input to its max (220) — an
+  // explicit user tempo. Wait out the 140ms debounce so the store commits
+  // (and marks tempo as touched) before the selection below.
+  const tempoSlider = engineSection(page).locator('input[type="range"]').first();
+  await tempoSlider.press("End");
+  await expect(page.getByText(/Shared tempo:/)).toContainText("Shared tempo: 220 BPM");
+  await page.waitForTimeout(400);
+
+  await engineSection(page)
+    .getByRole("button", { name: `${altRhythm!.country} · ${altRhythm!.name}` })
+    .click();
+
+  // The selection suggests its default tempo; a touched store must ignore it.
+  await page.waitForTimeout(400);
+  await expect(page.getByText(/Shared tempo:/)).toContainText("Shared tempo: 220 BPM");
+});
+
+test("transport plays on the single shared AudioContext", async ({ page }) => {
+  await page.goto("/tools/rhythm");
+  await expect(
+    engineSection(page).getByRole("heading", { name: "Global Rhythm Atlas Engine" }),
+  ).toBeVisible({ timeout: 20_000 });
+
+  await engineSection(page).getByRole("button", { name: "Play", exact: true }).click();
+
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            (window as unknown as { __vscAudioContext?: AudioContext }).__vscAudioContext?.state ??
+            "absent",
+        ),
+      { timeout: 10_000 },
+    )
+    .toBe("running");
+
+  await engineSection(page).getByRole("button", { name: "Stop", exact: true }).click();
+  await expect(engineSection(page).getByRole("button", { name: "Play", exact: true })).toBeVisible();
 });

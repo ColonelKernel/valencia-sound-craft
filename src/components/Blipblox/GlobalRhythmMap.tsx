@@ -1,3 +1,4 @@
+import { getAudioContext } from "@/music-core/audioContext";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Globe2, MapPinned, MousePointerClick, Volume2 } from "lucide-react";
 import { CircleMarker, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
@@ -267,7 +268,6 @@ function triggerPulseHit(accent: boolean) {
 }
 
 function useRhythmPreview() {
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerIdsRef = useRef<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -286,11 +286,7 @@ function useRhythmPreview() {
     stopPreview();
     setIsPlaying(true);
 
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new AudioContext();
-    }
-    const ctx = audioCtxRef.current;
-    if (ctx.state === "suspended") ctx.resume();
+    const ctx = getAudioContext();
 
     const velocity = getPlaybackVelocityPattern(rhythm);
     const bpm = (rhythm.bpmRange[0] + rhythm.bpmRange[1]) / 2;

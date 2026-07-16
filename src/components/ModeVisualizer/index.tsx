@@ -89,8 +89,12 @@ const ModeVisualizer = ({
   disableToolPreload = false,
 }: ModeVisualizerProps) => {
   const ref = useFadeIn();
-  const [root, setRoot] = useState(controlledRoot ?? "C");
-  const [mode, setMode] = useState(controlledMode ?? "Ionian");
+  // Fully controlled when root/mode props are provided; the local copies
+  // only serve prop-less mounts.
+  const [localRoot, setLocalRoot] = useState(controlledRoot ?? "C");
+  const [localMode, setLocalMode] = useState(controlledMode ?? "Ionian");
+  const root = controlledRoot ?? localRoot;
+  const mode = controlledMode ?? localMode;
   const [lefty, setLefty] = useState(false);
   const [showIntervals, setShowIntervals] = useState(false);
   const [showFingers, setShowFingers] = useState(false);
@@ -161,12 +165,12 @@ const ModeVisualizer = ({
 
   // Clear selected chord when mode/root changes
   const handleRootChange = (r: string) => {
-    setRoot(r);
+    setLocalRoot(r);
     setSelectedChord(null);
     onRootChange?.(r);
   };
   const handleModeChange = (m: string) => {
-    setMode(m);
+    setLocalMode(m);
     setSelectedChord(null);
     onModeChange?.(m);
   };
@@ -178,19 +182,11 @@ const ModeVisualizer = ({
     }
   }, [disableToolPreload]);
 
+  // When the tonal center changes from outside (another tool via the
+  // store), any chord selected under the old center is stale.
   useEffect(() => {
-    if (controlledRoot && controlledRoot !== root) {
-      setRoot(controlledRoot);
-      setSelectedChord(null);
-    }
-  }, [controlledRoot, root]);
-
-  useEffect(() => {
-    if (controlledMode && controlledMode !== mode) {
-      setMode(controlledMode);
-      setSelectedChord(null);
-    }
-  }, [controlledMode, mode]);
+    setSelectedChord(null);
+  }, [root, mode]);
 
   useEffect(() => {
     if (!availableTabs.some((tool) => tool.value === activeTab)) {

@@ -1,3 +1,4 @@
+import { getAudioContext } from "@/music-core/audioContext";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Download,
@@ -65,7 +66,13 @@ interface GlobalRhythmEngineProps {
   onTempoChange?: (tempo: number) => void;
   onPlayingChange?: (playing: boolean) => void;
   onRegionChange?: (region: RhythmBrowserRegion | "All") => void;
-  onRhythmChange?: (next: { rhythmId: string; region: RhythmBrowserRegion; country: string }) => void;
+  onRhythmChange?: (next: {
+    rhythmId: string;
+    region: RhythmBrowserRegion;
+    country: string;
+    /** The rhythm's default tempo — the store adopts it only if the user has not touched tempo. */
+    suggestedTempo?: number;
+  }) => void;
 }
 
 const VARIATION_LABELS: Record<VariationType, string> = {
@@ -338,10 +345,10 @@ const GlobalRhythmEngine = ({
       controlledTempo ?? embeddedPreset?.bpm ?? initialDefinition.defaultTempo,
     ),
   );
-  const [playing, setPlaying] = useState(false);
+  const [localPlaying, setLocalPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
   const [swing, setSwing] = useState(0);
-  const [browserRegion, setBrowserRegion] = useState<RhythmBrowserRegion | "All">(initialDefinition.region);
+  const [localBrowserRegion, setLocalBrowserRegion] = useState<RhythmBrowserRegion | "All">(initialDefinition.region);
   const [browserCountry, setBrowserCountry] = useState(initialDefinition.country);
   const [meterFilter, setMeterFilter] = useState<string | "All">("All");
   const [feelFilter, setFeelFilter] = useState<TimeFeel | "All">("All");
@@ -362,7 +369,6 @@ const GlobalRhythmEngine = ({
   const [variationStrength, setVariationStrength] = useState(0.5);
   const [lastVariationType, setLastVariationType] = useState<VariationType | null>(null);
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
   const playheadRafRef = useRef<number | null>(null);
   const playingRef = useRef(false);
@@ -377,19 +383,33 @@ const GlobalRhythmEngine = ({
   const swingRef = useRef(swing);
   const adaptiveModeRef = useRef(adaptiveMode);
   const variationStrengthRef = useRef(variationStrength);
-  const userTempoTouchedRef = useRef(false);
-  const previousControlledTempoRef = useRef(controlledTempo);
-  const previousControlledPlayingRef = useRef(controlledPlaying);
-  const previousSelectedRegionRef = useRef(selectedRegion);
-  const previousSelectedRhythmIdRef = useRef(selectedRhythmId);
-  const suppressTempoCallbackRef = useRef(false);
-  const suppressPlayingCallbackRef = useRef(false);
-  const suppressRegionCallbackRef = useRef(false);
-  const suppressRhythmCallbackRef = useRef(false);
-  const skipInitialTempoCallbackRef = useRef(typeof controlledTempo === "number");
-  const skipInitialPlayingCallbackRef = useRef(typeof controlledPlaying === "boolean");
-  const skipInitialRegionCallbackRef = useRef(Boolean(selectedRegion));
-  const skipInitialRhythmCallbackRef = useRef(Boolean(selectedRhythmId));
+  // The engine is fully controlled by its mounting tool (which owns the
+  // global music store). The local copies exist only so the component stays
+  // functional when mounted without control props (isolated tests, the
+  // embedded DrumMachine preview); when a prop is provided it always wins
+  // and every mutation is routed through the owner's callback.
+  const tempo = controlledTempo ?? rhythmState.tempo;
+  const playing = controlledPlaying ?? localPlaying;
+  const browserRegion = selectedRegion ?? localBrowserRegion;
+  const tempoRef = useRef(tempo);
+  tempoRef.current = tempo;
+
+  const changeTempo = useCallback((next: number) => {
+    setRhythmState((currentState) =>
+      currentState.tempo === next ? currentState : { ...currentState, tempo: next },
+    );
+    onTempoChange?.(next);
+  }, [onTempoChange]);
+
+  const changePlaying = useCallback((next: boolean) => {
+    setLocalPlaying(next);
+    onPlayingChange?.(next);
+  }, [onPlayingChange]);
+
+  const changeBrowserRegion = useCallback((next: RhythmBrowserRegion | "All") => {
+    setLocalBrowserRegion(next);
+    onRegionChange?.(next);
+  }, [onRegionChange]);
 
   const activeDefinition = useMemo(
     () => getRhythmDefinitionById(rhythmState.rhythmId) || initialDefinition,
@@ -473,95 +493,6 @@ const GlobalRhythmEngine = ({
   }, [continentFilter, tagFilter]);
 
   useEffect(() => {
-    if (controlledTempo === previousControlledTempoRef.current) {
-      return;
-    }
-
-    previousControlledTempoRef.current = controlledTempo;
-
-    if (typeof controlledTempo === "number" && controlledTempo !== rhythmState.tempo) {
-      suppressTempoCallbackRef.current = true;
-      setRhythmState((currentState) => ({
-        ...currentState,
-        tempo: controlledTempo,
-      }));
-    }
-  }, [controlledTempo, rhythmState.tempo]);
-
-  useEffect(() => {
-    if (skipInitialTempoCallbackRef.current) {
-      skipInitialTempoCallbackRef.current = false;
-      return;
-    }
-
-    if (suppressTempoCallbackRef.current) {
-      suppressTempoCallbackRef.current = false;
-      return;
-    }
-
-    onTempoChange?.(rhythmState.tempo);
-  }, [onTempoChange, rhythmState.tempo]);
-
-  useEffect(() => {
-    if (skipInitialPlayingCallbackRef.current) {
-      skipInitialPlayingCallbackRef.current = false;
-      return;
-    }
-
-    if (suppressPlayingCallbackRef.current) {
-      suppressPlayingCallbackRef.current = false;
-      return;
-    }
-
-    onPlayingChange?.(playing);
-  }, [onPlayingChange, playing]);
-
-  useEffect(() => {
-    if (skipInitialRegionCallbackRef.current) {
-      skipInitialRegionCallbackRef.current = false;
-      return;
-    }
-
-    if (suppressRegionCallbackRef.current) {
-      suppressRegionCallbackRef.current = false;
-      return;
-    }
-
-    onRegionChange?.(browserRegion);
-  }, [browserRegion, onRegionChange]);
-
-  useEffect(() => {
-    if (skipInitialRhythmCallbackRef.current) {
-      skipInitialRhythmCallbackRef.current = false;
-      return;
-    }
-
-    if (suppressRhythmCallbackRef.current) {
-      suppressRhythmCallbackRef.current = false;
-      return;
-    }
-
-    onRhythmChange?.({
-      rhythmId: activeDefinition.id,
-      region: activeDefinition.region,
-      country: activeDefinition.country,
-    });
-  }, [activeDefinition.country, activeDefinition.id, activeDefinition.region, onRhythmChange]);
-
-  useEffect(() => {
-    if (selectedRegion === previousSelectedRegionRef.current) {
-      return;
-    }
-
-    previousSelectedRegionRef.current = selectedRegion;
-
-    if (selectedRegion && selectedRegion !== browserRegion) {
-      suppressRegionCallbackRef.current = true;
-      setBrowserRegion(selectedRegion);
-    }
-  }, [browserRegion, selectedRegion]);
-
-  useEffect(() => {
     baseLayersRef.current = rhythmState.layers;
     rhythmStateRef.current = rhythmState;
   }, [rhythmState]);
@@ -596,38 +527,7 @@ const GlobalRhythmEngine = ({
     }
   }, [browserCountry, regionCountries]);
 
-  useEffect(() => {
-    if (selectedRhythmId && selectedRhythmId !== activeDefinition.id) {
-      return;
-    }
-
-    if (browserRhythms.length === 0) {
-      return;
-    }
-
-    if (!browserRhythms.some((definition) => definition.id === activeDefinition.id)) {
-      const nextDefinition = browserRhythms[0];
-
-      if (nextDefinition) {
-        setRhythmState(createGlobalRhythmState(
-          nextDefinition,
-          userTempoTouchedRef.current ? rhythmStateRef.current.tempo : undefined,
-        ));
-      }
-    }
-  }, [activeDefinition.id, browserRhythms, selectedRhythmId]);
-
-  const getCtx = useCallback(() => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new AudioContext();
-    }
-
-    if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume();
-    }
-
-    return audioCtxRef.current;
-  }, []);
+  const getCtx = useCallback(() => getAudioContext(), []);
 
   const stopPlaybackTimers = useCallback(() => {
     playingRef.current = false;
@@ -651,13 +551,14 @@ const GlobalRhythmEngine = ({
     options?: { tempo?: number; syncBrowser?: boolean },
   ) => {
     const composite = buildCompositePattern(definition.layers);
-    // Once the user has explicitly set a tempo, rhythm selection keeps it
-    // (and therefore never emits onTempoChange from the load path).
-    const nextTempo = options?.tempo
-      ?? (userTempoTouchedRef.current ? rhythmStateRef.current.tempo : definition.defaultTempo);
+    // The tempo-touched policy lives in the store (suggestTempo): loading a
+    // rhythm keeps the current shared tempo; adopting the rhythm's default
+    // happens only when a selection's suggestedTempo reaches an untouched
+    // store.
+    const nextTempo = options?.tempo ?? tempoRef.current;
 
     setRhythmState(createGlobalRhythmState(definition, nextTempo));
-    setPlaying(false);
+    changePlaying(false);
     setCurrentStep(-1);
     setMorphAmount(0);
     setSecondaryPattern([...composite.pattern]);
@@ -666,10 +567,10 @@ const GlobalRhythmEngine = ({
     setLastVariationType(null);
 
     if (options?.syncBrowser !== false) {
-      setBrowserRegion(definition.region);
+      setLocalBrowserRegion(definition.region);
       setBrowserCountry(definition.country);
     }
-  }, []);
+  }, [changePlaying]);
 
   useEffect(() => {
     if (!embeddedPreset) {
@@ -688,42 +589,66 @@ const GlobalRhythmEngine = ({
     });
   }, [embeddedPreset, loadRhythmDefinition]);
 
+  // A user selection inside this engine: load locally AND tell the owner,
+  // suggesting the rhythm's default tempo (adopted only if tempo untouched).
+  const selectRhythmDefinition = useCallback((definition: StructuredRhythmDefinition) => {
+    loadRhythmDefinition(definition, { syncBrowser: true });
+    onRhythmChange?.({
+      rhythmId: definition.id,
+      region: definition.region,
+      country: definition.country,
+      suggestedTempo: definition.defaultTempo,
+    });
+  }, [loadRhythmDefinition, onRhythmChange]);
+
+  // Controlled-rhythm reconciliation: when the store's rhythm changes (via
+  // another tool), load it locally. Local selections update the store first
+  // through selectRhythmDefinition, so this only ever converges — no echo.
   useEffect(() => {
-    if (controlledPlaying === previousControlledPlayingRef.current) {
-      return;
-    }
-
-    previousControlledPlayingRef.current = controlledPlaying;
-
-    if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
-      return;
-    }
-
-    suppressPlayingCallbackRef.current = true;
-    setPlaying(controlledPlaying);
-  }, [controlledPlaying, playing]);
-
-  useEffect(() => {
-    if (selectedRhythmId === previousSelectedRhythmIdRef.current) {
-      return;
-    }
-
-    previousSelectedRhythmIdRef.current = selectedRhythmId;
-
-    if (!selectedRhythmId || selectedRhythmId === activeDefinition.id) {
+    if (!selectedRhythmId || selectedRhythmId === rhythmStateRef.current.rhythmId) {
       return;
     }
 
     const nextDefinition = getRhythmDefinitionById(selectedRhythmId);
 
     if (nextDefinition) {
-      suppressRhythmCallbackRef.current = true;
-      loadRhythmDefinition(nextDefinition, {
-        tempo: controlledTempo ?? rhythmState.tempo,
-        syncBrowser: true,
-      });
+      loadRhythmDefinition(nextDefinition, { syncBrowser: true });
     }
-  }, [activeDefinition.id, controlledTempo, loadRhythmDefinition, rhythmState.tempo, selectedRhythmId]);
+  }, [loadRhythmDefinition, selectedRhythmId]);
+
+  // If browser filters exclude the active rhythm, fall over to the first
+  // visible one — as a real selection, so the store follows.
+  useEffect(() => {
+    if (selectedRhythmId && selectedRhythmId !== activeDefinition.id) {
+      return;
+    }
+
+    if (browserRhythms.length === 0) {
+      return;
+    }
+
+    if (!browserRhythms.some((definition) => definition.id === activeDefinition.id)) {
+      const nextDefinition = browserRhythms[0];
+
+      if (nextDefinition) {
+        selectRhythmDefinition(nextDefinition);
+      }
+    }
+  }, [activeDefinition.id, browserRhythms, selectedRhythmId, selectRhythmDefinition]);
+
+  // A region pill click must change region AND rhythm atomically: the store
+  // derives region from the active rhythm, so a bare region change would be
+  // bounced back by the adapter's rhythm→region normalization before the
+  // auto-align effect could react.
+  const handleBrowserRegionSelect = useCallback((region: RhythmBrowserRegion) => {
+    changeBrowserRegion(region);
+
+    const nextDefinition = filterRhythmLibrary({ region })[0];
+
+    if (nextDefinition && nextDefinition.id !== rhythmStateRef.current.rhythmId) {
+      selectRhythmDefinition(nextDefinition);
+    }
+  }, [changeBrowserRegion, selectRhythmDefinition]);
 
   const handleLayersChange = useCallback((nextLayers: SequencerLayer[]) => {
     const sanitizedLayers = nextLayers.filter((layer) => layer.id !== "morph-overlay");
@@ -754,13 +679,14 @@ const GlobalRhythmEngine = ({
   }, [activeDefinition.accentMap, getCtx]);
 
   const runPlayhead = useCallback(() => {
-    if (!playingRef.current || !audioCtxRef.current) {
+    if (!playingRef.current) {
       return;
     }
 
     const queue = playheadQueueRef.current;
+    const ctx = getAudioContext();
 
-    while (queue.length > 0 && queue[0].time <= audioCtxRef.current.currentTime + 0.01) {
+    while (queue.length > 0 && queue[0].time <= ctx.currentTime + 0.01) {
       const nextStep = queue.shift();
 
       if (typeof nextStep?.step === "number") {
@@ -788,7 +714,7 @@ const GlobalRhythmEngine = ({
 
     const accentSet = new Set(currentDefinitionValue.accentMap);
     const stepDuration = getStepDurationSeconds(
-      rhythmStateRef.current.tempo,
+      tempoRef.current,
       currentDefinitionValue.meter,
       currentDefinitionValue.grouping,
       totalSteps,
@@ -879,9 +805,9 @@ const GlobalRhythmEngine = ({
     const definition = getDefaultRhythmDefinitionForCountry(rhythm.country);
 
     if (definition) {
-      loadRhythmDefinition(definition, { syncBrowser: true });
+      selectRhythmDefinition(definition);
     }
-  }, [loadRhythmDefinition]);
+  }, [selectRhythmDefinition]);
 
   const handleExportMidi = useCallback(() => {
     const exportTracks = effectiveLayers
@@ -894,7 +820,7 @@ const GlobalRhythmEngine = ({
 
     const midiData = generateMidiFile(
       exportTracks,
-      rhythmState.tempo,
+      tempo,
       "general-midi",
       0,
       false,
@@ -905,9 +831,9 @@ const GlobalRhythmEngine = ({
 
     downloadMidiFile(
       midiData,
-      `${activeDefinition.country.toLowerCase().replace(/[^a-z0-9]+/g, "-")}_${rhythmState.tempo}bpm.mid`,
+      `${activeDefinition.country.toLowerCase().replace(/[^a-z0-9]+/g, "-")}_${tempo}bpm.mid`,
     );
-  }, [activeDefinition.country, activeDefinition.meter, effectiveLayers, rhythmState.tempo]);
+  }, [activeDefinition.country, activeDefinition.meter, effectiveLayers, tempo]);
 
   const handleExportJson = useCallback(() => {
     const payload = {
@@ -988,7 +914,7 @@ const GlobalRhythmEngine = ({
                 type="button"
                 onClick={() => {
                   setContinentFilter(continent as RhythmContinent | "All");
-                  setBrowserRegion("All");
+                  changeBrowserRegion("All");
                   setBrowserCountry("");
                 }}
                 className={cn(
@@ -1120,7 +1046,7 @@ const GlobalRhythmEngine = ({
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setBrowserRegion("All")}
+              onClick={() => changeBrowserRegion("All")}
               className={cn(
                 "rounded-full border px-3 py-1.5 text-xs font-medium",
                 browserRegion === "All"
@@ -1134,7 +1060,7 @@ const GlobalRhythmEngine = ({
               <button
                 key={region}
                 type="button"
-                onClick={() => setBrowserRegion(region)}
+                onClick={() => handleBrowserRegionSelect(region)}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-medium",
                   browserRegion === region
@@ -1161,7 +1087,7 @@ const GlobalRhythmEngine = ({
                     setBrowserCountry(country);
                     const nextDefinition = filteredDefinitions.find((definition) => definition.country === country);
                     if (nextDefinition) {
-                      loadRhythmDefinition(nextDefinition, { syncBrowser: true });
+                      selectRhythmDefinition(nextDefinition);
                     }
                   }}
                   className={cn(
@@ -1184,7 +1110,7 @@ const GlobalRhythmEngine = ({
                 <button
                   key={definition.id}
                   type="button"
-                  onClick={() => loadRhythmDefinition(definition, { syncBrowser: true })}
+                  onClick={() => selectRhythmDefinition(definition)}
                   className={cn(
                     "w-full rounded-2xl border px-3 py-3 text-left",
                     definition.id === activeDefinition.id
@@ -1216,7 +1142,7 @@ const GlobalRhythmEngine = ({
           <button
             key={definition.id}
             type="button"
-            onClick={() => loadRhythmDefinition(definition, { syncBrowser: true })}
+            onClick={() => selectRhythmDefinition(definition)}
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs font-medium",
               definition.id === activeDefinition.id
@@ -1236,7 +1162,7 @@ const GlobalRhythmEngine = ({
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => setPlaying((value) => !value)}
+              onClick={() => changePlaying(!playing)}
               disabled={!hasActiveSteps}
               className={cn(
                 "inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl px-5 text-base font-semibold shadow-[0_16px_36px_-22px_rgba(255,255,255,0.35)]",
@@ -1268,16 +1194,12 @@ const GlobalRhythmEngine = ({
               type="range"
               min={40}
               max={220}
-              value={rhythmState.tempo}
-              onChange={(event) => {
-                const tempo = Number(event.target.value);
-                userTempoTouchedRef.current = true;
-                setRhythmState((currentState) => ({ ...currentState, tempo }));
-              }}
+              value={tempo}
+              onChange={(event) => changeTempo(Number(event.target.value))}
               className="w-full accent-primary"
             />
             <span className="min-w-14 rounded-full border border-border bg-card px-3 py-1.5 text-center text-sm font-semibold text-foreground">
-              {rhythmState.tempo}
+              {tempo}
             </span>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">

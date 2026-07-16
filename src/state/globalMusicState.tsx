@@ -13,11 +13,18 @@ import {
   cloneProgression,
   equalProgressions,
 } from "@/features/shared/chordProgressionModel";
+import { normalizeMode } from "@/music-core/modeAliases";
 
 export interface GlobalMusicState {
   key: string;
   mode: string;
   tempo: number;
+  /**
+   * True once the user has explicitly set a tempo this session. Rhythm
+   * selection may only *suggest* a tempo (via suggestTempo) — a suggestion
+   * is ignored once the user has touched tempo anywhere.
+   */
+  tempoTouched: boolean;
   rhythmId: string;
   region: string;
   chordProgression: ProgressionChord[];
@@ -37,6 +44,7 @@ const DEFAULT_STATE: GlobalMusicState = {
   key: "C",
   mode: "Ionian",
   tempo: 110,
+  tempoTouched: false,
   rhythmId: "flamenco_buleria",
   region: "flamenco",
   chordProgression: [],
@@ -64,6 +72,7 @@ function createGlobalMusicStore(initialState?: Partial<GlobalMusicState>) {
       snapshot.state.key === nextSnapshot.state.key &&
       snapshot.state.mode === nextSnapshot.state.mode &&
       snapshot.state.tempo === nextSnapshot.state.tempo &&
+      snapshot.state.tempoTouched === nextSnapshot.state.tempoTouched &&
       snapshot.state.rhythmId === nextSnapshot.state.rhythmId &&
       snapshot.state.region === nextSnapshot.state.region &&
       snapshot.state.playing === nextSnapshot.state.playing &&
@@ -96,10 +105,22 @@ function createGlobalMusicStore(initialState?: Partial<GlobalMusicState>) {
       updateState((current) => (current.key === key ? current : { ...current, key }));
     },
     setMode(mode: string) {
-      updateState((current) => (current.mode === mode ? current : { ...current, mode }));
+      // The store holds canonical mode names; normalize every entry point
+      // ("major" → "Ionian", etc.) so tools never compare aliases.
+      const canonical = normalizeMode(mode);
+      updateState((current) => (current.mode === canonical ? current : { ...current, mode: canonical }));
     },
     setTempo(tempo: number) {
-      updateState((current) => (current.tempo === tempo ? current : { ...current, tempo }));
+      updateState((current) =>
+        current.tempo === tempo && current.tempoTouched
+          ? current
+          : { ...current, tempo, tempoTouched: true },
+      );
+    },
+    suggestTempo(tempo: number) {
+      updateState((current) =>
+        current.tempoTouched || current.tempo === tempo ? current : { ...current, tempo },
+      );
     },
     setRhythm(rhythmId: string, region?: string) {
       updateState((current) => {
@@ -219,6 +240,7 @@ export function useGlobalMusicActions() {
       setKey: store.setKey,
       setMode: store.setMode,
       setTempo: store.setTempo,
+      suggestTempo: store.suggestTempo,
       setRhythm: store.setRhythm,
       setRegion: store.setRegion,
       setChordProgression: store.setChordProgression,

@@ -35,6 +35,7 @@ describe("DrumMachine", () => {
         rhythmId: nextPreset.id,
         region: nextPreset.region,
         country: nextPreset.country,
+        suggestedTempo: nextPreset.bpm,
       });
     });
   });

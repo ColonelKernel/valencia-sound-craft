@@ -119,4 +119,68 @@ describe("globalMusicState", () => {
     fireEvent.click(screen.getByRole("button", { name: "Set progression" }));
     expect(screen.getByTestId("progression-source")).toHaveTextContent("resolves to IIm7");
   });
+
+  it("adopts a suggested tempo only until the user touches tempo", () => {
+    const Probe = () => {
+      const tempo = useGlobalMusic((state) => state.tempo);
+      const actions = useGlobalMusicActions();
+      return (
+        <div>
+          <div data-testid="tempo">{tempo}</div>
+          <button type="button" onClick={() => actions.suggestTempo(95)}>
+            suggest 95
+          </button>
+          <button type="button" onClick={() => actions.setTempo(150)}>
+            set 150
+          </button>
+          <button type="button" onClick={() => actions.suggestTempo(80)}>
+            suggest 80
+          </button>
+        </div>
+      );
+    };
+
+    render(
+      <GlobalMusicProvider>
+        <Probe />
+      </GlobalMusicProvider>,
+    );
+
+    // Untouched: suggestion adopted.
+    fireEvent.click(screen.getByRole("button", { name: "suggest 95" }));
+    expect(screen.getByTestId("tempo").textContent).toBe("95");
+
+    // Explicit set marks tempo as touched.
+    fireEvent.click(screen.getByRole("button", { name: "set 150" }));
+    expect(screen.getByTestId("tempo").textContent).toBe("150");
+
+    // Touched: later suggestions are ignored.
+    fireEvent.click(screen.getByRole("button", { name: "suggest 80" }));
+    expect(screen.getByTestId("tempo").textContent).toBe("150");
+  });
+
+  it("normalizes mode aliases at the store boundary", () => {
+    const Probe = () => {
+      const mode = useGlobalMusic((state) => state.mode);
+      const actions = useGlobalMusicActions();
+      return (
+        <div>
+          <div data-testid="mode">{mode}</div>
+          <button type="button" onClick={() => actions.setMode("major")}>
+            set major
+          </button>
+        </div>
+      );
+    };
+
+    render(
+      <GlobalMusicProvider>
+        <Probe />
+      </GlobalMusicProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "set major" }));
+    expect(screen.getByTestId("mode").textContent).toBe("Ionian");
+  });
+
 });

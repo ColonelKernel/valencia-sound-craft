@@ -61,9 +61,19 @@ const Tonnetz = ({
   // Progression sidebar
   const [progression, setProgression] = useState<TonnetzTriadData[]>([]);
   const [playing, setPlaying] = useState(false);
+
+  const changeBpm = useCallback((next: number) => {
+    const clamped = Math.max(40, Math.min(300, Math.round(next) || 100));
+    setLocalBpm(clamped);
+    onTempoChange?.(clamped);
+  }, [onTempoChange]);
   const [currentIdx, setCurrentIdx] = useState(-1);
   const [looping, setLooping] = useState(false);
-  const [bpm, setBpm] = useState(controlledTempo ?? 100);
+  // bpm is fully controlled when a tempo prop is provided; playing is
+  // engine state (whether the progression scheduler is running), reconciled
+  // against the controlled prop below.
+  const [localBpm, setLocalBpm] = useState(controlledTempo ?? 100);
+  const bpm = controlledTempo ?? localBpm;
   const [showProgPanel, setShowProgPanel] = useState(true);
   const timeoutRef = useRef<number[]>([]);
 
@@ -280,14 +290,16 @@ const Tonnetz = ({
     timeoutRef.current.forEach(clearTimeout);
     timeoutRef.current = [];
     setPlaying(false);
+    onPlayingChange?.(false);
     setCurrentIdx(-1);
     if (midiEnabled && isConnected()) sendAllNotesOff(midiChannel);
-  }, [midiEnabled, midiChannel]);
+  }, [midiEnabled, midiChannel, onPlayingChange]);
 
   const playProgression = useCallback(() => {
     if (progression.length === 0) return;
     stop();
     setPlaying(true);
+    onPlayingChange?.(true);
     const chordDuration = (60 / bpm) * 4 * 1000;
     const ids: number[] = [];
     progression.forEach((td, i) => {
@@ -300,22 +312,12 @@ const Tonnetz = ({
     });
     ids.push(window.setTimeout(() => {
       if (looping) playProgression();
-      else { setPlaying(false); setCurrentIdx(-1); }
+      else { setPlaying(false); onPlayingChange?.(false); setCurrentIdx(-1); }
     }, progression.length * chordDuration));
     timeoutRef.current = ids;
-  }, [progression, bpm, stop, timbre, midiEnabled, midiChannel, looping]);
+  }, [progression, bpm, stop, timbre, midiEnabled, midiChannel, looping, onPlayingChange]);
 
   useEffect(() => { return () => { timeoutRef.current.forEach(clearTimeout); }; }, []);
-
-  useEffect(() => {
-    if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
-      setBpm(controlledTempo);
-    }
-  }, [bpm, controlledTempo]);
-
-  useEffect(() => {
-    onTempoChange?.(bpm);
-  }, [bpm, onTempoChange]);
 
   useEffect(() => {
     onPlayingChange?.(playing);
@@ -767,7 +769,7 @@ const Tonnetz = ({
                       <div className="flex items-center gap-1 ml-auto">
                         <span className="text-[10px] text-muted-foreground">BPM</span>
                         <input type="number" value={bpm} min={40} max={300}
-                          onChange={(e) => setBpm(Math.max(40, Math.min(300, Number(e.target.value) || 100)))}
+                          onChange={(e) => changeBpm(Number(e.target.value))}
                           className="w-12 bg-secondary border border-border rounded px-1 py-0.5 text-xs text-foreground text-center" />
                       </div>
                     </div>

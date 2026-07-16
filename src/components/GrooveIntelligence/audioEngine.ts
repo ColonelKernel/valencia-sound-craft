@@ -1,11 +1,9 @@
+import { getAudioContext } from "@/music-core/audioContext";
 import type { NormalizedGroove } from "./types";
 
 // ─── Audio Context ───
-let ctx: AudioContext | null = null;
 function getCtx() {
-  if (!ctx) ctx = new AudioContext();
-  if (ctx.state === "suspended") ctx.resume();
-  return ctx;
+  return getAudioContext();
 }
 
 // ─── Pattern Generation ───

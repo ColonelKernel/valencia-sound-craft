@@ -140,3 +140,67 @@ manifest title at every stop with zero own-origin console errors.
   004's copy/UX pass.
 - The `vendor` chunk still contains sonner, radix runtime, tanstack-query,
   react-dom, papaparse, jspdf(?) — dissect in 005 with the budget script.
+
+### 003 — Audio & state core consolidation (2026-07-16)
+
+**Single AudioContext:** new `src/music-core/audioContext.ts` — the one
+creation site (grep-verified: 1 match in src). All 8 former sites migrated
+(GlobalRhythmEngine, GlobalRhythmMap, blipbloxEngine, DrumMachine,
+GrooveIntelligence audioEngine, chordProgressionUtils, Metronome,
+audioSynth); none ever called `close()`, so no teardown semantics changed.
+The service exposes `window.__vscAudioContext` as an observability hook and
+a new e2e test drives the rhythm transport and polls the shared context to
+`state === "running"` (headless playback proof).
+
+**Store-level tempo policy:** `GlobalMusicState.tempoTouched` +
+`suggestTempo()` — explicit `setTempo` marks touched; a rhythm selection now
+emits `suggestedTempo` in `onRhythmChange`, and the tool adapters forward it
+to `suggestTempo`, which is ignored once touched. Unit-tested in
+`globalMusicState.test.tsx` (adopt-then-ignore + alias normalization).
+
+**Fully controlled leaves — all scaffolding deleted** (grep-verified: zero
+`previousControlled*`/`skipInitial*`/`suppress*CallbackRef` in src):
+- `GlobalRhythmEngine` (−2,022 chars): tempo/playing/browserRegion derived
+  from props (`controlled ?? local`), mutations via `changeTempo/
+  changePlaying/changeBrowserRegion` + `selectRhythmDefinition` (which emits
+  the store update synchronously); one refless controlled-rhythm
+  reconciliation effect; filter auto-align now emits as a real selection
+  instead of silently drifting from the store; scheduler reads
+  `tempoRef.current`.
+- `DrumMachine` (−2,124 chars): same pattern (`selectPreset` emits
+  suggestedTempo=preset.bpm); the region sync-in effect became unnecessary
+  (region is derived; `filteredPresets` recomputes from it).
+- `Metronome`: derived bpm + `changeBpm`; playing stays ENGINE state
+  (whether the scheduler runs) reconciled from the prop via start/stop,
+  which report back through `onPlayingChange`. Killed two mount-time
+  emission bugs: `onTempoChange` fired on mount (would have marked
+  tempoTouched immediately) and `onPlayingChange(false)` fired on mount
+  (could release another tool's transport).
+- `Tonnetz`: derived bpm + `changeBpm`; playing is engine state with
+  emissions in `stop`/`playProgression`; same mount-emission bugs removed.
+- `ModeVisualizer`: root/mode derived; the two sync-in effects replaced by
+  one stale-chord-clearing effect keyed on the derived tonal center.
+
+**Mode canon:** `store.setMode` now normalizes through
+`normalizeMode` — canonical names ("major"→"Ionian") at the single boundary.
+
+**Regression found by e2e and fixed:** a bare region change from the
+engine's region pills got bounced back by the adapter's rhythm→region
+normalization (the store derives region from the active rhythm). Region
+pills now change region AND rhythm atomically (`handleBrowserRegionSelect`
+emits the region's first rhythm as a real selection in the same tick).
+
+**Behavior changes (intentional):** rhythm selection no longer force-sets
+the shared tempo to the rhythm default — it suggests it (adopted only while
+tempo is untouched, per spec); DrumMachine preset selection likewise. The
+DrumMachine-embedded GlobalRhythmEngine preview remains preset-driven
+(uncontrolled) — its transport is an independent preview by design; the
+rhythm-route double-mount presentation question is deferred to spec 004.
+
+**New tests:** e2e 15 → 18 (untouched-tempo adoption; user-tempo survives
+selection; transport on the single shared context); vitest 40 → 42 (store
+policy + mode normalization). DrumMachine payload test updated for
+`suggestedTempo` (contract addition, not a weakening).
+
+**Gates:** typecheck ✅ · lint ✅ (0 errors, 7 pre-existing warnings) ·
+vitest 42/42 ✅ · build ✅ · e2e **18/18** ✅.

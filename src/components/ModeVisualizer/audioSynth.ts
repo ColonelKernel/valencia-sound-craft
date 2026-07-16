@@ -1,3 +1,4 @@
+import { getAudioContext } from "@/music-core/audioContext";
 // Web Audio API synth for note/chord previews
 
 const NOTE_FREQUENCIES: Record<string, number> = {
@@ -20,17 +21,7 @@ export const INSTRUMENT_TIMBRES: { id: InstrumentTimbre; label: string }[] = [
   { id: 'warm-bass', label: 'Warm Bass' },
 ];
 
-let audioCtx: AudioContext | null = null;
 
-function getAudioContext(): AudioContext {
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-  return audioCtx;
-}
 
 function applyTimbre(
   ctx: AudioContext,

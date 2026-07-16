@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { getAudioContext } from "@/music-core/audioContext";
 import {
   Play, Pause, Minus, Plus, Hand, Music2, Zap, Waves,
   Settings2, Save, Trash2, ChevronDown, ChevronUp,
@@ -141,8 +142,12 @@ const Metronome = ({
   onTempoChange,
   onPlayingChange,
 }: MetronomeProps) => {
-  // Core state
-  const [bpm, setBpm] = useState(controlledTempo ?? 120);
+  // Core state. bpm is fully controlled when a tempo prop is provided (the
+  // local copy only serves prop-less mounts); playing is ENGINE state — it
+  // reflects whether the scheduler is actually running, and the controlled
+  // prop is reconciled into it via start/stop below.
+  const [localBpm, setLocalBpm] = useState(controlledTempo ?? 120);
+  const bpm = controlledTempo ?? localBpm;
   const [playing, setPlaying] = useState(false);
   const [timeSigIdx, setTimeSigIdx] = useState(0);
   const [subdivIdx, setSubdivIdx] = useState(0);
@@ -151,6 +156,12 @@ const Metronome = ({
   const [swing, setSwing] = useState(50);
   const [volume, setVolume] = useState(1);
   const [soundIdx, setSoundIdx] = useState(0);
+
+  const changeBpm = useCallback((next: number) => {
+    const clamped = Math.min(300, Math.max(20, Math.round(next)));
+    setLocalBpm(clamped);
+    onTempoChange?.(clamped);
+  }, [onTempoChange]);
 
   // Mode
   const [mode, setMode] = useState<MetronomeMode>('practice');
@@ -180,7 +191,6 @@ const Metronome = ({
   const [timingFeedback, setTimingFeedback] = useState<'perfect' | 'rushing' | 'dragging' | null>(null);
 
   // Refs
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
   const beatRef = useRef(0);
   const barCountRef = useRef(0);
@@ -203,23 +213,21 @@ const Metronome = ({
       intervalRef.current = null;
     }
     setPlaying(false);
+    onPlayingChange?.(false);
     setCurrentBeat(-1);
     beatRef.current = 0;
     barCountRef.current = 0;
     rampBpmRef.current = bpm;
-  }, [bpm]);
+  }, [bpm, onPlayingChange]);
 
   const start = useCallback(() => {
-    if (!audioCtxRef.current) {
-      audioCtxRef.current = new AudioContext();
-    }
-    const ctx = audioCtxRef.current;
-    if (ctx.state === 'suspended') ctx.resume();
+    const ctx = getAudioContext();
 
     beatRef.current = 0;
     barCountRef.current = 0;
     rampBpmRef.current = bpm;
     setPlaying(true);
+    onPlayingChange?.(true);
 
     const totalSubBeats = timeSig.beats * subdivision;
     const currentBpm = () => rampBpmRef.current;
@@ -280,7 +288,7 @@ const Metronome = ({
     };
 
     playBeat();
-  }, [bpm, timeSig, subdivision, accentFirst, swing, volume, sound, mode, ambientSound, dropout, dropoutChance, tempoRamp, loopBars]);
+  }, [bpm, timeSig, subdivision, accentFirst, swing, volume, sound, mode, ambientSound, dropout, dropoutChance, tempoRamp, loopBars, onPlayingChange]);
 
   // Restart on param change while playing
   useEffect(() => {
@@ -322,7 +330,7 @@ const Metronome = ({
         }
         const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
         const detectedBpm = Math.round(60000 / avgInterval);
-        setBpm(Math.min(300, Math.max(20, detectedBpm)));
+        changeBpm(detectedBpm);
 
         // Stability
         if (intervals.length >= 3) {
@@ -334,7 +342,7 @@ const Metronome = ({
       }
       return recent;
     });
-  }, []);
+  }, [changeBpm]);
 
   // ─── Timing Feedback (tap while playing) ───────────────
   const handleTimingTap = useCallback(() => {
@@ -381,13 +389,13 @@ const Metronome = ({
   const loadSetlistItem = (idx: number) => {
     const item = setlist[idx];
     if (!item) return;
-    setBpm(item.bpm);
+    changeBpm(item.bpm);
     setTimeSigIdx(item.timeSigIdx);
     setActiveSetlistIdx(idx);
   };
 
   const handleBpmChange = (delta: number) => {
-    setBpm(prev => Math.min(300, Math.max(20, prev + delta)));
+    changeBpm(bpm + delta);
   };
 
   // ─── BPM Drag ──────────────────────────────────────────
@@ -401,7 +409,7 @@ const Metronome = ({
   const handleBpmDragMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
     const delta = (dragRef.current.startY - e.clientY) * 0.5;
-    setBpm(Math.min(300, Math.max(20, Math.round(dragRef.current.startBpm + delta))));
+    changeBpm(dragRef.current.startBpm + delta);
   };
 
   const handleBpmDragEnd = () => { dragRef.current = null; };
@@ -414,20 +422,9 @@ const Metronome = ({
 
   const tempoLabel = getTempoLabel(bpm);
 
-  useEffect(() => {
-    if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
-      setBpm(controlledTempo);
-    }
-  }, [bpm, controlledTempo]);
-
-  useEffect(() => {
-    onTempoChange?.(bpm);
-  }, [bpm, onTempoChange]);
-
-  useEffect(() => {
-    onPlayingChange?.(playing);
-  }, [onPlayingChange, playing]);
-
+  // Desired-state reconciliation: the owner's playing prop drives the
+  // scheduler. start/stop report the engine state back, so this converges
+  // without echo suppression.
   useEffect(() => {
     if (typeof controlledPlaying !== "boolean" || controlledPlaying === playing) {
       return;
@@ -551,7 +548,7 @@ const Metronome = ({
             min={20}
             max={300}
             value={bpm}
-            onChange={(e) => setBpm(Number(e.target.value))}
+            onChange={(e) => changeBpm(Number(e.target.value))}
             className="w-full max-w-xs mt-3 accent-amber-500"
           />
         )}
@@ -562,7 +559,7 @@ const Metronome = ({
             {BPM_PRESETS.map((p) => (
               <button
                 key={p.label}
-                onClick={() => setBpm(p.bpm)}
+                onClick={() => changeBpm(p.bpm)}
                 className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${
                   Math.abs(bpm - p.bpm) < 10
                     ? 'border-amber-500 text-amber-400 bg-amber-500/10'

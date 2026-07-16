@@ -1,3 +1,4 @@
+import { getAudioContext } from "@/music-core/audioContext";
 // Blipblox MIDI Engine — Web MIDI + SysEx + AudioContext scheduling
 
 export type BlipbloxDeviceType = 'mytracks' | 'sk2' | 'afterdark';
@@ -49,7 +50,6 @@ class PatternCache {
 class BlipbloxEngine {
   private midiAccess: MIDIAccess | null = null;
   private output: MIDIOutput | null = null;
-  private audioCtx: AudioContext | null = null;
   private isPlaying = false;
   private stepIndex = 0;
   private nextStepTime = 0;
@@ -286,9 +286,7 @@ class BlipbloxEngine {
 
   // ─── Pattern Loop (AudioContext scheduler) ─────────────────
   private getAudioCtx(): AudioContext {
-    if (!this.audioCtx) this.audioCtx = new AudioContext();
-    if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
-    return this.audioCtx;
+    return getAudioContext();
   }
 
   startLoop(

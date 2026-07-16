@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo, lazy, Suspense } from "react";
+import { getAudioContext } from "@/music-core/audioContext";
 import {
   Play, Square, RotateCcw, Download, ChevronDown, ChevronRight,
   Volume2, VolumeX, Plus, Globe, Music, Sliders, Zap, FileAudio, Search, Filter
@@ -76,7 +77,13 @@ interface DrumMachineProps {
   onTempoChange?: (tempo: number) => void;
   onPlayingChange?: (playing: boolean) => void;
   onRegionChange?: (region: Region) => void;
-  onRhythmChange?: (next: { rhythmId: string; region: Region; country: string }) => void;
+  onRhythmChange?: (next: {
+    rhythmId: string;
+    region: Region;
+    country: string;
+    /** The preset's default tempo — the store adopts it only if the user has not touched tempo. */
+    suggestedTempo?: number;
+  }) => void;
 }
 
 const DrumMachine = ({
@@ -101,16 +108,16 @@ const DrumMachine = ({
   const initialPreset = controlledPreset || embeddedSelection || initialRhythmList[0] || DRUM_PRESETS[0];
 
   // State
-  const [bpm, setBpm] = useState(controlledTempo ?? initialPreset.bpm);
+  const [localBpm, setLocalBpm] = useState(controlledTempo ?? initialPreset.bpm);
   const [swing, setSwing] = useState(initialPreset.swing);
-  const [playing, setPlaying] = useState(false);
+  const [localPlaying, setLocalPlaying] = useState(false);
   const [tracks, setTracks] = useState<TrackState[]>(() => {
     return initialPreset.tracks.map((track) =>
       createTrackFromPreset(track.instrumentId, track.steps, track.subdivisions)
     );
   });
   const [currentSteps, setCurrentSteps] = useState<Record<string, number>>({});
-  const [selectedRegion, setSelectedRegion] = useState<Region>(initialRegion);
+  const [localSelectedRegion, setLocalSelectedRegion] = useState<Region>(initialRegion);
   const [rhythmList, setRhythmList] = useState<PatternPreset[]>(initialRhythmList);
   const [currentPresetId, setCurrentPresetId] = useState<string>(initialPreset.id);
   const [currentTimbres, setCurrentTimbres] = useState<Timbre[]>(initialPreset.instruments);
@@ -131,32 +138,33 @@ const DrumMachine = ({
   const [showKonnakol, setShowKonnakol] = useState(false);
 
   // Audio refs
-  const audioCtxRef = useRef<AudioContext | null>(null);
   const timerRef = useRef<number | null>(null);
   const nextNoteTimeRef = useRef(0);
   const playingRef = useRef(false);
   const stepRef = useRef<Record<string, number>>({});
   const trackNextTimeRef = useRef<Record<string, number>>({});
   const tracksRef = useRef(tracks);
-  const previousControlledTempoRef = useRef(controlledTempo);
-  const previousControlledPlayingRef = useRef(controlledPlaying);
-  const previousControlledRegionRef = useRef(controlledRegion);
-  const previousSelectedRhythmIdRef = useRef(selectedRhythmId);
-  const suppressTempoCallbackRef = useRef(false);
-  const suppressPlayingCallbackRef = useRef(false);
-  const suppressRegionCallbackRef = useRef(false);
-  const suppressRhythmCallbackRef = useRef(false);
-  const skipInitialTempoCallbackRef = useRef(typeof controlledTempo === "number");
-  const skipInitialPlayingCallbackRef = useRef(typeof controlledPlaying === "boolean");
-  const skipInitialRegionCallbackRef = useRef(Boolean(controlledRegion));
-  const skipInitialRhythmCallbackRef = useRef(Boolean(selectedRhythmId));
   tracksRef.current = tracks;
 
-  const getCtx = useCallback(() => {
-    if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
-    if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
-    return audioCtxRef.current;
-  }, []);
+  // Fully controlled when mounted by a tool (the store owns tempo, playing,
+  // region, rhythm); the local copies keep the component functional when
+  // mounted without control props. Every mutation goes through the owner's
+  // callback — no sync effects, no echo suppression.
+  const bpm = controlledTempo ?? localBpm;
+  const playing = controlledPlaying ?? localPlaying;
+  const selectedRegion = controlledRegion ?? localSelectedRegion;
+
+  const changeBpm = useCallback((next: number) => {
+    setLocalBpm(next);
+    onTempoChange?.(next);
+  }, [onTempoChange]);
+
+  const changePlaying = useCallback((next: boolean) => {
+    setLocalPlaying(next);
+    onPlayingChange?.(next);
+  }, [onPlayingChange]);
+
+  const getCtx = useCallback(() => getAudioContext(), []);
 
   // Computed
   const categories = useMemo(() => getAllCategories(selectedRegion), [selectedRegion]);
@@ -272,7 +280,7 @@ const DrumMachine = ({
     setFilterComplexity(null);
     setFilterRhythmType(null);
     setSearchQuery("");
-    setSelectedRegion(region);
+    setLocalSelectedRegion(region);
     setRhythmList(regionPresets);
 
     return regionPresets;
@@ -289,27 +297,40 @@ const DrumMachine = ({
   }, []);
 
   const applyPresetSelection = useCallback((preset: PatternPreset) => {
-    setPlaying(false);
+    changePlaying(false);
     setCurrentPresetId(preset.id);
-    setBpm(preset.bpm);
+    setLocalBpm(preset.bpm);
     setSwing(preset.swing);
     loadPattern(preset);
     loadTimbres(preset);
-  }, [loadPattern, loadTimbres]);
+  }, [changePlaying, loadPattern, loadTimbres]);
+
+  // A user selection inside this machine: apply locally AND tell the owner,
+  // suggesting the preset's tempo (adopted only if tempo is untouched).
+  const selectPreset = useCallback((preset: PatternPreset) => {
+    applyPresetSelection(preset);
+    onRhythmChange?.({
+      rhythmId: preset.id,
+      region: preset.region,
+      country: preset.country,
+      suggestedTempo: preset.bpm,
+    });
+  }, [applyPresetSelection, onRhythmChange]);
 
   const handleRegionSelect = useCallback((region: Region) => {
     const regionPresets = syncRegionBrowser(region);
+    onRegionChange?.(region);
     const nextPreset = regionPresets[0] || null;
     if (!nextPreset) {
       setCurrentPresetId("");
       setTracks([]);
       setCurrentTimbres([]);
-      setPlaying(false);
+      changePlaying(false);
       return;
     }
 
-    applyPresetSelection(nextPreset);
-  }, [applyPresetSelection, syncRegionBrowser]);
+    selectPreset(nextPreset);
+  }, [changePlaying, onRegionChange, selectPreset, syncRegionBrowser]);
 
   // ─── Scheduler ──────────────────────────────────────────────────────────────
 
@@ -455,16 +476,16 @@ const DrumMachine = ({
       setCurrentPresetId("");
       setTracks([]);
       setCurrentTimbres([]);
-      setPlaying(false);
+      changePlaying(false);
       return;
     }
 
     const matchingPreset = filteredPresets.find((preset) => preset.id === currentPresetId);
 
     if (!matchingPreset) {
-      applyPresetSelection(filteredPresets[0]);
+      selectPreset(filteredPresets[0]);
     }
-  }, [filteredPresets, currentPresetId, applyPresetSelection, selectedRhythmId]);
+  }, [filteredPresets, currentPresetId, changePlaying, selectPreset, selectedRhythmId]);
 
   useEffect(() => {
     if (!embeddedPreset) {
@@ -476,122 +497,10 @@ const DrumMachine = ({
     applyPresetSelection(nextPreset);
   }, [embeddedPreset, applyPresetSelection, presetById, syncRegionBrowser]);
 
+  // Controlled-rhythm reconciliation: when the store's rhythm changes (via
+  // another tool), load the matching preset locally. Local selections update
+  // the store first through selectPreset, so this only ever converges.
   useEffect(() => {
-    if (controlledTempo === previousControlledTempoRef.current) {
-      return;
-    }
-
-    previousControlledTempoRef.current = controlledTempo;
-
-    if (typeof controlledTempo === "number" && controlledTempo !== bpm) {
-      suppressTempoCallbackRef.current = true;
-      setBpm(controlledTempo);
-    }
-  }, [bpm, controlledTempo]);
-
-  useEffect(() => {
-    if (skipInitialTempoCallbackRef.current) {
-      skipInitialTempoCallbackRef.current = false;
-      return;
-    }
-
-    if (suppressTempoCallbackRef.current) {
-      suppressTempoCallbackRef.current = false;
-      return;
-    }
-
-    onTempoChange?.(bpm);
-  }, [bpm, onTempoChange]);
-
-  useEffect(() => {
-    if (skipInitialPlayingCallbackRef.current) {
-      skipInitialPlayingCallbackRef.current = false;
-      return;
-    }
-
-    if (suppressPlayingCallbackRef.current) {
-      suppressPlayingCallbackRef.current = false;
-      return;
-    }
-
-    onPlayingChange?.(playing);
-  }, [onPlayingChange, playing]);
-
-  useEffect(() => {
-    if (skipInitialRegionCallbackRef.current) {
-      skipInitialRegionCallbackRef.current = false;
-      return;
-    }
-
-    if (suppressRegionCallbackRef.current) {
-      suppressRegionCallbackRef.current = false;
-      return;
-    }
-
-    onRegionChange?.(selectedRegion);
-  }, [onRegionChange, selectedRegion]);
-
-  useEffect(() => {
-    if (!currentPreset) {
-      return;
-    }
-
-    if (skipInitialRhythmCallbackRef.current) {
-      skipInitialRhythmCallbackRef.current = false;
-      return;
-    }
-
-    if (suppressRhythmCallbackRef.current) {
-      suppressRhythmCallbackRef.current = false;
-      return;
-    }
-
-    onRhythmChange?.({
-      rhythmId: currentPreset.id,
-      region: currentPreset.region,
-      country: currentPreset.country,
-    });
-  }, [currentPreset, onRhythmChange]);
-
-  useEffect(() => {
-    if (controlledPlaying === previousControlledPlayingRef.current) {
-      return;
-    }
-
-    previousControlledPlayingRef.current = controlledPlaying;
-
-    if (typeof controlledPlaying === "boolean" && controlledPlaying !== playing) {
-      suppressPlayingCallbackRef.current = true;
-      setPlaying(controlledPlaying);
-    }
-  }, [controlledPlaying, playing]);
-
-  useEffect(() => {
-    if (controlledRegion === previousControlledRegionRef.current) {
-      return;
-    }
-
-    previousControlledRegionRef.current = controlledRegion;
-
-    if (controlledRegion && controlledRegion !== selectedRegion) {
-      suppressRegionCallbackRef.current = true;
-
-      if (selectedRhythmId && selectedRhythmId !== currentPresetId) {
-        syncRegionBrowser(controlledRegion);
-        return;
-      }
-
-      handleRegionSelect(controlledRegion);
-    }
-  }, [controlledRegion, currentPresetId, handleRegionSelect, selectedRegion, selectedRhythmId, syncRegionBrowser]);
-
-  useEffect(() => {
-    if (selectedRhythmId === previousSelectedRhythmIdRef.current) {
-      return;
-    }
-
-    previousSelectedRhythmIdRef.current = selectedRhythmId;
-
     if (!selectedRhythmId || selectedRhythmId === currentPresetId) {
       return;
     }
@@ -599,14 +508,13 @@ const DrumMachine = ({
     const nextPreset = presetById.get(selectedRhythmId);
 
     if (nextPreset) {
-      suppressRhythmCallbackRef.current = true;
       syncRegionBrowser(nextPreset.region);
       applyPresetSelection(nextPreset);
     }
   }, [applyPresetSelection, currentPresetId, presetById, selectedRhythmId, syncRegionBrowser]);
 
   const clearAll = () => {
-    setPlaying(false);
+    changePlaying(false);
     setTracks(prev => prev.map(t => ({ ...t, steps: Array(t.subdivisions).fill(0) })));
   };
 
@@ -684,7 +592,7 @@ const DrumMachine = ({
       {/* Transport */}
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <button
-          onClick={() => setPlaying(!playing)}
+          onClick={() => changePlaying(!playing)}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg text-sm font-medium transition-all ${
             playing
               ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20'
@@ -705,10 +613,10 @@ const DrumMachine = ({
         <div className="flex items-center gap-1.5 sm:gap-2">
           <span className="text-xs text-muted-foreground font-medium">BPM</span>
           <input type="range" min={40} max={400} value={bpm}
-            onChange={e => setBpm(Number(e.target.value))}
+            onChange={e => changeBpm(Number(e.target.value))}
             className="w-16 sm:w-20 accent-primary" />
           <input type="number" min={40} max={400} value={bpm}
-            onChange={e => setBpm(Math.max(40, Math.min(400, Number(e.target.value))))}
+            onChange={e => changeBpm(Math.max(40, Math.min(400, Number(e.target.value))))}
             className="w-12 sm:w-14 bg-secondary border border-border rounded px-1.5 py-1 text-xs sm:text-sm text-foreground text-center" />
         </div>
 
@@ -1178,7 +1086,7 @@ const DrumMachine = ({
                   return (
                     <button
                       key={p.id}
-                      onClick={() => applyPresetSelection(p)}
+                      onClick={() => selectPreset(p)}
                       className={`text-left px-3 py-2.5 rounded-lg border transition-all ${
                         currentPresetId === p.id
                           ? 'border-primary bg-primary/10 shadow-sm'

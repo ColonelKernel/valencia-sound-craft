@@ -14,10 +14,15 @@ const MapTool = () => {
   const tool = useTool();
   const regionLabel = tool.activeDefinition?.regionLabel ?? tool.region;
   const handleRhythmChange = useCallback(
-    (next: { rhythmId: string; region: string }) => {
+    (next: { rhythmId: string; region: string; suggestedTempo?: number }) => {
       tool.setRhythm(next.rhythmId, next.region);
+      // The rhythm's default tempo is a suggestion — the store ignores it
+      // once the user has explicitly set a tempo anywhere.
+      if (typeof next.suggestedTempo === "number") {
+        tool.suggestTempo(next.suggestedTempo);
+      }
     },
-    [tool.setRhythm],
+    [tool.setRhythm, tool.suggestTempo],
   );
 
   return (

@@ -1,3 +1,4 @@
+import { getAudioContext } from "@/music-core/audioContext";
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
 import { type InstrumentTimbre } from "./audioSynth";
 
@@ -634,19 +635,7 @@ export function downloadMidi(chords: ProgressionChord[], bpm: number, beatsPerCh
 }
 
 // ─── Audio Playback ─────────────────────────────────────────
-// Lazy shared AudioContext (mirrors audioSynth's private singleton).
-// Browsers cap concurrent AudioContexts, so playback helpers must reuse one.
-let audioCtx: AudioContext | null = null;
-
-function getAudioContext(): AudioContext {
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-  return audioCtx;
-}
+// Playback helpers schedule against the app-wide shared AudioContext.
 
 export function playChordTones(notes: string[], duration = 0.8, timbre: InstrumentTimbre = 'piano') {
   const ctx = getAudioContext();

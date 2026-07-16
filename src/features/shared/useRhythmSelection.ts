@@ -46,6 +46,7 @@ export function useRhythmSelection(toolId: string) {
     tempo: tempoBridge.tempo,
     sharedTempo,
     setTempo: tempoBridge.setTempo,
+    suggestTempo: actions.suggestTempo,
     activeDefinition,
     playing: transport.playing,
     setPlaying: transport.setPlaying,
