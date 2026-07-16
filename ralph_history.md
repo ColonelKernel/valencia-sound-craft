@@ -91,3 +91,52 @@ Total dist gzip (all lazy chunks): 927 KB; vendor chunk 417 KB gzip — spec
   filter tokens, prose is fixed).
 - Machine load collapsed from ~170 to normal mid-iteration; gates are fast
   now (full chain < 1 min).
+
+### 002 — App shell & routing rebuild (2026-07-16)
+
+**Shell:** new `src/app/` — `routeMeta.ts` (dependency-free manifest: path +
+title + description for all 10 routes; Playwright imports it directly),
+`Layout.tsx` (Navbar + Footer render exactly once; per-route
+`RouteErrorBoundary` keyed by pathname; Suspense inside the shell so the
+navbar stays visible during page loads), `RouteErrorBoundary.tsx` (+ 2 unit
+tests proving a throwing page renders the branded fallback, not a white
+screen). `App.tsx` now builds the router entirely from the manifest; ALL
+pages lazy (Index and NotFound were static before); `ToolsLayout.tsx`
+deleted (its Navbar/Footer job moved to the shell; ToolSubnav lives in
+ToolPageLayout/ToolsIndex and is unaffected).
+
+**Meta wiring:** pages and the five `toolData.ts` files now source
+title/description/canonical from the manifest. `RouteHead.canonicalPath` is
+optional — the 404 (which previously set NO title at all) now sets its title
+and strips any inherited canonical link. **New copy (logged per the rules):**
+route titles for two pages that never had them — "Groove Intelligence |
+Valencia Sound Craft" and "Page Not Found | Valencia Sound Craft" — plus
+meta descriptions for both. `/groove-intelligence` also gains the shared
+Navbar/Footer (it was a chrome-less dead end: the navbar linked TO it but it
+had no navigation back) with `pt-16` to clear the fixed navbar; NotFound's
+`<a href="/">` became a router `<Link>` (no full reload).
+
+**Chunking discovery (the audit's "map-vendor on /" mystery solved):**
+Rollup's synthetic `commonjsHelpers` module was merged into `map-vendor`,
+so EVERY chunk (even NotFound) statically imported 45 KB gzip of leaflet.
+Fixes: pin helpers to their own `cjs-helpers` chunk (0.2 KB) and keep
+react-leaflet with leaflet in `map-vendor`. Now only GlobalRhythmEngine and
+BlipbloxConnector import map-vendor. Initial graph on `/`: 479 → **435 KB
+gzip** (index 7 + vendor 405 + app-vendor 2 + ui-vendor 6 + css 14). The
+405 KB `vendor` monolith is spec 005's target.
+
+**e2e additions:** console-clean now covers `/groove-intelligence`; new
+`navigation.spec.ts` (2 tests): Navbar sweep (home → Groove Lab → Analytics
+→ logo) and tool-subnav sweep (Overview → all five tools), asserting the
+manifest title at every stop with zero own-origin console errors.
+
+**Gates:** typecheck ✅ · lint ✅ (0 errors, same 7 warnings) · vitest
+40/40 ✅ · build ✅ · e2e **15/15** ✅. Visual pass in dev server: `/`,
+`/tools`, `/music-analytics` pixel-faithful (screenshots taken in-session).
+
+**Learnings:**
+- `renderHomeLinks()` anchors (`#systems` etc.) render on the groove page
+  too, where those anchor targets don't exist — harmless but worth a look in
+  004's copy/UX pass.
+- The `vendor` chunk still contains sonner, radix runtime, tanstack-query,
+  react-dom, papaparse, jspdf(?) — dissect in 005 with the budget script.

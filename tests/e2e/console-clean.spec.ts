@@ -19,6 +19,7 @@ const ROUTES = [
   "/tools/circle",
   "/tools/tonnetz",
   "/music-analytics",
+  "/groove-intelligence",
   "/definitely-missing-404",
 ];
 

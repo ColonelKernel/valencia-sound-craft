@@ -13,7 +13,8 @@ export interface RouteStructuredData {
 export interface RouteMetaConfig {
   title: string;
   description: string;
-  canonicalPath: string;
+  /** Omit on pages that must not declare a canonical URL (e.g. the 404). */
+  canonicalPath?: string;
   ogImage?: string;
   jsonLd?: RouteStructuredData;
 }
@@ -66,17 +67,23 @@ export function createToolStructuredData(config: {
 
 const RouteHead = ({ title, description, canonicalPath, ogImage, jsonLd }: RouteMetaConfig) => {
   useEffect(() => {
-    const canonicalUrl = resolveUrl(canonicalPath);
-
     document.title = title;
     upsertMeta('meta[name="description"]', "name", "description", description);
     upsertMeta('meta[property="og:title"]', "property", "og:title", title);
     upsertMeta('meta[property="og:description"]', "property", "og:description", description);
     upsertMeta('meta[property="og:type"]', "property", "og:type", "website");
-    upsertMeta('meta[property="og:url"]', "property", "og:url", canonicalUrl);
     upsertMeta('meta[name="twitter:title"]', "name", "twitter:title", title);
     upsertMeta('meta[name="twitter:description"]', "name", "twitter:description", description);
-    upsertLink("canonical", canonicalUrl);
+
+    if (canonicalPath) {
+      const canonicalUrl = resolveUrl(canonicalPath);
+      upsertMeta('meta[property="og:url"]', "property", "og:url", canonicalUrl);
+      upsertLink("canonical", canonicalUrl);
+    } else {
+      // A page without a canonical (the 404) must not inherit the previous
+      // route's canonical link.
+      document.head.querySelector('link[rel="canonical"]')?.remove();
+    }
 
     if (ogImage) {
       upsertMeta('meta[property="og:image"]', "property", "og:image", resolveUrl(ogImage));
@@ -97,7 +104,7 @@ const RouteHead = ({ title, description, canonicalPath, ogImage, jsonLd }: Route
       script.type = "application/ld+json";
       script.textContent = JSON.stringify({
         ...jsonLd,
-        url: resolveUrl(jsonLd.url ?? canonicalPath),
+        url: resolveUrl(jsonLd.url ?? canonicalPath ?? "/"),
       });
       document.head.appendChild(script);
     }

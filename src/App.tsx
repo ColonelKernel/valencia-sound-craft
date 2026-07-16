@@ -1,29 +1,32 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { lazy, Suspense } from "react";
+import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GlobalMusicProvider } from "@/state/globalMusicState";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+
+import Layout from "./app/Layout";
+import { ROUTE_META, type RouteKey } from "./app/routeMeta";
 
 const queryClient = new QueryClient();
-const ToolsLayout = lazy(() => import("./pages/tools/ToolsLayout.tsx"));
-const ToolsIndex = lazy(() => import("./pages/tools/ToolsIndex.tsx"));
-const RhythmTool = lazy(() => import("@/features/rhythm/Tool"));
-const HarmonyTool = lazy(() => import("@/features/harmony/Tool"));
-const MapTool = lazy(() => import("@/features/map/Tool"));
-const CircleTool = lazy(() => import("@/features/circle/Tool"));
-const TonnetzTool = lazy(() => import("@/features/tonnetz/Tool"));
-const MusicAnalyticsPage = lazy(() => import("./pages/MusicAnalyticsPage"));
-const GrooveIntelligencePage = lazy(() => import("./pages/GrooveIntelligencePage"));
 
-const routeFallback = (
-  <div className="min-h-screen bg-background pt-24">
-    <div className="container mx-auto px-6 py-10 text-sm text-muted-foreground">Loading route…</div>
-  </div>
-);
+// Every page is lazy: the entry chunk carries only the shell (Layout,
+// Navbar, Footer, providers) and the route table.
+const PAGES: Record<RouteKey, LazyExoticComponent<ComponentType>> = {
+  home: lazy(() => import("./pages/Index")),
+  toolsIndex: lazy(() => import("./pages/tools/ToolsIndex")),
+  rhythm: lazy(() => import("@/features/rhythm/Tool")),
+  harmony: lazy(() => import("@/features/harmony/Tool")),
+  map: lazy(() => import("@/features/map/Tool")),
+  circle: lazy(() => import("@/features/circle/Tool")),
+  tonnetz: lazy(() => import("@/features/tonnetz/Tool")),
+  musicAnalytics: lazy(() => import("./pages/MusicAnalyticsPage")),
+  grooveIntelligence: lazy(() => import("./pages/GrooveIntelligencePage")),
+  notFound: lazy(() => import("./pages/NotFound")),
+};
+
+const ROUTE_KEYS = Object.keys(ROUTE_META) as RouteKey[];
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -32,22 +35,14 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Suspense fallback={routeFallback}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/tools" element={<ToolsLayout />}>
-                <Route index element={<ToolsIndex />} />
-                <Route path="rhythm" element={<RhythmTool />} />
-                <Route path="harmony" element={<HarmonyTool />} />
-                <Route path="map" element={<MapTool />} />
-                <Route path="circle" element={<CircleTool />} />
-                <Route path="tonnetz" element={<TonnetzTool />} />
-              </Route>
-              <Route path="/music-analytics" element={<MusicAnalyticsPage />} />
-              <Route path="/groove-intelligence" element={<GrooveIntelligencePage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <Routes>
+            <Route element={<Layout />}>
+              {ROUTE_KEYS.map((key) => {
+                const Page = PAGES[key];
+                return <Route key={key} path={ROUTE_META[key].path} element={<Page />} />;
+              })}
+            </Route>
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </GlobalMusicProvider>

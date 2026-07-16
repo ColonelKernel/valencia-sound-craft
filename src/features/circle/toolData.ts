@@ -1,15 +1,14 @@
 import { createToolStructuredData, type RouteMetaConfig } from "@/components/seo/RouteHead";
+import { ROUTE_META } from "@/app/routeMeta";
 
 export const circleToolMeta: RouteMetaConfig = {
-  title: "Circle of Fifths | Valencia Sound Craft",
-  description:
-    "An interactive circle of fifths for exploring key relationships, connected to the full music tool system.",
-  canonicalPath: "/tools/circle",
+  ...ROUTE_META.circle,
+  canonicalPath: ROUTE_META.circle.path,
   jsonLd: createToolStructuredData({
     name: "Valencia Sound Craft Circle of Fifths",
     description:
       "An interactive circle of fifths that keeps key and mode in step with the harmony and Tonnetz tools.",
-    canonicalPath: "/tools/circle",
+    canonicalPath: ROUTE_META.circle.path,
     educationalUse: ["music theory", "key relationships", "harmony practice"],
   }),
 };

@@ -1,17 +1,16 @@
 import { lazy, Suspense } from "react";
 
-import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import RouteHead, { createToolStructuredData } from "@/components/seo/RouteHead";
 import SystemsPreview from "@/components/SystemsPreview";
 import { useInView } from "@/hooks/useInView";
+import { ROUTE_META } from "@/app/routeMeta";
 
 const AnalyticsPreview = lazy(() => import("@/components/AnalyticsPreview"));
 const Services = lazy(() => import("@/components/Services"));
 const Portfolio = lazy(() => import("@/components/Portfolio"));
 const About = lazy(() => import("@/components/About"));
 const Contact = lazy(() => import("@/components/Contact"));
-const Footer = lazy(() => import("@/components/Footer"));
 
 interface SectionFallbackProps {
   id?: string;
@@ -44,18 +43,17 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <RouteHead
-        title="Valencia Sound Craft"
-        description="Music systems design, creative technology, and direct-linkable rhythm and harmony tools."
-        canonicalPath="/"
+        title={ROUTE_META.home.title}
+        description={ROUTE_META.home.description}
+        canonicalPath={ROUTE_META.home.path}
         jsonLd={createToolStructuredData({
           name: "Valencia Sound Craft",
           description:
             "A creative music technology site featuring portfolio work and interactive rhythm and harmony tools.",
-          canonicalPath: "/",
+          canonicalPath: ROUTE_META.home.path,
           educationalUse: ["music technology", "composition", "practice"],
         })}
       />
-      <Navbar />
       <main>
         <Hero />
 
@@ -76,9 +74,6 @@ const Index = () => {
           <Contact />
         </Suspense>
       </main>
-      <Suspense fallback={<SectionFallback className="bg-background" />}>
-        <Footer />
-      </Suspense>
     </div>
   );
 };

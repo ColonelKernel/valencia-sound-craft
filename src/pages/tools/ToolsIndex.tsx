@@ -3,6 +3,7 @@ import { Compass, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-reac
 
 import RouteHead, { createToolStructuredData } from "@/components/seo/RouteHead";
 import ToolSubnav from "@/components/tools/ToolSubnav";
+import { ROUTE_META } from "@/app/routeMeta";
 
 const toolCards = [
   {
@@ -40,14 +41,14 @@ const toolCards = [
 const ToolsIndex = () => (
   <>
     <RouteHead
-      title="Music Tools | Valencia Sound Craft"
-      description="Interactive music tools for rhythm, harmony, and theory: a world rhythm engine, harmony lab, rhythm map, circle of fifths, and Tonnetz — all playing in sync."
-      canonicalPath="/tools"
+      title={ROUTE_META.toolsIndex.title}
+      description={ROUTE_META.toolsIndex.description}
+      canonicalPath={ROUTE_META.toolsIndex.path}
       jsonLd={createToolStructuredData({
         name: "Valencia Sound Craft Tools",
         description:
           "A routed collection of interactive music tools for rhythm, harmony, theory, and composition.",
-        canonicalPath: "/tools",
+        canonicalPath: ROUTE_META.toolsIndex.path,
         educationalUse: ["music theory", "practice", "composition", "rhythm training"],
       })}
     />

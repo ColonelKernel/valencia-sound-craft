@@ -22,11 +22,23 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Rollup's synthetic CommonJS helper module is imported by every
+          // chunk that touches a CJS dep. Left unassigned it gets merged
+          // into whichever vendor chunk uses it most (historically
+          // map-vendor), forcing leaflet onto every route. Pin it to its
+          // own tiny chunk instead.
+          if (id.includes("commonjsHelpers")) {
+            return "cjs-helpers";
+          }
+
           if (!id.includes("node_modules")) {
             return undefined;
           }
 
-          if (id.includes("leaflet") && !id.includes("react-leaflet")) {
+          // react-leaflet must live with leaflet: if it lands in the shared
+          // "vendor" chunk, vendor (and therefore the entry) statically
+          // depends on map-vendor and the map stack loads on every route.
+          if (id.includes("leaflet")) {
             return "map-vendor";
           }
 

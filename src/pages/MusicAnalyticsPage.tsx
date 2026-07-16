@@ -1,8 +1,7 @@
 import { Component, useEffect, useState, useCallback, type ReactNode, type ErrorInfo } from "react";
 import { motion } from "framer-motion";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import RouteHead from "@/components/seo/RouteHead";
+import { ROUTE_META } from "@/app/routeMeta";
 import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataService";
 import StreamingDashboard from "@/components/MusicAnalytics/StreamingDashboard";
 import ArtistComparison from "@/components/MusicAnalytics/ArtistComparison";
@@ -108,11 +107,10 @@ export default function MusicAnalyticsPage() {
   return (
     <div className="min-h-screen bg-background">
       <RouteHead
-        title="Music Catalog Intelligence – Valencia Sound Craft"
-        description="Catalog analytics dashboard for music investment analysis. Demonstration dataset derived from public Spotify popularity data, with forecasting and AI-assisted analysis."
-        canonicalPath="/music-analytics"
+        title={ROUTE_META.musicAnalytics.title}
+        description={ROUTE_META.musicAnalytics.description}
+        canonicalPath={ROUTE_META.musicAnalytics.path}
       />
-      <Navbar />
 
       <main className="pt-20">
         {/* Hero */}
@@ -307,8 +305,6 @@ export default function MusicAnalyticsPage() {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
