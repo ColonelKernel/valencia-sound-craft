@@ -204,3 +204,40 @@ policy + mode normalization). DrumMachine payload test updated for
 
 **Gates:** typecheck ✅ · lint ✅ (0 errors, 7 pre-existing warnings) ·
 vitest 42/42 ✅ · build ✅ · e2e **18/18** ✅.
+
+### 004 — Pages & content rebuild (2026-07-16)
+
+- **Portfolio visible by default** (audit A2 was NOT actually fixed on the
+  base branch — `useState(false)` survived): initial state flipped to
+  expanded; the toggle stays as a tuck-away affordance. DOM-verified: 6
+  embeds mount on first load with no interaction.
+- **Page decomposition:** `MusicAnalyticsPage` 310 → 220 lines by extracting
+  `MusicAnalytics/{TabErrorBoundary,AnalyticsHero,ArtistPicker}` (the
+  compare/portfolio artist-pill blocks were duplicated inline; now one
+  parametrized component). All page files ≤ 220 lines.
+- **Region capitalization (A10):** engine region pills now render
+  `REGION_LABELS` ("Brazil", "West Africa", "Afro-Caribbean") instead of raw
+  keys; the pill row gained `role="group" aria-label="Region filters"` and
+  the shared-state e2e scopes to it (a country button is also named
+  "Brazil"). Map prose already used capitalized `regionLabel`.
+- **Basemap legibility (A11):** CARTO dark tiles get a scoped
+  `brightness-150` lift (computed-style verified: `filter: brightness(1.5)`
+  on `.leaflet-tile`) — dark aesthetic preserved, geography readable. The
+  chained contrast/saturate utilities didn't compose under the arbitrary
+  variant, so only the brightness utility is kept.
+- **Title unification (A8):** analytics title "–" → "|"
+  ("Music Catalog Intelligence | Valencia Sound Craft"); home route title
+  now matches the static `index.html` title verbatim, so pre-hydration and
+  hydrated titles are identical. **Copy changes logged:** those two titles
+  only.
+- **Dev-speak grep:** zero hits for all five banned phrases (already clean
+  from the professionalization pass; now e2e-adjacent evidence in
+  gate-logs).
+- **Screenshot pass:** desktop `/` (hero + 6 portfolio embeds), `/tools`,
+  `/tools/map` (title + capitalized prose verified; a known browser-pane
+  capture artifact returns black frames at scroll depth, so tiles/filter
+  verified via DOM + computed style), mobile 375px `/tools/rhythm` (subnav
+  scrolls, prose reflows, hamburger nav). No visual-language changes.
+
+**Gates:** typecheck ✅ · lint ✅ (0 errors, 7 warnings) · vitest 42/42 ✅ ·
+build ✅ · e2e **18/18** ✅.

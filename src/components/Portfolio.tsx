@@ -46,7 +46,9 @@ const embeds = [
 
 const Portfolio = () => {
   const ref = useFadeIn();
-  const [expanded, setExpanded] = useState(false);
+  // Work is visible on first load; the toggle only lets visitors tuck it
+  // away — never the reverse (a hidden portfolio reads as an empty one).
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <section id="portfolio" className="section-padding !pt-8 bg-secondary/50" ref={ref}>

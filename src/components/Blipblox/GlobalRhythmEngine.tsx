@@ -51,6 +51,7 @@ import {
 } from "./rhythmEngineModel";
 import { generateMidiFile, downloadMidiFile } from "../DrumMachine/midiExport";
 import { DRUM_PRESETS, type PatternPreset, type TimeFeel } from "../DrumMachine/drumPresets";
+import { REGION_LABELS } from "../DrumMachine/rhythmData";
 import { getInstrument } from "../DrumMachine/drumSoundEngine";
 
 const BlipbloxConnector = lazy(() => import("./BlipbloxConnector"));
@@ -1043,7 +1044,7 @@ const GlobalRhythmEngine = ({
         {/* Region pills */}
         <div className="space-y-2">
           <div className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Region</div>
-          <div className="flex flex-wrap gap-2">
+          <div role="group" aria-label="Region filters" className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => changeBrowserRegion("All")}
@@ -1068,7 +1069,8 @@ const GlobalRhythmEngine = ({
                     : "border-border bg-card/60 text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
-                {region === "global" ? "Global" : region.replace(/_/g, " ")}
+                {(REGION_LABELS as Record<string, string>)[region] ??
+                  (region === "global" ? "Global" : region.replace(/_/g, " "))}
               </button>
             ))}
           </div>

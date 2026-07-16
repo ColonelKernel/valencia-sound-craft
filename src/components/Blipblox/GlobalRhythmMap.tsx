@@ -492,7 +492,9 @@ const GlobalRhythmMap = ({
         </div>
       )}
 
-      <div className="rounded-xl overflow-hidden border border-border">
+      {/* Brightness lift keeps the dark aesthetic while making country
+          shapes and labels on the CARTO dark tiles actually readable. */}
+      <div className="rounded-xl overflow-hidden border border-border [&_.leaflet-tile]:brightness-150">
         <MapContainer
           center={[18, 10]}
           zoom={2}

@@ -1,8 +1,10 @@
-import { Component, useEffect, useState, useCallback, type ReactNode, type ErrorInfo } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useCallback } from "react";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataService";
+import AnalyticsHero from "@/components/MusicAnalytics/AnalyticsHero";
+import ArtistPicker from "@/components/MusicAnalytics/ArtistPicker";
+import TabErrorBoundary from "@/components/MusicAnalytics/TabErrorBoundary";
 import StreamingDashboard from "@/components/MusicAnalytics/StreamingDashboard";
 import ArtistComparison from "@/components/MusicAnalytics/ArtistComparison";
 import CatalogSegmentation from "@/components/MusicAnalytics/CatalogSegmentation";
@@ -10,45 +12,6 @@ import VolatilityPanel from "@/components/MusicAnalytics/VolatilityPanel";
 import PortfolioBuilder from "@/components/MusicAnalytics/PortfolioBuilder";
 import CatalogAnalyzer from "@/components/MusicAnalytics/CatalogAnalyzer";
 import AcquisitionScorecard from "@/components/MusicAnalytics/AcquisitionScorecard";
-
-// Error boundary to catch DOM reconciliation crashes
-class TabErrorBoundary extends Component<
-  { children: ReactNode; resetKey: string },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("Tab render error:", error, info);
-  }
-
-  componentDidUpdate(prevProps: { resetKey: string }) {
-    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
-      this.setState({ hasError: false });
-    }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="rounded-xl border border-border/50 bg-card p-8 text-center">
-          <p className="text-sm text-muted-foreground">Something went wrong rendering this tab.</p>
-          <button
-            onClick={() => this.setState({ hasError: false })}
-            className="mt-3 rounded-lg border border-border px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/50"
-          >
-            Retry
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 type ViewMode = "streams" | "revenue";
 type Tab = "overview" | "acquisition" | "compare" | "segments" | "risk" | "portfolio" | "ai";
@@ -113,33 +76,7 @@ export default function MusicAnalyticsPage() {
       />
 
       <main className="pt-20">
-        {/* Hero */}
-        <section className="relative overflow-hidden border-b border-border/30">
-          <div className="absolute inset-0 bg-gradient-to-b from-foreground/[0.03] via-transparent to-transparent" />
-          <div className="container mx-auto px-6 py-14 md:py-20 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="max-w-3xl"
-            >
-              <p className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-3">
-                Catalog Intelligence Platform
-              </p>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-3">
-                Music Catalog Intelligence Platform
-              </h1>
-              <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">
-                Evaluate music catalogs as financial assets. Forecast performance, assess risk,
-                and generate AI-powered investment memos.
-              </p>
-              <p className="mt-4 text-xs text-muted-foreground/80 leading-relaxed max-w-2xl">
-                Demonstration dataset derived from public Spotify popularity data (2020 sample);
-                stream counts are modeled proxies, not live streaming figures.
-              </p>
-            </motion.div>
-          </div>
-        </section>
+        <AnalyticsHero />
 
         {/* Controls bar */}
         <section className="sticky top-[64px] z-20 border-b border-border/30 bg-background/95 backdrop-blur-sm">
@@ -228,26 +165,12 @@ export default function MusicAnalyticsPage() {
 
               {tab === "compare" && (
                 <div className="space-y-6">
-                  <div className="rounded-xl border border-border/50 bg-card p-4">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                      Select 2–4 artists to compare
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {artists.map((a) => (
-                        <button
-                          key={a}
-                          onClick={() => toggleCompareArtist(a)}
-                          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                            compareArtists.includes(a)
-                              ? "border-foreground bg-foreground text-background"
-                              : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                          }`}
-                        >
-                          {a}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <ArtistPicker
+                    label="Select 2–4 artists to compare"
+                    artists={artists}
+                    selected={compareArtists}
+                    onToggle={toggleCompareArtist}
+                  />
                   <ArtistComparison data={data} selectedArtists={compareArtists} mode={mode} />
                 </div>
               )}
@@ -262,26 +185,13 @@ export default function MusicAnalyticsPage() {
 
               {tab === "portfolio" && (
                 <div className="space-y-6">
-                  <div className="rounded-xl border border-border/50 bg-card p-4">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3">
-                      Build your portfolio
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {artists.map((a) => (
-                        <button
-                          key={a}
-                          onClick={() => togglePortfolioArtist(a)}
-                          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                            portfolio.includes(a)
-                              ? "border-foreground bg-foreground text-background"
-                              : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/50"
-                          }`}
-                        >
-                          {portfolio.includes(a) ? `✓ ${a}` : a}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <ArtistPicker
+                    label="Build your portfolio"
+                    artists={artists}
+                    selected={portfolio}
+                    onToggle={togglePortfolioArtist}
+                    checkmark
+                  />
                   <PortfolioBuilder
                     data={data}
                     portfolio={portfolio}

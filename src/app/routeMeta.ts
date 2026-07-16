@@ -20,7 +20,9 @@ export interface AppRouteMeta {
 export const ROUTE_META = {
   home: {
     path: "/",
-    title: "Valencia Sound Craft",
+    // Matches the static index.html title exactly, so the pre-hydration and
+    // hydrated titles never differ.
+    title: "Valencia Sound Craft - Zach Scheffler | Music Producer & Creative Technologist",
     description:
       "Music systems design, creative technology, and direct-linkable rhythm and harmony tools.",
   },
@@ -62,7 +64,7 @@ export const ROUTE_META = {
   },
   musicAnalytics: {
     path: "/music-analytics",
-    title: "Music Catalog Intelligence – Valencia Sound Craft",
+    title: "Music Catalog Intelligence | Valencia Sound Craft",
     description:
       "Catalog analytics dashboard for music investment analysis. Demonstration dataset derived from public Spotify popularity data, with forecasting and AI-assisted analysis.",
   },

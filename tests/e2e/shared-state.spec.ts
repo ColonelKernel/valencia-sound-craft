@@ -101,11 +101,14 @@ test("rhythm selected on the map route is the active rhythm on the rhythm route"
   const initialIdentity = ((await identity.textContent()) ?? "").trim();
 
   // Leaflet markers are flaky under automation, so use the rhythm browser
-  // instead: the region pills render lowercase ("brazil"), which keeps the
-  // exact (case-sensitive) match unambiguous versus the "Brazil" country
+  // instead: the region pills render capitalized labels ("Brazil"), so scope
+  // to the labeled pill group to disambiguate from the "Brazil" country
   // button. Switching region loads that region's first rhythm and pushes it
   // into the shared store via onRhythmChange.
-  await page.getByRole("button", { name: "brazil", exact: true }).click();
+  await page
+    .getByRole("group", { name: "Region filters" })
+    .getByRole("button", { name: "Brazil", exact: true })
+    .click();
   await expect(identity).not.toHaveText(initialIdentity);
 
   const nextIdentity = ((await identity.textContent()) ?? "").trim();
