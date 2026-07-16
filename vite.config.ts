@@ -60,11 +60,7 @@ export default defineConfig(({ mode }) => ({
             return "supabase-vendor";
           }
 
-          if (
-            id.includes("react-hook-form") ||
-            id.includes("@hookform") ||
-            id.includes("node_modules/zod/")
-          ) {
+          if (id.includes("node_modules/zod/")) {
             return "forms-vendor";
           }
 

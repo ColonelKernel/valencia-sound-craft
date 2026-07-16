@@ -77,8 +77,8 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
         throw new Error("AI analysis unavailable — the service returned an unexpected response.");
       }
       setResult(parsed);
-    } catch (err: any) {
-      setError(err.message ?? "AI analysis unavailable. Please try again later.");
+    } catch (err) {
+      setError(err instanceof Error && err.message ? err.message : "AI analysis unavailable. Please try again later.");
     } finally {
       setLoading(false);
     }

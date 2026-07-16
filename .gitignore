@@ -28,3 +28,7 @@ dist-ssr
 
 # Ralph gate evidence (local only)
 specs/*/gate-logs/
+
+# Playwright artifacts
+test-results/
+playwright-report/

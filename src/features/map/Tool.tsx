@@ -49,7 +49,7 @@ const MapTool = () => {
             <GlobalRhythmEngine
               tempo={tool.tempo}
               playing={tool.playing}
-              selectedRegion={tool.region as any}
+              selectedRegion={tool.region}
               selectedRhythmId={tool.rhythmId}
               onTempoChange={tool.setTempo}
               onPlayingChange={tool.setPlaying}

@@ -41,8 +41,12 @@ describe("globalRhythmAtlas", () => {
     expect(japan?.timbreProfile).toBe("taiko");
     expect(japan?.classification).toBe("documented");
 
-    expect(luxembourg?.classification).toBe("proxy");
-    expect(luxembourg?.meter).toBe("4/4");
+    // Luxembourg was upgraded from a generic 4/4 proxy to the shared Western
+    // European waltz template when the regional coverage map was expanded
+    // (no atlas entry is classified "proxy" anymore — 177 regional + 18
+    // documented). The test previously encoded the pre-expansion data model.
+    expect(luxembourg?.classification).toBe("regional");
+    expect(luxembourg?.meter).toBe("3/4");
 
     expect(coteDIvoire?.classification).toBe("regional");
   });

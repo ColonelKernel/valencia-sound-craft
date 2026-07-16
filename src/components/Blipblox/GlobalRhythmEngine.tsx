@@ -1396,7 +1396,7 @@ const GlobalRhythmEngine = ({
             <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
               Rhythm Identity Panel
             </p>
-            <h4 className="mt-2 text-lg font-semibold text-foreground">
+            <h4 data-testid="rhythm-identity" className="mt-2 text-lg font-semibold text-foreground">
               {activeDefinition.name} - {activeDefinition.country}
             </h4>
             <p className="mt-1 text-sm text-muted-foreground">

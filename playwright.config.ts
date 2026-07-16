@@ -16,7 +16,9 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      // Locally, use the installed system Chrome so `npm run e2e` works
+      // without a browser download; CI installs the pinned chromium build.
+      use: { ...devices["Desktop Chrome"], channel: process.env.CI ? undefined : "chrome" },
     },
   ],
   webServer: {

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback } from "react";
 
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
+import type { Region } from "@/components/DrumMachine/rhythmData";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
 
 import { rhythmToolMeta } from "./toolData";
@@ -54,7 +55,7 @@ const RhythmTool = () => {
             <GlobalRhythmEngine
               tempo={tool.tempo}
               playing={tool.playing}
-              selectedRegion={tool.region as any}
+              selectedRegion={tool.region}
               selectedRhythmId={tool.rhythmId}
               onTempoChange={tool.setTempo}
               onPlayingChange={tool.setPlaying}
@@ -68,7 +69,7 @@ const RhythmTool = () => {
             <DrumMachine
               tempo={tool.tempo}
               playing={tool.playing}
-              selectedRegion={tool.region as any}
+              selectedRegion={tool.region as Region}
               selectedRhythmId={tool.rhythmId}
               onTempoChange={tool.setTempo}
               onPlayingChange={tool.setPlaying}

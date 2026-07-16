@@ -40,9 +40,14 @@ test("key selected on the circle propagates to the harmony workspace", async ({ 
 
 test("tempo set on the rhythm engine propagates to the tonnetz", async ({ page }) => {
   await page.goto("/tools/rhythm");
-  await expect(page.getByRole("heading", { name: "Global Rhythm Atlas Engine" })).toBeVisible({
-    timeout: 20_000,
-  });
+  // The route mounts two GlobalRhythmEngine instances today (standalone
+  // engine + one embedded in the legacy DrumMachine), so scope to the
+  // standalone engine section to keep the locator unambiguous.
+  await expect(
+    page
+      .locator('section[aria-labelledby="rhythm-engine-section"]')
+      .getByRole("heading", { name: "Global Rhythm Atlas Engine" }),
+  ).toBeVisible({ timeout: 20_000 });
 
   // The engine's tempo control is the only native range input inside the
   // rhythm-engine section (Swing/Strength are Radix sliders; the legacy
@@ -74,8 +79,10 @@ test("rhythm selected on the map route is the active rhythm on the rhythm route"
     timeout: 20_000,
   });
 
-  // Rhythm Identity Panel heading renders "{name} - {country}".
-  const identity = page.locator('section[aria-labelledby="map-tool-section"] h4').first();
+  // Rhythm Identity Panel heading renders "{name} - {country}". The map
+  // section contains several h4s (the map card title renders first), so
+  // target the identity heading's dedicated test id.
+  const identity = page.getByTestId("rhythm-identity").first();
   await expect(identity).toContainText(" - ");
   const initialIdentity = ((await identity.textContent()) ?? "").trim();
 
@@ -94,7 +101,9 @@ test("rhythm selected on the map route is the active rhythm on the rhythm route"
   expect(rhythmName.length).toBeGreaterThan(0);
   expect(country).toBe("Brazil");
 
-  await expect(page.getByText(/The selected region is/)).toContainText("brazil");
+  // The page prose renders the capitalized region label from REGION_LABELS
+  // ("Brazil"), not the lowercase region key used by the filter pills.
+  await expect(page.getByText(/You are exploring/)).toContainText("Brazil");
 
   await navigateViaToolNav(page, "Rhythm", "/tools/rhythm");
   await expect(page.getByText("Current rhythm:")).toContainText(
