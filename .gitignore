@@ -25,3 +25,6 @@ dist-ssr
 *.sw?
 
 *.tsbuildinfo
+
+# Ralph gate evidence (local only)
+specs/*/gate-logs/
