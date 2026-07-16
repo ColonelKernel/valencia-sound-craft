@@ -28,6 +28,7 @@ npm run typecheck              # added by spec 001 (tsc noEmit)
 npm run lint                   # eslint .
 npx vitest run --maxWorkers=2  # unit tests
 npm run build                  # vite production build
+npm run budget                 # added by spec 005 (initial-graph size + heavy-lib ban)
 npm run e2e                    # playwright, port 4199, builds+previews first
 ```
 

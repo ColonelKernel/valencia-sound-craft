@@ -300,3 +300,44 @@ idle re-run per spec):**
 
 **Gates:** typecheck ✅ · lint ✅ (0 errors) · vitest 42/42 ✅ · build ✅ ·
 budget ✅ (110.6/150 KB) · e2e **18/18** ✅.
+
+### 006 — Final verification sweep (2026-07-16)
+
+**Clean-slate chain** (`rm -rf dist` first): typecheck ✅ → lint ✅
+(0 errors, 7 advisory warnings) → vitest 42/42 ✅ → build ✅ → budget ✅
+(110.6/150 KB gzip) → e2e 18/18 ✅ → **e2e again 18/18 ✅** (flake check).
+Tails in `specs/006-verification-sweep/gate-logs/`.
+
+**Original audit findings — closure table:**
+
+| # | Finding | Status | Evidence |
+|---|---------|--------|----------|
+| A1 | Contact form fake success | **fixed** | `Contact.tsx` inserts into Supabase `contact_messages` (RLS anon INSERT-only, honeypot), honest success/failure states; migration `supabase/migrations/20260716120000_contact_messages.sql` awaits deploy to the live project |
+| A2 | Portfolio collapsed by default | **fixed (spec 004)** | `useState(true)`; 6 embeds mount on first load, DOM-verified |
+| A3 | "Real streaming data" label false | **fixed** | Hero + footer label: "Demonstration dataset… modeled proxies, not live streaming figures"; dataset now self-hosted (spec 005) |
+| A4 | MoM −94.5% partial-bucket artifact | **fixed** | `robustMoMGrowth`/`dropSparseFinalBucket` in `catalogAnalytics.ts` (unit-tested) |
+| A5 | AI memo vs dashboard stat mismatch | **fixed** | `CatalogAnalyzer` feeds the memo the dashboard's stats; honest error state on failure (backend deploy still pending user) |
+| A6 | Bare youtube.com social link | **fixed** | removed from Navbar/Footer; user re-adds real channel URL |
+| A7 | Dev-speak copy | **fixed** | grep for all five banned phrases: zero hits |
+| A8 | Brand title inconsistency | **fixed (spec 004)** | one "\| Valencia Sound Craft" pattern; home title matches index.html verbatim; manifest-driven |
+| A9 | WhatsApp number published | **open-intentional** | user to confirm; one-line removal in `Footer.tsx` if not |
+| A10 | Lowercase region names | **fixed (spec 004)** | prose uses `regionLabel`; pills render `REGION_LABELS`; e2e pins "Brazil" |
+| A11 | Illegible dark basemap | **fixed (spec 004)** | scoped `brightness-150` on leaflet tiles (computed-style verified) |
+| A12 | Lovable tracking scripts | **open-intentional** | injected by the Lovable host at deploy time, not present in this repo's HTML; goes away only with a host migration |
+
+**Final summary — the rebuild in numbers:**
+- src files 197 → 144; runtime deps 58 → 24.
+- Initial JS+CSS on `/`: **~539 KB gzip (live baseline) → 110.6 KB gzip**, enforced by a failing gate.
+- Test suite: vitest 38 → 42, e2e 12 (never green) → **18 consistently green**, plus the budget gate.
+- One AudioContext (was 8 creation sites), one store as source of truth (zero sync-scaffolding refs), canonical mode names, store-level tempo policy.
+- Every route lazy behind one shell (route manifest, per-route error boundaries, 404 + groove pages finally titled/chromed).
+- No third-party runtime dependencies on `/` or `/music-analytics` (fonts + dataset self-hosted).
+- Visual language unchanged (screenshot passes desktop + 375 px).
+
+**Remaining for the human (unchanged from the professionalization runbook):**
+deploy the `contact_messages` migration; confirm WhatsApp intentionality;
+re-add a real YouTube channel URL; merge via PR (constitution: human opens
+it); redeploy through Lovable; optional idle-machine Lighthouse re-run
+(mobile ≥95 needs prerendering — future spec candidate).
+
+<promise>DONE</promise>
