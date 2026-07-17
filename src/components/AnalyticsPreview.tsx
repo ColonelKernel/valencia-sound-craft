@@ -1,82 +1,144 @@
 import { ArrowRight, BarChart3, TrendingUp, Shield, Target } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Area, AreaChart, Bar, BarChart, Line, LineChart, ResponsiveContainer } from "recharts";
+
+import { sparklineBars, sparklineGeometry } from "@/lib/sparkline";
 
 const sparkData = {
-  acquisition: [
-    { v: 42 }, { v: 48 }, { v: 45 }, { v: 55 }, { v: 58 }, { v: 52 },
-    { v: 61 }, { v: 67 }, { v: 63 }, { v: 72 }, { v: 78 }, { v: 74 },
-  ],
-  revenue: [
-    { v: 12 }, { v: 18 }, { v: 22 }, { v: 28 }, { v: 31 }, { v: 35 },
-    { v: 33 }, { v: 40 }, { v: 46 }, { v: 52 }, { v: 55 }, { v: 61 },
-  ],
-  risk: [
-    { v: 30 }, { v: 45 }, { v: 25 }, { v: 50 }, { v: 35 }, { v: 55 },
-    { v: 28 }, { v: 42 }, { v: 38 }, { v: 48 }, { v: 32 }, { v: 40 },
-  ],
-  catalog: [
-    { v: 85 }, { v: 62 }, { v: 48 }, { v: 35 }, { v: 28 }, { v: 20 },
-    { v: 15 }, { v: 12 },
-  ],
+  acquisition: [42, 48, 45, 55, 58, 52, 61, 67, 63, 72, 78, 74],
+  revenue: [12, 18, 22, 28, 31, 35, 33, 40, 46, 52, 55, 61],
+  risk: [30, 45, 25, 50, 35, 55, 28, 42, 38, 48, 32, 40],
+  catalog: [85, 62, 48, 35, 28, 20, 15, 12],
+};
+
+/**
+ * Inline SVG sparklines — deliberately not recharts. These four 40px decorative
+ * charts don't justify pulling a charting library (recharts + d3) onto the
+ * landing page's scroll path; the geometry helpers draw them as plain paths.
+ * `preserveAspectRatio="none"` stretches them to the card width, and
+ * `vector-effect="non-scaling-stroke"` keeps strokes crisp under that scale.
+ */
+
+const SPARK_W = 100;
+const SPARK_H = 40;
+
+const AreaSpark = ({
+  values,
+  stroke,
+  gradientId,
+}: {
+  values: number[];
+  stroke: string;
+  gradientId: string;
+}) => {
+  const { line, area } = sparklineGeometry(values, { width: SPARK_W, height: SPARK_H });
+  return (
+    <svg
+      width="100%"
+      height={SPARK_H}
+      viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+      preserveAspectRatio="none"
+      role="presentation"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={stroke} stopOpacity={0.3} />
+          <stop offset="100%" stopColor={stroke} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gradientId})`} stroke="none" />
+      <path
+        d={line}
+        fill="none"
+        stroke={stroke}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+};
+
+const LineSpark = ({ values, stroke }: { values: number[]; stroke: string }) => {
+  const { line } = sparklineGeometry(values, { width: SPARK_W, height: SPARK_H });
+  return (
+    <svg
+      width="100%"
+      height={SPARK_H}
+      viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+      preserveAspectRatio="none"
+      role="presentation"
+      aria-hidden="true"
+    >
+      <path
+        d={line}
+        fill="none"
+        stroke={stroke}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+};
+
+const BarSpark = ({ values }: { values: number[] }) => {
+  const bars = sparklineBars(values, { width: SPARK_W, height: SPARK_H, gap: 0.3 });
+  return (
+    <svg
+      width="100%"
+      height={SPARK_H}
+      viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+      preserveAspectRatio="none"
+      role="presentation"
+      aria-hidden="true"
+    >
+      {bars.map((bar, index) => (
+        <rect
+          key={index}
+          x={bar.x}
+          y={bar.y}
+          width={bar.width}
+          height={bar.height}
+          rx={1}
+          fill="hsl(var(--foreground))"
+          opacity={0.4}
+        />
+      ))}
+    </svg>
+  );
 };
 
 const metrics = [
   {
-    icon: Target, label: "Acquisition Scoring", value: "0–100",
+    icon: Target,
+    label: "Acquisition Scoring",
+    value: "0–100",
     desc: "Weighted model evaluating growth, volatility, longevity & momentum",
-    spark: (
-      <ResponsiveContainer width="100%" height={40}>
-        <AreaChart data={sparkData.acquisition}>
-          <defs>
-            <linearGradient id="sparkAcq" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area type="monotone" dataKey="v" stroke="hsl(var(--primary))" strokeWidth={1.5} fill="url(#sparkAcq)" dot={false} />
-        </AreaChart>
-      </ResponsiveContainer>
-    ),
+    spark: <AreaSpark values={sparkData.acquisition} stroke="hsl(var(--primary))" gradientId="sparkAcq" />,
   },
   {
-    icon: TrendingUp, label: "Revenue Forecasting", value: "Linear Regression",
+    icon: TrendingUp,
+    label: "Revenue Forecasting",
+    value: "Linear Regression",
     desc: "Stream-to-revenue projections with confidence bands",
-    spark: (
-      <ResponsiveContainer width="100%" height={40}>
-        <LineChart data={sparkData.revenue}>
-          <Line type="monotone" dataKey="v" stroke="hsl(142 71% 45%)" strokeWidth={1.5} dot={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    ),
+    spark: <LineSpark values={sparkData.revenue} stroke="hsl(142 71% 45%)" />,
   },
   {
-    icon: Shield, label: "Risk Analysis", value: "Rolling Variance",
+    icon: Shield,
+    label: "Risk Analysis",
+    value: "Rolling Variance",
     desc: "Volatility tracking and catalog diversification scoring",
-    spark: (
-      <ResponsiveContainer width="100%" height={40}>
-        <AreaChart data={sparkData.risk}>
-          <defs>
-            <linearGradient id="sparkRisk" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(0 84% 60%)" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="hsl(0 84% 60%)" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area type="monotone" dataKey="v" stroke="hsl(0 84% 60%)" strokeWidth={1.5} fill="url(#sparkRisk)" dot={false} />
-        </AreaChart>
-      </ResponsiveContainer>
-    ),
+    spark: <AreaSpark values={sparkData.risk} stroke="hsl(0 84% 60%)" gradientId="sparkRisk" />,
   },
   {
-    icon: BarChart3, label: "Catalog Depth", value: "Album Distribution",
+    icon: BarChart3,
+    label: "Catalog Depth",
+    value: "Album Distribution",
     desc: "Playcount concentration across discography",
-    spark: (
-      <ResponsiveContainer width="100%" height={40}>
-        <BarChart data={sparkData.catalog}>
-          <Bar dataKey="v" fill="hsl(var(--foreground))" opacity={0.4} radius={[2, 2, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    ),
+    spark: <BarSpark values={sparkData.catalog} />,
   },
 ];
 
@@ -92,7 +154,7 @@ const AnalyticsPreview = () => (
             </h2>
             <p className="text-sm text-muted-foreground md:text-base">
               Investment-grade analytics for evaluating music catalogs as financial assets.
-              Real streaming data, acquisition scoring, and AI-driven insights.
+              Modeled catalog metrics, acquisition scoring, and AI-driven insights.
             </p>
           </div>
 
@@ -122,7 +184,8 @@ const AnalyticsPreview = () => (
       </div>
 
       <p className="text-[11px] text-muted-foreground/60">
-        Built using real streaming data, public APIs, and simplified financial modeling
+        Built on a public Spotify popularity dataset (2020 sample), public APIs, and simplified
+        financial modeling
       </p>
     </div>
   </section>
