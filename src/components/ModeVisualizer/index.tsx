@@ -119,9 +119,12 @@ const ModeVisualizer = ({
     [showOnlyTabs],
   );
 
-  const scaleNotes = getScaleNotes(root, mode);
+  // Memoized so hover state churn (which re-renders this component constantly)
+  // doesn't re-run the scale/chord math or hand a fresh `scaleNotes` reference
+  // to the Tonnetz/CircleOfFifths children on every frame.
+  const scaleNotes = useMemo(() => getScaleNotes(root, mode), [root, mode]);
   const intervals = MODE_INTERVAL_NAMES[mode] || [];
-  const chordSpellings = getChordSpellings(scaleNotes, mode);
+  const chordSpellings = useMemo(() => getChordSpellings(scaleNotes, mode), [scaleNotes, mode]);
   const tuning: TuningPreset = isCustomTuning
     ? { label: 'Custom', guitar: customGuitar, guitar7: customGuitar, guitar8: customGuitar, bass: customBass, bass5: customBass, bass6: customBass }
     : TUNING_PRESETS[tuningIdx];
@@ -245,6 +248,7 @@ const ModeVisualizer = ({
                     <button
                       key={tool.value}
                       type="button"
+                      aria-pressed={activeTab === tool.value}
                       onClick={() => setActiveTab(tool.value)}
                       className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                         activeTab === tool.value

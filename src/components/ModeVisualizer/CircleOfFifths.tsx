@@ -889,6 +889,9 @@ const CircleOfFifths = ({
   }, [activeTarget]);
 
   useEffect(() => {
+    // Honor prefers-reduced-motion: render one static frame and stop, instead
+    // of the continuous idle glow / orbit / playhead animation loop.
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const animate = (now: number) => {
       const idlePhase = 0.5 + 0.5 * Math.sin(now * 0.00125);
       const beatMs = 60000 / Math.max(48, bpmRef.current || 96);
@@ -961,10 +964,16 @@ const CircleOfFifths = ({
         modulationMarkerRef.current.setAttribute("opacity", "0");
       }
 
-      animationFrameRef.current = requestAnimationFrame(animate);
+      if (!reduceMotion) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
     };
 
-    animationFrameRef.current = requestAnimationFrame(animate);
+    if (reduceMotion) {
+      animate(performance.now());
+    } else {
+      animationFrameRef.current = requestAnimationFrame(animate);
+    }
 
     return () => {
       if (animationFrameRef.current) {
@@ -994,13 +1003,13 @@ const CircleOfFifths = ({
           </button>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => setShowKeySig((current) => !current)} className={toggleBtnClass(showKeySig)}>
+          <button onClick={() => setShowKeySig((current) => !current)} aria-pressed={showKeySig} className={toggleBtnClass(showKeySig)}>
             {showKeySig ? <Eye size={12} /> : <EyeOff size={12} />} Key Sig
           </button>
-          <button onClick={() => setShowRelated((current) => !current)} className={toggleBtnClass(showRelated)}>
+          <button onClick={() => setShowRelated((current) => !current)} aria-pressed={showRelated} className={toggleBtnClass(showRelated)}>
             Related Keys
           </button>
-          <button onClick={() => setShowDiminished((current) => !current)} className={toggleBtnClass(showDiminished)}>
+          <button onClick={() => setShowDiminished((current) => !current)} aria-pressed={showDiminished} className={toggleBtnClass(showDiminished)}>
             vii° Ring
           </button>
         </div>
@@ -1165,6 +1174,9 @@ const CircleOfFifths = ({
                       filter={nodeStyle.filter || undefined}
                       className="cursor-pointer"
                       style={{ transition: NODE_TRANSITION }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${node.key} major`}
                       onMouseEnter={() => {
                         if (!isMobile) {
                           setHoveredSegment({ ring: "major", index: node.index });
@@ -1175,6 +1187,20 @@ const CircleOfFifths = ({
                         if (!isMobile) {
                           setHoveredSegment(null);
                           hideTooltip();
+                        }
+                      }}
+                      onFocus={() => {
+                        setHoveredSegment({ ring: "major", index: node.index });
+                        showTooltipForNode("major", node.key, node.pos);
+                      }}
+                      onBlur={() => {
+                        setHoveredSegment(null);
+                        hideTooltip();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleMajorClick(node.key, node.index);
                         }
                       }}
                       onClick={() => handleMajorClick(node.key, node.index)}
@@ -1237,6 +1263,9 @@ const CircleOfFifths = ({
                       filter={nodeStyle.filter || undefined}
                       className="cursor-pointer"
                       style={{ transition: NODE_TRANSITION }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${MINOR_DISPLAY[node.key] || node.key} minor`}
                       onMouseEnter={() => {
                         if (!isMobile) {
                           setHoveredSegment({ ring: "minor", index: node.index });
@@ -1247,6 +1276,20 @@ const CircleOfFifths = ({
                         if (!isMobile) {
                           setHoveredSegment(null);
                           hideTooltip();
+                        }
+                      }}
+                      onFocus={() => {
+                        setHoveredSegment({ ring: "minor", index: node.index });
+                        showTooltipForNode("minor", node.key, node.pos);
+                      }}
+                      onBlur={() => {
+                        setHoveredSegment(null);
+                        hideTooltip();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleMinorClick(node.key, node.index);
                         }
                       }}
                       onClick={() => handleMinorClick(node.key, node.index)}
@@ -1289,6 +1332,9 @@ const CircleOfFifths = ({
                         filter={nodeStyle.filter || undefined}
                         className="cursor-pointer"
                         style={{ transition: NODE_TRANSITION }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${node.key} diminished`}
                         onMouseEnter={() => {
                           if (!isMobile) {
                             setHoveredSegment({ ring: "dim", index: node.index });
@@ -1299,6 +1345,20 @@ const CircleOfFifths = ({
                           if (!isMobile) {
                             setHoveredSegment(null);
                             hideTooltip();
+                          }
+                        }}
+                        onFocus={() => {
+                          setHoveredSegment({ ring: "dim", index: node.index });
+                          showTooltipForNode("dim", node.key, node.pos);
+                        }}
+                        onBlur={() => {
+                          setHoveredSegment(null);
+                          hideTooltip();
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleDimClick(node.key, node.index);
                           }
                         }}
                         onClick={() => handleDimClick(node.key, node.index)}

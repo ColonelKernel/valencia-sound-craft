@@ -75,13 +75,27 @@ const Navbar = () => {
       setActiveHref(nextActiveHref);
     };
 
+    // rAF-throttle: the scroll handler does layout-forcing offsetTop reads for
+    // each section, so coalesce it to at most once per frame.
+    let ticking = false;
+    let rafId = 0;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      rafId = requestAnimationFrame(() => {
+        updateNavigationState();
+        ticking = false;
+      });
+    };
+
     updateNavigationState();
-    window.addEventListener("scroll", updateNavigationState, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", updateNavigationState);
 
     return () => {
-      window.removeEventListener("scroll", updateNavigationState);
+      window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", updateNavigationState);
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [isHomePage]);
 

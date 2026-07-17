@@ -395,7 +395,10 @@ const DrumMachine = ({
       nextNoteTimeRef.current = ctx.currentTime;
       stepRef.current = {};
       trackNextTimeRef.current = {};
-      tracks.forEach(t => {
+      // Read the live tracks off the ref, not the `tracks` dep — otherwise a
+      // step/track edit during playback re-runs this effect and snaps the
+      // playhead back to step 0. The scheduler already reads tracksRef.current.
+      tracksRef.current.forEach(t => {
         stepRef.current[t.id] = 0;
         trackNextTimeRef.current[t.id] = ctx.currentTime;
       });
@@ -417,7 +420,7 @@ const DrumMachine = ({
       playingRef.current = false;
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [playing, scheduleNote, getCtx, tracks]);
+  }, [playing, scheduleNote, getCtx]);
 
   // ─── Track Actions ──────────────────────────────────────────────────────────
 
@@ -864,6 +867,7 @@ const DrumMachine = ({
                 <button onClick={() => updateTrack(track.id, { muted: !track.muted })}
                   className={`p-0.5 rounded transition-colors ${track.muted ? 'text-muted-foreground/40' : 'text-foreground'}`}
                   title={track.muted ? 'Unmute' : 'Mute'}
+                  aria-pressed={track.muted}
                   aria-label={`${track.muted ? 'Unmute' : 'Mute'} ${inst?.name || track.instrumentId}`}>
                   {track.muted ? <VolumeX size={11} /> : <Volume2 size={11} />}
                 </button>

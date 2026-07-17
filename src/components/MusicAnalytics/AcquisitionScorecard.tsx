@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { jsPDF } from "jspdf";
 import type { ArtistMonthly } from "@/lib/musicDataService";
 import {
   buildArtistComparison,
@@ -91,8 +90,11 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
     [comparisons]
   );
 
-  const generatePDF = useCallback(() => {
+  const generatePDF = useCallback(async () => {
     if (!selected || !selectedArtist) return;
+    // Loaded on demand so the ~40 KB gzip PDF library isn't in the analytics
+    // page chunk — it only downloads when a visitor actually exports.
+    const { jsPDF } = await import("jspdf");
     const doc = new jsPDF();
     const a = selected;
     const lf = lastfm;

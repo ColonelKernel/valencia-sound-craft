@@ -118,6 +118,13 @@
     outline: 2px solid hsl(var(--ring) / 0.45);
     outline-offset: 2px;
   }
+
+  /* Keyboard focus ring for the interactive SVG segments in the Circle of
+     Fifths / Tonnetz, which the element rules above don't match. */
+  svg [role="button"]:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,17 +1,20 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataService";
 import AnalyticsHero from "@/components/MusicAnalytics/AnalyticsHero";
 import ArtistPicker from "@/components/MusicAnalytics/ArtistPicker";
 import TabErrorBoundary from "@/components/MusicAnalytics/TabErrorBoundary";
+// The Overview tab is the initial view, so it stays eager. Every other tab
+// (each recharts/framer-motion heavy) is code-split and only downloaded when
+// its tab is first opened, keeping them out of the page's first-load chunk.
 import StreamingDashboard from "@/components/MusicAnalytics/StreamingDashboard";
-import ArtistComparison from "@/components/MusicAnalytics/ArtistComparison";
-import CatalogSegmentation from "@/components/MusicAnalytics/CatalogSegmentation";
-import VolatilityPanel from "@/components/MusicAnalytics/VolatilityPanel";
-import PortfolioBuilder from "@/components/MusicAnalytics/PortfolioBuilder";
-import CatalogAnalyzer from "@/components/MusicAnalytics/CatalogAnalyzer";
-import AcquisitionScorecard from "@/components/MusicAnalytics/AcquisitionScorecard";
+const ArtistComparison = lazy(() => import("@/components/MusicAnalytics/ArtistComparison"));
+const CatalogSegmentation = lazy(() => import("@/components/MusicAnalytics/CatalogSegmentation"));
+const VolatilityPanel = lazy(() => import("@/components/MusicAnalytics/VolatilityPanel"));
+const PortfolioBuilder = lazy(() => import("@/components/MusicAnalytics/PortfolioBuilder"));
+const CatalogAnalyzer = lazy(() => import("@/components/MusicAnalytics/CatalogAnalyzer"));
+const AcquisitionScorecard = lazy(() => import("@/components/MusicAnalytics/AcquisitionScorecard"));
 
 type ViewMode = "streams" | "revenue";
 type Tab = "overview" | "acquisition" | "compare" | "segments" | "risk" | "portfolio" | "ai";
@@ -147,6 +150,13 @@ export default function MusicAnalyticsPage() {
                 wrapper an explicit min-height so ResponsiveContainer always mounts
                 into a sized parent. */}
             <TabErrorBoundary resetKey={tab}>
+              <Suspense
+                fallback={
+                  <div className="flex min-h-[24rem] items-center justify-center text-sm text-muted-foreground">
+                    Loading…
+                  </div>
+                }
+              >
               {tab === "overview" && (
                 <StreamingDashboard
                   data={data}
@@ -204,6 +214,7 @@ export default function MusicAnalyticsPage() {
               {tab === "ai" && (
                 <CatalogAnalyzer artists={artists} data={data} />
               )}
+              </Suspense>
             </TabErrorBoundary>
 
             {/* Footer label */}

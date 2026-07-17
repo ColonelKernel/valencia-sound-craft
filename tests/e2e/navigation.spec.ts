@@ -69,6 +69,21 @@ test("navbar navigation reaches groove lab, analytics, and home with manifest ti
   expect(errors).toEqual([]);
 });
 
+test("resets scroll to the top on client-side navigation", async ({ page }) => {
+  await page.goto("/tools/rhythm");
+  await expect(page).toHaveTitle(ROUTE_META.rhythm.title, { timeout: 15_000 });
+
+  // Scroll well down the (long) rhythm route, then navigate via the sticky
+  // subnav — the Layout effect must reset scrollY to 0.
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+
+  await toolNav(page).getByRole("link", { name: "Harmony", exact: true }).click();
+  await expect(page).toHaveURL(/\/tools\/harmony$/);
+
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+});
+
 test("tool subnav navigates across every tool with manifest titles", async ({ page, baseURL }) => {
   const appOrigin = new URL(baseURL ?? "http://127.0.0.1:4199").origin;
   const errors = collectErrors(page, appOrigin);

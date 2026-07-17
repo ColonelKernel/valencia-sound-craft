@@ -310,6 +310,15 @@ const ChordProgressionBuilder = ({
     }
   }, [controlledPlaying, playProgression, playing, stop]);
 
+  // Clear any pending (possibly looping) chord timeouts on unmount, so audio
+  // never keeps playing after the tab is switched away. Mirrors Tonnetz.
+  useEffect(() => {
+    return () => {
+      timeoutRef.current.forEach(clearTimeout);
+      timeoutRef.current = [];
+    };
+  }, []);
+
   if (chordSpellings.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-4">

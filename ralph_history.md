@@ -366,3 +366,36 @@ budget 110.7/150 KB gz):
 8. Scroll + focus reset on route change in Layout (instant, hash-guarded).
 
 Preconnect/dns-prefetch hints added for {a-d}.basemaps.cartocdn.com.
+
+---
+
+## Deep improvement pass (2026-07-17, interactive session)
+
+A 25-agent adversarially-verified audit (correctness/a11y/perf/tests) surfaced
+21 real+safe findings; implemented 19 (deferred #8 Leaflet-marker keyboard swap
+and #10 hand-rolled homepage sparklines as medium-risk-for-value). Gates green:
+typecheck, lint, vitest 68, build, budget 110.7/150 KB gz, e2e 19.
+
+Correctness:
+1. ChordProgressionBuilder: unmount cleanup clears looping chord timeouts
+   (fixes audio that kept playing after tab switch).
+2. DrumMachine playback effect reads tracksRef.current + dropped `tracks` from
+   deps — editing steps/tracks during playback no longer restarts to step 0.
+
+Accessibility:
+3-4. Circle of Fifths + Tonnetz SVG segments now keyboard-operable
+   (role/tabIndex/aria-label/onKeyDown/onFocus) + SVG :focus-visible ring.
+5. aria-live status region announces play/stop + rhythm changes.
+6. aria-pressed on toggle/tab buttons (Circle toggles, DrumMachine mute,
+   continent filters, Harmony tool selector).
+7. prefers-reduced-motion gates the Circle rAF loop + Tonnetz SMIL.
+
+Performance:
+8. jsPDF dynamic import (out of the analytics page chunk).
+9. 6 non-default analytics tabs lazy-loaded via Suspense.
+10. useMemo scaleNotes/chordSpellings in ModeVisualizer.
+11. rAF-throttled Navbar scroll handler.
+
+Tests (+22): transport release guard, single-AudioContext static scan,
+useDebouncedTempo, DrumMachine single-mount, rhythmUtils, chordProgressionModel
+equality/clone, Layout scroll-reset e2e, normalizeMode aliases.

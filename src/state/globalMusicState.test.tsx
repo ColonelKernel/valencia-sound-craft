@@ -90,6 +90,47 @@ describe("globalMusicState", () => {
     expect(screen.getByTestId("harmony-state")).toHaveTextContent("playing");
   });
 
+  it("ignores a stop from a tool that does not own the transport", () => {
+    const TransportHarness = () => {
+      const rhythm = useGlobalTransport("rhythm");
+      const harmony = useGlobalTransport("harmony");
+
+      return (
+        <div>
+          <button type="button" onClick={() => harmony.setPlaying(true)}>
+            Start harmony
+          </button>
+          <button type="button" onClick={() => rhythm.setPlaying(false)}>
+            Stop rhythm
+          </button>
+          <button type="button" onClick={() => harmony.setPlaying(false)}>
+            Stop harmony
+          </button>
+          <div data-testid="rhythm-state">{rhythm.playing ? "playing" : "stopped"}</div>
+          <div data-testid="harmony-state">{harmony.playing ? "playing" : "stopped"}</div>
+        </div>
+      );
+    };
+
+    render(
+      <GlobalMusicProvider>
+        <TransportHarness />
+      </GlobalMusicProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Start harmony" }));
+    expect(screen.getByTestId("harmony-state")).toHaveTextContent("playing");
+
+    // A non-owning tool calling stop must NOT stop the active tool.
+    fireEvent.click(screen.getByRole("button", { name: "Stop rhythm" }));
+    expect(screen.getByTestId("harmony-state")).toHaveTextContent("playing");
+    expect(screen.getByTestId("rhythm-state")).toHaveTextContent("stopped");
+
+    // The owning tool releasing does stop it.
+    fireEvent.click(screen.getByRole("button", { name: "Stop harmony" }));
+    expect(screen.getByTestId("harmony-state")).toHaveTextContent("stopped");
+  });
+
   it("preserves rich chord progression entries in shared state", () => {
     const scaleNotes = getScaleNotes("C", "Ionian");
     const chordSpellings = getChordSpellings(scaleNotes, "Ionian");

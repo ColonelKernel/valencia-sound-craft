@@ -874,7 +874,7 @@ const GlobalRhythmEngine = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2" role="status" aria-live="polite" aria-atomic="true">
           <span
             className={cn(
               "rounded-full border px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]",
@@ -916,6 +916,7 @@ const GlobalRhythmEngine = ({
               <button
                 key={continent}
                 type="button"
+                aria-pressed={continentFilter === continent}
                 onClick={() => {
                   setContinentFilter(continent as RhythmContinent | "All");
                   changeBrowserRegion("All");

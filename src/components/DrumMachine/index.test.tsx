@@ -69,4 +69,26 @@ describe("DrumMachine", () => {
       expect(onRhythmChange).not.toHaveBeenCalled();
     });
   });
+
+  it("does not mount the embedded rhythm engine until the Atlas panel is opened", async () => {
+    const preset = filterPresets({ region: "flamenco" })[0]!;
+
+    render(
+      <DrumMachine
+        selectedRhythmId={preset.id}
+        selectedRegion={preset.region}
+        onRhythmChange={vi.fn()}
+      />,
+    );
+
+    // The Atlas panel starts closed, so no second GlobalRhythmEngine mounts on
+    // load (regression guard for the double-mount fix).
+    expect(screen.queryByTestId("embedded-rhythm-engine")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Atlas" }));
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId("embedded-rhythm-engine")).toHaveLength(1);
+    });
+  });
 });

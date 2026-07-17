@@ -48,6 +48,11 @@ const Tonnetz = ({
 }: TonnetzProps) => {
   // ─── State ──────────────────────────────────────────────
   const [hoveredTriad, setHoveredTriad] = useState<GridTriad | null>(null);
+  // Read once at mount; suppresses the looping SMIL animations for users who
+  // requested reduced motion (CSS can't reach SVG SMIL).
+  const [reduceMotion] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const [activeTriad, setActiveTriad] = useState<TonnetzTriadData | null>(null);
   const [showTriads, setShowTriads] = useState(true);
   const [colorMode, setColorMode] = useState<'scale' | 'pitch' | 'heatmap'>('scale');
@@ -460,8 +465,19 @@ const Tonnetz = ({
                     strokeWidth={isHovered || isActiveTriadMatch || isAnimTarget ? 2.5 : 1}
                     opacity={isHovered || isActiveTriadMatch || isAnimTarget || isExtMatch ? 1 : 0.4}
                     className="cursor-pointer transition-all duration-200"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${triad.root} ${triad.type} triad`}
                     onMouseEnter={() => setHoveredTriad(triad)}
                     onMouseLeave={() => setHoveredTriad(null)}
+                    onFocus={() => setHoveredTriad(triad)}
+                    onBlur={() => setHoveredTriad(null)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleTriadClick(triad);
+                      }
+                    }}
                     onClick={() => handleTriadClick(triad)}
                   />
                 );
@@ -503,7 +519,20 @@ const Tonnetz = ({
               {nodes.map((node) => {
                 const inScale = isInScale(node.noteIdx);
                 return (
-                  <g key={`n-${node.q}-${node.r}`} className="cursor-pointer" onClick={() => handleNodeClick(node)}>
+                  <g
+                    key={`n-${node.q}-${node.r}`}
+                    className="cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Note ${node.note}`}
+                    onClick={() => handleNodeClick(node)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleNodeClick(node);
+                      }
+                    }}
+                  >
                     <path
                       d={hexPath(node.x, node.y, hexRadius * 0.82)}
                       fill={getNodeFill(node)}
@@ -596,15 +625,17 @@ const Tonnetz = ({
                         fill="none" stroke="hsl(45,90%,60%)" strokeWidth={2}
                         strokeDasharray="3,3" opacity={0.6}
                         filter="url(#gravity-glow)">
-                        <animateTransform attributeName="transform" type="rotate"
-                          from={`0 ${tonalCenter.x} ${tonalCenter.y}`}
-                          to={`360 ${tonalCenter.x} ${tonalCenter.y}`}
-                          dur="8s" repeatCount="indefinite" />
+                        {!reduceMotion && (
+                          <animateTransform attributeName="transform" type="rotate"
+                            from={`0 ${tonalCenter.x} ${tonalCenter.y}`}
+                            to={`360 ${tonalCenter.x} ${tonalCenter.y}`}
+                            dur="8s" repeatCount="indefinite" />
+                        )}
                       </circle>
                       <circle cx={tonalCenter.x} cy={tonalCenter.y} r={4}
                         fill="hsl(45,90%,60%)" opacity={0.8}
                         filter="url(#gravity-glow)">
-                        {playing && (
+                        {playing && !reduceMotion && (
                           <animate attributeName="r" values="4;6;4" dur="1s" repeatCount="indefinite" />
                         )}
                       </circle>
