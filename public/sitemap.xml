@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- No <lastmod>: it is optional, nothing regenerates it at build time,
+       and a hardcoded date silently goes stale with every content merge. -->
   <url>
     <loc>https://research.zachscheffler.com/</loc>
-    <lastmod>2026-07-16</lastmod>
   </url>
 </urlset>

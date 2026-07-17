@@ -321,6 +321,7 @@ export const caseStudies: ResearchCaseStudy[] = [
       "Real-instrument evaluation, studies with musicians, and end-to-end Ableton Live runtime validation remain pending.",
       "The current evaluation concerns symbolic transitions and synthesized acceptance, not reactive listening to a live performer.",
       "Workshop materials describe inconsistent dataset provenance and chord-vocabulary counts, so those details are not presented as validated findings here.",
+      "The benchmark harness and held-out results are not yet published in a public repository, so the figures above cannot currently be independently verified.",
     ],
     nextStep:
       "Evaluate latency, controllability, and perceived usefulness with live instruments and musicians, while comparing interpretable baselines with learned alternatives.",

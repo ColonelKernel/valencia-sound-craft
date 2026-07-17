@@ -34,8 +34,10 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      # npx (not `npm run e2e`) so package.json's pree2e hook doesn't rebuild
+      # the site a second time — the Build step above already produced dist/.
       - name: E2E tests
-        run: npm run e2e
+        run: npx playwright test
 
       - name: Upload Playwright report
         if: failure()

@@ -35,7 +35,21 @@ export default tseslint.config(
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["*.config.ts", "tests/**/*.ts"],
+    // Catch-all for TS outside src/ (configs, tests, future scripts) so a
+    // new file can't silently escape linting; src/ keeps its own block with
+    // browser globals and the React plugins.
+    files: ["**/*.ts"],
+    ignores: ["src/**"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: globals.node,
+    },
+  },
+  {
+    // Root JS/CJS config files previously matched no block and were linted
+    // with zero rules.
+    extends: [js.configs.recommended],
+    files: ["**/*.{js,cjs,mjs}"],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.node,

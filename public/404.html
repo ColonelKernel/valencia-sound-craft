@@ -7,6 +7,16 @@
     <meta name="robots" content="noindex, follow" />
     <title>Page not found — Zach Scheffler Research</title>
     <style>
+      /* Same self-hosted variable font the main site preloads, so the 404's
+         fine-grained weights (750/800) render identically off the SPA. */
+      @font-face {
+        font-family: Inter;
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url("/fonts/InterVariable.woff2") format("woff2");
+      }
+
       :root {
         color-scheme: dark;
         --paper: #f2f1eb;
@@ -125,7 +135,8 @@
         The requested route belonged to an earlier version of the site. The current dossier focuses on
         DAW state, intelligent music production, and human–AI performance systems.
       </p>
-      <a class="button" href="/">Return home to the research dossier <span aria-hidden="true">↗</span></a>
+      <!-- Internal link: the site reserves ↗ for external destinations. -->
+      <a class="button" href="/">Return home to the research dossier <span aria-hidden="true">←</span></a>
     </main>
   </body>
 </html>
