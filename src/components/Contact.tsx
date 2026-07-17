@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import { Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ type Status = "idle" | "submitting" | "success" | "error";
 
 const Contact = () => {
   const ref = useFadeIn();
+  const successRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [validationError, setValidationError] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -52,6 +53,12 @@ const Contact = () => {
     setStatus(error ? "error" : "success");
   };
 
+  useEffect(() => {
+    if (status === "success") {
+      successRef.current?.focus();
+    }
+  }, [status]);
+
   return (
     <section id="contact" className="section-padding bg-background" ref={ref}>
       <div className="container mx-auto max-w-2xl">
@@ -64,7 +71,13 @@ const Contact = () => {
         </div>
 
         {status === "success" ? (
-          <div className="fade-up text-center py-16 border border-border rounded-sm">
+          <div
+            ref={successRef}
+            tabIndex={-1}
+            role="status"
+            aria-live="polite"
+            className="fade-up text-center py-16 border border-border rounded-sm"
+          >
             <p className="text-xl font-display font-semibold mb-2">Thank you!</p>
             <p className="text-muted-foreground text-sm">Your message has been sent. I'll be in touch soon.</p>
           </div>

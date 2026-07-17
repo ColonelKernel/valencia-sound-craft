@@ -272,6 +272,21 @@ const DrumMachine = ({
   }, [currentPreset]);
   const hasSolo = tracks.some(t => t.solo);
 
+  // Mirror the tracksRef idiom (and GlobalRhythmEngine's tempoRef/swingRef):
+  // the scheduler reads these off refs so its identity stays stable. Otherwise
+  // changing tempo/swing/feel/solo while playing gives scheduleNote a new
+  // identity, re-runs the playback effect, and snaps the playhead back to step 0.
+  const bpmRef = useRef(bpm);
+  bpmRef.current = bpm;
+  const swingRef = useRef(swing);
+  swingRef.current = swing;
+  const grooveRef = useRef(groove);
+  grooveRef.current = groove;
+  const hasSoloRef = useRef(hasSolo);
+  hasSoloRef.current = hasSolo;
+  const currentTimeSignatureRef = useRef(currentTimeSignature);
+  currentTimeSignatureRef.current = currentTimeSignature;
+
   const syncRegionBrowser = useCallback((region: Region) => {
     const regionRhythms = filterRhythms({ region });
     const regionPresets = regionRhythms
@@ -344,8 +359,8 @@ const DrumMachine = ({
     const nextSteps: Record<string, number> = { ...stepRef.current };
 
     currentTracks.forEach(track => {
-      const shouldPlay = hasSolo ? track.solo : !track.muted;
-      const stepDuration = getStepDurationSeconds(bpm, currentTimeSignature, track.subdivisions);
+      const shouldPlay = hasSoloRef.current ? track.solo : !track.muted;
+      const stepDuration = getStepDurationSeconds(bpmRef.current, currentTimeSignatureRef.current, track.subdivisions);
       let trackTime = trackNextTimeRef.current[track.id] ?? nextNoteTimeRef.current;
       let currentStep = stepRef.current[track.id] ?? 0;
 
@@ -357,12 +372,12 @@ const DrumMachine = ({
           if (inst) {
             let time = trackTime;
             // Per-track swing overrides global
-            const effectiveSwing = track.swing !== null ? track.swing : swing;
+            const effectiveSwing = track.swing !== null ? track.swing : swingRef.current;
             if (effectiveSwing > 0 && currentStep % 2 === 1) {
               time += stepDuration * effectiveSwing / 100;
             }
-            if (groove !== 50) {
-              const humanFactor = (groove - 50) / 50;
+            if (grooveRef.current !== 50) {
+              const humanFactor = (grooveRef.current - 50) / 50;
               time += (Math.random() - 0.5) * stepDuration * 0.1 * Math.abs(humanFactor);
             }
             const finalVel = velocity * track.volume;
@@ -386,7 +401,7 @@ const DrumMachine = ({
 
     stepRef.current = nextSteps;
     setCurrentSteps(nextSteps);
-  }, [bpm, swing, groove, hasSolo, getCtx, currentTimeSignature]);
+  }, [getCtx]);
 
   useEffect(() => {
     if (playing) {

@@ -20,6 +20,7 @@ const ArtistPicker = ({ label, artists, selected, onToggle, checkmark = false }:
           <button
             key={artist}
             onClick={() => onToggle(artist)}
+            aria-pressed={isSelected}
             className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
               isSelected
                 ? "border-foreground bg-foreground text-background"

@@ -116,7 +116,7 @@ const metrics = [
     icon: Target,
     label: "Acquisition Scoring",
     value: "0–100",
-    desc: "Weighted model evaluating growth, volatility, longevity & momentum",
+    desc: "Weighted model evaluating growth, stability, longevity & momentum",
     spark: <AreaSpark values={sparkData.acquisition} stroke="hsl(var(--primary))" gradientId="sparkAcq" />,
   },
   {

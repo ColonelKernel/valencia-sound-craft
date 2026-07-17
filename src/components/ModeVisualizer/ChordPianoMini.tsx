@@ -73,6 +73,15 @@ const ChordPianoMini = ({ chordNotes, chordIntervals, rootNote, symbol, timbre =
                       ? 'bg-accent shadow-[inset_0_-3px_0_0_hsl(var(--accent)/0.8)]'
                       : 'bg-card hover:bg-secondary/40'
                   }`}
+                role={active ? "button" : undefined}
+                tabIndex={active ? 0 : undefined}
+                aria-label={active ? k.note : undefined}
+                onKeyDown={active ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    playNote(k.note, 0, 0.35, timbre);
+                  }
+                } : undefined}
                 onClick={() => active && playNote(k.note, 0, 0.35, timbre)}
               >
                 {active && (() => {
@@ -108,6 +117,15 @@ const ChordPianoMini = ({ chordNotes, chordIntervals, rootNote, symbol, timbre =
                 width: `${(0.65 / totalWhite) * 100}%`,
                 height: '58%',
               }}
+              role={active ? "button" : undefined}
+              tabIndex={active ? 0 : undefined}
+              aria-label={active ? bp.note : undefined}
+              onKeyDown={active ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  playNote(bp.note, 0, 0.35, timbre);
+                }
+              } : undefined}
               onClick={() => active && playNote(bp.note, 0, 0.35, timbre)}
             >
               {active && (() => {

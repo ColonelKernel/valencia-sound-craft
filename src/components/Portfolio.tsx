@@ -89,7 +89,7 @@ const Portfolio = () => {
             </div>
 
             <div className="fade-up mt-6 max-w-2xl">
-              <AudioPlaylist title="Spiral of Doubt" tracks={globalPulseTracks} />
+              <AudioPlaylist title="Global Pulse" tracks={globalPulseTracks} />
             </div>
           </>
         )}

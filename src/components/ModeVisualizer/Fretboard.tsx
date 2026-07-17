@@ -207,6 +207,9 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
                         return (
                           <div
                             className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold cursor-pointer transition-all duration-150 ${finalStyle} ${isHovered && !dimmedByChord ? "scale-125" : "hover:scale-110"}`}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Play ${displayNote}${noteOctave} on ${stringTuning.note} string`}
                             onMouseEnter={() => onNoteHover(displayNote)}
                             onMouseLeave={() => onNoteHover(null)}
                             onClick={() => {
@@ -214,6 +217,16 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
                                 onNoteClick(displayNote, noteOctave);
                               } else {
                                 playNoteAtOctave(displayNote, noteOctave, 0.4, timbre);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                if (onNoteClick) {
+                                  onNoteClick(displayNote, noteOctave);
+                                } else {
+                                  playNoteAtOctave(displayNote, noteOctave, 0.4, timbre);
+                                }
                               }
                             }}
                           >

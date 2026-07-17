@@ -57,9 +57,10 @@ export function generatePattern(g: NormalizedGroove): DrumPattern {
   const perc: DrumPattern["perc"] = [];
   const percCount = Math.floor(g.norm_syncopation * 6);
   const usedSteps = new Set([...kick, ...snare, ...hihat].map(h => h.step));
-  for (let i = 0; i < percCount; i++) {
-    let s: number;
-    do { s = Math.floor(rand() * steps); } while (usedSteps.has(s));
+  const free = [...Array(steps).keys()].filter((s) => !usedSteps.has(s));
+  const placeCount = Math.min(percCount, free.length);
+  for (let i = 0; i < placeCount; i++) {
+    const s = free.splice(Math.floor(rand() * free.length), 1)[0];
     usedSteps.add(s);
     perc.push({ step: s, vel: 0.2 + rand() * 0.25 });
   }

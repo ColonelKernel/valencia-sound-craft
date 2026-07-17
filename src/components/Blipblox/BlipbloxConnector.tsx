@@ -87,6 +87,12 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
     init();
   }, []);
 
+  // Stop scheduler + clock when this component unmounts
+  useEffect(() => () => {
+    blipbloxEngine.stopLoop();
+    blipbloxEngine.stopClock();
+  }, []);
+
   // Load embedded preset
   useEffect(() => {
     if (embeddedPreset) {

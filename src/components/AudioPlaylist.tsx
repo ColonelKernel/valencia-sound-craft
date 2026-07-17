@@ -112,28 +112,54 @@ const AudioPlaylist = ({ title, tracks }: AudioPlaylistProps) => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+            aria-label="Previous track"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            <SkipBack className="w-4 h-4" />
+            <SkipBack className="w-4 h-4" aria-hidden="true" />
           </button>
           <button
             onClick={toggle}
+            aria-label={isPlaying ? "Pause" : "Play"}
             className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity"
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+            {isPlaying ? <Pause className="w-4 h-4" aria-hidden="true" /> : <Play className="w-4 h-4 ml-0.5" aria-hidden="true" />}
           </button>
           <button
             onClick={() => setCurrentIndex((i) => Math.min(tracks.length - 1, i + 1))}
+            aria-label="Next track"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            <SkipForward className="w-4 h-4" />
+            <SkipForward className="w-4 h-4" aria-hidden="true" />
           </button>
 
           <div className="flex-1 flex items-center gap-2">
             <span className="text-[10px] text-muted-foreground w-8 text-right">{fmt(progress)}</span>
             <div
+              role="slider"
+              tabIndex={0}
+              aria-label="Seek"
+              aria-valuemin={0}
+              aria-valuemax={Math.round(duration) || 0}
+              aria-valuenow={Math.round(progress) || 0}
               className="flex-1 h-1.5 bg-muted rounded-full cursor-pointer group"
               onClick={seek}
+              onKeyDown={(e) => {
+                const audio = audioRef.current;
+                if (!audio || !duration) return;
+                if (e.key === "ArrowLeft") {
+                  e.preventDefault();
+                  audio.currentTime = Math.max(0, audio.currentTime - 5);
+                } else if (e.key === "ArrowRight") {
+                  e.preventDefault();
+                  audio.currentTime = Math.min(duration, audio.currentTime + 5);
+                } else if (e.key === "Home") {
+                  e.preventDefault();
+                  audio.currentTime = 0;
+                } else if (e.key === "End") {
+                  e.preventDefault();
+                  audio.currentTime = duration;
+                }
+              }}
             >
               <div
                 className="h-full bg-primary rounded-full transition-all"

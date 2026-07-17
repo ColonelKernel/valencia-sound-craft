@@ -146,13 +146,16 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+        <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
           {error}
         </div>
       )}
 
       {result && (
         <motion.div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-4"

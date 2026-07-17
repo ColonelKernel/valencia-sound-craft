@@ -266,6 +266,16 @@ export default function StreamingDashboard({
               <th
                 className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors"
                 onClick={() => setSortKey("total")}
+                role="button"
+                tabIndex={0}
+                aria-label={`Sort by total ${mode === "revenue" ? "revenue" : "streams"}`}
+                aria-sort={sortKey === "total" ? "descending" : "none"}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSortKey("total");
+                  }
+                }}
               >
                 Total {mode === "revenue" ? "Rev" : "Streams"} {sortKey === "total" && "▾"}
               </th>
@@ -279,6 +289,16 @@ export default function StreamingDashboard({
               <th
                 className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors"
                 onClick={() => setSortKey("forecastQ")}
+                role="button"
+                tabIndex={0}
+                aria-label="Sort by quarterly forecast"
+                aria-sort={sortKey === "forecastQ" ? "descending" : "none"}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSortKey("forecastQ");
+                  }
+                }}
               >
                 Forecast Q {sortKey === "forecastQ" && "▾"}
               </th>

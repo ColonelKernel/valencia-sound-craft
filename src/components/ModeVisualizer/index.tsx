@@ -1,6 +1,7 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum, Globe, ChevronDown, ChevronUp } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
+import { useInView } from "@/hooks/useInView";
 import {
   ALL_ROOTS,
   MODE_CATEGORIES,
@@ -28,6 +29,29 @@ const DrumMachine = lazy(() => import("../DrumMachine"));
 const Tonnetz = lazy(() => import("./Tonnetz"));
 const CircleOfFifths = lazy(() => import("./CircleOfFifths"));
 const GlobalRhythmEngine = lazy(() => import("../Blipblox/GlobalRhythmEngine"));
+
+interface DeferredSheetMusicProps {
+  scaleNotes: string[];
+  hoveredNote: string | null;
+  fallback: ReactNode;
+}
+
+// Defers loading SheetMusic (and its heavy abcjs dependency) until the
+// below-the-fold notation panel scrolls near the viewport, so abcjs no longer
+// auto-loads on mount for the default visualizer tab.
+const DeferredSheetMusic = ({ scaleNotes, hoveredNote, fallback }: DeferredSheetMusicProps) => {
+  const { ref, inView } = useInView<HTMLDivElement>();
+
+  return (
+    <div ref={ref} className="min-h-[13rem]">
+      {inView && (
+        <Suspense fallback={fallback}>
+          <SheetMusic scaleNotes={scaleNotes} hoveredNote={hoveredNote} />
+        </Suspense>
+      )}
+    </div>
+  );
+};
 
 export type ModeVisualizerTab =
   | "visualizer"
@@ -687,7 +711,7 @@ const ModeVisualizer = ({
               <Music className="w-5 h-5" /> Staff Notation
             </h3>
           </div>
-          <SheetMusic scaleNotes={scaleNotes} hoveredNote={hoveredNote} />
+          <DeferredSheetMusic scaleNotes={scaleNotes} hoveredNote={hoveredNote} fallback={toolFallback} />
         </div>
 
         {/* Instrument Selector */}

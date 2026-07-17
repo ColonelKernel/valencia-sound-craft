@@ -126,8 +126,21 @@ const KeyboardVisualizer = ({
               className={`relative flex-1 border border-border rounded-b-md cursor-pointer transition-all ${getKeyColor(k.note, false)} ${
                 hovered ? 'ring-2 ring-amber-400 scale-[1.02] z-10' : ''
               }`}
+              role={inScale ? "button" : undefined}
+              tabIndex={inScale ? 0 : undefined}
+              aria-label={inScale ? `${displayNote(k.note)}${k.octave}` : undefined}
               onMouseEnter={() => inScale && onNoteHover(displayNote(k.note))}
               onMouseLeave={() => onNoteHover(null)}
+              onKeyDown={inScale ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (onNoteClick) {
+                    onNoteClick(displayNote(k.note), k.octave);
+                  } else {
+                    playNoteAtOctave(displayNote(k.note), k.octave, 0.4, timbre);
+                  }
+                }
+              } : undefined}
               onClick={() => {
                 if (inScale) {
                   if (onNoteClick) {
@@ -164,8 +177,21 @@ const KeyboardVisualizer = ({
               width: `${(0.7 / totalWhiteKeys) * 100}%`,
               height: '60%',
             }}
+            role={inScale ? "button" : undefined}
+            tabIndex={inScale ? 0 : undefined}
+            aria-label={inScale ? `${displayNote(k.note)}${k.octave}` : undefined}
             onMouseEnter={() => inScale && onNoteHover(displayNote(k.note))}
             onMouseLeave={() => onNoteHover(null)}
+            onKeyDown={inScale ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (onNoteClick) {
+                  onNoteClick(displayNote(k.note), k.octave);
+                } else {
+                  playNoteAtOctave(displayNote(k.note), k.octave, 0.4, timbre);
+                }
+              }
+            } : undefined}
             onClick={() => {
               if (inScale) {
                 if (onNoteClick) {
