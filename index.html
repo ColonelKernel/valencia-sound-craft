@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Valencia Sound Craft - Zach Scheffler | Music Producer & Creative Technologist</title>
-    <meta name="description" content="Music production, guitar lessons, mixing, and live session recording in Valencia, Spain. Working with artists locally and worldwide.">
+    <!-- Matches ROUTE_META.home.description exactly (routeMeta.ts) so social
+         scrapers that never execute JS see the same positioning as hydrated
+         pages. -->
+    <meta name="description" content="Music systems design, creative technology, and direct-linkable rhythm and harmony tools.">
     <meta name="author" content="Zach Scheffler" />
 
     
@@ -23,13 +26,21 @@
   
   
   <link rel="preload" as="image" href="/hero-photo.webp" imagesrcset="/hero-photo-750.webp 750w, /hero-photo.webp 1050w" imagesizes="100vw" fetchpriority="high">
+  <!-- CARTO basemap tiles ({a-d}.basemaps.cartocdn.com) are the only
+       third-party runtime origin; warming DNS/TLS here keeps the first tile
+       burst off the critical path on the map-bearing tool routes. Tiles load
+       as plain <img> (non-CORS), so no crossorigin attribute. -->
+  <link rel="preconnect" href="https://a.basemaps.cartocdn.com">
+  <link rel="dns-prefetch" href="https://b.basemaps.cartocdn.com">
+  <link rel="dns-prefetch" href="https://c.basemaps.cartocdn.com">
+  <link rel="dns-prefetch" href="https://d.basemaps.cartocdn.com">
   <link rel="preload" href="/fonts/SpaceGrotesk-Variable-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/DMSans-Variable-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <meta property="og:title" content="Valencia Sound Craft - Zach Scheffler | Music Producer & Creative Technologist">
   <meta name="twitter:title" content="Valencia Sound Craft - Zach Scheffler | Music Producer & Creative Technologist">
-  <meta property="og:description" content="Music production, guitar lessons, mixing, and live session recording in Valencia, Spain. Working with artists locally and worldwide.">
-  <meta name="twitter:description" content="Music production, guitar lessons, mixing, and live session recording in Valencia, Spain. Working with artists locally and worldwide.">
+  <meta property="og:description" content="Music systems design, creative technology, and direct-linkable rhythm and harmony tools.">
+  <meta name="twitter:description" content="Music systems design, creative technology, and direct-linkable rhythm and harmony tools.">
 </head>
 
   <body>

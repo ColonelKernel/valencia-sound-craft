@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- One <url> per real route in src/app/routeMeta.ts (the "*" 404 entry is
+     excluded). src/app/routeMeta.test.ts asserts this file stays in sync. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://zachscheffler.com/</loc></url>
+  <url><loc>https://zachscheffler.com/tools</loc></url>
+  <url><loc>https://zachscheffler.com/tools/rhythm</loc></url>
+  <url><loc>https://zachscheffler.com/tools/harmony</loc></url>
+  <url><loc>https://zachscheffler.com/tools/map</loc></url>
+  <url><loc>https://zachscheffler.com/tools/circle</loc></url>
+  <url><loc>https://zachscheffler.com/tools/tonnetz</loc></url>
+  <url><loc>https://zachscheffler.com/music-analytics</loc></url>
+  <url><loc>https://zachscheffler.com/groove-intelligence</loc></url>
+</urlset>

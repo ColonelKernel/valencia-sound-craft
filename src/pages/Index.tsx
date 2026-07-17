@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 
 import Hero from "@/components/Hero";
-import RouteHead, { createToolStructuredData } from "@/components/seo/RouteHead";
+import RouteHead, { createPersonStructuredData } from "@/components/seo/RouteHead";
 import SystemsPreview from "@/components/SystemsPreview";
 import { useInView } from "@/hooks/useInView";
 import { ROUTE_META } from "@/app/routeMeta";
@@ -46,12 +46,15 @@ const Index = () => {
         title={ROUTE_META.home.title}
         description={ROUTE_META.home.description}
         canonicalPath={ROUTE_META.home.path}
-        jsonLd={createToolStructuredData({
-          name: "Valencia Sound Craft",
+        jsonLd={createPersonStructuredData({
+          name: "Zach Scheffler",
+          jobTitle: "Music Producer & Creative Technologist",
           description:
-            "A creative music technology site featuring portfolio work and interactive rhythm and harmony tools.",
-          canonicalPath: ROUTE_META.home.path,
-          educationalUse: ["music technology", "composition", "practice"],
+            "Music producer, guitarist, and creative technologist in Valencia, Spain, building interactive rhythm and harmony tools.",
+          sameAs: [
+            "https://www.linkedin.com/in/zscheff/",
+            "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L",
+          ],
         })}
       />
       <main>

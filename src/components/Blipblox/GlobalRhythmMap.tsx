@@ -503,9 +503,13 @@ const GlobalRhythmMap = ({
           scrollWheelZoom={true}
           worldCopyJump={true}
           style={{ height: 430, width: "100%", background: "hsl(var(--secondary))" }}
-          attributionControl={false}
         >
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+          {/* CARTO's free basemap terms and OSM's ODbL require visible
+              attribution; Leaflet renders it as the standard corner label. */}
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          />
           <FocusContinent continent={focusContinent} />
           <FocusSelectedCountry marker={selectedMarker} />
           {countryMarkers.map((marker) => {

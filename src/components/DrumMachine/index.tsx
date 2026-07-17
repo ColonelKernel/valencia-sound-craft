@@ -121,7 +121,10 @@ const DrumMachine = ({
   const [rhythmList, setRhythmList] = useState<PatternPreset[]>(initialRhythmList);
   const [currentPresetId, setCurrentPresetId] = useState<string>(initialPreset.id);
   const [currentTimbres, setCurrentTimbres] = useState<Timbre[]>(initialPreset.instruments);
-  const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | 'blipblox' | null>('blipblox');
+  // Starts closed: on /tools/rhythm the full engine already renders above
+  // this component, so an open-by-default Atlas panel mounts a second
+  // GlobalRhythmEngine (plus its Leaflet map) that nobody asked for.
+  const [showPanel, setShowPanel] = useState<'presets' | 'advanced' | 'midi' | 'blipblox' | null>(null);
   const [showBrowser, setShowBrowser] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [midiMapping, setMidiMapping] = useState<MidiMapping>('general-midi');
@@ -860,14 +863,17 @@ const DrumMachine = ({
               <div className="flex items-center gap-0.5 sm:gap-1 w-20 sm:w-28 shrink-0">
                 <button onClick={() => updateTrack(track.id, { muted: !track.muted })}
                   className={`p-0.5 rounded transition-colors ${track.muted ? 'text-muted-foreground/40' : 'text-foreground'}`}
-                  title={track.muted ? 'Unmute' : 'Mute'}>
+                  title={track.muted ? 'Unmute' : 'Mute'}
+                  aria-label={`${track.muted ? 'Unmute' : 'Mute'} ${inst?.name || track.instrumentId}`}>
                   {track.muted ? <VolumeX size={11} /> : <Volume2 size={11} />}
                 </button>
                 <button onClick={() => updateTrack(track.id, { solo: !track.solo })}
                   className={`text-[9px] px-1 py-0.5 rounded font-bold transition-colors ${
                     track.solo ? 'bg-amber-500 text-black' : 'text-muted-foreground/50 hover:text-foreground'
                   }`}
-                  title="Solo">
+                  title="Solo"
+                  aria-label={`Solo ${inst?.name || track.instrumentId}`}
+                  aria-pressed={track.solo}>
                   S
                 </button>
                 <span className={`w-2 h-2 rounded-full shrink-0 ${inst?.color || 'bg-muted'}`} />
@@ -890,6 +896,7 @@ const DrumMachine = ({
                         ${isBeatBoundary && i > 0 ? 'ml-1' : ''}
                       `}
                       title={vel > 0 ? `Vel: ${Math.round(vel * 100)}%` : 'Off'}
+                      aria-label={`Step ${i + 1}${vel > 0 ? `, velocity ${Math.round(vel * 100)}%` : ', off'}`}
                     >
                       {vel >= 0.9 ? '▉' : vel >= 0.6 ? '●' : vel > 0 ? '·' : ''}
                     </button>
@@ -901,7 +908,8 @@ const DrumMachine = ({
               {tracks.length > 1 && (
                 <button onClick={() => removeTrack(track.id)}
                   className="text-muted-foreground/30 hover:text-rose-500 text-xs transition-colors shrink-0"
-                  title="Remove track">✕</button>
+                  title="Remove track"
+                  aria-label={`Remove ${inst?.name || track.instrumentId} track`}>✕</button>
               )}
             </div>
           );
@@ -949,6 +957,7 @@ const DrumMachine = ({
           <input
             type="text"
             placeholder="Search by rhythm, country, source, or tag…"
+            aria-label="Search by rhythm, country, source, or tag"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
@@ -980,6 +989,7 @@ const DrumMachine = ({
           <select
             value={selectedCategory || ''}
             onChange={e => setSelectedCategory(e.target.value || null)}
+            aria-label="Filter by country"
             className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Countries</option>
@@ -990,6 +1000,7 @@ const DrumMachine = ({
           <select
             value={filterFeel || ''}
             onChange={e => setFilterFeel((e.target.value || null) as TimeFeel | null)}
+            aria-label="Filter by feel"
             className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Feels</option>
@@ -1002,6 +1013,7 @@ const DrumMachine = ({
           <select
             value={filterRhythmType || ''}
             onChange={e => setFilterRhythmType((e.target.value || null) as RhythmType | null)}
+            aria-label="Filter by rhythm type"
             className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Types</option>
@@ -1014,6 +1026,7 @@ const DrumMachine = ({
           <select
             value={filterComplexity || ''}
             onChange={e => setFilterComplexity((e.target.value || null) as Complexity | null)}
+            aria-label="Filter by difficulty level"
             className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="">All Levels</option>
@@ -1024,6 +1037,7 @@ const DrumMachine = ({
           <select
             value={browserSort}
             onChange={e => setBrowserSort(e.target.value as BrowserSort)}
+            aria-label="Sort patterns"
             className="bg-card border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground"
           >
             <option value="country">Sort: Country</option>

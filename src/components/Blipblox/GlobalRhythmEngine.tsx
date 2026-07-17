@@ -1,5 +1,5 @@
 import { getAudioContext } from "@/music-core/audioContext";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   Download,
   Globe,
@@ -357,6 +357,9 @@ const GlobalRhythmEngine = ({
   const [continentFilter, setContinentFilter] = useState<RhythmContinent | "All">("All");
   const [tagFilter, setTagFilter] = useState<RhythmTag | "All">("All");
   const [searchQuery, setSearchQuery] = useState("");
+  // Two engine instances can coexist (standalone + DrumMachine's Atlas
+  // panel), so filter-control ids must be per-instance for htmlFor pairing.
+  const filterIds = useId();
 
   const [showMorph, setShowMorph] = useState(false);
   const [showBlipblox, setShowBlipblox] = useState(false);
@@ -959,14 +962,16 @@ const GlobalRhythmEngine = ({
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search rhythm, country, or instrument"
+            aria-label="Search rhythm, country, or instrument"
             className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           <div>
-            <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Meter</label>
+            <label htmlFor={`${filterIds}-meter`} className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Meter</label>
             <select
+              id={`${filterIds}-meter`}
               value={meterFilter}
               onChange={(event) => setMeterFilter(event.target.value)}
               className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
@@ -979,8 +984,9 @@ const GlobalRhythmEngine = ({
           </div>
 
           <div>
-            <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Feel</label>
+            <label htmlFor={`${filterIds}-feel`} className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Feel</label>
             <select
+              id={`${filterIds}-feel`}
               value={feelFilter}
               onChange={(event) => setFeelFilter(event.target.value as TimeFeel | "All")}
               className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
@@ -993,8 +999,9 @@ const GlobalRhythmEngine = ({
           </div>
 
           <div>
-            <label className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Tempo Band</label>
+            <label htmlFor={`${filterIds}-tempo-band`} className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Tempo Band</label>
             <select
+              id={`${filterIds}-tempo-band`}
               value={tempoBandFilter}
               onChange={(event) => setTempoBandFilter(event.target.value as RhythmTempoBand | "All")}
               className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm text-foreground"
@@ -1198,6 +1205,7 @@ const GlobalRhythmEngine = ({
               max={220}
               value={tempo}
               onChange={(event) => changeTempo(Number(event.target.value))}
+              aria-label="Tempo in BPM"
               className="w-full accent-primary"
             />
             <span className="min-w-14 rounded-full border border-border bg-card px-3 py-1.5 text-center text-sm font-semibold text-foreground">

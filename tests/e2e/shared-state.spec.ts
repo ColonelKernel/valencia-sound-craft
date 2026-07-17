@@ -12,8 +12,9 @@ import { getQuickPlayRhythms } from "../../src/components/Blipblox/rhythmEngineM
 
 const toolNav = (page: Page) => page.getByRole("navigation", { name: "Tool navigation" });
 
-// The rhythm route mounts two GlobalRhythmEngine instances (standalone +
-// embedded DrumMachine preview); every engine locator must scope here.
+// Only one GlobalRhythmEngine mounts at initial load, but the DrumMachine's
+// Atlas panel can mount a second one on click — engine locators stay scoped
+// to the standalone section so they remain unambiguous either way.
 const engineSection = (page: Page) =>
   page.locator('section[aria-labelledby="rhythm-engine-section"]');
 
@@ -54,14 +55,15 @@ test("key selected on the circle propagates to the harmony workspace", async ({ 
 
 test("tempo set on the rhythm engine propagates to the tonnetz", async ({ page }) => {
   await page.goto("/tools/rhythm");
-  // The route mounts two GlobalRhythmEngine instances today (standalone
-  // engine + one embedded in the legacy DrumMachine), so scope to the
-  // standalone engine section to keep the locator unambiguous.
   await expect(
     page
       .locator('section[aria-labelledby="rhythm-engine-section"]')
       .getByRole("heading", { name: "Global Rhythm Atlas Engine" }),
   ).toBeVisible({ timeout: 20_000 });
+
+  // Regression guard: the DrumMachine's Atlas panel used to open by default,
+  // mounting a second full engine (and a second Leaflet map) on every visit.
+  await expect(page.getByRole("heading", { name: "Global Rhythm Atlas Engine" })).toHaveCount(1);
 
   // The engine's tempo control is the only native range input inside the
   // rhythm-engine section (Swing/Strength are Radix sliders; the legacy

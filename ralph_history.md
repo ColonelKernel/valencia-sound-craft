@@ -341,3 +341,28 @@ it); redeploy through Lovable; optional idle-machine Lighthouse re-run
 (mobile ≥95 needs prerendering — future spec candidate).
 
 <promise>DONE</promise>
+
+---
+
+## Post-rebuild polish (2026-07-17, interactive session)
+
+A 27-agent adversarially-verified audit of the finished branch surfaced eight
+fixable findings; all implemented and gated in one pass (vitest 46, e2e 18,
+budget 110.7/150 KB gz):
+
+1. DrumMachine Atlas panel no longer opens by default — kills the deliberate
+   double GlobalRhythmEngine mount (and second Leaflet map) on /tools/rhythm.
+   e2e now asserts exactly one engine heading renders at load.
+2. index.html static descriptions (meta/og/twitter) now match
+   ROUTE_META.home.description — social scrapers saw the Lovable-era copy.
+3. public/sitemap.xml (9 routes from routeMeta) + robots.txt Sitemap line.
+4. New src/app/routeMeta.test.ts pins index.html title/descriptions,
+   sitemap route set, and robots origin to ROUTE_META (4 tests).
+5. Homepage JSON-LD retyped SoftwareApplication → Person (jobTitle, sameAs).
+6. CARTO/OSM tile attribution restored (license compliance; standard Leaflet
+   corner label — visual-language note: required legal text, not a redesign).
+7. Accessible names: engine filter selects (htmlFor/useId), search inputs,
+   tempo slider, DrumMachine track/step/filter controls (aria-labels only).
+8. Scroll + focus reset on route change in Layout (instant, hash-guarded).
+
+Preconnect/dns-prefetch hints added for {a-d}.basemaps.cartocdn.com.

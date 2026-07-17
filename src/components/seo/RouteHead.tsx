@@ -7,6 +7,8 @@ export interface RouteStructuredData {
   description: string;
   applicationCategory?: string;
   educationalUse?: string | string[];
+  jobTitle?: string;
+  sameAs?: string[];
   url?: string;
 }
 
@@ -46,6 +48,27 @@ function upsertLink(rel: string, href: string) {
 function resolveUrl(path: string) {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://example.com";
   return new URL(path, origin).toString();
+}
+
+/**
+ * The homepage is a portfolio, not a tool: it describes a person. Tool
+ * routes keep SoftwareApplication via createToolStructuredData below.
+ */
+export function createPersonStructuredData(config: {
+  name: string;
+  jobTitle: string;
+  description: string;
+  sameAs: string[];
+}) {
+  return {
+    "@context": "https://schema.org" as const,
+    "@type": "Person",
+    name: config.name,
+    jobTitle: config.jobTitle,
+    description: config.description,
+    sameAs: config.sameAs,
+    url: "/",
+  };
 }
 
 export function createToolStructuredData(config: {

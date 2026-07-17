@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
 import Footer from "@/components/Footer";
@@ -19,15 +19,37 @@ const routeFallback = (
  */
 const Layout = () => {
   const location = useLocation();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
+
+  // react-router keeps the window scroll position on push navigation, so a
+  // click from a scrolled subnav would land the next route mid-page with no
+  // signal to screen readers that anything changed. Reset scroll and move
+  // focus on every pathname change — instantly, because index.css sets
+  // scroll-behavior: smooth on the root. Hash locations are left alone so
+  // in-page anchors keep working, and the initial load keeps native focus.
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+
+    if (!location.hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      contentRef.current?.focus({ preventScroll: true });
+    }
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <RouteErrorBoundary key={location.pathname}>
-        <Suspense fallback={routeFallback}>
-          <Outlet />
-        </Suspense>
-      </RouteErrorBoundary>
+      <div ref={contentRef} tabIndex={-1} className="outline-none">
+        <RouteErrorBoundary key={location.pathname}>
+          <Suspense fallback={routeFallback}>
+            <Outlet />
+          </Suspense>
+        </RouteErrorBoundary>
+      </div>
       <Footer />
     </div>
   );
