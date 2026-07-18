@@ -1,0 +1,5 @@
+# SPA fallback: every non-asset path must serve index.html so the client-side
+# router can handle it. Without this, deep links (/tools/rhythm, /music-analytics,
+# …) hard-404 on a static host. Understood by both Cloudflare Pages and Netlify.
+# The 200 (rather than 301/302) keeps the requested URL in the address bar.
+/*    /index.html   200
