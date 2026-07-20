@@ -1,326 +1,647 @@
-/**
- * GrooveField — canvas-based field renderer.
- *
- * Replaced the previous SVG + React-state zoom approach.
- * Key changes:
- *   - Canvas eliminates 240+ SVG DOM nodes (3 circles × 80 nodes)
- *   - Zoom lives in a useRef — no React re-renders on scroll
- *   - Selection change redraws imperatively, no virtual DOM diff
- *   - ResizeObserver keeps the canvas buffer DPR-correct
- *   - Click hit-test iterates 80 nodes (O(n), < 1µs) — no quadtree needed at this scale
- *   - zoomDisplay state is the ONLY React state, used solely for the % label
- */
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { NormalizedGroove } from "./types";
+import { useRef, useEffect, useCallback } from "react";
+import type { NormalizedGroove, RenderGroove, ViewMode, TrajectoryPoint } from "./types";
+import type { Cluster } from "./clustering";
+import { syntheticDistance } from "./utils";
+import { SpatialIndex } from "./spatialIndex";
+import { Camera, DEFAULT_CAMERA, lerpCamera, zoomAt, worldToScreen, screenToWorld, getViewport } from "./camera";
+import { computeLOD } from "./lodManager";
+import { subscribePlaybackSteps } from "./audioEngine";
 
 interface Props {
   grooves: NormalizedGroove[];
   selectedId: string | null;
-  onSelect: (groove: NormalizedGroove) => void;
+  onSelect: (g: NormalizedGroove) => void;
+  viewMode: ViewMode;
+  trajectory?: TrajectoryPoint[];
+  clusters: Cluster[];
+  sculptorActive: boolean;
+  sculptorValues: { energy: number; swing: number; syncopation: number; dynamics: number };
 }
 
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 2.4;
-const ZOOM_STEP = 0.2;
+const MARGIN = 40;
+const MORPH_LERP = 0.14;
+const DRIFT_AMPLITUDE = 0.0018;
+const MAX_VISIBLE_NODES = 280;
 
-function clampZoom(z: number) {
-  return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z));
+function withAlpha(color: string, alpha: number) {
+  if (color.startsWith("hsl(")) return color.replace("hsl(", "hsla(").replace(")", `, ${alpha})`);
+  if (color.startsWith("hsla(")) return color.replace(/,\s*[\d.]+\)$/, `, ${alpha})`);
+  return color;
 }
 
-export default function GrooveField({ grooves, selectedId, onSelect }: Props) {
+export default function GrooveField({
+  grooves,
+  selectedId,
+  onSelect,
+  viewMode,
+  trajectory = [],
+  clusters,
+  sculptorActive,
+  sculptorValues,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Zoom lives outside React state — wheel events draw imperatively without re-renders.
-  const zoomRef = useRef(1);
-  // Exposed to React only for the % readout in the toolbar.
-  const [zoomDisplay, setZoomDisplay] = useState(1);
+  const rafRef = useRef<number>(0);
+  // Under prefers-reduced-motion the render loop is on-demand instead of
+  // free-running: interactions call scheduleFrame (via requestRedraw) to render
+  // exactly one settled frame. Populated by the render-loop effect.
+  const scheduleFrameRef = useRef<(() => void) | null>(null);
+  const mouseRef = useRef<{ x: number; y: number } | null>(null);
+  const sizeRef = useRef({ w: 0, h: 0 });
+  const playbackStepRef = useRef(-1);
+  const hoveredIdRef = useRef<string | null>(null);
+  const hoveredNodeRef = useRef<RenderGroove | null>(null);
 
-  // Mirror props into refs so the stable draw() callback always reads current values.
-  const groovesRef = useRef(grooves);
+  const cameraRef = useRef<Camera>({ ...DEFAULT_CAMERA });
+  const targetCameraRef = useRef<Camera>({ ...DEFAULT_CAMERA });
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0, camX: 0, camY: 0 });
+
+  const onSelectRef = useRef(onSelect);
   const selectedIdRef = useRef(selectedId);
-  groovesRef.current = grooves;
-  selectedIdRef.current = selectedId;
+  const viewModeRef = useRef(viewMode);
+  const trajectoryRef = useRef(trajectory);
+  const clustersRef = useRef(clusters);
+  const sculptorActiveRef = useRef(sculptorActive);
+  const sculptorValuesRef = useRef(sculptorValues);
 
-  // ─── Core draw ────────────────────────────────────────────────────────────────
+  const nodesRef = useRef<RenderGroove[]>([]);
+  const nodeMapRef = useRef(new Map<string, RenderGroove>());
+  const spatialRef = useRef(new SpatialIndex<RenderGroove>());
 
-  const draw = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  const zoomLabelRef = useRef<HTMLDivElement>(null);
+  const zoomHintRef = useRef<HTMLDivElement>(null);
 
-    const t0 = performance.now();
-
-    const W = canvas.width;
-    const H = canvas.height;
-    const zoom = zoomRef.current;
-    const nodes = groovesRef.current;
-    const sid = selectedIdRef.current;
-
-    ctx.clearRect(0, 0, W, H);
-
-    // Background
-    const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, "hsl(210, 18%, 11%)");
-    bg.addColorStop(1, "hsl(220, 18%, 8%)");
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-
-    const radial = ctx.createRadialGradient(W * 0.5, H * 0.35, 0, W * 0.5, H * 0.5, W * 0.65);
-    radial.addColorStop(0, "hsla(155, 45%, 14%, 0.55)");
-    radial.addColorStop(1, "hsla(155, 45%, 14%, 0)");
-    ctx.fillStyle = radial;
-    ctx.fillRect(0, 0, W, H);
-
-    // Grid — screen space (not zoomed)
-    ctx.strokeStyle = "rgba(255,255,255,0.06)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    const stepX = W / 10;
-    const stepY = H / 10;
-    for (let x = stepX; x < W; x += stepX) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
-    for (let y = stepY; y < H; y += stepY) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
-    ctx.stroke();
-
-    // World-to-screen transform (centered zoom).
-    // screenX = W/2 + (px - 0.5) * W * zoom
-    // screenY = H/2 + (0.5 - py) * H * zoom
-    const toSX = (px: number) => W * 0.5 + (px - 0.5) * W * zoom;
-    const toSY = (py: number) => H * 0.5 + (0.5 - py) * H * zoom;
-
-    // Guide circle (zooms with nodes)
-    const gcx = toSX(0.5);
-    const gcy = toSY(0.5);
-    const gcr = Math.min(W, H) * 0.36 * zoom;
-    ctx.beginPath();
-    ctx.arc(gcx, gcy, gcr, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(16,185,129,0.05)";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(16,185,129,0.12)";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Groove nodes
-    for (const groove of nodes) {
-      const sx = toSX(groove.px);
-      const sy = toSY(groove.py);
-      const selected = groove.id === sid;
-      const r = (selected ? W * 0.017 : W * 0.0115) * zoom;
-
-      if (selected) {
-        // Outer selection ring
-        ctx.beginPath();
-        ctx.arc(sx, sy, r + W * 0.016 * zoom, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(255,255,255,0.75)";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
-
-      ctx.beginPath();
-      ctx.arc(sx, sy, r, 0, Math.PI * 2);
-      ctx.fillStyle = groove.color;
-      ctx.globalAlpha = selected ? 1 : 0.8;
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-
-    const elapsed = performance.now() - t0;
-    if (elapsed > 8) {
-      console.warn(`[GrooveField] Slow draw: ${elapsed.toFixed(1)}ms (${nodes.length} nodes, zoom=${zoom.toFixed(2)})`);
-    }
+  // Stable identity so [] -dep effects can capture it; no-op while the loop is
+  // free-running (rAF already scheduled), renders one frame under reduced motion.
+  const requestRedraw = useCallback(() => {
+    scheduleFrameRef.current?.();
   }, []);
 
-  // ─── DPR-aware sizing ─────────────────────────────────────────────────────────
-
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const sync = () => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      if (canvas.width !== Math.round(rect.width * dpr) || canvas.height !== Math.round(rect.height * dpr)) {
-        canvas.width = Math.round(rect.width * dpr);
-        canvas.height = Math.round(rect.height * dpr);
-      }
-      draw();
-    };
-
-    sync();
-    const ro = new ResizeObserver(sync);
-    ro.observe(canvas);
-    return () => ro.disconnect();
-  }, [draw]);
-
-  // ─── Redraw on prop changes ───────────────────────────────────────────────────
-
-  useEffect(() => {
-    draw();
-  }, [draw, grooves, selectedId]);
-
-  // ─── Wheel zoom (no React state update → no re-render) ───────────────────────
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const next = clampZoom(zoomRef.current + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP));
-      if (next === zoomRef.current) return;
-      zoomRef.current = next;
-      setZoomDisplay(next); // only state update — rerenders toolbar only
-      draw();
-    };
-    canvas.addEventListener("wheel", onWheel, { passive: false });
-    return () => canvas.removeEventListener("wheel", onWheel);
-  }, [draw]);
-
-  // ─── Zoom buttons ─────────────────────────────────────────────────────────────
-
-  const adjustZoom = useCallback((delta: number) => {
-    const next = clampZoom(zoomRef.current + delta);
-    if (next === zoomRef.current) return;
-    zoomRef.current = next;
-    setZoomDisplay(next);
-    draw();
-  }, [draw]);
-
-  const resetZoom = useCallback(() => {
-    zoomRef.current = 1;
-    setZoomDisplay(1);
-    draw();
-  }, [draw]);
-
-  // ─── Click hit-test ───────────────────────────────────────────────────────────
-  //
-  // Iterates 80 nodes — under 1µs. Quadtree not needed at this scale.
-
-  const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const mx = (e.clientX - rect.left) * dpr;
-    const my = (e.clientY - rect.top) * dpr;
-    const W = canvas.width;
-    const H = canvas.height;
-    const zoom = zoomRef.current;
-
-    // Inverse world-to-screen: (mx - W/2) / (W * zoom) + 0.5
-    const px = (mx - W * 0.5) / (W * zoom) + 0.5;
-    const py = 0.5 - (my - H * 0.5) / (H * zoom);
-
-    // Hit radius in normalized units: ~2.5% of canvas width / zoom
-    const hitR = (W * 0.025) / (W * zoom);
-    const hitR2 = hitR * hitR;
-
-    let nearest: NormalizedGroove | null = null;
-    let minD2 = Infinity;
-    for (const groove of groovesRef.current) {
-      const dx = groove.px - px;
-      const dy = groove.py - py;
-      const d2 = dx * dx + dy * dy;
-      if (d2 < hitR2 && d2 < minD2) {
-        minD2 = d2;
-        nearest = groove;
-      }
-    }
-    if (nearest) onSelect(nearest);
+    onSelectRef.current = onSelect;
   }, [onSelect]);
 
-  // ─── Hover cursor update (no React state — direct DOM mutation) ───────────────
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+    requestRedraw();
+  }, [selectedId, requestRedraw]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const mx = (e.clientX - rect.left) * dpr;
-    const my = (e.clientY - rect.top) * dpr;
-    const W = canvas.width;
-    const H = canvas.height;
-    const zoom = zoomRef.current;
+  useEffect(() => {
+    viewModeRef.current = viewMode;
+    requestRedraw();
+  }, [viewMode, requestRedraw]);
 
-    const px = (mx - W * 0.5) / (W * zoom) + 0.5;
-    const py = 0.5 - (my - H * 0.5) / (H * zoom);
+  useEffect(() => {
+    trajectoryRef.current = trajectory;
+    requestRedraw();
+  }, [trajectory, requestRedraw]);
 
-    const hitR = (W * 0.025) / (W * zoom);
-    const hitR2 = hitR * hitR;
+  useEffect(() => {
+    clustersRef.current = clusters;
+    requestRedraw();
+  }, [clusters, requestRedraw]);
 
-    let hovering = false;
-    for (const groove of groovesRef.current) {
-      const dx = groove.px - px;
-      const dy = groove.py - py;
-      if (dx * dx + dy * dy < hitR2) { hovering = true; break; }
+  useEffect(() => {
+    sculptorActiveRef.current = sculptorActive;
+  }, [sculptorActive]);
+
+  useEffect(() => {
+    sculptorValuesRef.current = sculptorValues;
+  }, [sculptorValues]);
+
+  const applyTargets = useCallback(() => {
+    const nodes = nodesRef.current;
+    if (nodes.length === 0) return;
+
+    if (!sculptorActiveRef.current) {
+      for (const node of nodes) {
+        node.tx = node.px;
+        node.ty = node.py;
+      }
+      return;
     }
-    canvas.style.cursor = hovering ? "pointer" : "crosshair";
+
+    const target = sculptorValuesRef.current;
+    for (const node of nodes) {
+      const distance = syntheticDistance(target, node);
+      const angle = Math.atan2(node.py - 0.5, node.px - 0.5);
+      const radius = 0.08 + distance * 0.12;
+      node.tx = 0.5 + Math.cos(angle) * radius;
+      node.ty = 0.5 + Math.sin(angle) * radius;
+    }
   }, []);
 
-  // ─── Info panel needs selected groove object ───────────────────────────────────
-  // O(1) via a Map if the parent passes one, but since we only have the array here,
-  // a simple find is fine — this runs only on React re-renders, not per-frame.
-  const selectedGroove = grooves.find(g => g.id === selectedId) ?? null;
+  useEffect(() => {
+    const nextNodes = grooves.map((groove, index) => ({
+      ...groove,
+      cx: groove.px,
+      cy: groove.py,
+      tx: groove.px,
+      ty: groove.py,
+      phase: index * 0.37,
+    }));
 
-  if (grooves.length === 0) return null;
+    nodesRef.current = nextNodes;
+    nodeMapRef.current = new Map(nextNodes.map(node => [node.id, node]));
+    applyTargets();
+    spatialRef.current.rebuild(nextNodes);
+
+    if (hoveredIdRef.current) {
+      hoveredNodeRef.current = nodeMapRef.current.get(hoveredIdRef.current) ?? null;
+      if (!hoveredNodeRef.current) hoveredIdRef.current = null;
+    }
+    requestRedraw();
+  }, [grooves, applyTargets, requestRedraw]);
+
+  useEffect(() => {
+    applyTargets();
+    requestRedraw();
+  }, [applyTargets, sculptorActive, sculptorValues, requestRedraw]);
+
+  useEffect(() => subscribePlaybackSteps(step => {
+    playbackStepRef.current = step;
+    requestRedraw();
+  }), [requestRedraw]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resizeObserver = new ResizeObserver(entries => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      const { width, height } = entry.contentRect;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      sizeRef.current = { w: width * dpr, h: height * dpr };
+      requestRedraw();
+    });
+
+    resizeObserver.observe(canvas.parentElement!);
+    return () => resizeObserver.disconnect();
+  }, [requestRedraw]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const updateHover = (nextNode: RenderGroove | null) => {
+      hoveredIdRef.current = nextNode?.id ?? null;
+      hoveredNodeRef.current = nextNode;
+      if (!isPanningRef.current) {
+        canvas.style.cursor = nextNode ? "pointer" : "crosshair";
+      }
+      requestRedraw();
+    };
+
+    const handleMouseDown = (event: MouseEvent) => {
+      if (event.button === 1 || event.button === 2 || (event.button === 0 && event.shiftKey)) {
+        isPanningRef.current = true;
+        panStartRef.current = {
+          x: event.clientX,
+          y: event.clientY,
+          camX: targetCameraRef.current.x,
+          camY: targetCameraRef.current.y,
+        };
+        canvas.style.cursor = "grabbing";
+        event.preventDefault();
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (!isPanningRef.current) return;
+      isPanningRef.current = false;
+      canvas.style.cursor = hoveredNodeRef.current ? "pointer" : "crosshair";
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const sx = (event.clientX - rect.left) * dpr;
+      const sy = (event.clientY - rect.top) * dpr;
+      mouseRef.current = { x: sx, y: sy };
+
+      if (isPanningRef.current) {
+        const viewport = getViewport(targetCameraRef.current);
+        const { w, h } = sizeRef.current;
+        const dx = ((event.clientX - panStartRef.current.x) * dpr / Math.max(1, w - 2 * MARGIN)) * viewport.w;
+        const dy = ((event.clientY - panStartRef.current.y) * dpr / Math.max(1, h - 2 * MARGIN)) * viewport.h;
+        targetCameraRef.current = {
+          ...targetCameraRef.current,
+          x: panStartRef.current.camX - dx,
+          y: panStartRef.current.camY + dy,
+        };
+        requestRedraw();
+        return;
+      }
+
+      const { w, h } = sizeRef.current;
+      const { px, py } = screenToWorld(sx, sy, cameraRef.current, w, h, MARGIN);
+      const hitRadius = 0.018 / cameraRef.current.zoom;
+      const candidates = spatialRef.current.queryNearest(px, py, hitRadius);
+
+      let closest: RenderGroove | null = null;
+      let minDistance = Infinity;
+      for (const candidate of candidates) {
+        const dx = candidate.cx - px;
+        const dy = candidate.cy - py;
+        const distance = dx * dx + dy * dy;
+        if (distance < hitRadius * hitRadius && distance < minDistance) {
+          minDistance = distance;
+          closest = candidate;
+        }
+      }
+
+      updateHover(closest);
+    };
+
+    const handleMouseLeave = () => {
+      mouseRef.current = null;
+      if (!isPanningRef.current) updateHover(null);
+    };
+
+    const handleClick = (event: MouseEvent) => {
+      if (event.button !== 0 || event.shiftKey) return;
+      const hoveredNode = hoveredNodeRef.current;
+      if (hoveredNode) onSelectRef.current(hoveredNode);
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const sx = (event.clientX - rect.left) * dpr;
+      const sy = (event.clientY - rect.top) * dpr;
+      const { w, h } = sizeRef.current;
+      targetCameraRef.current = zoomAt(targetCameraRef.current, event.deltaY, sx, sy, w, h, MARGIN);
+      requestRedraw();
+    };
+
+    const handleContextMenu = (event: MouseEvent) => event.preventDefault();
+
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
+    canvas.addEventListener("click", handleClick);
+    canvas.addEventListener("wheel", handleWheel, { passive: false });
+    canvas.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
+      canvas.removeEventListener("click", handleClick);
+      canvas.removeEventListener("wheel", handleWheel);
+      canvas.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [requestRedraw]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    const drawGrid = (camera: Camera, width: number, height: number) => {
+      const viewport = getViewport(camera);
+      const gridCount = camera.zoom >= 4 ? 14 : 10;
+      ctx.strokeStyle = camera.zoom >= 4 ? "rgba(255,255,255,0.035)" : "rgba(255,255,255,0.02)";
+      ctx.lineWidth = 1;
+
+      for (let index = 0; index <= gridCount; index++) {
+        const fraction = index / gridCount;
+        const worldX = viewport.x + fraction * viewport.w;
+        const worldY = viewport.y + fraction * viewport.h;
+        const verticalStart = worldToScreen(worldX, viewport.y, camera, width, height, MARGIN);
+        const verticalEnd = worldToScreen(worldX, viewport.y + viewport.h, camera, width, height, MARGIN);
+        ctx.beginPath();
+        ctx.moveTo(verticalStart.x, verticalStart.y);
+        ctx.lineTo(verticalEnd.x, verticalEnd.y);
+        ctx.stroke();
+
+        const horizontalStart = worldToScreen(viewport.x, worldY, camera, width, height, MARGIN);
+        const horizontalEnd = worldToScreen(viewport.x + viewport.w, worldY, camera, width, height, MARGIN);
+        ctx.beginPath();
+        ctx.moveTo(horizontalStart.x, horizontalStart.y);
+        ctx.lineTo(horizontalEnd.x, horizontalEnd.y);
+        ctx.stroke();
+      }
+    };
+
+    const drawLandscape = (visibleClusters: Cluster[], camera: Camera, width: number, height: number) => {
+      for (const cluster of visibleClusters) {
+        const { x, y } = worldToScreen(cluster.centroid.px, cluster.centroid.py, camera, width, height, MARGIN);
+        const radius = (10 + Math.sqrt(cluster.size) * 2.2) * camera.zoom * 0.35;
+        ctx.fillStyle = withAlpha(cluster.color, 0.08);
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = withAlpha(cluster.color, 0.2);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, radius * 1.3, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    };
+
+    const drawClusters = (visibleClusters: Cluster[], camera: Camera, width: number, height: number, detailed: boolean) => {
+      for (const cluster of visibleClusters) {
+        const { x, y } = worldToScreen(cluster.centroid.px, cluster.centroid.py, camera, width, height, MARGIN);
+        const radius = 7 + Math.sqrt(cluster.size) * (detailed ? 2 : 2.8);
+
+        ctx.fillStyle = withAlpha(cluster.color, detailed ? 0.16 : 0.32);
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = withAlpha(cluster.color, detailed ? 0.18 : 0.4);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, detailed ? radius * 1.7 : radius * 1.3, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.fillStyle = detailed ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.6)";
+        ctx.font = detailed ? "8px monospace" : "bold 10px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(detailed ? cluster.dominantGenre : `${cluster.size}`, x, y + (detailed ? radius * 1.7 + 10 : 3));
+        ctx.textAlign = "start";
+      }
+    };
+
+    const drawTopology = (visibleNodes: RenderGroove[], camera: Camera, width: number, height: number) => {
+      const visibleIds = new Set(visibleNodes.map(node => node.id));
+      const drawn = new Set<string>();
+      ctx.strokeStyle = "rgba(255,255,255,0.06)";
+      ctx.lineWidth = 1;
+
+      for (const node of visibleNodes) {
+        for (const neighborId of node.similar.slice(0, 2)) {
+          if (!visibleIds.has(neighborId)) continue;
+          const edgeKey = node.id < neighborId ? `${node.id}-${neighborId}` : `${neighborId}-${node.id}`;
+          if (drawn.has(edgeKey)) continue;
+          drawn.add(edgeKey);
+
+          const neighbor = nodeMapRef.current.get(neighborId);
+          if (!neighbor) continue;
+
+          const from = worldToScreen(node.cx, node.cy, camera, width, height, MARGIN);
+          const to = worldToScreen(neighbor.cx, neighbor.cy, camera, width, height, MARGIN);
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          ctx.lineTo(to.x, to.y);
+          ctx.stroke();
+        }
+      }
+    };
+
+    const drawTrajectory = (camera: Camera, width: number, height: number) => {
+      const points = trajectoryRef.current;
+      if (points.length < 2) return;
+
+      ctx.strokeStyle = "rgba(120, 255, 200, 0.28)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+
+      for (let index = 1; index < points.length; index++) {
+        const from = nodeMapRef.current.get(points[index - 1].grooveId);
+        const to = nodeMapRef.current.get(points[index].grooveId);
+        if (!from || !to) continue;
+
+        const fromPoint = worldToScreen(from.cx, from.cy, camera, width, height, MARGIN);
+        const toPoint = worldToScreen(to.cx, to.cy, camera, width, height, MARGIN);
+        ctx.beginPath();
+        ctx.moveTo(fromPoint.x, fromPoint.y);
+        ctx.lineTo(toPoint.x, toPoint.y);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(120, 255, 200, 0.4)";
+        ctx.beginPath();
+        ctx.arc(toPoint.x, toPoint.y, index === points.length - 1 ? 3.5 : 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.setLineDash([]);
+    };
+
+    const drawTooltip = (node: RenderGroove, camera: Camera, width: number, height: number) => {
+      const { x, y } = worldToScreen(node.cx, node.cy, camera, width, height, MARGIN);
+      const tooltipWidth = 164;
+      const tooltipHeight = 48;
+      const tx = Math.min(width - tooltipWidth - 12, x + 14);
+      const ty = Math.max(12, y - tooltipHeight - 8);
+
+      ctx.fillStyle = "rgba(0,0,0,0.82)";
+      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(tx, ty, tooltipWidth, tooltipHeight, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.font = "bold 12px monospace";
+      ctx.fillText(`${node.genre} · ${node.bpm} bpm`, tx + 10, ty + 18);
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.font = "10px monospace";
+      ctx.fillText(`swing ${(node.norm_swing * 100).toFixed(0)}% · sync ${(node.norm_syncopation * 100).toFixed(0)}%`, tx + 10, ty + 34);
+    };
+
+    // Reduced motion: render on demand (one settled frame per interaction)
+    // instead of free-running rAF. The browser already throttles rAF to zero in
+    // hidden tabs, so no visibilitychange handling is needed for either mode.
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const loop = () => {
+      rafRef.current = 0;
+      const { w, h } = sizeRef.current;
+      if (!w || !h) {
+        // Not sized yet: free-running mode retries; reduced mode waits for the
+        // ResizeObserver to schedule a frame once the canvas has dimensions.
+        if (!reduceMotion) rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
+      if (reduceMotion) {
+        // Snap instead of easing — a single frame is fully settled.
+        cameraRef.current = { ...targetCameraRef.current };
+      } else {
+        cameraRef.current = lerpCamera(cameraRef.current, targetCameraRef.current, 0.14);
+      }
+      const camera = cameraRef.current;
+      const nodes = nodesRef.current;
+      const currentView = viewModeRef.current;
+
+      const lodResult = computeLOD(camera, nodes, clustersRef.current, spatialRef.current, nodeMapRef.current, MAX_VISIBLE_NODES);
+      const visibleNodes = lodResult.visibleGrooves;
+      const now = performance.now() * 0.001;
+      const frozen = reduceMotion || currentView !== "field";
+
+      for (let index = 0; index < visibleNodes.length; index++) {
+        const node = visibleNodes[index];
+        if (reduceMotion) {
+          node.cx = node.tx;
+          node.cy = node.ty;
+          continue;
+        }
+        const drift = frozen ? 0 : DRIFT_AMPLITUDE / Math.max(1, camera.zoom * 0.6);
+        const targetX = node.tx + Math.sin(now * 0.85 + node.phase + index * 0.05) * drift;
+        const targetY = node.ty + Math.cos(now * 0.9 + node.phase + index * 0.05) * drift;
+        node.cx += (targetX - node.cx) * MORPH_LERP;
+        node.cy += (targetY - node.cy) * MORPH_LERP;
+      }
+
+      spatialRef.current.rebuild(nodes);
+
+      ctx.clearRect(0, 0, w, h);
+      drawGrid(camera, w, h);
+
+      if (currentView === "landscape") {
+        drawLandscape(lodResult.visibleClusters, camera, w, h);
+      }
+
+      if (lodResult.level === 1) {
+        drawClusters(lodResult.visibleClusters, camera, w, h, false);
+      } else {
+        if (currentView === "topology") {
+          drawTopology(visibleNodes, camera, w, h);
+        }
+
+        if (lodResult.level === 2) {
+          drawClusters(lodResult.visibleClusters, camera, w, h, true);
+        }
+
+        const selectedNodeId = selectedIdRef.current;
+        const hoveredNodeId = hoveredIdRef.current;
+        const currentStep = playbackStepRef.current;
+
+        for (const node of visibleNodes) {
+          const { x, y } = worldToScreen(node.cx, node.cy, camera, w, h, MARGIN);
+          const isSelected = node.id === selectedNodeId;
+          const isHovered = node.id === hoveredNodeId;
+          const radius = node.radius * lodResult.nodeScale * (isHovered ? 1.45 : isSelected ? 1.3 : 1);
+
+          ctx.fillStyle = node.color;
+          ctx.globalAlpha = isSelected ? 1 : isHovered ? 0.95 : lodResult.level === 2 ? 0.44 : 0.68;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+
+          if (isSelected || isHovered) {
+            const pulse = isSelected
+              ? currentStep >= 0
+                ? (currentStep % 4 === 0 ? 1.2 : 0.8)
+                : (0.9 + Math.sin(now * 4) * 0.08)
+              : 0.7;
+
+            ctx.strokeStyle = withAlpha(node.color, isSelected ? 0.78 : 0.45);
+            ctx.lineWidth = isSelected ? 2 : 1.5;
+            ctx.beginPath();
+            ctx.arc(x, y, radius + 4 + pulse, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = "rgba(255,255,255,0.55)";
+            ctx.font = "9px monospace";
+            ctx.fillText(`${node.genre} · ${node.bpm}bpm`, x + radius + 6, y + 3);
+          }
+        }
+      }
+
+      drawTrajectory(camera, w, h);
+
+      if (hoveredNodeRef.current && mouseRef.current) {
+        drawTooltip(hoveredNodeRef.current, camera, w, h);
+      }
+
+      if (zoomLabelRef.current) {
+        zoomLabelRef.current.textContent = `${Math.round(camera.zoom * 100)}% · LOD ${lodResult.level}`;
+      }
+      if (zoomHintRef.current) {
+        zoomHintRef.current.style.opacity = camera.zoom <= 1.05 ? "1" : "0";
+      }
+
+      if (!reduceMotion) rafRef.current = requestAnimationFrame(loop);
+    };
+
+    scheduleFrameRef.current = () => {
+      if (rafRef.current === 0) rafRef.current = requestAnimationFrame(loop);
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+      scheduleFrameRef.current = null;
+    };
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    targetCameraRef.current = { ...DEFAULT_CAMERA };
+    requestRedraw();
+  }, [requestRedraw]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-foreground">Static Groove Field</p>
-          <p className="text-xs text-muted-foreground">
-            {grooves.length} sampled nodes. Click a point to sync the detail panel.
-          </p>
+    <div className="relative w-full h-full">
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full cursor-crosshair"
+        style={{ display: "block" }}
+        role="img"
+        aria-label={`Groove field map: ${grooves.length} grooves arranged by rhythmic similarity. Selection is also available from the groove list and neighbor buttons.`}
+      />
+      <div className="absolute bottom-4 right-4 flex flex-col items-end gap-1 z-10">
+        <div ref={zoomLabelRef} className="text-[10px] text-white/20 font-mono pointer-events-none">
+          100% · LOD 1
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
-            {Math.round(zoomDisplay * 100)}%
-          </span>
+        <div className="flex flex-col gap-1">
           <button
-            onClick={() => adjustZoom(-ZOOM_STEP)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-sm text-foreground transition-colors hover:bg-accent"
-            title="Zoom out"
-          >
-            −
-          </button>
-          <button
-            onClick={() => adjustZoom(ZOOM_STEP)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-sm text-foreground transition-colors hover:bg-accent"
-            title="Zoom in"
+            onClick={() => {
+              targetCameraRef.current = {
+                ...targetCameraRef.current,
+                zoom: Math.min(12, targetCameraRef.current.zoom * 1.5),
+              };
+              requestRedraw();
+            }}
+            className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/60 hover:text-white/90 text-sm font-mono flex items-center justify-center transition-colors"
+            aria-label="Zoom in"
           >
             +
           </button>
           <button
-            onClick={resetZoom}
-            className="inline-flex rounded-full border border-border/70 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent"
+            onClick={() => {
+              targetCameraRef.current = {
+                ...targetCameraRef.current,
+                zoom: Math.max(0.8, targetCameraRef.current.zoom / 1.5),
+              };
+              requestRedraw();
+            }}
+            className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/60 hover:text-white/90 text-sm font-mono flex items-center justify-center transition-colors"
+            aria-label="Zoom out"
           >
-            Reset
+            −
+          </button>
+          <button
+            onClick={resetZoom}
+            className="w-7 h-7 bg-black/60 border border-white/10 rounded text-white/40 hover:text-white/80 text-[9px] font-mono flex items-center justify-center transition-colors"
+            title="Reset zoom"
+            aria-label="Reset zoom"
+          >
+            ⌂
           </button>
         </div>
       </div>
-
-      <div className="overflow-hidden rounded-[1.25rem] border border-border/70">
-        <canvas
-          ref={canvasRef}
-          className="aspect-[4/3] w-full block"
-          onClick={handleClick}
-          onMouseMove={handleMouseMove}
-          role="img"
-          aria-label="Static groove field"
-        />
+      <div
+        ref={zoomHintRef}
+        className="absolute bottom-4 left-4 text-[9px] text-white/15 font-mono pointer-events-none transition-opacity duration-150"
+      >
+        Scroll to zoom · Shift+drag to pan
       </div>
-
-      {selectedGroove && (
-        <div className="rounded-[1.25rem] border border-border/70 bg-card/75 p-4">
-          <p className="text-sm font-semibold capitalize text-foreground">
-            {selectedGroove.genre} · {selectedGroove.bpm} BPM
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Static point positions come from the precomputed feel-space projection. Zoom is centered,
-            and the field redraws only when the selection or zoom changes.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

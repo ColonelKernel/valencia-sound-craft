@@ -11,11 +11,110 @@ import {
   subscribePlaybackSteps,
 } from "./audioEngine";
 import { interpretGroove } from "./utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   groove: NormalizedGroove | null;
   grooveMap: Map<string, NormalizedGroove>;
   onSelectGroove: (groove: NormalizedGroove) => void;
+}
+
+// Per-groove narrative cache. Successful responses and definite "no narrative"
+// results are cached; transport errors are NOT, so a reselect retries.
+const narrativeCache = new Map<string, string | null>();
+
+type NarrativeStatus = "loading" | "ready" | "unavailable";
+
+function AINarrative({ groove }: { groove: NormalizedGroove }) {
+  const [status, setStatus] = useState<NarrativeStatus>("loading");
+  const [narrative, setNarrative] = useState<string | null>(null);
+  const grooveId = groove.id;
+
+  useEffect(() => {
+    const cached = narrativeCache.get(grooveId);
+    if (cached !== undefined) {
+      setNarrative(cached);
+      setStatus(cached ? "ready" : "unavailable");
+      return;
+    }
+
+    // Automated runs (Playwright sets navigator.webdriver) skip the live AI
+    // call entirely so e2e stays deterministic and spends no credits.
+    if (typeof navigator !== "undefined" && navigator.webdriver) {
+      setNarrative(null);
+      setStatus("unavailable");
+      return;
+    }
+
+    let cancelled = false;
+    setStatus("loading");
+    setNarrative(null);
+
+    // The debounce IS the timeout: browsing quickly through grooves clears the
+    // pending timer before any request fires. Errors surface only as UI state —
+    // never console output (the console-clean e2e gate counts own-origin errors).
+    const timer = window.setTimeout(() => {
+      supabase.functions
+        .invoke("groove-narrative", {
+          body: {
+            genre: groove.genre,
+            bpm: groove.bpm,
+            duration: groove.duration,
+            density: groove.norm_density,
+            swing: groove.norm_swing,
+            syncopation: groove.norm_syncopation,
+            velocity: groove.norm_velocity,
+            substyle: groove.substyle,
+          },
+        })
+        .then(({ data, error }) => {
+          if (cancelled) return;
+          const text = !error && typeof data?.narrative === "string" && data.narrative
+            ? (data.narrative as string)
+            : null;
+          if (!error) narrativeCache.set(grooveId, text);
+          setNarrative(text);
+          setStatus(text ? "ready" : "unavailable");
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setNarrative(null);
+            setStatus("unavailable");
+          }
+        });
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // Keyed on the id, not the object — scene rebuilds must not refetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grooveId]);
+
+  return (
+    <div className="rounded-[1.25rem] border border-border/70 bg-background/70 p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-foreground">AI Narrative</p>
+        {status === "loading" && (
+          <span className="h-2 w-2 animate-pulse rounded-full bg-primary/70" aria-hidden="true" />
+        )}
+      </div>
+      {status === "loading" && (
+        <div className="mt-3 space-y-2" aria-hidden="true">
+          <div className="h-3 w-full animate-pulse rounded bg-secondary" />
+          <div className="h-3 w-5/6 animate-pulse rounded bg-secondary" />
+          <div className="h-3 w-2/3 animate-pulse rounded bg-secondary" />
+        </div>
+      )}
+      {status === "ready" && narrative && (
+        <p className="mt-2 text-sm italic leading-6 text-foreground/80">&ldquo;{narrative}&rdquo;</p>
+      )}
+      {status === "unavailable" && (
+        <p className="mt-2 text-sm text-muted-foreground" role="status">Narrative unavailable</p>
+      )}
+    </div>
+  );
 }
 
 function MetricBar({ label, value, color }: { label: string; value: number; color: string }) {
@@ -299,8 +398,10 @@ export default function GrooveDNA({ groove, grooveMap, onSelectGroove }: Props) 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{interpretation}</p>
       </div>
 
+      <AINarrative groove={groove} />
+
       <div className="space-y-3">
-        <p className="text-sm font-semibold text-foreground">Nearest In This Sample</p>
+        <p className="text-sm font-semibold text-foreground">Nearest in Feel Space</p>
         <div className="space-y-2">
           {neighbors.map((neighbor, index) => (
             <button
