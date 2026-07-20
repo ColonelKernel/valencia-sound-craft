@@ -32,3 +32,9 @@ specs/*/gate-logs/
 # Playwright artifacts
 test-results/
 playwright-report/
+
+# Claude Code transient artifacts (must never be committed): git worktrees
+# create orphaned gitlinks that break `git clone --recurse-submodules` on
+# static hosts (Netlify), and launch.json is local dev-server config.
+.claude/worktrees/
+.claude/launch.json
