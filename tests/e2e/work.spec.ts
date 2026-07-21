@@ -37,10 +37,14 @@ test("work page shows every labeled embed and the full EP credits", async ({ pag
 
   await expect(page.getByRole("heading", { name: "Music & Video" })).toBeVisible();
 
-  // Every embed renders under its real title (iframes carry title attributes).
+  // Every embed renders as a click-to-load facade under its real title;
+  // clicking one swaps in the real third-party iframe.
   for (const embed of WORK_EMBEDS) {
-    await expect(page.locator(`iframe[title="${embed.title}"]`)).toBeAttached();
+    await expect(page.getByRole("button", { name: `Load ${embed.title} player` })).toBeAttached();
   }
+  const first = WORK_EMBEDS[0];
+  await page.getByRole("button", { name: `Load ${first.title} player` }).click();
+  await expect(page.locator(`iframe[title="${first.title}"]`)).toBeAttached();
 
   // The EP section lists all five tracks with credits.
   await expect(page.getByRole("heading", { name: GLOBAL_PULSE.title, exact: true })).toBeVisible();
@@ -64,9 +68,12 @@ test("homepage work section is always expanded with real labels and a link to /w
   const section = page.locator("#portfolio");
   await section.scrollIntoViewIfNeeded();
 
-  // No collapse toggle: the embeds are simply present.
-  await expect(section.locator("iframe")).toHaveCount(WORK_EMBEDS.length);
-  await expect(section.locator(`iframe[title="${WORK_EMBEDS[0].title}"]`)).toBeAttached();
+  // No collapse toggle: every embed facade is simply present — and no
+  // third-party iframe loads until a facade is clicked (mobile perf contract).
+  await expect(section.getByRole("button", { name: /^Load .* player$/ })).toHaveCount(
+    WORK_EMBEDS.length,
+  );
+  await expect(section.locator("iframe")).toHaveCount(0);
 
   await section.getByRole("link", { name: /see all work/i }).click();
   await expect(page).toHaveURL(/\/work$/);

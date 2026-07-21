@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import AudioPlaylist from "@/components/AudioPlaylist";
+import EmbedFacade from "@/components/EmbedFacade";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { ARTIST_PROFILES, GLOBAL_PULSE, WORK_EMBEDS } from "@/content/work";
@@ -50,16 +51,7 @@ const WorkPage = () => {
                       {embed.role} · {embed.year}
                     </p>
                   </div>
-                  <iframe
-                    title={embed.title}
-                    src={embed.embedUrl}
-                    width="100%"
-                    height={embed.height}
-                    frameBorder="0"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    className="block"
-                  />
+                  <EmbedFacade embed={embed} />
                   <p className="px-4 py-3 text-xs text-muted-foreground border-t border-border">
                     {embed.description}
                   </p>

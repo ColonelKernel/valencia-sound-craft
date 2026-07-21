@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import AudioPlaylist from "./AudioPlaylist";
+import EmbedFacade from "./EmbedFacade";
 import { GLOBAL_PULSE, WORK_EMBEDS } from "@/content/work";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
@@ -33,16 +34,7 @@ const Portfolio = () => {
                   {embed.role} · {embed.year}
                 </p>
               </div>
-              <iframe
-                title={embed.title}
-                src={embed.embedUrl}
-                width="100%"
-                height={embed.height}
-                frameBorder="0"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
-                className="block"
-              />
+              <EmbedFacade embed={embed} />
             </div>
           ))}
         </div>
