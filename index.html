@@ -12,13 +12,16 @@
     />
     <meta name="author" content="Zach Scheffler" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="canonical" href="https://zachscheffler.com/" />
+    <link rel="canonical" href="https://research.zachscheffler.com/" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/InterVariable.woff2" />
 
     <meta property="og:type" content="profile" />
     <meta property="og:site_name" content="Zach Scheffler Research" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:url" content="https://zachscheffler.com/" />
+    <meta property="og:url" content="https://research.zachscheffler.com/" />
     <meta
       property="og:title"
       content="Zach Scheffler — DAW State &amp; Intelligent Music Production Research"
@@ -29,9 +32,9 @@
     />
     <meta
       property="og:image"
-      content="https://zachscheffler.com/media/zach-scheffler-research-og.jpg"
+      content="https://research.zachscheffler.com/media/zach-scheffler-research-og.jpg"
     />
-    <meta property="og:image:secure_url" content="https://zachscheffler.com/media/zach-scheffler-research-og.jpg" />
+    <meta property="og:image:secure_url" content="https://research.zachscheffler.com/media/zach-scheffler-research-og.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -51,7 +54,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://zachscheffler.com/media/zach-scheffler-research-og.jpg"
+      content="https://research.zachscheffler.com/media/zach-scheffler-research-og.jpg"
     />
     <meta
       name="twitter:image:alt"
@@ -64,12 +67,12 @@
         "@graph": [
           {
             "@type": "Person",
-            "@id": "https://zachscheffler.com/#person",
+            "@id": "https://research.zachscheffler.com/#person",
             "name": "Zach Scheffler",
-            "url": "https://zachscheffler.com/",
+            "url": "https://research.zachscheffler.com/",
             "image": {
               "@type": "ImageObject",
-              "url": "https://zachscheffler.com/media/zach-scheffler.webp",
+              "url": "https://research.zachscheffler.com/media/zach-scheffler.webp",
               "width": 720,
               "height": 960
             },
@@ -102,61 +105,61 @@
           },
           {
             "@type": "ProfilePage",
-            "@id": "https://zachscheffler.com/#profile",
-            "url": "https://zachscheffler.com/",
+            "@id": "https://research.zachscheffler.com/#profile",
+            "url": "https://research.zachscheffler.com/",
             "name": "Zach Scheffler — DAW State & Intelligent Music Production Research",
             "description": "A research dossier on interpretable DAW-state representation, audio outcomes, and creativity-supporting prediction.",
             "mainEntity": {
-              "@id": "https://zachscheffler.com/#person"
+              "@id": "https://research.zachscheffler.com/#person"
             },
             "primaryImageOfPage": {
               "@type": "ImageObject",
-              "url": "https://zachscheffler.com/media/zach-scheffler-research-og.jpg",
+              "url": "https://research.zachscheffler.com/media/zach-scheffler-research-og.jpg",
               "width": 1200,
               "height": 630
             }
           },
           {
             "@type": "SoftwareSourceCode",
-            "@id": "https://zachscheffler.com/#session-state-analyzer",
+            "@id": "https://research.zachscheffler.com/#session-state-analyzer",
             "name": "Session State Analyzer",
             "description": "A provenance-aware canonical model that consumes DAW adapter evidence bundles and represents production state as an interpretable graph.",
             "codeRepository": "https://github.com/ColonelKernel/session-state-analyzer",
             "programmingLanguage": ["Python", "TypeScript"],
             "author": {
-              "@id": "https://zachscheffler.com/#person"
+              "@id": "https://research.zachscheffler.com/#person"
             },
             "hasPart": [
               {
                 "@type": "SoftwareSourceCode",
                 "name": "Cubase Session State Explorer",
-                "codeRepository": "https://github.com/ColonelKernel/CubaseSessionStateExplorer"
+                "codeRepository": "https://github.com/ColonelKernel/session-state-explorer-cubase"
               },
               {
                 "@type": "SoftwareSourceCode",
                 "name": "Ableton Session State Explorer",
-                "codeRepository": "https://github.com/ColonelKernel/AbletonSessionStateExplorer"
+                "codeRepository": "https://github.com/ColonelKernel/session-state-explorer-ableton"
               },
               {
                 "@type": "SoftwareSourceCode",
                 "name": "REAPER Session State Explorer",
-                "codeRepository": "https://github.com/ColonelKernel/session-state-explorer"
+                "codeRepository": "https://github.com/ColonelKernel/session-state-explorer-reaper"
               },
               {
                 "@type": "SoftwareSourceCode",
-                "name": "Logic Session State Explorer",
-                "codeRepository": "https://github.com/ColonelKernel/LogicSessionStateExplorer"
+                "name": "Logic Session Evidence Explorer",
+                "codeRepository": "https://github.com/ColonelKernel/session-state-explorer-logic"
               }
             ]
           },
           {
             "@type": "CreativeWork",
-            "@id": "https://zachscheffler.com/#improspira",
+            "@id": "https://research.zachscheffler.com/#improspira",
             "name": "Improspira / Improv Partner",
             "description": "A collaborative generative-harmony prototype from the MTG Generative Music AI Workshop and its subsequent research continuation.",
             "contributor": [
               {
-                "@id": "https://zachscheffler.com/#person"
+                "@id": "https://research.zachscheffler.com/#person"
               },
               {
                 "@type": "Person",
@@ -170,24 +173,24 @@
           },
           {
             "@type": "SoftwareSourceCode",
-            "@id": "https://zachscheffler.com/#autoharm",
+            "@id": "https://research.zachscheffler.com/#autoharm",
             "name": "AutoHarm / Autoharmonizer",
             "description": "An editable generative-harmony workflow combining musician control, MIDI output, Markov generation, and pretrained neural models.",
             "codeRepository": "https://github.com/ColonelKernel/AutoHarm-Web",
             "url": "https://colonelkernel.github.io/AutoHarm-Web/",
             "programmingLanguage": ["TypeScript", "JavaScript", "Python", "Max"],
             "author": {
-              "@id": "https://zachscheffler.com/#person"
+              "@id": "https://research.zachscheffler.com/#person"
             }
           },
           {
             "@type": "SoftwareSourceCode",
-            "@id": "https://zachscheffler.com/#arrangement-architect",
+            "@id": "https://research.zachscheffler.com/#arrangement-architect",
             "name": "Arrangement Architect",
             "description": "A deterministic, non-AI arrangement-state exploration tool.",
             "codeRepository": "https://github.com/ColonelKernel/ArrangementArchitect",
             "author": {
-              "@id": "https://zachscheffler.com/#person"
+              "@id": "https://research.zachscheffler.com/#person"
             }
           }
         ]
