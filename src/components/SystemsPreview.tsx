@@ -83,7 +83,7 @@ const SystemsPreview = () => (
                 <div className={featured ? "flex-1" : ""}>
                   <div className="flex items-center gap-2">
                     <card.icon className={`h-5 w-5 ${featured ? "text-emerald-400" : "text-primary"}`} />
-                    {featured && <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded-full">Responsive Groove Atlas</span>}
+                    {featured && <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded-full">World Atlas + Feel-Space</span>}
                   </div>
                   <h3 className={`mt-4 font-semibold text-foreground ${featured ? "text-2xl" : "text-lg"}`}>{card.title}</h3>
                   <p className={`mt-2 leading-6 text-muted-foreground ${featured ? "text-base max-w-2xl" : "text-sm"}`}>{card.description}</p>
@@ -103,6 +103,19 @@ const SystemsPreview = () => (
             </article>
           );
         })}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-violet-500/25 bg-violet-950/15 px-5 py-4">
+        <p className="text-sm text-muted-foreground">
+          More engineering: the AutoHarm chord instrument, Ableton Live extensions, and
+          music-tech research.
+        </p>
+        <Link
+          to="/projects"
+          className="inline-flex items-center gap-2 text-sm font-medium text-violet-400 hover:text-violet-300"
+        >
+          All projects <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </div>
   </section>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Brain, Disc3, Linkedin, Instagram, Menu, Music, X } from "lucide-react";
+import { BarChart3, Brain, Disc3, Linkedin, Instagram, Menu, Music, Wrench, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 const normalizedHomeLinks = [
   { label: "Home", href: "#hero" },
   { label: "Services", href: "#services" },
-  { label: "Interactive Tools", href: "#systems" },
   { label: "About", href: "#about" },
   { label: "Research", href: "https://research.zachscheffler.com" },
   { label: "Contact", href: "#contact" },
@@ -139,6 +138,22 @@ const Navbar = () => {
           className={cn(
             "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
             location.pathname === "/work" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+          )}
+        />
+      </Link>
+      <Link
+        to="/projects"
+        className={cn(
+          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
+          location.pathname === "/projects" ? "text-foreground" : "text-violet-400 hover:text-violet-300",
+        )}
+      >
+        <Wrench size={14} />
+        Projects
+        <span
+          className={cn(
+            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
+            location.pathname === "/projects" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
           )}
         />
       </Link>
@@ -328,6 +343,14 @@ const Navbar = () => {
                       >
                         <Disc3 size={14} />
                         Work
+                      </Link>
+                      <Link
+                        to="/projects"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-violet-400 hover:bg-secondary/70"
+                      >
+                        <Wrench size={14} />
+                        Projects
                       </Link>
                       <Link
                         to="/groove-atlas"

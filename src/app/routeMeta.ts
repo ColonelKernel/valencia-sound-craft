@@ -74,6 +74,12 @@ export const ROUTE_META = {
     description:
       "A world atlas of rhythm traditions with cited ethnomusicological sources, paired with an interactive feel-space lab for exploring groove families.",
   },
+  projects: {
+    path: "/projects",
+    title: "Projects | Valencia Sound Craft",
+    description:
+      "Software by Zach Scheffler: the AutoHarm chord instrument, Ableton Live extensions, in-browser music systems, and music-tech research.",
+  },
   work: {
     path: "/work",
     title: "Work | Valencia Sound Craft",
