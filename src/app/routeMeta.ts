@@ -68,11 +68,11 @@ export const ROUTE_META = {
     description:
       "Catalog analytics dashboard for music investment analysis. Demonstration dataset derived from public Spotify popularity data, with forecasting and AI-assisted analysis.",
   },
-  grooveIntelligence: {
-    path: "/groove-intelligence",
-    title: "Groove Intelligence | Valencia Sound Craft",
+  grooveAtlas: {
+    path: "/groove-atlas",
+    title: "Groove Atlas | Valencia Sound Craft",
     description:
-      "An interactive lab for exploring groove families and rhythmic feel with real-time playback.",
+      "A world atlas of rhythm traditions with cited ethnomusicological sources, paired with an interactive feel-space lab for exploring groove families.",
   },
   work: {
     path: "/work",

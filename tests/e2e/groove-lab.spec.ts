@@ -1,13 +1,13 @@
 import { test, expect, type Page } from "@playwright/test";
 
 /**
- * Groove Lab (/groove-intelligence) — the restored full desktop lab and the
- * mobile atlas variant.
+ * Feel-Space lens of the Groove Atlas (/groove-atlas) — the full desktop lab
+ * and the mobile list variant, reached via the lens switcher.
  *
  * Desktop (default 1280×720 viewport ≥ 1024px): canvas field with view modes,
  * sculptor, and the DNA panel. The AI-narrative fetch is gated off under
  * navigator.webdriver, so "Narrative unavailable" is the deterministic state.
- * Mobile (375×812): list-based atlas, no canvas field.
+ * Mobile (375×812): list-based view, no canvas field.
  */
 
 function collectOwnOriginErrors(page: Page, appOrigin: string): string[] {
@@ -36,7 +36,8 @@ test.describe("desktop lab", () => {
     const appOrigin = new URL(baseURL ?? "http://127.0.0.1:4199").origin;
     const errors = collectOwnOriginErrors(page, appOrigin);
 
-    await page.goto("/groove-intelligence");
+    await page.goto("/groove-atlas");
+    await page.getByRole("button", { name: "Feel-Space" }).click();
 
     // Canvas field present with its accessible name.
     await expect(page.getByRole("img", { name: /groove field map/i })).toBeVisible();
@@ -72,7 +73,8 @@ test.describe("mobile atlas", () => {
     const appOrigin = new URL(baseURL ?? "http://127.0.0.1:4199").origin;
     const errors = collectOwnOriginErrors(page, appOrigin);
 
-    await page.goto("/groove-intelligence");
+    await page.goto("/groove-atlas");
+    await page.getByRole("button", { name: "Feel-Space" }).click();
 
     await expect(page.getByRole("heading", { name: /sampled grooves/i })).toBeVisible();
     await expect(page.locator("canvas")).toHaveCount(0);

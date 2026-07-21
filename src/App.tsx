@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,7 +19,7 @@ const PAGES: Record<RouteKey, LazyExoticComponent<ComponentType>> = {
   circle: lazy(() => import("@/features/circle/Tool")),
   tonnetz: lazy(() => import("@/features/tonnetz/Tool")),
   musicAnalytics: lazy(() => import("./pages/MusicAnalyticsPage")),
-  grooveIntelligence: lazy(() => import("./pages/GrooveIntelligencePage")),
+  grooveAtlas: lazy(() => import("./pages/GrooveAtlasPage")),
   work: lazy(() => import("./pages/WorkPage")),
   notFound: lazy(() => import("./pages/NotFound")),
 };
@@ -34,6 +34,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
+            {/* Legacy path from before the Groove Lab / Rhythm Map merge. */}
+            <Route path="/groove-intelligence" element={<Navigate to="/groove-atlas" replace />} />
             {ROUTE_KEYS.map((key) => {
               const Page = PAGES[key];
               return <Route key={key} path={ROUTE_META[key].path} element={<Page />} />;

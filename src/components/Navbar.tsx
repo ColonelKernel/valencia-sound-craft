@@ -143,18 +143,18 @@ const Navbar = () => {
         />
       </Link>
       <Link
-        to="/groove-intelligence"
+        to="/groove-atlas"
         className={cn(
           "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/groove-intelligence" ? "text-foreground" : "text-emerald-400 hover:text-emerald-300",
+          location.pathname === "/groove-atlas" ? "text-foreground" : "text-emerald-400 hover:text-emerald-300",
         )}
       >
         <Brain size={14} />
-        Groove Lab
+        Groove Atlas
         <span
           className={cn(
             "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            location.pathname === "/groove-intelligence" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+            location.pathname === "/groove-atlas" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
           )}
         />
       </Link>
@@ -330,12 +330,12 @@ const Navbar = () => {
                         Work
                       </Link>
                       <Link
-                        to="/groove-intelligence"
+                        to="/groove-atlas"
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-emerald-400 hover:bg-secondary/70"
                       >
                         <Brain size={14} />
-                        Groove Lab
+                        Groove Atlas
                       </Link>
                       <Link
                         to="/music-analytics"
