@@ -10,8 +10,9 @@ const NotFound = () => (
         The requested route belonged to an earlier version of the site. The current dossier focuses on
         DAW state, intelligent music production, and human–AI performance systems.
       </p>
+      {/* Internal link: the site reserves ↗ for external destinations. */}
       <a className="button button--light" href="/">
-        Return home to the research dossier <span aria-hidden="true">↗</span>
+        Return home to the research dossier <span aria-hidden="true">←</span>
       </a>
     </div>
   </main>
