@@ -2,13 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/InterVariable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
   --paper: #f2f1eb;
   --paper-deep: #e9e8e1;
   --ink: #10231b;
   --ink-soft: #46584f;
-  --ink-faint: #627068;
+  --ink-faint: #4d5c53;
   --night: #0a1b14;
   --night-soft: #10271d;
   --acid: #c9f873;
@@ -18,7 +26,7 @@
   --line-dark: rgba(235, 247, 239, 0.2);
   --white: #fbfcf8;
   --page: min(1240px, calc(100vw - 48px));
-  --display: "Helvetica Neue", "Avenir Next", Arial, sans-serif;
+  --display: Inter, "Helvetica Neue", Arial, sans-serif;
   --body: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
@@ -441,7 +449,7 @@ select {
 .map-footnote {
   margin: 0;
   padding: 0.9rem 0.2rem 0.15rem;
-  color: rgba(255, 255, 255, 0.46);
+  color: rgba(255, 255, 255, 0.72);
   font-family: var(--mono);
   font-size: 0.62rem;
   letter-spacing: 0.06em;
@@ -718,9 +726,9 @@ select {
 
 .architecture-toolbar p {
   margin: 0 0 0 auto;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.72);
   font-family: var(--mono);
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   letter-spacing: 0.06em;
 }
 
@@ -850,9 +858,9 @@ select {
 
 .core-label > span,
 .core-label > small {
-  color: rgba(255, 255, 255, 0.48);
+  color: rgba(255, 255, 255, 0.72);
   font-family: var(--mono);
-  font-size: 0.5rem;
+  font-size: 0.62rem;
 }
 
 .core-label strong {
@@ -1276,9 +1284,9 @@ select {
   gap: 0.75rem;
   padding: 0.8rem 0;
   border-bottom: 1px solid var(--line-dark);
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.72);
   font-family: var(--mono);
-  font-size: 0.56rem;
+  font-size: 0.62rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -1336,7 +1344,7 @@ select {
 .education-list small {
   display: block;
   margin-top: 0.45rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 0.7rem;
   line-height: 1.55;
 }
@@ -1673,5 +1681,114 @@ select {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  :root {
+    --line-dark: rgba(16, 35, 27, 0.24);
+  }
+
+  html,
+  body {
+    background: #fff;
+    color: var(--ink);
+  }
+
+  /* Navbar, skip link, marquee, and interactive-only chrome */
+  .site-header,
+  .skip-link,
+  .hero-marquee,
+  .hero-actions,
+  .footer-bottom a[href="#top"] {
+    display: none !important;
+  }
+
+  /* Dark sections print as light paper with dark ink */
+  .hero-section,
+  .hero-research-map,
+  .architecture-figure,
+  .architecture-stage,
+  .map-stack > div,
+  .architecture-node,
+  .research-image,
+  .limitation-panel,
+  .background-section,
+  .not-found-shell,
+  .site-footer {
+    background: #fff !important;
+    box-shadow: none !important;
+    color: var(--ink) !important;
+  }
+
+  /* Decorative grids, orbits, and glow rings */
+  .hero-section::before,
+  .hero-section::after,
+  .architecture-stage::after,
+  .map-stack > div::before {
+    content: none !important;
+  }
+
+  .hero-deck,
+  .text-link,
+  .map-label,
+  .map-stack small,
+  .map-footnote,
+  .architecture-toolbar p,
+  .architecture-node small,
+  .core-label > span,
+  .core-label > small,
+  .architecture-output span,
+  .architecture-figure figcaption,
+  .research-image figcaption,
+  .limitation-panel li,
+  .next-step,
+  .portrait-caption,
+  .background-lead,
+  .education-list p,
+  .education-list small,
+  .not-found-copy > p:not(.section-kicker) {
+    color: var(--ink-soft) !important;
+  }
+
+  .hero-kicker,
+  .map-stack span,
+  .core-label strong,
+  .architecture-node > span,
+  .education-list time,
+  .education-list .evidence-links a,
+  .limitation-panel .mini-label,
+  .next-step strong,
+  .background-copy .section-kicker,
+  .not-found-copy .section-kicker,
+  .wordmark--light {
+    color: var(--ink) !important;
+  }
+
+  .hero-research-map,
+  .architecture-figure,
+  .architecture-toolbar,
+  .architecture-toolbar > span,
+  .map-stack > div,
+  .architecture-node,
+  .core-orbit,
+  .limitation-panel li,
+  .next-step,
+  .architecture-output span {
+    border-color: var(--line) !important;
+  }
+
+  /* Keep evidence blocks intact across page breaks */
+  .metric-card,
+  .adapter-card,
+  .support-grid > article {
+    break-inside: avoid;
+  }
+
+  /* Honest-labeling contract: qualifiers and caveats stay visible in print */
+  .metric-card small,
+  .support-caveat {
+    display: block !important;
+    color: var(--ink-soft) !important;
   }
 }

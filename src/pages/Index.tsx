@@ -119,7 +119,7 @@ const FlagshipStudy = ({ study }: { study: ResearchCaseStudy }) => (
           <strong>Role</strong> {study.role}
         </p>
         <MethodList methods={study.methods} />
-        <LinkList links={study.evidence} />
+        <LinkList links={study.evidence} label={`${study.title} evidence`} />
       </div>
       <ResearchArchitecture implementations={study.implementations ?? []} />
     </div>
@@ -228,7 +228,7 @@ const SecondaryStudy = ({ study, index }: { study: ResearchCaseStudy; index: str
           <strong>Role</strong> {study.role}
         </p>
         <MethodList methods={study.methods} />
-        <LinkList links={study.evidence} />
+        <LinkList links={study.evidence} label={`${study.title} evidence`} />
         <div className="compact-limitations">
           <p className="mini-label">Limits / current status</p>
           <ul>
