@@ -1224,6 +1224,7 @@ const GlobalRhythmEngine = ({
             <Slider
               value={[swing * 100]}
               onValueChange={([value]) => setSwing(value / 100)}
+              aria-label="Swing amount, percent"
               min={0}
               max={30}
               step={1}
@@ -1261,6 +1262,7 @@ const GlobalRhythmEngine = ({
             <Slider
               value={[variationStrength * 100]}
               onValueChange={([value]) => setVariationStrength(value / 100)}
+              aria-label="Adaptive variation strength, percent"
               min={10}
               max={100}
               step={1}

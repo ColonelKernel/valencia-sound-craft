@@ -624,7 +624,8 @@ const DrumMachine = ({
           {playing ? 'Stop' : 'Play'}
         </button>
 
-        <button onClick={clearAll}
+        {/* The label is hidden below xs, so the button needs its own name. */}
+        <button onClick={clearAll} aria-label="Clear all steps"
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-border text-muted-foreground hover:bg-accent transition-colors">
           <RotateCcw size={14} /> <span className="hidden xs:inline">Clear</span>
         </button>
@@ -633,10 +634,10 @@ const DrumMachine = ({
         {/* BPM */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           <span className="text-xs text-muted-foreground font-medium">BPM</span>
-          <input type="range" min={40} max={400} value={bpm}
+          <input type="range" min={40} max={400} value={bpm} aria-label="Tempo in BPM"
             onChange={e => changeBpm(Number(e.target.value))}
             className="w-16 sm:w-20 accent-primary" />
-          <input type="number" min={40} max={400} value={bpm}
+          <input type="number" min={40} max={400} value={bpm} aria-label="Tempo in BPM"
             onChange={e => changeBpm(Math.max(40, Math.min(400, Number(e.target.value))))}
             className="w-12 sm:w-14 bg-secondary border border-border rounded px-1.5 py-1 text-xs sm:text-sm text-foreground text-center" />
         </div>
@@ -644,7 +645,7 @@ const DrumMachine = ({
         {/* Swing + Groove - collapse on very small screens */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Sw</span>
-          <input type="range" min={0} max={50} value={swing}
+          <input type="range" min={0} max={50} value={swing} aria-label="Swing amount, percent"
             onChange={e => setSwing(Number(e.target.value))}
             className="w-12 sm:w-16 accent-primary" />
           <span className="text-[10px] text-muted-foreground w-6 sm:w-8">{swing}%</span>
@@ -652,7 +653,7 @@ const DrumMachine = ({
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Feel</span>
-          <input type="range" min={0} max={100} value={groove}
+          <input type="range" min={0} max={100} value={groove} aria-label="Groove feel, tight to loose"
             onChange={e => setGroove(Number(e.target.value))}
             className="w-12 sm:w-16 accent-primary" />
           <span className="text-[9px] sm:text-[10px] text-muted-foreground w-10 sm:w-14">
@@ -736,6 +737,7 @@ const DrumMachine = ({
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-muted-foreground">Vol</span>
                   <input type="range" min={0} max={100} value={track.volume * 100}
+                    aria-label={`${inst?.name || track.instrumentId} volume`}
                     onChange={e => updateTrack(track.id, { volume: Number(e.target.value) / 100 })}
                     className="w-14 accent-primary" />
                 </div>
@@ -743,6 +745,7 @@ const DrumMachine = ({
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-muted-foreground">Pitch</span>
                   <input type="range" min={50} max={200} value={track.pitch * 100}
+                    aria-label={`${inst?.name || track.instrumentId} pitch`}
                     onChange={e => updateTrack(track.id, { pitch: Number(e.target.value) / 100 })}
                     className="w-14 accent-primary" />
                 </div>
@@ -750,6 +753,7 @@ const DrumMachine = ({
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-muted-foreground">Decay</span>
                   <input type="range" min={5} max={150} value={track.decay * 100}
+                    aria-label={`${inst?.name || track.instrumentId} decay`}
                     onChange={e => updateTrack(track.id, { decay: Number(e.target.value) / 100 })}
                     className="w-14 accent-primary" />
                 </div>
@@ -758,6 +762,7 @@ const DrumMachine = ({
                   <span className="text-[10px] text-muted-foreground">Swing</span>
                   <input type="range" min={0} max={50}
                     value={track.swing !== null ? track.swing : swing}
+                    aria-label={`${inst?.name || track.instrumentId} swing, percent`}
                     onChange={e => updateTrack(track.id, { swing: Number(e.target.value) })}
                     className="w-14 accent-primary" />
                   <span className="text-[9px] text-muted-foreground w-8">
@@ -778,6 +783,7 @@ const DrumMachine = ({
                   <span className="text-[10px] text-muted-foreground">Prob</span>
                   <input type="range" min={0} max={100}
                     value={track.probability}
+                    aria-label={`${inst?.name || track.instrumentId} trigger probability, percent`}
                     onChange={e => updateTrack(track.id, { probability: Number(e.target.value) })}
                     className="w-14 accent-primary" />
                   <span className={`text-[9px] w-8 ${track.probability < 100 ? 'text-amber-400' : 'text-muted-foreground'}`}>
