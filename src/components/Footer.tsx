@@ -25,20 +25,28 @@ const Footer = () => {
             Spotify
           </a>
           <a
+            href="https://soundcloud.com/streetcarscandal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            SoundCloud
+          </a>
+          <a
+            href="https://www.youtube.com/@ColonelKernel22"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            YouTube
+          </a>
+          <a
             href="https://www.instagram.com/streetcarscandal/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-foreground transition-colors"
           >
             Instagram
-          </a>
-          <a
-            href="https://wa.me/15104356431"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            WhatsApp
           </a>
         </div>
 

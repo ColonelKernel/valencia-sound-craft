@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Brain, Linkedin, Instagram, Menu, MessageCircle, Music, X } from "lucide-react";
+import { BarChart3, Brain, Disc3, Linkedin, Instagram, Menu, Music, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -8,7 +8,6 @@ const normalizedHomeLinks = [
   { label: "Home", href: "#hero" },
   { label: "Services", href: "#services" },
   { label: "Interactive Tools", href: "#systems" },
-  { label: "Work", href: "#portfolio" },
   { label: "About", href: "#about" },
   { label: "Research", href: "https://research.zachscheffler.com" },
   { label: "Contact", href: "#contact" },
@@ -31,7 +30,6 @@ const socialLinks = [
     label: "Spotify",
   },
   { icon: Instagram, href: "https://www.instagram.com/streetcarscandal/", label: "Instagram" },
-  { icon: MessageCircle, href: "https://wa.me/15104356431", label: "WhatsApp" },
 ];
 
 const Navbar = () => {
@@ -99,6 +97,11 @@ const Navbar = () => {
     };
   }, [isHomePage]);
 
+  // On subpages the section anchors must route back to the homepage first;
+  // a bare "#services" would only mutate the hash on the current route.
+  const resolveHomeHref = (href: string) =>
+    href.startsWith("#") && !isHomePage ? `/${href}` : href;
+
   const renderHomeLinks = () => (
     <>
       {normalizedHomeLinks.map((link) => {
@@ -106,7 +109,7 @@ const Navbar = () => {
         return (
           <a
             key={link.href}
-            href={link.href}
+            href={resolveHomeHref(link.href)}
             aria-current={isActive ? "page" : undefined}
             className={cn(
               "group relative text-sm font-medium transition-colors px-0.5 py-1.5",
@@ -123,6 +126,22 @@ const Navbar = () => {
           </a>
         );
       })}
+      <Link
+        to="/work"
+        className={cn(
+          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
+          location.pathname === "/work" ? "text-foreground" : "text-amber-400 hover:text-amber-300",
+        )}
+      >
+        <Disc3 size={14} />
+        Work
+        <span
+          className={cn(
+            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
+            location.pathname === "/work" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+          )}
+        />
+      </Link>
       <Link
         to="/groove-intelligence"
         className={cn(
@@ -289,7 +308,7 @@ const Navbar = () => {
                         return (
                           <a
                             key={link.href}
-                            href={link.href}
+                            href={resolveHomeHref(link.href)}
                             onClick={() => setMenuOpen(false)}
                             className={cn(
                               "block rounded-2xl px-4 py-3 text-sm font-medium",
@@ -302,6 +321,14 @@ const Navbar = () => {
                           </a>
                         );
                       })}
+                      <Link
+                        to="/work"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-amber-400 hover:bg-secondary/70"
+                      >
+                        <Disc3 size={14} />
+                        Work
+                      </Link>
                       <Link
                         to="/groove-intelligence"
                         onClick={() => setMenuOpen(false)}

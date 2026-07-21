@@ -54,6 +54,9 @@ const Index = () => {
           sameAs: [
             "https://www.linkedin.com/in/zscheff/",
             "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L",
+            "https://soundcloud.com/streetcarscandal",
+            "https://www.youtube.com/@ColonelKernel22",
+            "https://www.instagram.com/streetcarscandal/",
           ],
         })}
       />
@@ -64,12 +67,13 @@ const Index = () => {
           <Services />
         </Suspense>
 
-        <SystemsPreview />
-        <DeferredAnalyticsPreview />
-
         <Suspense fallback={<SectionFallback id="portfolio" className="bg-secondary/50" />}>
           <Portfolio />
         </Suspense>
+
+        <SystemsPreview />
+        <DeferredAnalyticsPreview />
+
         <Suspense fallback={<SectionFallback id="about" className="bg-background" />}>
           <About />
         </Suspense>

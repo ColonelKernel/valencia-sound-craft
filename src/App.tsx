@@ -20,6 +20,7 @@ const PAGES: Record<RouteKey, LazyExoticComponent<ComponentType>> = {
   tonnetz: lazy(() => import("@/features/tonnetz/Tool")),
   musicAnalytics: lazy(() => import("./pages/MusicAnalyticsPage")),
   grooveIntelligence: lazy(() => import("./pages/GrooveIntelligencePage")),
+  work: lazy(() => import("./pages/WorkPage")),
   notFound: lazy(() => import("./pages/NotFound")),
 };
 

@@ -33,8 +33,9 @@ const Hero = () => {
             </h1>
 
             <p className="max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-              I help artists turn ideas into finished records — blending live instruments,
-              modern production, and global influences.
+              I produce records, engineer sessions, and build the software and data tools
+              behind them — from studio work in Valencia to interactive instruments that
+              run in your browser.
             </p>
           </div>
 

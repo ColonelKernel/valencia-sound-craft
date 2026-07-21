@@ -1,5 +1,25 @@
 import { useFadeIn } from "@/hooks/useFadeIn";
 
+/**
+ * Career timeline — every entry is verified against at least two independent
+ * sources (resumes, LinkedIn, cover letters, the Global Pulse CE paper).
+ * Add nothing here that can't be traced the same way.
+ */
+const TIMELINE = [
+  { years: "2009–2013", role: "Grinnell College", note: "B.A. — Latin ensembles, jazz and rock bands alongside coursework" },
+  { years: "2013", role: "Streetcar Scandal", note: "Started producing original music" },
+  { years: "2014–2015", role: "East West Studios, LA", note: "Audio engineering intern — sessions incl. Frank Ocean and Stephen Stills" },
+  { years: "2015", role: "UCLA Extension", note: "Professional Certificate in Music Production" },
+  { years: "2016–2018", role: "UCLA", note: "Master of Public Policy — thesis prepared for the World Bank" },
+  { years: "2016–2019", role: "World Bank", note: "Consultant — led wellbeing data-collection fieldwork across Peru" },
+  { years: "2018–2023", role: "7DrumCity", note: "Mentor & workshop leader" },
+  { years: "2020–2022", role: "NORC at the University of Chicago", note: "Research associate — NLP, GIS, and web-scraping at national scale" },
+  { years: "2022", role: "MIT Professional Education", note: "Applied Data Science certificate" },
+  { years: "2022–2023", role: "Rios Partners", note: "Consultant — founded the firm's data strategy team" },
+  { years: "2024–2025", role: "Berklee College of Music, Valencia", note: "M.M. Music Production, Technology & Innovation" },
+  { years: "2025–present", role: "Valencia, Spain", note: "Producing records, recording sessions, and building music software" },
+];
+
 const About = () => {
   const ref = useFadeIn();
 
@@ -15,15 +35,19 @@ const About = () => {
 
             <div className="space-y-5 text-muted-foreground leading-relaxed">
               <p>
-                I'm a music producer, guitarist, and creative technologist with a background
-                spanning policy analysis and music production. I hold a Master of Public
-                Policy from UCLA and a Master of Music in Music Production, Technology, and
-                Innovation from Berklee College of Music (Valencia).
+                I didn't come up through a conservatory or a computer-science program. I came
+                up through music production and public policy. I've been producing since
+                2013 — first in college Latin ensembles and rock bands, then as an audio
+                engineering intern at East West Studios in LA — and I spent the better part
+                of a decade in data: a Master of Public Policy at UCLA, field research for
+                the World Bank in Peru, computational social science at NORC, and building a
+                data strategy team at Rios Partners.
               </p>
               <p>
-                My musical background spans rock, R&amp;B, electronic, jazz, and Latin music,
-                shaped by years of playing, recording, and studying across different
-                environments — from field research in Peru to studio sessions in Spain.
+                In 2024 I moved to Valencia for an M.M. in Music Production, Technology &amp;
+                Innovation at Berklee. That path continues to inform how I work: I produce
+                records the way I build software — iteratively, under version control, with
+                the data close at hand.
               </p>
               <p>
                 At Berklee, I completed{" "}
@@ -47,9 +71,9 @@ const About = () => {
               <p>
                 Outside of client work, I write and produce original music under the name{" "}
                 <span className="text-foreground font-semibold">Streetcar Scandal</span> — a
-                personal project blending indie rock, electronic textures, and raw songwriting.
-                It's where I experiment freely and push ideas that don't fit neatly into any
-                single genre.
+                project I've been producing since 2013, blending indie rock, electronic
+                textures, and raw songwriting. It's where I experiment freely and push ideas
+                that don't fit neatly into any single genre.
               </p>
             </div>
           </div>
@@ -99,6 +123,19 @@ const About = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="fade-up mt-16" style={{ transitionDelay: "250ms" }}>
+          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-6">The Path</p>
+          <ol className="border border-border rounded-sm divide-y divide-border">
+            {TIMELINE.map((entry) => (
+              <li key={`${entry.years}-${entry.role}`} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 px-5 py-3.5">
+                <span className="text-xs text-muted-foreground font-mono w-28 shrink-0">{entry.years}</span>
+                <span className="font-display font-semibold text-sm">{entry.role}</span>
+                <span className="text-sm text-muted-foreground">{entry.note}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </section>

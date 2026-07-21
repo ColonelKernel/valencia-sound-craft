@@ -74,6 +74,12 @@ export const ROUTE_META = {
     description:
       "An interactive lab for exploring groove families and rhythmic feel with real-time playback.",
   },
+  work: {
+    path: "/work",
+    title: "Work | Valencia Sound Craft",
+    description:
+      "Selected music and video work by Zach Scheffler: the Global Pulse EP, session recordings for Valencia artists, and releases as Streetcar Scandal.",
+  },
   notFound: {
     path: "*",
     title: "Page Not Found | Valencia Sound Craft",

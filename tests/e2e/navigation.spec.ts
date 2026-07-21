@@ -44,7 +44,7 @@ function collectErrors(page: Page, appOrigin: string): string[] {
 
 const toolNav = (page: Page) => page.getByRole("navigation", { name: "Tool navigation" });
 
-test("navbar navigation reaches groove lab, analytics, and home with manifest titles", async ({
+test("navbar navigation reaches work, groove lab, analytics, and home with manifest titles", async ({
   page,
   baseURL,
 }) => {
@@ -53,6 +53,10 @@ test("navbar navigation reaches groove lab, analytics, and home with manifest ti
 
   await page.goto("/");
   await expect(page).toHaveTitle(ROUTE_META.home.title);
+
+  await page.getByRole("link", { name: "Work", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/work$/);
+  await expect(page).toHaveTitle(ROUTE_META.work.title);
 
   await page.getByRole("link", { name: "Groove Lab" }).first().click();
   await expect(page).toHaveURL(/\/groove-intelligence$/);
