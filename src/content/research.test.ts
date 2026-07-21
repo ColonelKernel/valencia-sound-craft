@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  backgroundSummary,
   caseStudies,
   education,
   profileLinks,
@@ -10,6 +11,7 @@ import {
 } from "./research";
 
 const allContent = {
+  backgroundSummary,
   caseStudies,
   education,
   profileLinks,

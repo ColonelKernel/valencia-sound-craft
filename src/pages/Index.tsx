@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import Navbar from "@/components/Navbar";
 import {
+  backgroundSummary,
   caseStudies,
   education,
   profileLinks,
@@ -10,6 +11,7 @@ import {
   supportingProjects,
   type EvidenceLink,
   type ResearchCaseStudy,
+  type ResearchImplementation,
 } from "@/content/research";
 
 const ExternalArrow = () => <span aria-hidden="true">↗</span>;
@@ -33,7 +35,7 @@ const MethodList = ({ methods }: { methods: string[] }) => (
   </ul>
 );
 
-const ResearchArchitecture = () => (
+const ResearchArchitecture = ({ implementations }: { implementations: ResearchImplementation[] }) => (
   <figure className="architecture-figure" aria-labelledby="architecture-caption">
     <div className="architecture-toolbar" aria-hidden="true">
       <span />
@@ -43,16 +45,11 @@ const ResearchArchitecture = () => (
     </div>
     <div className="architecture-stage">
       <div className="architecture-inputs" aria-hidden="true">
-        {[
-          ["01", "Cubase", "open interchange"],
-          ["02", "Ableton Live", "runtime API"],
-          ["03", "REAPER", "project file"],
-          ["04", "Logic Pro", "export evidence"],
-        ].map(([index, name, source]) => (
-          <div className="architecture-node" key={name}>
-            <span>{index}</span>
-            <strong>{name}</strong>
-            <small>{source}</small>
+        {implementations.map((implementation, index) => (
+          <div className="architecture-node" key={implementation.name}>
+            <span>0{index + 1}</span>
+            <strong>{implementation.daw}</strong>
+            <small>{implementation.observation}</small>
           </div>
         ))}
       </div>
@@ -124,7 +121,7 @@ const FlagshipStudy = ({ study }: { study: ResearchCaseStudy }) => (
         <MethodList methods={study.methods} />
         <LinkList links={study.evidence} />
       </div>
-      <ResearchArchitecture />
+      <ResearchArchitecture implementations={study.implementations ?? []} />
     </div>
 
     {study.implementations && (
@@ -357,11 +354,7 @@ const Index = () => {
             <div className="background-copy">
               <p className="section-kicker">About</p>
               <h2>Zach Scheffler — musician, producer, and applied data scientist.</h2>
-              <p className="background-lead">
-                A path that joins music production and performance with applied data science and public-policy
-                research. That mix shapes how I frame technical systems: as evidence-bearing tools used by
-                people, inside institutions and creative workflows.
-              </p>
+              <p className="background-lead">{backgroundSummary}</p>
               <ol className="education-list">
                 {education.map((item) => (
                   <li key={`${item.year}-${item.institution}`}>

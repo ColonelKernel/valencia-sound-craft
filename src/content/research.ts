@@ -15,6 +15,7 @@ export interface QualifiedMetric {
 
 export interface ResearchImplementation {
   name: string;
+  daw?: string;
   observation: string;
   summary: string;
   links: EvidenceLink[];
@@ -144,25 +145,25 @@ const sessionAnalyzerLink: EvidenceLink = {
 
 const cubaseAdapterLink: EvidenceLink = {
   label: "Cubase adapter repository",
-  href: "https://github.com/ColonelKernel/CubaseSessionStateExplorer",
+  href: "https://github.com/ColonelKernel/session-state-explorer-cubase",
   kind: "repository",
 };
 
 const abletonAdapterLink: EvidenceLink = {
   label: "Ableton adapter repository",
-  href: "https://github.com/ColonelKernel/AbletonSessionStateExplorer",
+  href: "https://github.com/ColonelKernel/session-state-explorer-ableton",
   kind: "repository",
 };
 
 const reaperAdapterLink: EvidenceLink = {
   label: "REAPER adapter repository",
-  href: "https://github.com/ColonelKernel/session-state-explorer",
+  href: "https://github.com/ColonelKernel/session-state-explorer-reaper",
   kind: "repository",
 };
 
 const logicAdapterLink: EvidenceLink = {
   label: "Logic adapter repository",
-  href: "https://github.com/ColonelKernel/LogicSessionStateExplorer",
+  href: "https://github.com/ColonelKernel/session-state-explorer-logic",
   kind: "repository",
 };
 
@@ -230,6 +231,7 @@ export const caseStudies: ResearchCaseStudy[] = [
     implementations: [
       {
         name: "Cubase Session State Explorer",
+        daw: "Cubase",
         observation: "Open interchange",
         summary:
           "Combines DAWproject, Track Archive XML, MIDI, runtime observations, and conservative `.cpr` evidence. Proprietary and plug-in state that cannot be verified stays explicitly opaque.",
@@ -237,6 +239,7 @@ export const caseStudies: ResearchCaseStudy[] = [
       },
       {
         name: "Ableton Session State Explorer",
+        daw: "Ableton Live",
         observation: "Runtime API",
         summary:
           "Observes tracks, clips, scenes, devices, racks, sends, returns, and the master channel through Live-facing interfaces, then supports graphs, diffs, fingerprints, and descriptors.",
@@ -244,6 +247,7 @@ export const caseStudies: ResearchCaseStudy[] = [
       },
       {
         name: "REAPER Session State Explorer",
+        daw: "REAPER",
         observation: "Transparent project file",
         summary:
           "Parses accessible `.rpp` structure into project graphs and descriptors. Its evidence-backed mix review makes each rule inspectable, but those recommendations remain heuristic.",
@@ -251,6 +255,7 @@ export const caseStudies: ResearchCaseStudy[] = [
       },
       {
         name: "Logic Session Evidence Explorer",
+        daw: "Logic Pro",
         observation: "Export-derived evidence",
         summary:
           "Reconciles MusicXML, MIDI, stems, and other exports while distinguishing observed, inferred, and hidden state. It does not parse the proprietary `.logicx` session format.",
@@ -495,7 +500,7 @@ export const education: EducationEntry[] = [
 ];
 
 export const backgroundSummary =
-  "My background joins music production and performance with applied data science and public-policy research, bringing both technical and human-context methods to questions about creative AI.";
+  "A path that joins music production and performance with applied data science and public-policy research. That mix shapes how I frame technical systems: as evidence-bearing tools used by people, inside institutions and creative workflows.";
 
 export const profileLinks: ProfileLink[] = [
   {
