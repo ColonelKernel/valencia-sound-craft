@@ -44,8 +44,8 @@ describe("ATLAS_CITATIONS", () => {
   });
 
   it("covers every researched documented tradition", () => {
-    // 12 traditions passed fetch-verification on 2026-07-21; growing this map
-    // is welcome, silently shrinking it is not.
-    expect(Object.keys(ATLAS_CITATIONS).length).toBeGreaterThanOrEqual(12);
+    // 39 traditions passed fetch-verification (12 original + 27 expansion,
+    // 2026-07-21); growing this map is welcome, silently shrinking it is not.
+    expect(Object.keys(ATLAS_CITATIONS).length).toBeGreaterThanOrEqual(39);
   });
 });
