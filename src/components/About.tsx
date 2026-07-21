@@ -1,24 +1,8 @@
 import { useFadeIn } from "@/hooks/useFadeIn";
 
-/**
- * Career timeline — every entry is verified against at least two independent
- * sources (resumes, LinkedIn, cover letters, the Global Pulse CE paper).
- * Add nothing here that can't be traced the same way.
- */
-const TIMELINE = [
-  { years: "2009–2013", role: "Grinnell College", note: "B.A. — Latin ensembles, jazz and rock bands alongside coursework" },
-  { years: "2013", role: "Streetcar Scandal", note: "Started producing original music" },
-  { years: "2014–2015", role: "East West Studios, LA", note: "Audio engineering intern — sessions incl. Frank Ocean and Stephen Stills" },
-  { years: "2015", role: "UCLA Extension", note: "Professional Certificate in Music Production" },
-  { years: "2016–2018", role: "UCLA", note: "Master of Public Policy — thesis prepared for the World Bank" },
-  { years: "2016–2019", role: "World Bank", note: "Consultant — led wellbeing data-collection fieldwork across Peru" },
-  { years: "2018–2023", role: "7DrumCity", note: "Mentor & workshop leader" },
-  { years: "2020–2022", role: "NORC at the University of Chicago", note: "Research associate — NLP, GIS, and web-scraping at national scale" },
-  { years: "2022", role: "MIT Professional Education", note: "Applied Data Science certificate" },
-  { years: "2022–2023", role: "Rios Partners", note: "Consultant — founded the firm's data strategy team" },
-  { years: "2024–2025", role: "Berklee College of Music, Valencia", note: "M.M. Music Production, Technology & Innovation" },
-  { years: "2025–present", role: "Valencia, Spain", note: "Producing records, recording sessions, and building music software" },
-];
+// Timeline and education live in the CV model so this section, the /cv page,
+// and the generated PDF can never drift apart.
+import { CAREER_TIMELINE, EDUCATION } from "@/content/cv";
 
 const About = () => {
   const ref = useFadeIn();
@@ -80,27 +64,21 @@ const About = () => {
 
           <div className="fade-up" style={{ transitionDelay: "150ms" }}>
             <div className="border border-border rounded-sm p-8 space-y-6">
-              <div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Education</p>
-                <p className="font-display font-semibold">Berklee College of Music</p>
-                <p className="text-sm text-muted-foreground">M.M. Music Production, Technology &amp; Innovation · Valencia, Spain · 2024–2025</p>
-                <p className="text-xs text-muted-foreground mt-1">Focus: music production workflows, audio technology integration, and studio systems. Mentor: Pablo Munguía.</p>
-              </div>
-              <div className="border-t border-border pt-6">
-                <p className="font-display font-semibold">UCLA Luskin School of Public Affairs</p>
-                <p className="text-sm text-muted-foreground">Master of Public Policy (Transportation &amp; Urban Development) · Los Angeles, CA · 2016–2018</p>
-                <p className="text-xs text-muted-foreground mt-1">Thesis: Results-Based Financing for Hospitals — The Case of the Kyrgyz Republic (prepared for the World Bank).</p>
-              </div>
-              <div className="border-t border-border pt-6">
-                <p className="font-display font-semibold">MIT Professional Education</p>
-                <p className="text-sm text-muted-foreground">Applied Data Science Program Certificate · 2022</p>
-                <p className="text-xs text-muted-foreground mt-1">Practical applied data science training.</p>
-              </div>
-              <div className="border-t border-border pt-6">
-                <p className="font-display font-semibold">Grinnell College</p>
-                <p className="text-sm text-muted-foreground">Bachelor of Arts · Grinnell, IA · 2009–2013</p>
-                <p className="text-xs text-muted-foreground mt-1">Interdisciplinary coursework in economics, mathematics, and political science. Composed and performed original music.</p>
-              </div>
+              {EDUCATION.map((entry, index) => (
+                <div
+                  key={entry.institution}
+                  className={index === 0 ? undefined : "border-t border-border pt-6"}
+                >
+                  {index === 0 && (
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Education</p>
+                  )}
+                  <p className="font-display font-semibold">{entry.institution}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {entry.credential} · {entry.location} · {entry.years}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{entry.detail}</p>
+                </div>
+              ))}
               <div className="border-t border-border pt-6">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Genres</p>
                 <div className="flex flex-wrap gap-2">
@@ -128,7 +106,7 @@ const About = () => {
         <div className="fade-up mt-16" style={{ transitionDelay: "250ms" }}>
           <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-6">The Path</p>
           <ol className="border border-border rounded-sm divide-y divide-border">
-            {TIMELINE.map((entry) => (
+            {CAREER_TIMELINE.map((entry) => (
               <li key={`${entry.years}-${entry.role}`} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 px-5 py-3.5">
                 <span className="text-xs text-muted-foreground font-mono w-28 shrink-0">{entry.years}</span>
                 <span className="font-display font-semibold text-sm">{entry.role}</span>

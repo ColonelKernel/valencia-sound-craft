@@ -86,6 +86,12 @@ export const ROUTE_META = {
     description:
       "Selected music and video work by Zach Scheffler: the Global Pulse EP, session recordings for Valencia artists, and releases as Streetcar Scandal.",
   },
+  cv: {
+    path: "/cv",
+    title: "CV | Valencia Sound Craft",
+    description:
+      "Curriculum vitae for Zach Scheffler: music production, creative technology, and a decade of data work across the World Bank, NORC, and Rios Partners.",
+  },
   notFound: {
     path: "*",
     title: "Page Not Found | Valencia Sound Craft",

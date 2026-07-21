@@ -1,7 +1,8 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import RouteHead, { createToolStructuredData } from "./RouteHead";
+import RouteHead from "./RouteHead";
+import { createToolStructuredData } from "./structuredData";
 
 describe("RouteHead", () => {
   it("updates document metadata and structured data for a route", () => {

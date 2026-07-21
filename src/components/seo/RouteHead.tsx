@@ -1,16 +1,8 @@
 import { useEffect } from "react";
 
-export interface RouteStructuredData {
-  "@context": "https://schema.org";
-  "@type": string;
-  name: string;
-  description: string;
-  applicationCategory?: string;
-  educationalUse?: string | string[];
-  jobTitle?: string;
-  sameAs?: string[];
-  url?: string;
-}
+import type { RouteStructuredData } from "./structuredData";
+
+export type { RouteStructuredData };
 
 export interface RouteMetaConfig {
   title: string;
@@ -48,44 +40,6 @@ function upsertLink(rel: string, href: string) {
 function resolveUrl(path: string) {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://example.com";
   return new URL(path, origin).toString();
-}
-
-/**
- * The homepage is a portfolio, not a tool: it describes a person. Tool
- * routes keep SoftwareApplication via createToolStructuredData below.
- */
-export function createPersonStructuredData(config: {
-  name: string;
-  jobTitle: string;
-  description: string;
-  sameAs: string[];
-}) {
-  return {
-    "@context": "https://schema.org" as const,
-    "@type": "Person",
-    name: config.name,
-    jobTitle: config.jobTitle,
-    description: config.description,
-    sameAs: config.sameAs,
-    url: "/",
-  };
-}
-
-export function createToolStructuredData(config: {
-  name: string;
-  description: string;
-  canonicalPath: string;
-  educationalUse: string | string[];
-}) {
-  return {
-    "@context": "https://schema.org" as const,
-    "@type": "SoftwareApplication",
-    name: config.name,
-    description: config.description,
-    applicationCategory: "MusicApplication",
-    educationalUse: config.educationalUse,
-    url: config.canonicalPath,
-  };
 }
 
 const RouteHead = ({ title, description, canonicalPath, ogImage, jsonLd }: RouteMetaConfig) => {

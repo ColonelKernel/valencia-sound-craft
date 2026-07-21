@@ -1,4 +1,5 @@
-import { createToolStructuredData, type RouteMetaConfig } from "@/components/seo/RouteHead";
+import { createToolStructuredData } from "@/components/seo/structuredData";
+import type { RouteMetaConfig } from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 
 export const tonnetzToolMeta: RouteMetaConfig = {

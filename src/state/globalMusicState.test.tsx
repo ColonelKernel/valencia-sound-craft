@@ -7,12 +7,12 @@ import {
 } from "@/components/ModeVisualizer/scaleData";
 import { getSecondaryDominants } from "@/components/ModeVisualizer/chordProgressionUtils";
 
+import { GlobalMusicProvider } from "./globalMusicState";
 import {
-  GlobalMusicProvider,
   useGlobalMusic,
   useGlobalMusicActions,
   useGlobalTransport,
-} from "./globalMusicState";
+} from "./globalMusicHooks";
 
 describe("globalMusicState", () => {
   it("limits selector rerenders to the subscribed slice", () => {

@@ -11,7 +11,7 @@ import {
   useGlobalMusic,
   useGlobalMusicActions,
   useGlobalTransport,
-} from "@/state/globalMusicState";
+} from "@/state/globalMusicHooks";
 
 export function useRhythmSelection(toolId: string) {
   const rhythmId = useGlobalMusic((state) => state.rhythmId);

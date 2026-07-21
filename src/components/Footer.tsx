@@ -7,7 +7,10 @@ const Footer = () => {
           <span>Valencia, Spain</span>
         </div>
 
-        <div className="flex items-center gap-6">
+        {/* Wraps on narrow viewports: five links at gap-6 need ~395px, which
+            overflowed a 375px screen and put a horizontal scrollbar on every
+            page of the site. */}
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           <a
             href="https://www.linkedin.com/in/zscheff/"
             target="_blank"

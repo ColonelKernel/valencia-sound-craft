@@ -227,17 +227,21 @@ const TraditionPanel = ({ rhythm }: TraditionPanelProps) => {
 const WorldAtlasLens = () => {
   const [selected, setSelected] = useState<Rhythm | null>(() => getAtlasRhythmByCountry("Cuba") ?? null);
   const selection = useRhythmSelection("groove-atlas");
+  // These come from useGlobalMusicActions, which memoizes on the singleton
+  // store, so they are stable for the life of the component. Destructured so
+  // the dependency array names them directly.
+  const { setRhythm, suggestTempo } = selection;
 
   const handleCountrySelect = useCallback(
     (rhythm: Rhythm) => {
       setSelected(rhythm);
       const definition = getDefaultRhythmDefinitionForCountry(rhythm.country);
       if (definition) {
-        selection.setRhythm(definition.id, definition.region);
-        selection.suggestTempo(Math.round((rhythm.bpmRange[0] + rhythm.bpmRange[1]) / 2));
+        setRhythm(definition.id, definition.region);
+        suggestTempo(Math.round((rhythm.bpmRange[0] + rhythm.bpmRange[1]) / 2));
       }
     },
-    [selection.setRhythm, selection.suggestTempo],
+    [setRhythm, suggestTempo],
   );
 
   return (

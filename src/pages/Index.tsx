@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
 
 import Hero from "@/components/Hero";
-import RouteHead, { createPersonStructuredData } from "@/components/seo/RouteHead";
+import RouteHead from "@/components/seo/RouteHead";
+import { createPersonStructuredData } from "@/components/seo/structuredData";
 import SystemsPreview from "@/components/SystemsPreview";
 import { useInView } from "@/hooks/useInView";
 import { ROUTE_META } from "@/app/routeMeta";

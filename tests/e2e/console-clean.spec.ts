@@ -24,6 +24,7 @@ const ROUTES = [
   // Legacy path — must cleanly redirect to /groove-atlas.
   "/groove-intelligence",
   "/work",
+  "/cv",
   "/definitely-missing-404",
 ];
 

@@ -189,6 +189,23 @@ const Navbar = () => {
           )}
         />
       </Link>
+      {/* Muted rather than accented: the CV supports the feature links above
+          rather than competing with them for attention. */}
+      <Link
+        to="/cv"
+        className={cn(
+          "group relative text-sm font-medium transition-colors px-0.5 py-1.5",
+          location.pathname === "/cv" ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        CV
+        <span
+          className={cn(
+            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
+            location.pathname === "/cv" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+          )}
+        />
+      </Link>
     </>
   );
 
@@ -367,6 +384,13 @@ const Navbar = () => {
                       >
                         <BarChart3 size={14} />
                         Analytics
+                      </Link>
+                      <Link
+                        to="/cv"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                      >
+                        CV
                       </Link>
                     </>
                   )}

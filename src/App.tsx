@@ -22,6 +22,7 @@ const PAGES: Record<RouteKey, LazyExoticComponent<ComponentType>> = {
   grooveAtlas: lazy(() => import("./pages/GrooveAtlasPage")),
   projects: lazy(() => import("./pages/ProjectsPage")),
   work: lazy(() => import("./pages/WorkPage")),
+  cv: lazy(() => import("./pages/CVPage")),
   notFound: lazy(() => import("./pages/NotFound")),
 };
 

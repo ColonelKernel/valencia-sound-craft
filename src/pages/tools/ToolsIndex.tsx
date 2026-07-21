@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Compass, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
 
-import RouteHead, { createToolStructuredData } from "@/components/seo/RouteHead";
+import RouteHead from "@/components/seo/RouteHead";
+import { createToolStructuredData } from "@/components/seo/structuredData";
 import ToolSubnav from "@/components/tools/ToolSubnav";
 import { ROUTE_META } from "@/app/routeMeta";
 

@@ -66,6 +66,10 @@ test("navbar navigation reaches work, groove atlas, analytics, and home with man
   await expect(page).toHaveURL(/\/groove-atlas$/);
   await expect(page).toHaveTitle(ROUTE_META.grooveAtlas.title);
 
+  await page.getByRole("link", { name: "CV", exact: true }).first().click();
+  await expect(page).toHaveURL(/\/cv$/);
+  await expect(page).toHaveTitle(ROUTE_META.cv.title);
+
   await page.getByRole("link", { name: "Analytics" }).first().click();
   await expect(page).toHaveURL(/\/music-analytics$/);
   await expect(page).toHaveTitle(ROUTE_META.musicAnalytics.title);

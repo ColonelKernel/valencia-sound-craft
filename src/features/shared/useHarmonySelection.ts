@@ -6,7 +6,7 @@ import {
   useGlobalMusic,
   useGlobalMusicActions,
   useGlobalTransport,
-} from "@/state/globalMusicState";
+} from "@/state/globalMusicHooks";
 
 export function useHarmonySelection(toolId: string) {
   const key = useGlobalMusic((state) => state.key);

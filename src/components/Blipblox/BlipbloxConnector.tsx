@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Usb, Play, Square, Upload, ChevronDown, ChevronRight, Zap, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useGlobalMusic } from '@/state/globalMusicState';
+import { useGlobalMusic } from '@/state/globalMusicHooks';
 import { blipbloxEngine, type BlipbloxMidiDevice, type BlipbloxDeviceType } from './blipbloxEngine';
 import { translateForMyTracks, translateForSK2, translateForAfterDark, getDeviceNote } from './deviceProfiles';
 import { mapGroove, normalizeMeter, splitPolyrhythm } from './rhythmTranslator';

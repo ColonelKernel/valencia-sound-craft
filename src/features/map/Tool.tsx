@@ -13,16 +13,19 @@ const MapTool = () => {
   useToolPerformance("map-route");
   const tool = useTool();
   const regionLabel = tool.activeDefinition?.regionLabel ?? tool.region;
+  // Stable for the life of the component (memoized on the singleton store),
+  // so the callback names them directly in its dependency array.
+  const { setRhythm, suggestTempo } = tool;
   const handleRhythmChange = useCallback(
     (next: { rhythmId: string; region: string; suggestedTempo?: number }) => {
-      tool.setRhythm(next.rhythmId, next.region);
+      setRhythm(next.rhythmId, next.region);
       // The rhythm's default tempo is a suggestion — the store ignores it
       // once the user has explicitly set a tempo anywhere.
       if (typeof next.suggestedTempo === "number") {
-        tool.suggestTempo(next.suggestedTempo);
+        suggestTempo(next.suggestedTempo);
       }
     },
-    [tool.setRhythm, tool.suggestTempo],
+    [setRhythm, suggestTempo],
   );
 
   return (

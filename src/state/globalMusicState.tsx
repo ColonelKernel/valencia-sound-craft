@@ -1,13 +1,6 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import { useRef, type ReactNode } from "react";
 
+import { GlobalMusicContext } from "./globalMusicHooks";
 import type { ProgressionChord } from "@/components/ModeVisualizer/chordProgressionUtils";
 import {
   cloneProgression,
@@ -38,7 +31,7 @@ interface GlobalMusicSnapshot {
   activeTransportId: string | null;
 }
 
-type GlobalMusicStore = ReturnType<typeof createGlobalMusicStore>;
+export type GlobalMusicStore = ReturnType<typeof createGlobalMusicStore>;
 
 const DEFAULT_STATE: GlobalMusicState = {
   key: "C",
@@ -195,8 +188,6 @@ function createGlobalMusicStore(initialState?: Partial<GlobalMusicState>) {
   };
 }
 
-const GlobalMusicContext = createContext<GlobalMusicStore | null>(null);
-
 export function GlobalMusicProvider({
   children,
   initialState,
@@ -217,62 +208,3 @@ export function GlobalMusicProvider({
   );
 }
 
-function useGlobalMusicStore() {
-  const store = useContext(GlobalMusicContext);
-
-  if (!store) {
-    throw new Error("GlobalMusicProvider is missing from the tree.");
-  }
-
-  return store;
-}
-
-export function useGlobalMusic<T>(selector: (state: GlobalMusicState) => T) {
-  const store = useGlobalMusicStore();
-  return useSyncExternalStore(store.subscribe, () => selector(store.getState()), () => selector(store.getState()));
-}
-
-export function useGlobalMusicActions() {
-  const store = useGlobalMusicStore();
-
-  return useMemo(
-    () => ({
-      setKey: store.setKey,
-      setMode: store.setMode,
-      setTempo: store.setTempo,
-      suggestTempo: store.suggestTempo,
-      setRhythm: store.setRhythm,
-      setRegion: store.setRegion,
-      setChordProgression: store.setChordProgression,
-      setPlaying: store.setPlaying,
-      resetTransport: store.resetTransport,
-      requestTransport: store.requestTransport,
-      releaseTransport: store.releaseTransport,
-    }),
-    [store],
-  );
-}
-
-export function useGlobalTransport(owner: string) {
-  const store = useGlobalMusicStore();
-  const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
-  const isPlaying = snapshot.state.playing && snapshot.activeTransportId === owner;
-
-  const setPlaying = useCallback(
-    (nextPlaying: boolean) => {
-      if (nextPlaying) {
-        store.requestTransport(owner);
-        return;
-      }
-
-      store.releaseTransport(owner);
-    },
-    [owner, store],
-  );
-
-  return {
-    playing: isPlaying,
-    activeTransportId: snapshot.activeTransportId,
-    setPlaying,
-  };
-}
