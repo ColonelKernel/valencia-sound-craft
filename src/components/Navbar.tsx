@@ -262,7 +262,10 @@ const Navbar = () => {
           ZS
         </Link>
 
-        <div className="hidden items-center gap-6 md:flex">
+        {/* Desktop nav starts at lg, not md: with ten items plus the social
+            icons, 768–1023px was tight enough that "Groove Atlas" wrapped to
+            two lines. That range gets the mobile menu instead. */}
+        <div className="hidden items-center gap-6 whitespace-nowrap lg:flex">
           {isToolsRoute
             ? renderToolLinks()
             : isAnalyticsRoute
@@ -288,7 +291,7 @@ const Navbar = () => {
         <button
           type="button"
           onClick={() => setMenuOpen((value) => !value)}
-          className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground md:hidden"
+          className="rounded-xl border border-border/70 bg-background/70 p-2 text-foreground lg:hidden"
           aria-expanded={menuOpen}
           aria-label="Toggle menu"
         >
@@ -297,7 +300,7 @@ const Navbar = () => {
       </div>
 
       {menuOpen && (
-        <div className="border-b border-border bg-background/96 px-6 pb-6 pt-2 backdrop-blur-xl md:hidden">
+        <div className="border-b border-border bg-background/96 px-6 pb-6 pt-2 backdrop-blur-xl lg:hidden">
           <div className="space-y-2">
             {isToolsRoute
               ? toolLinks.map((link) => (
