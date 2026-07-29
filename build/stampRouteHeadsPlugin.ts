@@ -80,9 +80,14 @@ export function stampRouteHeadsPlugin(): Plugin {
         );
         replaceOnce(/<\/head>/, `  <link rel="canonical" href="${url}">\n</head>`);
 
-        const outDir = path.join(dist, route.path.replace(/^\//, ""));
-        fs.mkdirSync(outDir, { recursive: true });
-        fs.writeFileSync(path.join(outDir, "index.html"), html);
+        // Flat <path>.html, NOT <path>/index.html: a directory with an index
+        // triggers Netlify's automatic 301 to the trailing-slash URL before
+        // redirect rules run (verified live 2026-07-22), which contradicts the
+        // slashless canonical. A flat file creates no directory, so the bare
+        // URL serves 200 directly via the rewrite below.
+        const outFile = path.join(dist, `${route.path.replace(/^\//, "")}.html`);
+        fs.mkdirSync(path.dirname(outFile), { recursive: true });
+        fs.writeFileSync(outFile, html);
       }
 
       // Netlify's `/* -> /index.html 200` rewrite shadows the extensionless
@@ -95,7 +100,12 @@ export function stampRouteHeadsPlugin(): Plugin {
         ? fs.readFileSync(redirectsPath, "utf8")
         : "";
       const routeRewrites = routes
-        .map((route) => `${route.path}    ${route.path}/index.html    200`)
+        .map(
+          (route) =>
+            // Both the bare URL and its trailing-slash variant serve the
+            // stamped shell — links in the wild use either form.
+            `${route.path}    ${route.path}.html    200\n${route.path}/    ${route.path}.html    200`,
+        )
         .join("\n");
       fs.writeFileSync(
         redirectsPath,
