@@ -66,13 +66,18 @@ test("homepage work section is always expanded with real labels and a link to /w
   await page.goto("/");
 
   const section = page.locator("#portfolio");
-  await section.scrollIntoViewIfNeeded();
 
   // No collapse toggle: every embed facade is simply present — and no
   // third-party iframe loads until a facade is clicked (mobile perf contract).
+  // Asserted BEFORE scrolling: the Suspense fallback carries the same
+  // id="portfolio" (so anchor nav works during load), and scrolling the
+  // fallback races its detachment when the real chunk mounts on slow machines.
+  // This auto-retrying expect only passes once the real section is in.
   await expect(section.getByRole("button", { name: /^Load .* player$/ })).toHaveCount(
     WORK_EMBEDS.length,
+    { timeout: 15_000 },
   );
+  await section.scrollIntoViewIfNeeded();
   await expect(section.locator("iframe")).toHaveCount(0);
 
   await section.getByRole("link", { name: /see all work/i }).click();

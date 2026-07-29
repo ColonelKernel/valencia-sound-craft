@@ -399,7 +399,7 @@ const Tonnetz = ({
 
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">Color:</span>
-          <select value={colorMode} onChange={(e) => setColorMode(e.target.value as typeof colorMode)}
+          <select value={colorMode} aria-label="Color mode" onChange={(e) => setColorMode(e.target.value as typeof colorMode)}
             className="bg-secondary border border-border rounded px-2 py-1 text-xs text-foreground">
             <option value="scale">Scale</option>
             <option value="pitch">Pitch class</option>
@@ -411,7 +411,7 @@ const Tonnetz = ({
 
         <div className="flex items-center gap-1.5">
           <span className="text-muted-foreground">System:</span>
-          <select value={harmonicSystem} onChange={(e) => setHarmonicSystem(e.target.value)}
+          <select value={harmonicSystem} aria-label="Harmonic system" onChange={(e) => setHarmonicSystem(e.target.value)}
             className="bg-secondary border border-border rounded px-2 py-1 text-xs text-foreground">
             <option value="none">From scale</option>
             {HARMONIC_SYSTEMS.map(s => (
@@ -840,7 +840,7 @@ const Tonnetz = ({
                   )}
                   {midiEnabled && midiDevices.length > 0 && (
                     <div className="space-y-1.5">
-                      <select onChange={(e) => handleMidiDeviceChange(e.target.value)}
+                      <select aria-label="MIDI output device" onChange={(e) => handleMidiDeviceChange(e.target.value)}
                         defaultValue={midiDevices[0]?.id}
                         className="w-full bg-secondary border border-border rounded px-2 py-1 text-[10px] text-foreground">
                         {midiDevices.map(d => (
@@ -849,7 +849,7 @@ const Tonnetz = ({
                       </select>
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] text-muted-foreground">Ch</span>
-                        <select value={midiChannel} onChange={(e) => setMidiChannel(Number(e.target.value))}
+                        <select value={midiChannel} aria-label="MIDI channel" onChange={(e) => setMidiChannel(Number(e.target.value))}
                           className="bg-secondary border border-border rounded px-1.5 py-0.5 text-[10px] text-foreground w-12">
                           {Array.from({ length: 16 }, (_, i) => (
                             <option key={i} value={i}>{i + 1}</option>

@@ -2,11 +2,11 @@
   {
     "url": "http://127.0.0.1:4173/",
     "isRepresentativeRun": true,
-    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1--2026_07_21_23_35_45.report.html",
-    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1--2026_07_21_23_35_45.report.json",
+    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1--2026_07_29_15_11_02.report.html",
+    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1--2026_07_29_15_11_02.report.json",
     "summary": {
-      "performance": 0.86,
-      "accessibility": 0.96,
+      "performance": 0.83,
+      "accessibility": 1,
       "best-practices": 1,
       "seo": 1
     }
@@ -14,10 +14,10 @@
   {
     "url": "http://127.0.0.1:4173/tools",
     "isRepresentativeRun": true,
-    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools-2026_07_21_23_35_57.report.html",
-    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools-2026_07_21_23_35_57.report.json",
+    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools-2026_07_29_15_11_29.report.html",
+    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools-2026_07_29_15_11_29.report.json",
     "summary": {
-      "performance": 0.91,
+      "performance": 0.65,
       "accessibility": 1,
       "best-practices": 1,
       "seo": 1
@@ -26,10 +26,10 @@
   {
     "url": "http://127.0.0.1:4173/tools/rhythm",
     "isRepresentativeRun": true,
-    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools_rhythm-2026_07_21_23_36_07.report.html",
-    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools_rhythm-2026_07_21_23_36_07.report.json",
+    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools_rhythm-2026_07_29_15_11_56.report.html",
+    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools_rhythm-2026_07_29_15_11_56.report.json",
     "summary": {
-      "performance": 0.8,
+      "performance": 0.6,
       "accessibility": 0.93,
       "best-practices": 1,
       "seo": 1
@@ -38,11 +38,11 @@
   {
     "url": "http://127.0.0.1:4173/tools/harmony",
     "isRepresentativeRun": true,
-    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools_harmony-2026_07_21_23_36_19.report.html",
-    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools_harmony-2026_07_21_23_36_19.report.json",
+    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools_harmony-2026_07_29_15_12_28.report.html",
+    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-tools_harmony-2026_07_29_15_12_28.report.json",
     "summary": {
-      "performance": 0.9,
-      "accessibility": 0.96,
+      "performance": 0.65,
+      "accessibility": 1,
       "best-practices": 1,
       "seo": 1
     }
@@ -50,10 +50,10 @@
   {
     "url": "http://127.0.0.1:4173/cv",
     "isRepresentativeRun": true,
-    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-cv-2026_07_21_23_36_30.report.html",
-    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-cv-2026_07_21_23_36_30.report.json",
+    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-cv-2026_07_29_15_12_54.report.html",
+    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-cv-2026_07_29_15_12_54.report.json",
     "summary": {
-      "performance": 0.91,
+      "performance": 0.77,
       "accessibility": 1,
       "best-practices": 1,
       "seo": 1
@@ -62,10 +62,10 @@
   {
     "url": "http://127.0.0.1:4173/projects",
     "isRepresentativeRun": true,
-    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-projects-2026_07_21_23_36_40.report.html",
-    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-projects-2026_07_21_23_36_40.report.json",
+    "htmlPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-projects-2026_07_29_15_13_13.report.html",
+    "jsonPath": "/Users/zacharyscheffler/Documents/valencia-sound-craft/.claude/worktrees/portfolio-fixes/.lighthouseci/127_0_0_1-projects-2026_07_29_15_13_13.report.json",
     "summary": {
-      "performance": 0.92,
+      "performance": 0.88,
       "accessibility": 1,
       "best-practices": 1,
       "seo": 1

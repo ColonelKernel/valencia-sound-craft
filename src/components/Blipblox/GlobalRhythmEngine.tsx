@@ -972,6 +972,7 @@ const GlobalRhythmEngine = ({
           <div>
             <label htmlFor={`${filterIds}-meter`} className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Meter</label>
             <select
+              aria-label="Meter"
               id={`${filterIds}-meter`}
               value={meterFilter}
               onChange={(event) => setMeterFilter(event.target.value)}
@@ -987,6 +988,7 @@ const GlobalRhythmEngine = ({
           <div>
             <label htmlFor={`${filterIds}-feel`} className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Feel</label>
             <select
+              aria-label="Feel"
               id={`${filterIds}-feel`}
               value={feelFilter}
               onChange={(event) => setFeelFilter(event.target.value as TimeFeel | "All")}
@@ -1002,6 +1004,7 @@ const GlobalRhythmEngine = ({
           <div>
             <label htmlFor={`${filterIds}-tempo-band`} className="mb-2 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Tempo Band</label>
             <select
+              aria-label="Tempo Band"
               id={`${filterIds}-tempo-band`}
               value={tempoBandFilter}
               onChange={(event) => setTempoBandFilter(event.target.value as RhythmTempoBand | "All")}

@@ -232,6 +232,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
           <label className="text-[10px] text-muted-foreground block mb-1">MIDI Device</label>
           <div className="flex gap-1">
             <select
+              aria-label="MIDI Device"
               value={selectedOutputId}
               onChange={e => setSelectedOutputId(e.target.value)}
               className="flex-1 bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
@@ -254,6 +255,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
         <div>
           <label className="text-[10px] text-muted-foreground block mb-1">Device Type</label>
           <select
+            aria-label="Device Type"
             value={deviceType}
             onChange={e => setDeviceType(e.target.value as BlipbloxDeviceType)}
             className="bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground"
@@ -267,6 +269,7 @@ const BlipbloxConnector = ({ root = 'C', mode = 'major', embeddedPreset, presets
         <div>
           <label className="text-[10px] text-muted-foreground block mb-1">Channel</label>
           <select
+            aria-label="Channel"
             value={channel}
             onChange={e => setChannel(Number(e.target.value))}
             className="bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground w-16"

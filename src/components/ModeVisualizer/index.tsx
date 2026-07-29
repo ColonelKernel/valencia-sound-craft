@@ -286,6 +286,7 @@ const ModeVisualizer = ({
                 </div>
               ) : (
                 <select
+                  aria-label="Visualizer tool"
                   value={activeTab}
                   onChange={(e) => setActiveTab(e.target.value as ModeVisualizerTab)}
                   className="mt-4 w-full sm:w-auto min-w-[260px] bg-background border border-border rounded-2xl px-4 py-3 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -406,6 +407,7 @@ const ModeVisualizer = ({
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Root</label>
             <select
+              aria-label="Root"
               value={root}
               onChange={(e) => handleRootChange(e.target.value)}
               className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -419,6 +421,7 @@ const ModeVisualizer = ({
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Mode</label>
             <select
+              aria-label="Mode"
               value={mode}
               onChange={(e) => handleModeChange(e.target.value)}
               className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -438,6 +441,7 @@ const ModeVisualizer = ({
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-muted-foreground">Tuning</label>
             <select
+              aria-label="Tuning"
               value={isCustomTuning ? 'custom' : String(tuningIdx)}
               onChange={(e) => {
                 if (e.target.value === 'custom') {
@@ -489,6 +493,7 @@ const ModeVisualizer = ({
           <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
             <label className="text-sm font-medium text-muted-foreground">Sound</label>
             <select
+              aria-label="Sound"
               value={timbre}
               onChange={(e) => setTimbre(e.target.value as InstrumentTimbre)}
               className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -511,6 +516,7 @@ const ModeVisualizer = ({
                 {customGuitar.map((s, i) => (
                   <select
                     key={i}
+                    aria-label={`Guitar string ${i + 1} note`}
                     value={s.note}
                     onChange={(e) => {
                       const next = [...customGuitar];
@@ -546,6 +552,7 @@ const ModeVisualizer = ({
                 {customBass.map((s, i) => (
                   <select
                     key={i}
+                    aria-label={`Bass string ${i + 1} note`}
                     value={s.note}
                     onChange={(e) => {
                       const next = [...customBass];
@@ -737,6 +744,7 @@ const ModeVisualizer = ({
             ))}
             {instrument === 'other' && (
               <select
+                aria-label="Fretted instrument"
                 value={otherInstrument}
                 onChange={(e) => setOtherInstrument(e.target.value)}
                 className="bg-secondary border border-border rounded px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"

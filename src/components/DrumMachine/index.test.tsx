@@ -11,7 +11,14 @@ import {
   formatRegion,
 } from "./drumPresets";
 
-describe("DrumMachine", () => {
+// The DrumMachine renders ~1000 step buttons plus the full preset browser, so
+// its two render-heavy tests are the first to blow the default 5s timeout when
+// the suite shares a loaded machine (observed 2026-07-22: sub-second in
+// isolation, timing out under parallel-suite contention). The raised timeout
+// covers slow CI workers without masking real regressions.
+const HEAVY_RENDER_TIMEOUT = 20_000;
+
+describe("DrumMachine", { timeout: HEAVY_RENDER_TIMEOUT }, () => {
   it("propagates local preset changes before controlled props catch up", async () => {
     const startingPreset = filterPresets({ region: "flamenco" })[0]!;
     const nextPreset = filterPresets({ region: "brazil" })[0]!;

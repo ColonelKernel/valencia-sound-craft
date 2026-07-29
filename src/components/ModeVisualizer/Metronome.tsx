@@ -659,6 +659,7 @@ const Metronome = ({
           <div>
             <label className={`text-[10px] uppercase tracking-wider ${isPerformance ? 'text-white/40' : 'text-muted-foreground'}`}>Time</label>
             <select
+              aria-label="Time"
               value={timeSigIdx}
               onChange={(e) => setTimeSigIdx(Number(e.target.value))}
               className="w-full mt-1 bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -694,6 +695,7 @@ const Metronome = ({
           <div>
             <label className={`text-[10px] uppercase tracking-wider ${isPerformance ? 'text-white/40' : 'text-muted-foreground'}`}>Sound</label>
             <select
+              aria-label="Sound"
               value={soundIdx}
               onChange={(e) => setSoundIdx(Number(e.target.value))}
               className="w-full mt-1 bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"

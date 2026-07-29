@@ -174,6 +174,7 @@ const MasterScaleReference = () => {
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-muted-foreground">Root</label>
           <select
+            aria-label="Root"
             value={root}
             onChange={e => setRoot(e.target.value)}
             className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -187,6 +188,7 @@ const MasterScaleReference = () => {
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-muted-foreground">Family</label>
           <select
+            aria-label="Family"
             value={familyIdx}
             onChange={e => setFamilyIdx(Number(e.target.value))}
             className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
@@ -200,6 +202,7 @@ const MasterScaleReference = () => {
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-muted-foreground">Sound</label>
           <select
+            aria-label="Sound"
             value={timbre}
             onChange={e => setTimbre(e.target.value as InstrumentTimbre)}
             className="bg-secondary border border-border rounded px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"

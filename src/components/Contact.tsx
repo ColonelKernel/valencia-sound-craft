@@ -121,6 +121,7 @@ const Contact = () => {
                 Project Type
               </label>
               <select
+                aria-label="Project Type"
                 id="contact-project-type"
                 required
                 value={projectType}

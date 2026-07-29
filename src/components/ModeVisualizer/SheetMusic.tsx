@@ -53,6 +53,7 @@ const SheetMusic = ({ scaleNotes, hoveredNote }: SheetMusicProps) => {
         <div className="flex items-center gap-1.5">
           <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Clef</label>
           <select
+            aria-label="Clef"
             value={clef}
             onChange={e => setClef(e.target.value as ClefType)}
             className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
@@ -66,6 +67,7 @@ const SheetMusic = ({ scaleNotes, hoveredNote }: SheetMusicProps) => {
         <div className="flex items-center gap-1.5">
           <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Time</label>
           <select
+            aria-label="Time"
             value={timeSig}
             onChange={e => setTimeSig(e.target.value)}
             className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
@@ -79,6 +81,7 @@ const SheetMusic = ({ scaleNotes, hoveredNote }: SheetMusicProps) => {
         <div className="flex items-center gap-1.5">
           <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Transpose</label>
           <select
+            aria-label="Transpose"
             value={transpose}
             onChange={e => setTranspose(Number(e.target.value))}
             className="bg-background border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"

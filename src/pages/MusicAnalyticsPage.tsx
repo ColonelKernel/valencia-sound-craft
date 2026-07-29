@@ -126,6 +126,7 @@ export default function MusicAnalyticsPage() {
 
                 {/* Artist filter (overview & risk tabs) */}
                 <select
+                  aria-label="Filter by artist"
                   value={selectedArtist}
                   onChange={(e) => setSelectedArtist(e.target.value)}
                   className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20"

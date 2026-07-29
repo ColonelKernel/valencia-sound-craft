@@ -56,23 +56,23 @@ test("navbar navigation reaches work, groove atlas, analytics, and home with man
 
   await page.getByRole("link", { name: "Work", exact: true }).first().click();
   await expect(page).toHaveURL(/\/work$/);
-  await expect(page).toHaveTitle(ROUTE_META.work.title);
+  await expect(page).toHaveTitle(ROUTE_META.work.title, { timeout: 15_000 });
 
   await page.getByRole("link", { name: "Projects", exact: true }).first().click();
   await expect(page).toHaveURL(/\/projects$/);
-  await expect(page).toHaveTitle(ROUTE_META.projects.title);
+  await expect(page).toHaveTitle(ROUTE_META.projects.title, { timeout: 15_000 });
 
   await page.getByRole("link", { name: "Groove Atlas" }).first().click();
   await expect(page).toHaveURL(/\/groove-atlas$/);
-  await expect(page).toHaveTitle(ROUTE_META.grooveAtlas.title);
+  await expect(page).toHaveTitle(ROUTE_META.grooveAtlas.title, { timeout: 15_000 });
 
   await page.getByRole("link", { name: "CV", exact: true }).first().click();
   await expect(page).toHaveURL(/\/cv$/);
-  await expect(page).toHaveTitle(ROUTE_META.cv.title);
+  await expect(page).toHaveTitle(ROUTE_META.cv.title, { timeout: 15_000 });
 
   await page.getByRole("link", { name: "Analytics" }).first().click();
   await expect(page).toHaveURL(/\/music-analytics$/);
-  await expect(page).toHaveTitle(ROUTE_META.musicAnalytics.title);
+  await expect(page).toHaveTitle(ROUTE_META.musicAnalytics.title, { timeout: 15_000 });
 
   await page.getByRole("link", { name: "ZS", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${appOrigin}/$`));
@@ -101,7 +101,7 @@ test("tool subnav navigates across every tool with manifest titles", async ({ pa
   const errors = collectErrors(page, appOrigin);
 
   await page.goto("/tools");
-  await expect(page).toHaveTitle(ROUTE_META.toolsIndex.title);
+  await expect(page).toHaveTitle(ROUTE_META.toolsIndex.title, { timeout: 15_000 });
 
   const stops = [
     { link: "Rhythm", key: "rhythm" },

@@ -273,7 +273,10 @@ export const ATLAS_CITATIONS: Record<string, TraditionScholarship> = {
     citations: [
       { title: "Polska - music and dance (Living Heritage national inventory of intangible cultural heritage)", publisher: "Living Heritage / Institute for Language and Folklore (Isof), Sweden", url: "https://levandekulturarv.se/in-english/the-inventory/submissions/polska---music-and-dance", kind: "cultural-institute" },
       { title: "The Swedish Polska", author: "Mats Nilsson", publisher: "Svenskt visarkiv / Musikverket (Centre for Swedish Folk Music and Jazz Research), Stockholm", year: 2017, url: "https://svensktvisarkiv.se/wp-content/uploads/sites/5/2024/12/Polska_FINAL2.pdf", kind: "cultural-institute" },
-      { title: "A Case Study of Deep Enculturation and Sensorimotor Synchronization to Real Music", author: "Olof Misgeld, Torbjorn Gulz, Andre Holzapfel, Jura Miniotaite", publisher: "Proceedings of the 22nd International Society for Music Information Retrieval Conference (ISMIR), via DiVA/KTH", year: 2021, url: "https://www.diva-portal.org/smash/get/diva2:1601509/FULLTEXT01.pdf", kind: "academic" },
+      { title: "A Case Study of Deep Enculturation and Sensorimotor Synchronization to Real Music", author: "Olof Misgeld, Torbjorn Gulz, Andre Holzapfel, Jura Miniotaite", publisher: "Proceedings of the 22nd International Society for Music Information Retrieval Conference (ISMIR), via DiVA/KTH", year: 2021, // The direct FULLTEXT01.pdf URL on the national DiVA portal tarpits automated
+      // clients (accepts TLS, sends 0 bytes); the record page serves reliably and
+      // links to the same PDF.
+      url: "https://www.diva-portal.org/smash/record.jsf?pid=diva2%3A1601509", kind: "academic" },
     ],
   },
   "egypt-maqsum": {

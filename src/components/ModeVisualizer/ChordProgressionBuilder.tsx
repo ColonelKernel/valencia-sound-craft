@@ -338,7 +338,7 @@ const ChordProgressionBuilder = ({
         <span className="text-sm font-semibold mr-auto">Chord Progression</span>
 
         {/* Key + Mode inline */}
-        <select value={localRoot} onChange={(e) => handleTranspose(e.target.value)}
+        <select value={localRoot} aria-label="Key root" onChange={(e) => handleTranspose(e.target.value)}
           className="bg-background border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring w-12">
           {ALL_ROOTS.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
@@ -348,7 +348,7 @@ const ChordProgressionBuilder = ({
             <button onClick={() => { const ci = ALL_ROOTS.indexOf(localRoot); handleTranspose(ALL_ROOTS[(ci + 1) % ALL_ROOTS.length]); }} className="w-5 h-5 flex items-center justify-center rounded border border-border bg-background text-foreground hover:bg-accent text-[10px] font-bold">+</button>
           </>
         )}
-        <select value={localMode} onChange={(e) => handleModeChange(e.target.value)}
+        <select value={localMode} aria-label="Mode" onChange={(e) => handleModeChange(e.target.value)}
           className="bg-background border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring max-w-[130px]">
           {MODE_CATEGORIES.map(cat => (
             <optgroup key={cat.label} label={cat.label}>
@@ -389,7 +389,7 @@ const ChordProgressionBuilder = ({
         <div className="flex flex-wrap items-center gap-3 px-3 py-2 border-b border-border bg-secondary/10 text-xs">
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground text-[10px]">Sound</span>
-            <select value={timbre} onChange={(e) => setTimbre(e.target.value as InstrumentTimbre)}
+            <select value={timbre} aria-label="Sound" onChange={(e) => setTimbre(e.target.value as InstrumentTimbre)}
               className="bg-background border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none">
               {INSTRUMENT_TIMBRES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
             </select>
@@ -402,7 +402,7 @@ const ChordProgressionBuilder = ({
           </div>
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground text-[10px]">Feel</span>
-            <select value={rhythmicFeel} onChange={(e) => {
+            <select value={rhythmicFeel} aria-label="Rhythmic feel" onChange={(e) => {
                 const feel = e.target.value as RhythmicFeel;
                 setRhythmicFeel(feel);
                 const fd = RHYTHMIC_FEELS.find(f => f.id === feel);
@@ -427,7 +427,7 @@ const ChordProgressionBuilder = ({
           <div className="h-4 w-px bg-border" />
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground text-[10px]">Voice</span>
-            <select value={voicingType} onChange={(e) => setVoicingType(e.target.value as VoicingType)}
+            <select value={voicingType} aria-label="Chord voicing" onChange={(e) => setVoicingType(e.target.value as VoicingType)}
               className="bg-background border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none">
               {VOICING_TYPES.map(v => <option key={v.id} value={v.id}>{v.label}</option>)}
             </select>

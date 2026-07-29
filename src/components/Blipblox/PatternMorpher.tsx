@@ -74,6 +74,7 @@ const PatternMorpher = ({ sources, onResult }: PatternMorpherProps) => {
         <div>
           <label className="text-[10px] text-muted-foreground block mb-1">Pattern A</label>
           <select
+            aria-label="Pattern A"
             value={selectedA}
             onChange={e => setSelectedA(Number(e.target.value))}
             className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground"
@@ -86,6 +87,7 @@ const PatternMorpher = ({ sources, onResult }: PatternMorpherProps) => {
         <div>
           <label className="text-[10px] text-muted-foreground block mb-1">Pattern B</label>
           <select
+            aria-label="Pattern B"
             value={selectedB}
             onChange={e => setSelectedB(Number(e.target.value))}
             className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground"

@@ -704,6 +704,7 @@ const DrumMachine = ({
             return (
               <div key={track.id} className="flex flex-wrap items-center gap-3 p-3 rounded-md bg-card border border-border">
                 <select
+                  aria-label={`${inst?.name || track.instrumentId} instrument`}
                   value={track.instrumentId}
                   onChange={e => {
                     const newInst = getInstrument(e.target.value);
@@ -724,7 +725,7 @@ const DrumMachine = ({
 
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] text-muted-foreground">Steps</span>
-                  <select value={track.subdivisions}
+                  <select value={track.subdivisions} aria-label={`${inst?.name || track.instrumentId} step count`}
                     onChange={e => changeSubdivisions(track.id, Number(e.target.value))}
                     className="bg-secondary border border-border rounded px-1.5 py-0.5 text-xs text-foreground w-14"
                   >
@@ -802,7 +803,7 @@ const DrumMachine = ({
           <div className="flex flex-wrap items-end gap-4">
             <div>
               <label className="text-[10px] text-muted-foreground block mb-1">VST Mapping</label>
-              <select value={midiMapping}
+              <select aria-label="VST Mapping" value={midiMapping}
                 onChange={e => setMidiMapping(e.target.value as MidiMapping)}
                 className="bg-secondary border border-border rounded px-2 py-1.5 text-xs text-foreground"
               >
@@ -824,7 +825,7 @@ const DrumMachine = ({
 
             <div>
               <label className="text-[10px] text-muted-foreground block mb-1">Bars</label>
-              <select value={exportBars}
+              <select aria-label="Bars" value={exportBars}
                 onChange={e => setExportBars(Number(e.target.value))}
                 className="bg-secondary border border-border rounded px-2 py-1.5 text-xs text-foreground"
               >

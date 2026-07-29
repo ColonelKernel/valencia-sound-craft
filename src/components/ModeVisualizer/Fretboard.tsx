@@ -272,6 +272,7 @@ const dimmedByChord = chordFilter && !noteMatchesChord(displayNote, chordFilter)
                 <ChevronLeft size={14} />
               </button>
               <select
+                aria-label="Fretboard position"
                 value={positionOverride ?? autoPos}
                 onChange={(e) => setPositionOverride(Number(e.target.value))}
                 className="bg-secondary border border-border rounded px-2 py-0.5 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring"

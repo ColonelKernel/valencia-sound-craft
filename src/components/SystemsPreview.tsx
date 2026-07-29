@@ -83,7 +83,8 @@ const SystemsPreview = () => (
                 <div className={featured ? "flex-1" : ""}>
                   <div className="flex items-center gap-2">
                     <card.icon className={`h-5 w-5 ${featured ? "text-emerald-400" : "text-primary"}`} />
-                    {featured && <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/70 bg-emerald-400/10 px-2 py-0.5 rounded-full">World Atlas + Feel-Space</span>}
+                    {/* emerald-300 at full opacity: the /70 variant failed WCAG contrast on the dark card. */}
+                    {featured && <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300 bg-emerald-400/10 px-2 py-0.5 rounded-full">World Atlas + Feel-Space</span>}
                   </div>
                   <h3 className={`mt-4 font-semibold text-foreground ${featured ? "text-2xl" : "text-lg"}`}>{card.title}</h3>
                   <p className={`mt-2 leading-6 text-muted-foreground ${featured ? "text-base max-w-2xl" : "text-sm"}`}>{card.description}</p>

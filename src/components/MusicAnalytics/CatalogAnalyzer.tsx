@@ -103,6 +103,7 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
         <div className="space-y-2">
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Artist</label>
           <select
+            aria-label="Artist"
             value={artistName}
             onChange={(e) => setArtistName(e.target.value)}
             className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -115,6 +116,7 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
         <div className="space-y-2">
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Genre</label>
           <select
+            aria-label="Genre"
             value={genre}
             onChange={(e) => setGenre(e.target.value)}
             className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
