@@ -38,3 +38,6 @@ playwright-report/
 # static hosts (Netlify), and launch.json is local dev-server config.
 .claude/worktrees/
 .claude/launch.json
+
+# Local environment — values live in the deploy platform, never in git.
+.env
