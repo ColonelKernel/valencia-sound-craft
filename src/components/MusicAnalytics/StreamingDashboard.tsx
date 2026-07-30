@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Area, ComposedChart, Legend, Line,
@@ -161,7 +161,7 @@ export default function StreamingDashboard({
             },
             { label: "6-Month Forecast", value: formatMetric(metrics.projected6m, mode), color: "text-foreground" },
           ].map((card, i) => (
-            <motion.div
+            <m.div
               key={card.label}
               custom={i}
               variants={cardAnim}
@@ -173,13 +173,13 @@ export default function StreamingDashboard({
                 {card.label}
               </p>
               <p className={`text-2xl md:text-3xl font-bold ${card.color}`}>{card.value}</p>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       )}
 
       {/* Chart */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -250,10 +250,10 @@ export default function StreamingDashboard({
             </ComposedChart>
           </ResponsiveContainer>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Portfolio Table */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
@@ -320,7 +320,7 @@ export default function StreamingDashboard({
             ))}
           </tbody>
         </table>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

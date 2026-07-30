@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -258,7 +258,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
                   <td className={`p-3 text-right font-bold ${cfg.color}`}>{c.acquisition.score}</td>
                   <td className="p-3">
                     <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                      <motion.div
+                      <m.div
                         initial={{ width: 0 }}
                         animate={{ width: `${c.acquisition.score}%` }}
                         transition={{ duration: 0.6, delay: i * 0.05 }}
@@ -283,7 +283,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
 
       {/* Detailed scorecard for selected artist */}
       {selected && (
-        <motion.div
+        <m.div
           key={selectedArtist}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -309,7 +309,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
                     stroke="hsl(var(--muted))"
                     strokeWidth="10"
                   />
-                  <motion.circle
+                  <m.circle
                     cx="60" cy="60" r="50"
                     fill="none"
                     stroke="currentColor"
@@ -489,7 +489,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
               <p className="text-xl font-bold text-foreground">{selected.segment}</p>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
     </div>
   );

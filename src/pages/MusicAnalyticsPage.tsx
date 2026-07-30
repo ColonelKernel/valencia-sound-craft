@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from "react";
+import { LazyMotion, domAnimation } from "framer-motion";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataService";
@@ -71,6 +72,11 @@ export default function MusicAnalyticsPage() {
   }, []);
 
   return (
+    // LazyMotion + m components (in the tab panels) instead of full `motion`
+    // imports: same animations, ~half the framer-motion payload. `strict`
+    // makes any future full `motion.` import throw in dev instead of silently
+    // re-inflating the bundle.
+    <LazyMotion features={domAnimation} strict>
     <div className="min-h-screen bg-background">
       <RouteHead
         title={ROUTE_META.musicAnalytics.title}
@@ -228,5 +234,6 @@ export default function MusicAnalyticsPage() {
         </section>
       </main>
     </div>
+    </LazyMotion>
   );
 }

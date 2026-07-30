@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
@@ -35,7 +35,7 @@ export default function CatalogSegmentation({ data, artists, mode }: Props) {
   const total = totals.front + totals.mid + totals.back;
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
@@ -100,6 +100,6 @@ export default function CatalogSegmentation({ data, artists, mode }: Props) {
           </ResponsiveContainer>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

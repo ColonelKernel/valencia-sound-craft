@@ -18,7 +18,11 @@ import { normalizeMode } from "@/music-core/modeAliases";
 
 import StepSequencer from "./StepSequencer";
 import PatternMorpher from "./PatternMorpher";
-import GlobalRhythmMap from "./GlobalRhythmMap";
+// Lazy: the Leaflet map stack (~170 KB min) otherwise loads eagerly with the
+// engine on /tools/rhythm, where the map sits below the fold. The Groove
+// Atlas's WorldAtlasLens keeps its own static import — there the map is the
+// hero and must not pop in late.
+const GlobalRhythmMap = lazy(() => import("./GlobalRhythmMap"));
 import {
   GLOBAL_RHYTHM_ATLAS,
   GLOBAL_RHYTHM_TAGS,
@@ -935,12 +939,20 @@ const GlobalRhythmEngine = ({
           )}
         </div>
 
-        <GlobalRhythmMap
-          rhythms={visibleAtlasRhythms}
-          selectedCountry={rhythmState.country}
-          focusContinent={continentFilter}
-          onCountrySelect={handleMapSelect}
-        />
+        <Suspense
+          fallback={
+            <div className="flex h-72 items-center justify-center rounded-2xl border border-border bg-secondary/20 text-sm text-muted-foreground">
+              Loading world map…
+            </div>
+          }
+        >
+          <GlobalRhythmMap
+            rhythms={visibleAtlasRhythms}
+            selectedCountry={rhythmState.country}
+            focusContinent={continentFilter}
+            onCountrySelect={handleMapSelect}
+          />
+        </Suspense>
       </div>
 
       {/* ── 🎛️ RHYTHM BROWSER ── */}

@@ -85,10 +85,18 @@ test("resets scroll to the top on client-side navigation", async ({ page }) => {
   await page.goto("/tools/rhythm");
   await expect(page).toHaveTitle(ROUTE_META.rhythm.title, { timeout: 15_000 });
 
-  // Scroll well down the (long) rhythm route, then navigate via the sticky
-  // subnav — the Layout effect must reset scrollY to 0.
-  await page.evaluate(() => window.scrollTo(0, 900));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+  // Scroll to the bottom, re-issuing the scroll on every poll tick: the
+  // stamped shell satisfies toHaveTitle before hydration, and the lazy engine
+  // workspace (map Suspense-deferred inside it) grows the page over the next
+  // ~700ms — a single scrollTo would clamp against the short pre-mount page
+  // and stick there. Once the route is tall, the poll crosses 300 and we know
+  // the page is genuinely scrolled down.
+  await expect
+    .poll(async () => {
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      return page.evaluate(() => window.scrollY);
+    }, { timeout: 15_000 })
+    .toBeGreaterThan(300);
 
   await toolNav(page).getByRole("link", { name: "Harmony", exact: true }).click();
   await expect(page).toHaveURL(/\/tools\/harmony$/);

@@ -11,7 +11,6 @@ import {
   subscribePlaybackSteps,
 } from "./audioEngine";
 import { interpretGroove } from "./utils";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   groove: NormalizedGroove | null;
@@ -54,8 +53,11 @@ function AINarrative({ groove }: { groove: NormalizedGroove }) {
     // pending timer before any request fires. Errors surface only as UI state —
     // never console output (the console-clean e2e gate counts own-origin errors).
     const timer = window.setTimeout(() => {
-      supabase.functions
-        .invoke("groove-narrative", {
+      // Loaded on first narrative fetch: supabase-js otherwise rides the
+      // atlas feel-space chunk for every visitor.
+      import("@/integrations/supabase/client")
+        .then(({ supabase }) =>
+          supabase.functions.invoke("groove-narrative", {
           body: {
             genre: groove.genre,
             bpm: groove.bpm,
@@ -65,8 +67,9 @@ function AINarrative({ groove }: { groove: NormalizedGroove }) {
             syncopation: groove.norm_syncopation,
             velocity: groove.norm_velocity,
             substyle: groove.substyle,
-          },
-        })
+            },
+          }),
+        )
         .then(({ data, error }) => {
           if (cancelled) return;
           const text = !error && typeof data?.narrative === "string" && data.narrative

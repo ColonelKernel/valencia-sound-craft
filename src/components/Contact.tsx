@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import { Send, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -43,14 +42,23 @@ const Contact = () => {
     }
 
     setStatus("submitting");
-    const { error } = await supabase.from("contact_messages").insert({
-      name: trimmedName,
-      email: trimmedEmail,
-      project_type: projectType || null,
-      message: trimmedMessage,
-    });
+    try {
+      // Loaded on submit: supabase-js is ~45 KB gzip that the homepage
+      // otherwise downloads for every visitor, submit or not.
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase.from("contact_messages").insert({
+        name: trimmedName,
+        email: trimmedEmail,
+        project_type: projectType || null,
+        message: trimmedMessage,
+      });
 
-    setStatus(error ? "error" : "success");
+      setStatus(error ? "error" : "success");
+    } catch {
+      // Chunk load failure (offline, blocked) — same visible outcome as an
+      // insert error, so the visitor gets the mailto fallback message.
+      setStatus("error");
+    }
   };
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import type { ArtistMonthly } from "@/lib/musicDataService";
 import { buildArtistComparison, diversificationScore, formatMetric, volatilityScore } from "@/lib/catalogAnalytics";
 import { forecast } from "@/lib/linearRegression";
@@ -54,7 +54,7 @@ export default function PortfolioBuilder({ data, portfolio, onRemove, mode }: Pr
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
@@ -85,7 +85,7 @@ export default function PortfolioBuilder({ data, portfolio, onRemove, mode }: Pr
             {divScore}/100
           </p>
           <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
-            <motion.div
+            <m.div
               initial={{ width: 0 }}
               animate={{ width: `${divScore}%` }}
               transition={{ duration: 0.8 }}
@@ -149,6 +149,6 @@ export default function PortfolioBuilder({ data, portfolio, onRemove, mode }: Pr
           </tbody>
         </table>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

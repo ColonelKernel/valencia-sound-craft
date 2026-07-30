@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import { lazy, Suspense, useState, useRef, useCallback, useMemo, useEffect } from "react";
 import {
   Play, Pause, X, RotateCcw, Sparkles, ArrowRightLeft,
   Music2, ChevronDown, ChevronUp, Download, ArrowLeft, ArrowRight,
@@ -7,7 +7,10 @@ import {
 } from "lucide-react";
 import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
 import { type InstrumentTimbre, INSTRUMENT_TIMBRES } from "./audioSynth";
-import ChordStaffView from "./ChordStaffView";
+// Lazy: ChordStaffView drags in abcjs (~150 modules), which otherwise rides
+// the whole harmony route for a staff preview that only renders while a
+// chord is being edited with the staff toggle on.
+const ChordStaffView = lazy(() => import("./ChordStaffView"));
 import ChordPianoMini from "./ChordPianoMini";
 import {
   type ProgressionChord, type ChordSource, type RhythmicFeel, type HarmonicStyle,
@@ -548,7 +551,9 @@ const ChordProgressionBuilder = ({
                 </div>
               </div>
               {showStaff && (
-                <ChordStaffView notes={progression[editingIdx].chord.notes} symbol={progression[editingIdx].chord.symbol} />
+                <Suspense fallback={<div className="h-16 rounded border border-border/50 bg-secondary/20" />}>
+                  <ChordStaffView notes={progression[editingIdx].chord.notes} symbol={progression[editingIdx].chord.symbol} />
+                </Suspense>
               )}
               <ChordPianoMini
                 chordNotes={progression[editingIdx].chord.notes}

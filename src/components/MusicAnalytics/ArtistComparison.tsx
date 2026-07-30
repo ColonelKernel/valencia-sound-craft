@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
@@ -52,7 +52,7 @@ export default function ArtistComparison({ data, selectedArtists, mode }: Props)
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
@@ -154,6 +154,6 @@ export default function ArtistComparison({ data, selectedArtists, mode }: Props)
           </ResponsiveContainer>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }

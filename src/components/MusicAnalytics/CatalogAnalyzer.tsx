@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import type { ArtistMonthly } from "@/lib/musicDataService";
 import { buildArtistComparison } from "@/lib/catalogAnalytics";
@@ -154,7 +154,7 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
       )}
 
       {result && (
-        <motion.div
+        <m.div
           role="status"
           aria-live="polite"
           aria-atomic="true"
@@ -190,7 +190,7 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
           <p className="text-[11px] text-muted-foreground/70">
             AI-generated educational demonstration based on modeled data — not investment advice.
           </p>
-        </motion.div>
+        </m.div>
       )}
     </div>
   );
