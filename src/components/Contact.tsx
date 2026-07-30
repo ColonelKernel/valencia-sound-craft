@@ -4,6 +4,15 @@ import { Send, Loader2 } from "lucide-react";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Baked in at build time. When the deploy has no Supabase env vars, the form
+// is a guaranteed dead end — every submit fails after the visitor has already
+// typed their message. In that state we lead with the direct channel instead
+// of rendering a form we know cannot work. The form returns automatically on
+// the first deploy with the env vars set.
+const BACKEND_CONFIGURED = Boolean(
+  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+);
+
 type Status = "idle" | "submitting" | "success" | "error";
 
 const Contact = () => {
@@ -56,7 +65,7 @@ const Contact = () => {
       setStatus(error ? "error" : "success");
     } catch {
       // Chunk load failure (offline, blocked) — same visible outcome as an
-      // insert error, so the visitor gets the mailto fallback message.
+      // insert error, so the visitor gets the LinkedIn fallback message.
       setStatus("error");
     }
   };
@@ -78,7 +87,23 @@ const Contact = () => {
           </p>
         </div>
 
-        {status === "success" ? (
+        {!BACKEND_CONFIGURED ? (
+          <div className="fade-up text-center py-16 border border-border rounded-sm px-6">
+            <p className="text-xl font-display font-semibold mb-2">Reach out directly</p>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              The quickest way to reach me right now is{" "}
+              <a
+                href="https://www.linkedin.com/in/zscheff/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 text-foreground"
+              >
+                LinkedIn
+              </a>
+              {" "}— message me there and I'll get back to you within 24–48 hours.
+            </p>
+          </div>
+        ) : status === "success" ? (
           <div
             ref={successRef}
             tabIndex={-1}
