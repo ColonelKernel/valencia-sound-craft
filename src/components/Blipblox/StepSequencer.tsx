@@ -321,7 +321,10 @@ const StepSequencer = ({
   const showCompactTrackLabels = isCompact && resolvedLayers.length > 1;
 
   const stepGridStyle = useMemo(
-    () => ({ gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(0, 1fr))` }),
+    // 1.75rem track floor leaves each button ≥26px after the 1px cell padding
+    // (WCAG 2.5.8 needs 24); the sequencer's scroll wrapper pans horizontally
+    // when the viewport can't fit every column.
+    () => ({ gridTemplateColumns: `repeat(${Math.max(1, totalSteps)}, minmax(1.75rem, 1fr))` }),
     [totalSteps],
   );
 
@@ -496,7 +499,7 @@ const StepSequencer = ({
   }, [applyStepUpdate, readOnly]);
 
   const renderStepGrid = useCallback((layer: DisplayLayer, rowIndex: number) => (
-    <div className="grid gap-0" style={stepGridStyle}>
+    <div className="grid gap-0.5" style={stepGridStyle}>
       {stepMeta.map((meta) => {
         const key = `${layer.id}:${meta.index}`;
         const velocity = layer.velocity[meta.index] ?? 0;
@@ -580,7 +583,10 @@ const StepSequencer = ({
         "space-y-3",
         !isCompact && "rounded-3xl border border-border/70 bg-card/70 p-3 sm:p-4",
       )}>
-        <div className="space-y-3">
+        {/* Scroll container: step cells keep a 24px minimum (WCAG 2.5.8 target
+            spacing), so on narrow viewports the whole lane block pans
+            horizontally instead of crushing the buttons below tap size. */}
+        <div className="space-y-3 overflow-x-auto">
           {!isCompact && (
             <div className="rounded-2xl border border-white/8 bg-secondary/35 px-3 py-2">
               <div className="flex items-center justify-between gap-3">
@@ -611,7 +617,7 @@ const StepSequencer = ({
           {showHeader && (
             <div className="grid grid-cols-[minmax(4.5rem,6.5rem)_minmax(0,1fr)] gap-2 px-1 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
               <div className="flex items-center">Lane</div>
-              <div className="grid gap-0" style={stepGridStyle}>
+              <div className="grid gap-0.5" style={stepGridStyle}>
                 {stepMeta.map((meta) => (
                   <div
                     key={`step-label-${meta.index}`}

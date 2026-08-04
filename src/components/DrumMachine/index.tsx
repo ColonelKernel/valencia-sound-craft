@@ -887,14 +887,14 @@ const DrumMachine = ({
               {/* Track controls */}
               <div className="flex items-center gap-0.5 sm:gap-1 w-20 sm:w-28 shrink-0">
                 <button onClick={() => updateTrack(track.id, { muted: !track.muted })}
-                  className={`p-0.5 rounded transition-colors ${track.muted ? 'text-muted-foreground/40' : 'text-foreground'}`}
+                  className={`flex min-h-6 min-w-6 items-center justify-center rounded transition-colors ${track.muted ? 'text-muted-foreground/40' : 'text-foreground'}`}
                   title={track.muted ? 'Unmute' : 'Mute'}
                   aria-pressed={track.muted}
                   aria-label={`${track.muted ? 'Unmute' : 'Mute'} ${inst?.name || track.instrumentId}`}>
                   {track.muted ? <VolumeX size={11} /> : <Volume2 size={11} />}
                 </button>
                 <button onClick={() => updateTrack(track.id, { solo: !track.solo })}
-                  className={`text-[9px] px-1 py-0.5 rounded font-bold transition-colors ${
+                  className={`flex min-h-6 min-w-6 items-center justify-center rounded text-[9px] font-bold transition-colors ${
                     track.solo ? 'bg-amber-500 text-black' : 'text-muted-foreground/50 hover:text-foreground'
                   }`}
                   title="Solo"
@@ -933,7 +933,7 @@ const DrumMachine = ({
               {/* Remove */}
               {tracks.length > 1 && (
                 <button onClick={() => removeTrack(track.id)}
-                  className="text-muted-foreground/30 hover:text-rose-500 text-xs transition-colors shrink-0"
+                  className="flex min-h-6 min-w-6 shrink-0 items-center justify-center text-muted-foreground/30 hover:text-rose-500 text-xs transition-colors"
                   title="Remove track"
                   aria-label={`Remove ${inst?.name || track.instrumentId} track`}>✕</button>
               )}
@@ -1004,7 +1004,7 @@ const DrumMachine = ({
                       ? 'bg-primary text-primary-foreground ring-1 ring-primary/50'
                       : 'border border-border text-muted-foreground hover:bg-accent'
                   }`}
-                >{formatRegion(r)} <span className="opacity-60">({filterRhythms({ region: r }).length})</span></button>
+                >{formatRegion(r)} <span>({filterRhythms({ region: r }).length})</span></button>
               );
             })}
           </div>
@@ -1157,7 +1157,7 @@ const DrumMachine = ({
                         <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
                           p.complexity === 'beginner' ? 'bg-emerald-500/10 text-emerald-400' :
                           p.complexity === 'intermediate' ? 'bg-amber-500/10 text-amber-400' :
-                          'bg-rose-500/10 text-rose-400'
+                          'bg-rose-500/10 text-rose-300'
                         }`}>{p.complexity}</span>
                       </div>
                     </button>
