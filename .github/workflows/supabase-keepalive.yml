@@ -1,0 +1,37 @@
+name: Supabase keep-alive
+
+# Free-tier Supabase projects pause after ~7 days without API activity — which
+# silently kills the contact form (this happened 2026-08-03). Any authenticated
+# REST request counts as activity, so ping every 3 days.
+#
+# NOTE: GitHub runs `schedule` triggers only from the repo's DEFAULT branch
+# (`main`). This file must exist on `main` for the cron to fire; the copy on
+# `portfolio/rebuild` documents it alongside the code it protects.
+# GitHub also disables schedules after 60 days of repo inactivity —
+# workflow_dispatch is the manual re-arm.
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Supabase REST
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request one row (any HTTP response registers project activity)
+        run: |
+          # The apikey is the site's PUBLIC publishable key — already shipped
+          # verbatim in the zachscheffler.com JS bundle, not a secret.
+          code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 \
+            -H "apikey: sb_publishable_k8udo0mt3Rem4VtHagQpsg_rHG6s1qV" \
+            "https://uqcjivqzilisngdwtdzl.supabase.co/rest/v1/contact_messages?select=id&limit=1") \
+            || { echo "::error::No HTTP response (DNS failure / timeout) — project unreachable, likely paused."; exit 1; }
+          echo "HTTP $code"
+          # RLS may deny the anonymous select — 200/401/403/406 all prove the
+          # project is serving. Only 5xx (paused-project gateway) fails.
+          if [ "$code" -ge 500 ]; then
+            echo "::error::HTTP $code from Supabase — project appears paused or broken."
+            exit 1
+          fi

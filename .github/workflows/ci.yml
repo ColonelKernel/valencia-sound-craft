@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - portfolio/rebuild
+      - main
+  workflow_dispatch:
+
+# PUBLIC values, shipped verbatim in the site bundle — not secrets. They must
+# be present at build time or the contact form compiles out entirely
+# (BACKEND_CONFIGURED in src/components/Contact.tsx).
+env:
+  VITE_SUPABASE_URL: https://uqcjivqzilisngdwtdzl.supabase.co
+  VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_k8udo0mt3Rem4VtHagQpsg_rHG6s1qV
+
+jobs:
+  gates:
+    name: Lint, typecheck, test, budget, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (zero warnings)
+        run: npm run lint -- --max-warnings 0
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Bundle budget (initial graph ≤ 150 KB gzip)
+        run: npm run budget
+
+      - name: Production build
+        run: npm run build
+
+  e2e:
+    name: Playwright e2e
+    needs: gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e suite
+        run: npm run e2e

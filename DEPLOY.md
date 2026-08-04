@@ -39,9 +39,23 @@ Add new site → Import an existing project → GitHub → `ColonelKernel/valenc
 | Publish directory | `dist` |
 | `NODE_VERSION` | `20` (only if the build fails on Node version) |
 
-**Environment variables are NOT required.** `.env` is currently committed to the
-repo, so Vite picks up `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
-at build time. (See *Post-cutover cleanup* — this should not stay true.)
+**Environment variables ARE required.** `.env` is untracked (gitignored), so
+the build only sees what the host provides. Set both in Netlify → Site
+configuration → Environment variables (scope: All; they are public values,
+shipped verbatim in the JS bundle):
+
+- `VITE_SUPABASE_URL` = `https://uqcjivqzilisngdwtdzl.supabase.co`
+- `VITE_SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_k8udo0mt3Rem4VtHagQpsg_rHG6s1qV`
+
+Without them the contact form compiles out and the site ships a "reach out
+directly" panel instead (see `BACKEND_CONFIGURED` in
+`src/components/Contact.tsx`). Set 2026-08-03; verified live.
+
+**Free-tier pause:** Supabase pauses free projects after ~7 days without API
+activity, which breaks the form until someone restores the project in the
+dashboard. `.github/workflows/supabase-keepalive.yml` pings the REST endpoint
+every 3 days to prevent this — the copy on `main` (the default branch) is the
+one GitHub actually schedules.
 
 Static-host config already lives in the repo:
 
@@ -89,17 +103,14 @@ zero downtime, instant revert.
 
 ## Post-cutover cleanup
 
-- [ ] **Contact form / Supabase.** The build targets project
-      `xvdskahnddnlvsfypcci` (Lovable-managed, not in the user's own Supabase
-      account). The `contact_messages` table + anon-insert RLS were created on
-      the user's *own* project `uqcjivqzilisngdwtdzl`. Decide one:
-      (a) get access to `xvdskahnddnlvsfypcci` and run the migration there, or
-      (b) repoint `VITE_SUPABASE_URL`/key to `uqcjivqzilisngdwtdzl` — but note
-      analytics data and the `catalog-analyzer` edge function would also need
-      migrating. **Verify a real submission lands somewhere before trusting it.**
-- [ ] **Untrack `.env`** (`git rm --cached .env`, add an ignore rule) and set
-      the two `VITE_…` vars in Netlify instead. Do this *after* the site is
-      confirmed live, since it changes how the build gets its config.
+- [x] **Contact form / Supabase.** DONE 2026-08-03: repointed to the user's own
+      project `uqcjivqzilisngdwtdzl` (option b) via the two Netlify env vars
+      above. The `contact_messages` table + anon-insert RLS live there, and the
+      `groove-narrative` / `lastfm-artist` edge functions were redeployed to it.
+      Caveat: local `.env` may still point at the retired Lovable project
+      `xvdskahnddnlvsfypcci` — update it by hand for correct local submits.
+- [x] **Untrack `.env`** — done (`5eb23d4`); `.gitignore` covers it and Netlify
+      carries the two `VITE_…` vars.
 - [ ] **Rotate the Supabase anon key** once the contact form is verified.
 - [ ] **Retire Lovable** — once DNS is moved and stable, the Lovable project no
       longer serves anything. Leave it alone or disconnect its GitHub sync so

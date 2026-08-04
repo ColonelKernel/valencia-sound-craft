@@ -15,9 +15,14 @@ const BACKEND_CONFIGURED = Boolean(
 
 type Status = "idle" | "submitting" | "success" | "error";
 
+// A paused/unreachable backend must not strand the visitor on a disabled
+// "Sending..." button — abort the insert and fall through to the error UI.
+const SUBMIT_TIMEOUT_MS = 10_000;
+
 const Contact = () => {
   const ref = useFadeIn();
   const successRef = useRef<HTMLDivElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [validationError, setValidationError] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -55,17 +60,20 @@ const Contact = () => {
       // Loaded on submit: supabase-js is ~45 KB gzip that the homepage
       // otherwise downloads for every visitor, submit or not.
       const { supabase } = await import("@/integrations/supabase/client");
-      const { error } = await supabase.from("contact_messages").insert({
-        name: trimmedName,
-        email: trimmedEmail,
-        project_type: projectType || null,
-        message: trimmedMessage,
-      });
+      const { error } = await supabase
+        .from("contact_messages")
+        .insert({
+          name: trimmedName,
+          email: trimmedEmail,
+          project_type: projectType || null,
+          message: trimmedMessage,
+        })
+        .abortSignal(AbortSignal.timeout(SUBMIT_TIMEOUT_MS));
 
       setStatus(error ? "error" : "success");
     } catch {
       // Chunk load failure (offline, blocked) — same visible outcome as an
-      // insert error, so the visitor gets the LinkedIn fallback message.
+      // insert error, so the visitor gets the fallback channels.
       setStatus("error");
     }
   };
@@ -73,6 +81,8 @@ const Contact = () => {
   useEffect(() => {
     if (status === "success") {
       successRef.current?.focus();
+    } else if (status === "error") {
+      errorRef.current?.focus();
     }
   }, [status]);
 
@@ -206,8 +216,17 @@ const Contact = () => {
             )}
 
             {status === "error" && (
-              <p className="text-sm text-destructive" role="alert">
-                Something went wrong sending your message. Please reach out via{" "}
+              <div ref={errorRef} tabIndex={-1} role="alert" className="text-sm text-destructive">
+                Something went wrong sending your message. Your message is not lost —{" "}
+                <a
+                  className="underline underline-offset-2"
+                  href={`mailto:zachscheffler@gmail.com?subject=${encodeURIComponent(
+                    `Project inquiry${projectType ? ` — ${projectType}` : ""} from ${name.trim()}`,
+                  )}&body=${encodeURIComponent(`${message.trim()}\n\n— ${name.trim()} (${email.trim()})`)}`}
+                >
+                  email it to me directly
+                </a>{" "}
+                or reach out via{" "}
                 <a
                   href="https://www.linkedin.com/in/zscheff/"
                   target="_blank"
@@ -215,9 +234,9 @@ const Contact = () => {
                   className="underline underline-offset-2"
                 >
                   LinkedIn
-                </a>{" "}
-                instead.
-              </p>
+                </a>
+                .
+              </div>
             )}
 
             <button
