@@ -41,3 +41,6 @@ playwright-report/
 
 # Local environment — values live in the deploy platform, never in git.
 .env
+
+# Lighthouse CI run artifacts — regenerated on every `npm run lighthouse`.
+.lighthouseci/

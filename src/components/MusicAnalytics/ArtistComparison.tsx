@@ -4,7 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import type { ArtistMonthly } from "@/lib/musicDataService";
-import { buildArtistComparison, formatMetric, type ArtistComparisonData } from "@/lib/catalogAnalytics";
+import { buildArtistComparison, formatMetric } from "@/lib/catalogAnalytics";
 
 interface Props {
   data: ArtistMonthly[];

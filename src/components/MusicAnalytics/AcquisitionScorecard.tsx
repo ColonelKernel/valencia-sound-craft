@@ -7,9 +7,7 @@ import type { ArtistMonthly } from "@/lib/musicDataService";
 import {
   buildArtistComparison,
   formatMetric,
-  type AcquisitionScore,
   type AcquisitionLabel,
-  type ArtistComparisonData,
 } from "@/lib/catalogAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";

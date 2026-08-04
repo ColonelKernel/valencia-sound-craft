@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Timer, ListMusic, Piano, BookOpen, Drum, Globe, ChevronDown, ChevronUp } from "lucide-react";
+import { Guitar, Music, Volume2, ToggleLeft, ToggleRight, Settings2, Piano, ChevronDown, ChevronUp } from "lucide-react";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import { useInView } from "@/hooks/useInView";
 import {

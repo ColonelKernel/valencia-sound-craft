@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { m } from "framer-motion";
 import type { ArtistMonthly } from "@/lib/musicDataService";
-import { buildArtistComparison, diversificationScore, formatMetric, volatilityScore } from "@/lib/catalogAnalytics";
+import { buildArtistComparison, diversificationScore, formatMetric } from "@/lib/catalogAnalytics";
 import { forecast } from "@/lib/linearRegression";
 
 interface Props {

@@ -335,7 +335,6 @@ interface CircleOfFifthsProps {
 }
 
 const CircleOfFifths = ({
-  scaleNotes = [],
   root = "C",
   timbre = "piano",
   bpm = 96,

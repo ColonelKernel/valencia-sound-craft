@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 import { bundleReportPlugin } from "./build/bundleReportPlugin";
 import { stampRouteHeadsPlugin } from "./build/stampRouteHeadsPlugin";
 
@@ -16,7 +15,6 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === "development" && componentTagger(),
     mode === "analyze" && bundleReportPlugin(),
     stampRouteHeadsPlugin(),
   ].filter(Boolean),

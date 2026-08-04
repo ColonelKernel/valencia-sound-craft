@@ -106,40 +106,6 @@ export const PatternPresetSchema = RhythmPatternSchema.extend({
 
 export type ValidatedPatternPreset = z.infer<typeof PatternPresetSchema>;
 
-const AFRICAN_REGION_LABELS = new Set([
-  "west_africa",
-  "east_africa",
-  "north_africa",
-  "central_africa",
-  "southern_africa",
-]);
-
-const BALKAN_REGION_LABELS = new Set([
-  "eastern_europe",
-  "central_asia",
-]);
-
-const AFRO_CUBAN_COUNTRIES = new Set([
-  "cuba",
-  "puerto_rico",
-  "dominican_republic",
-  "trinidad_&_tobago",
-  "jamaica",
-]);
-
-const ARGENTINA_COUNTRIES = new Set([
-  "argentina",
-  "uruguay",
-  "peru",
-  "colombia",
-  "mexico",
-  "chile",
-  "bolivia",
-  "ecuador",
-  "paraguay",
-  "venezuela",
-]);
-
 function validateTrackCollection(
   rhythm: PatternPreset,
   tracks: PatternPreset["tracks"],

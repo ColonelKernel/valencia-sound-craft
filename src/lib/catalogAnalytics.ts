@@ -1,5 +1,5 @@
 import type { ArtistMonthly } from "./musicDataService";
-import { linearRegression, forecast } from "./linearRegression";
+import { forecast } from "./linearRegression";
 
 /* ── Revenue ── */
 const REVENUE_PER_STREAM = 0.003;

@@ -138,7 +138,7 @@ const DrumMachine = ({
   const [filterRhythmType, setFilterRhythmType] = useState<RhythmType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [browserSort, setBrowserSort] = useState<BrowserSort>("country");
-  const [showKonnakol, setShowKonnakol] = useState(false);
+  const [showKonnakol] = useState(false);
 
   // Audio refs
   const timerRef = useRef<number | null>(null);

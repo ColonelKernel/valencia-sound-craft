@@ -28,7 +28,7 @@ const TRANSPOSE_OPTIONS = [
   { value: 6, label: '+6 (tritone)' },
 ];
 
-const SheetMusic = ({ scaleNotes, hoveredNote }: SheetMusicProps) => {
+const SheetMusic = ({ scaleNotes }: SheetMusicProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [clef, setClef] = useState<ClefType>('treble');
   const [timeSig, setTimeSig] = useState('4/4');

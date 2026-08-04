@@ -90,7 +90,6 @@ const Fretboard = ({
   root,
   mode,
   tuning,
-  label,
   lefty,
   showIntervals,
   showFingers,

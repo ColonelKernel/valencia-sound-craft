@@ -1,13 +1,13 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { Play, Pause, X, Download, Sparkles, Sun, Moon, Maximize2, Minimize2, RotateCcw, Plus, ChevronDown, ChevronUp, Zap, Usb, Radio } from "lucide-react";
 import {
-  requestMidiAccess, selectOutput, isConnected, getActiveOutput, disconnect as midiDisconnect,
+  requestMidiAccess, selectOutput, isConnected, disconnect as midiDisconnect,
   sendChord as midiSendChord, sendSingleNote as midiSendNote, sendAllNotesOff,
   type MidiOutputDevice,
 } from "./webMidiOut";
 import { playChord, playNote, type InstrumentTimbre } from "./audioSynth";
 import {
-  ALL_NOTES, noteIndex, normalize,
+  ALL_NOTES, noteIndex,
   type TonnetzTriadData, type GridTriad, type TonnetzNode, type TransformType,
   triadLabel, makeTriad, applyTransform,
   TRANSFORMS, HARMONIC_SYSTEMS, TONNETZ_PRESETS,
@@ -59,7 +59,7 @@ const Tonnetz = ({
   const [performanceMode, setPerformanceMode] = useState(false);
   const [harmonicSystem, setHarmonicSystem] = useState('none');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [showTransforms, setShowTransforms] = useState(true);
+  const [showTransforms] = useState(true);
   const [animatingTransform, setAnimatingTransform] = useState<{ from: TonnetzTriadData; to: TonnetzTriadData; type: TransformType } | null>(null);
   const [showGravity, setShowGravity] = useState(true);
 

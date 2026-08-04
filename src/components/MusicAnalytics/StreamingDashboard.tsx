@@ -24,7 +24,7 @@ const cardAnim = {
 };
 
 export default function StreamingDashboard({
-  data, artists, loading, error, selectedArtist, onSelectArtist, mode,
+  data, artists, loading, error, selectedArtist, mode,
 }: Props) {
   const filtered = useMemo(() => {
     if (selectedArtist === "all") {

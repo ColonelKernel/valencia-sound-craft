@@ -1,6 +1,5 @@
 // Rhythm Translation Engine — meter normalization, groove mapping, polyrhythm splitting
 
-import type { StepPattern } from './blipbloxEngine';
 
 // ─── Meter Normalization ─────────────────────────────────────
 

@@ -1,5 +1,5 @@
 import { getAudioContext } from "@/music-core/audioContext";
-import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS, ALL_ROOTS, MODE_CATEGORIES } from "./scaleData";
+import { type ChordSpelling, getScaleNotes, getChordSpellings, MODE_INTERVALS } from "./scaleData";
 import { type InstrumentTimbre } from "./audioSynth";
 
 // ─── Constants ──────────────────────────────────────────────
@@ -482,7 +482,7 @@ export function transformProgression(
 }
 
 // ─── Style-Based Suggestions ────────────────────────────────
-export function getStyleSuggestions(style: HarmonicStyle, root: string, mode: string): string {
+export function getStyleSuggestions(style: HarmonicStyle, _root: string, _mode: string): string {
   switch (style) {
     case 'flamenco': return 'Try Phrygian mode with Am-G-F-E cadence patterns';
     case 'afro-cuban': return 'Use Mixolydian with dominant 7th chains over clave rhythm';
@@ -504,9 +504,7 @@ export function getNextChordSuggestions(
   
   const lastChord = progression[progression.length - 1];
   const suggestions: ChordSuggestion[] = [];
-  const flats = shouldUseFlatsForKey(root);
-  const chromatic = flats ? NOTES_FLAT : NOTES_SHARP;
-  
+
   // Safe: diatonic chords that commonly follow
   const safeTargets = lastChord ? getSafeFollowups(lastChord, chordSpellings, mode) : [0, 3, 4];
   safeTargets.forEach(idx => {

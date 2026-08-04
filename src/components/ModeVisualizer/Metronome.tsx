@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { getAudioContext } from "@/music-core/audioContext";
 import {
   Play, Pause, Minus, Plus, Hand, Music2, Zap, Waves,
@@ -183,7 +183,7 @@ const Metronome = ({
   const [flowPulse, setFlowPulse] = useState(0); // 0-1 animation value
 
   // Tap tempo
-  const [tapTimes, setTapTimes] = useState<number[]>([]);
+  const [, setTapTimes] = useState<number[]>([]);
   const [tapStability, setTapStability] = useState<number | null>(null);
 
   // Timing feedback
@@ -350,7 +350,6 @@ const Metronome = ({
     const now = performance.now();
     const expectedInterval = (60000 / bpm);
     const timeSinceLastBeat = now - lastBeatTimeRef.current;
-    const offset = timeSinceLastBeat - expectedInterval;
 
     // Only track if we're within a reasonable window
     if (Math.abs(timeSinceLastBeat) < expectedInterval * 1.5) {

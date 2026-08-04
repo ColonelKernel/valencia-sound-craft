@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useGlobalMusic } from '@/state/globalMusicHooks';
 import { blipbloxEngine, type BlipbloxMidiDevice, type BlipbloxDeviceType } from './blipbloxEngine';
 import { translateForMyTracks, translateForSK2, translateForAfterDark, getDeviceNote } from './deviceProfiles';
-import { mapGroove, normalizeMeter, splitPolyrhythm } from './rhythmTranslator';
+import { mapGroove } from './rhythmTranslator';
 import StepSequencer from './StepSequencer';
 import PatternMorpher from './PatternMorpher';
 import { formatRegion, type PatternPreset } from '../DrumMachine/drumPresets';
