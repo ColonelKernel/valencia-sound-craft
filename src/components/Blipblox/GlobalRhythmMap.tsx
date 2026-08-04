@@ -345,6 +345,33 @@ function useRhythmPreview() {
   return { playPreview, stopPreview, isPlaying };
 }
 
+// CARTO basemap tiles ({a-d}.basemaps.cartocdn.com) are the only third-party
+// runtime origin. The hints used to live in the static shell, but that warmed
+// four speculative connections on every route; injecting them when the map
+// actually mounts still front-runs the tile burst (this chunk loads moments
+// before leaflet requests tiles). Tiles load as plain <img> (non-CORS), so no
+// crossorigin attribute. Links persist after unmount; the guard keeps them
+// single-instance across remounts.
+const TILE_HOSTS = [
+  "https://a.basemaps.cartocdn.com",
+  "https://b.basemaps.cartocdn.com",
+  "https://c.basemaps.cartocdn.com",
+  "https://d.basemaps.cartocdn.com",
+];
+
+function useCartoTileHints() {
+  useEffect(() => {
+    if (document.head.querySelector("link[data-carto-hint]")) return;
+    TILE_HOSTS.forEach((href, i) => {
+      const link = document.createElement("link");
+      link.rel = i === 0 ? "preconnect" : "dns-prefetch";
+      link.href = href;
+      link.setAttribute("data-carto-hint", "");
+      document.head.append(link);
+    });
+  }, []);
+}
+
 const GlobalRhythmMap = ({
   rhythms,
   selectedCountry,
@@ -352,6 +379,7 @@ const GlobalRhythmMap = ({
   onCountryHover,
   onCountrySelect,
 }: GlobalRhythmMapProps) => {
+  useCartoTileHints();
   const [hoveredRhythm, setHoveredRhythm] = useState<Rhythm | null>(null);
   const { playPreview, stopPreview } = useRhythmPreview();
 

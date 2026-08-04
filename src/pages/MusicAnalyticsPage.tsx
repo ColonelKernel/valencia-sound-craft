@@ -6,10 +6,11 @@ import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataServi
 import AnalyticsHero from "@/components/MusicAnalytics/AnalyticsHero";
 import ArtistPicker from "@/components/MusicAnalytics/ArtistPicker";
 import TabErrorBoundary from "@/components/MusicAnalytics/TabErrorBoundary";
-// The Overview tab is the initial view, so it stays eager. Every other tab
-// (each recharts/framer-motion heavy) is code-split and only downloaded when
-// its tab is first opened, keeping them out of the page's first-load chunk.
-import StreamingDashboard from "@/components/MusicAnalytics/StreamingDashboard";
+// Every tab — including the initial Overview — is code-split: recharts alone
+// is ~100 KB gzip, and the page has its own loading state while the CSV data
+// fetches, which masks the chunk fetch. Nothing chart-heavy belongs in the
+// route's first-load chunk.
+const StreamingDashboard = lazy(() => import("@/components/MusicAnalytics/StreamingDashboard"));
 const ArtistComparison = lazy(() => import("@/components/MusicAnalytics/ArtistComparison"));
 const CatalogSegmentation = lazy(() => import("@/components/MusicAnalytics/CatalogSegmentation"));
 const VolatilityPanel = lazy(() => import("@/components/MusicAnalytics/VolatilityPanel"));

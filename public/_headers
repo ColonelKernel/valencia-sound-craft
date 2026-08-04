@@ -15,3 +15,19 @@
 # references deleted asset hashes after a deploy.
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
+
+# Self-hosted fonts are content-stable: any change would ship under a new
+# filename, so treat them like fingerprinted assets.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Unhashed root images: a day of caching, then revalidate (NOT immutable —
+# replacing one keeps the same URL).
+/hero-photo.webp
+  Cache-Control: public, max-age=86400
+/hero-photo-750.webp
+  Cache-Control: public, max-age=86400
+/og-image.jpg
+  Cache-Control: public, max-age=86400
+/favicon.ico
+  Cache-Control: public, max-age=86400
