@@ -1,5 +1,12 @@
-# SPA fallback: every non-asset path must serve index.html so the client-side
-# router can handle it. Without this, deep links (/tools/rhythm, /music-analytics,
-# …) hard-404 on a static host. Understood by both Cloudflare Pages and Netlify.
-# The 200 (rather than 301/302) keeps the requested URL in the address bar.
-/*    /index.html   200
+# Per-route rewrites are generated ABOVE this file's content into
+# dist/_redirects by build/stampRouteHeadsPlugin.ts (one bare + one
+# trailing-slash rule per ROUTE_META route, so new routes are covered
+# automatically). There is deliberately NO /* SPA catch-all: "/" is served by
+# index.html natively, every real route has an explicit rewrite, and unmatched
+# paths fall through to Netlify's automatic 404 handling, which serves
+# dist/404.html (a shell copy that mounts the SPA NotFound page) with a real
+# 404 status instead of soft-404ing as the homepage.
+
+# Legacy path: reached the client-side <Navigate> via the old wildcard; now a
+# host-level 301 so inbound links land on the canonical URL in one hop.
+/groove-intelligence    /groove-atlas    301

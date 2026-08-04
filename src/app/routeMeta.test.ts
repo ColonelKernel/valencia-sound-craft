@@ -17,6 +17,7 @@ const root = join(__dirname, "..", "..");
 const indexHtml = readFileSync(join(root, "index.html"), "utf8");
 const robotsTxt = readFileSync(join(root, "public", "robots.txt"), "utf8");
 const sitemapXml = readFileSync(join(root, "public", "sitemap.xml"), "utf8");
+const redirects = readFileSync(join(root, "public", "_redirects"), "utf8");
 
 const SITE_ORIGIN = "https://zachscheffler.com";
 
@@ -45,5 +46,18 @@ describe("static shell metadata stays in sync with ROUTE_META", () => {
 
   it("robots.txt advertises the sitemap on the same origin", () => {
     expect(robotsTxt).toContain(`Sitemap: ${SITE_ORIGIN}/sitemap.xml`);
+  });
+
+  it("index.html carries the homepage canonical and site-identity metas", () => {
+    expect(indexHtml).toContain(`<link rel="canonical" href="${SITE_ORIGIN}/">`);
+    expect(indexHtml).toContain('<meta property="og:site_name" content="Zach Scheffler">');
+    expect(indexHtml).toContain('<meta name="theme-color" content="#121212">');
+  });
+
+  it("_redirects has no SPA catch-all (unknown paths must 404 via 404.html)", () => {
+    // The catch-all would shadow Netlify's automatic 404.html handling and
+    // soft-404 every unknown URL as the homepage. stampRouteHeadsPlugin
+    // generates explicit rewrites for every real route instead.
+    expect(redirects).not.toMatch(/^\/\*\s/m);
   });
 });

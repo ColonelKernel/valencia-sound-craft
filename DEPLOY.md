@@ -59,8 +59,11 @@ one GitHub actually schedules.
 
 Static-host config already lives in the repo:
 
-- `public/_redirects` — SPA fallback (`/* /index.html 200`). Without it every
-  deep link (`/tools/rhythm`, `/music-analytics`, …) hard-404s.
+- `public/_redirects` — the legacy `/groove-intelligence` 301. Per-route
+  rewrites are generated into `dist/_redirects` at build time by
+  `build/stampRouteHeadsPlugin.ts`; there is deliberately no `/*` SPA
+  catch-all — unknown paths get the generated `dist/404.html` with a real
+  404 status.
 - `public/_headers` — HSTS, `nosniff`, referrer-policy (parity with the old
   Lovable responses), immutable caching for fingerprinted `/assets`, and
   no-cache on `index.html`.
@@ -74,7 +77,8 @@ site. Do not proceed until all pass:
 - [ ] Deep links load directly (not via in-app nav): `/tools/rhythm`,
       `/tools/harmony`, `/tools/circle`, `/tools/tonnetz`, `/tools/map`,
       `/music-analytics`, `/groove-intelligence` — proves `_redirects` works
-- [ ] An unknown path (`/nope`) renders the in-app 404, not a host 404
+- [ ] An unknown path (`/nope`) returns HTTP 404 and renders the in-app
+      404 page (served from the generated `404.html` shell)
 - [ ] Zero console errors on every route
 - [ ] `/groove-intelligence` loads and a groove can be selected without the tab
       freezing (regression guard for the old `generatePattern` infinite loop)

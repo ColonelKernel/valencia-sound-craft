@@ -16,6 +16,10 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# The 404 shell references fingerprinted assets like every other shell.
+/404.html
+  Cache-Control: public, max-age=0, must-revalidate
+
 # Self-hosted fonts are content-stable: any change would ship under a new
 # filename, so treat them like fingerprinted assets.
 /fonts/*

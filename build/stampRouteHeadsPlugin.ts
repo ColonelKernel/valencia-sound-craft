@@ -15,13 +15,15 @@ const SITE_ORIGIN = "https://zachscheffler.com";
  * plugin every deep route served a byte-identical shell with no
  * rel=canonical and og:url pointing at "/" (live-site audit, 2026-07-22).
  *
- * After `vite build`, this writes dist/<path>/index.html for every real
+ * After `vite build`, this writes a flat dist/<path>.html for every real
  * non-home route with the route's title/description, an og:url for the
- * route, and a rel=canonical link. Static hosts (Netlify/Cloudflare Pages)
- * serve existing files before the `/* -> /index.html 200` SPA fallback, so
- * exact route hits get the stamped shell and unknown paths still fall back
- * to the root shell — which intentionally keeps NO canonical, because it
- * also serves as the 404 document.
+ * route, and its rel=canonical (replacing the shell's homepage canonical).
+ * It also emits dist/404.html — a shell copy with the notFound metadata,
+ * no canonical, and a robots noindex. There is deliberately NO SPA
+ * wildcard in _redirects: every real route has an explicit rewrite, "/" is
+ * served natively, and Netlify answers anything else with 404.html and a
+ * real 404 status (the old wildcard soft-404'd unknown URLs as the
+ * homepage).
  *
  * RouteHead.tsx upserts (not duplicates) these same tags on hydration, so
  * the stamped values and the hydrated values can never diverge: both read
@@ -78,7 +80,11 @@ export function stampRouteHeadsPlugin(): Plugin {
           /(<meta name="twitter:description" content=")[^"]*(">)/,
           `$1${description}$2`,
         );
-        replaceOnce(/<\/head>/, `  <link rel="canonical" href="${url}">\n</head>`);
+        // Replace, don't append: the shell now carries the homepage canonical.
+        replaceOnce(
+          /<link rel="canonical" href="[^"]*">/,
+          `<link rel="canonical" href="${url}">`,
+        );
 
         // Flat <path>.html, NOT <path>/index.html: a directory with an index
         // triggers Netlify's automatic 301 to the trailing-slash URL before
@@ -88,6 +94,34 @@ export function stampRouteHeadsPlugin(): Plugin {
         const outFile = path.join(dist, `${route.path.replace(/^\//, "")}.html`);
         fs.mkdirSync(path.dirname(outFile), { recursive: true });
         fs.writeFileSync(outFile, html);
+      }
+
+      // 404 document: Netlify serves dist/404.html with a real 404 status for
+      // any path no file or redirect rule matches. Same SPA shell (React
+      // mounts and the router renders NotFound), but with honest metadata:
+      // notFound title/description, no canonical, no og:url, and noindex so
+      // dead inbound links never get indexed as the homepage.
+      {
+        const nf = ROUTE_META.notFound;
+        let html = shell;
+        const replaceOnce = (pattern: RegExp, replacement: string) => {
+          if (!pattern.test(html)) {
+            throw new Error(`stamp-route-heads: pattern not found for 404.html: ${pattern}`);
+          }
+          html = html.replace(pattern, replacement);
+        };
+        const title = escapeHtml(nf.title);
+        const description = escapeHtml(nf.description);
+        replaceOnce(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+        replaceOnce(/(<meta name="description" content=")[^"]*(">)/, `$1${description}$2`);
+        replaceOnce(/(<meta property="og:title" content=")[^"]*(">)/, `$1${title}$2`);
+        replaceOnce(/(<meta name="twitter:title" content=")[^"]*(">)/, `$1${title}$2`);
+        replaceOnce(/(<meta property="og:description" content=")[^"]*(">)/, `$1${description}$2`);
+        replaceOnce(/(<meta name="twitter:description" content=")[^"]*(">)/, `$1${description}$2`);
+        replaceOnce(/\s*<meta property="og:url" content="[^"]*" \/>/, "");
+        replaceOnce(/\s*<link rel="canonical" href="[^"]*">/, "");
+        replaceOnce(/<\/head>/, `  <meta name="robots" content="noindex">\n</head>`);
+        fs.writeFileSync(path.join(dist, "404.html"), html);
       }
 
       // Netlify's `/* -> /index.html 200` rewrite shadows the extensionless
