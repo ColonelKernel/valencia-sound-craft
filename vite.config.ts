@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "fs";
@@ -11,15 +11,23 @@ import { stampRouteHeadsPlugin } from "./build/stampRouteHeadsPlugin";
 // VITE_ variable *names* (never values) visible to the build into a public
 // probe file so the deployed site itself reports what the container saw.
 // Remove once the contact-form env delivery is confirmed working.
-function buildEnvProbePlugin(): Plugin {
+const viteKeysOf = (obj: Record<string, string | undefined>) =>
+  Object.keys(obj)
+    .filter((k) => k.startsWith("VITE_"))
+    .sort();
+
+// Captured the instant this module is evaluated — before Vite resolves config.
+const CONFIG_LOAD_TIME_KEYS = viteKeysOf(process.env);
+
+function buildEnvProbePlugin(loadEnvKeys: string[]): Plugin {
   return {
     name: "build-env-probe",
     apply: "build",
     closeBundle() {
       const payload = {
-        viteEnvKeys: Object.keys(process.env)
-          .filter((k) => k.startsWith("VITE_"))
-          .sort(),
+        configLoadTimeKeys: CONFIG_LOAD_TIME_KEYS,
+        loadEnvKeys,
+        closeBundleKeys: viteKeysOf(process.env),
         node: process.version,
         netlify: Boolean(process.env.NETLIFY),
         commit: process.env.COMMIT_REF ?? null,
@@ -47,7 +55,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     mode === "analyze" && bundleReportPlugin(),
     stampRouteHeadsPlugin(),
-    buildEnvProbePlugin(),
+    buildEnvProbePlugin(viteKeysOf(loadEnv(mode, __dirname, "VITE_"))),
   ].filter(Boolean),
   build: {
     manifest: true,
