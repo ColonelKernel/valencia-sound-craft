@@ -49,7 +49,11 @@ shipped verbatim in the JS bundle):
 
 Without them the contact form compiles out and the site ships a "reach out
 directly" panel instead (see `BACKEND_CONFIGURED` in
-`src/components/Contact.tsx`). Set 2026-08-03; verified live.
+`src/components/Contact.tsx`). Set 2026-08-03 and verified inlined in the live
+bundle — but note that only proves the build side; an end-to-end submission
+requires the Supabase project to be running (it was found paused, likely since
+~2026-07-29). After restoring, verify a real submission lands in
+`contact_messages` before trusting the form.
 
 **Free-tier pause:** Supabase pauses free projects after ~7 days without API
 activity, which breaks the form until someone restores the project in the

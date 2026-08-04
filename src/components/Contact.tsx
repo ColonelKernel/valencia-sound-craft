@@ -19,6 +19,18 @@ type Status = "idle" | "submitting" | "success" | "error";
 // "Sending..." button — abort the insert and fall through to the error UI.
 const SUBMIT_TIMEOUT_MS = 10_000;
 
+// AbortSignal.timeout is Safari 16+ / Chrome 103+ / Firefox 100+, newer than
+// the build's own browser floor — older engines get a manual controller so a
+// missing static can never turn every submit into an instant error.
+const timeoutSignal = (ms: number): AbortSignal => {
+  if (typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(ms);
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(new DOMException("Timeout", "TimeoutError")), ms);
+  return controller.signal;
+};
+
 const Contact = () => {
   const ref = useFadeIn();
   const successRef = useRef<HTMLDivElement>(null);
@@ -68,7 +80,7 @@ const Contact = () => {
           project_type: projectType || null,
           message: trimmedMessage,
         })
-        .abortSignal(AbortSignal.timeout(SUBMIT_TIMEOUT_MS));
+        .abortSignal(timeoutSignal(SUBMIT_TIMEOUT_MS));
 
       setStatus(error ? "error" : "success");
     } catch {
