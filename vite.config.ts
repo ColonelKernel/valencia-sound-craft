@@ -1,9 +1,37 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import fs from "fs";
 import { componentTagger } from "lovable-tagger";
 import { bundleReportPlugin } from "./build/bundleReportPlugin";
 import { stampRouteHeadsPlugin } from "./build/stampRouteHeadsPlugin";
+
+// TEMPORARY diagnostic: the Netlify UI env vars are not reaching production
+// builds (two clean deploys built as if VITE_SUPABASE_* were unset). Emits the
+// VITE_ variable *names* (never values) visible to the build into a public
+// probe file so the deployed site itself reports what the container saw.
+// Remove once the contact-form env delivery is confirmed working.
+function buildEnvProbePlugin(): Plugin {
+  return {
+    name: "build-env-probe",
+    apply: "build",
+    closeBundle() {
+      const payload = {
+        viteEnvKeys: Object.keys(process.env)
+          .filter((k) => k.startsWith("VITE_"))
+          .sort(),
+        node: process.version,
+        netlify: Boolean(process.env.NETLIFY),
+        commit: process.env.COMMIT_REF ?? null,
+      };
+      fs.writeFileSync(
+        path.resolve(__dirname, "dist/build-env-probe.json"),
+        JSON.stringify(payload, null, 2),
+      );
+      console.log("[build-env-probe]", JSON.stringify(payload));
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -19,6 +47,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     mode === "analyze" && bundleReportPlugin(),
     stampRouteHeadsPlugin(),
+    buildEnvProbePlugin(),
   ].filter(Boolean),
   build: {
     manifest: true,
