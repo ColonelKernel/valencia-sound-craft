@@ -16,13 +16,9 @@
   src: url("/fonts/DMSans-Variable-latin.woff2") format("woff2");
 }
 
-@font-face {
-  font-family: "DM Sans";
-  font-style: italic;
-  font-weight: 100 1000;
-  font-display: swap;
-  src: url("/fonts/DMSans-Italic-Variable-latin.woff2") format("woff2");
-}
+/* No italic face on purpose: the handful of italic captions in the tools
+   render synthesized-oblique, which is indistinguishable at those sizes and
+   saves a 76 KB download on every tool route. */
 
 @tailwind base;
 @tailwind components;
