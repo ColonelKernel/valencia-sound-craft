@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { Slider } from "@/components/ui/slider";
+import { useInView } from "@/hooks/useInView";
 import { cn } from "@/lib/utils";
 import { normalizeMode } from "@/music-core/modeAliases";
 
@@ -364,6 +365,7 @@ const GlobalRhythmEngine = ({
   // Two engine instances can coexist (standalone + DrumMachine's Atlas
   // panel), so filter-control ids must be per-instance for htmlFor pairing.
   const filterIds = useId();
+  const { ref: mapInViewRef, inView: mapInView } = useInView<HTMLDivElement>("600px");
 
   const [showMorph, setShowMorph] = useState(false);
   const [showBlipblox, setShowBlipblox] = useState(false);
@@ -939,20 +941,32 @@ const GlobalRhythmEngine = ({
           )}
         </div>
 
-        <Suspense
-          fallback={
+        {/* The map chunk (~62 KB + carto tile handshakes) stays out of the
+            route's critical path until the section nears the viewport. The
+            600px rootMargin mounts it well before a scrolling user arrives —
+            and immediately on routes where the engine sits near the top. */}
+        <div ref={mapInViewRef}>
+          {mapInView ? (
+            <Suspense
+              fallback={
+                <div className="flex h-72 items-center justify-center rounded-2xl border border-border bg-secondary/20 text-sm text-muted-foreground">
+                  Loading world map…
+                </div>
+              }
+            >
+              <GlobalRhythmMap
+                rhythms={visibleAtlasRhythms}
+                selectedCountry={rhythmState.country}
+                focusContinent={continentFilter}
+                onCountrySelect={handleMapSelect}
+              />
+            </Suspense>
+          ) : (
             <div className="flex h-72 items-center justify-center rounded-2xl border border-border bg-secondary/20 text-sm text-muted-foreground">
               Loading world map…
             </div>
-          }
-        >
-          <GlobalRhythmMap
-            rhythms={visibleAtlasRhythms}
-            selectedCountry={rhythmState.country}
-            focusContinent={continentFilter}
-            onCountrySelect={handleMapSelect}
-          />
-        </Suspense>
+          )}
+        </div>
       </div>
 
       {/* ── 🎛️ RHYTHM BROWSER ── */}
