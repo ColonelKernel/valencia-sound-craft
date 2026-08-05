@@ -1,11 +1,24 @@
 # Response headers for static hosts (Cloudflare Pages / Netlify).
 # Mirrors the security headers the current deploy already sends, so moving hosts
 # doesn't silently weaken the site's posture.
+# CSP notes (origin inventory verified 2026-08-04):
+# - script-src 'self' — no inline scripts, no eval anywhere in the bundle
+#   (JSON-LD data blocks are exempt from the inline-script check)
+# - style-src needs 'unsafe-inline': sonner injects a runtime <style>
+#   unconditionally, React style attributes abound, and the shell carries an
+#   inline critical-token style
+# - img-src data: — leaflet inlines its marker PNGs as base64 in its CSS
+# - connect-src pins the PRODUCTION Supabase project (REST + edge functions)
+# - frame-src: click-to-load embed facades (EmbedFacade rewrites youtube.com
+#   to youtube-nocookie.com; both allowed since the rewrite is a string
+#   replace)
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://a.basemaps.cartocdn.com https://b.basemaps.cartocdn.com https://c.basemaps.cartocdn.com https://d.basemaps.cartocdn.com; font-src 'self'; connect-src 'self' https://uqcjivqzilisngdwtdzl.supabase.co; frame-src https://open.spotify.com https://www.youtube-nocookie.com https://www.youtube.com https://w.soundcloud.com; media-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; manifest-src 'self'
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
 
 # Vite fingerprints everything under /assets, so those URLs are immutable.
 /assets/*
