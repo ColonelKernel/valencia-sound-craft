@@ -11,7 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
-.lovable/logs/
+.lovable/
 
 # Editor directories and files
 .vscode/*
@@ -44,3 +44,7 @@ playwright-report/
 
 # Lighthouse CI run artifacts — regenerated on every `npm run lighthouse`.
 .lighthouseci/
+
+# Local scratch/output directories — never ship artifacts from these.
+output/
+tmp/
