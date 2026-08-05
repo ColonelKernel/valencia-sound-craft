@@ -94,6 +94,10 @@ export function stampRouteHeadsPlugin(): Plugin {
           /(<meta property="og:image:alt" content=")[^"]*(" \/>)/,
           `$1${title}$2`,
         );
+        // The hero image only renders on "/" — preloading its 113 KB with
+        // fetchpriority=high on every other route just competes with that
+        // route's real critical path.
+        replaceOnce(/\s*<link rel="preload" as="image" href="\/hero-photo\.webp"[^>]*>/, "");
 
         // Structured data, statically visible to crawlers that never run JS.
         // The id is load-bearing: RouteHead removes #route-jsonld on
@@ -141,6 +145,7 @@ export function stampRouteHeadsPlugin(): Plugin {
         replaceOnce(/(<meta name="twitter:description" content=")[^"]*(">)/, `$1${description}$2`);
         replaceOnce(/\s*<meta property="og:url" content="[^"]*" \/>/, "");
         replaceOnce(/\s*<link rel="canonical" href="[^"]*">/, "");
+        replaceOnce(/\s*<link rel="preload" as="image" href="\/hero-photo\.webp"[^>]*>/, "");
         replaceOnce(/<\/head>/, `  <meta name="robots" content="noindex">\n</head>`);
         fs.writeFileSync(path.join(dist, "404.html"), html);
       }
