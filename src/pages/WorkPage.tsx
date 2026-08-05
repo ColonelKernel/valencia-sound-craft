@@ -5,7 +5,8 @@ import AudioPlaylist from "@/components/AudioPlaylist";
 import EmbedFacade from "@/components/EmbedFacade";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
-import { ARTIST_PROFILES, GLOBAL_PULSE, WORK_EMBEDS } from "@/content/work";
+import { WORK_JSONLD } from "@/app/routeStructuredData";
+import { GLOBAL_PULSE, WORK_EMBEDS } from "@/content/work";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 const WorkPage = () => {
@@ -17,15 +18,7 @@ const WorkPage = () => {
         title={ROUTE_META.work.title}
         description={ROUTE_META.work.description}
         canonicalPath={ROUTE_META.work.path}
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "MusicGroup",
-          name: "Streetcar Scandal",
-          description:
-            "Zach Scheffler's artist project — indie rock, electronic textures, and raw songwriting, produced since 2013.",
-          sameAs: [ARTIST_PROFILES.spotify, ARTIST_PROFILES.soundcloud, ARTIST_PROFILES.youtube],
-          url: ROUTE_META.work.path,
-        }}
+        jsonLd={WORK_JSONLD}
       />
       <main className="pt-16">
         <section className="section-padding bg-background">

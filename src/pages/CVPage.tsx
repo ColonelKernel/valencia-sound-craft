@@ -3,8 +3,8 @@ import { ArrowLeft, ArrowUpRight, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import RouteHead from "@/components/seo/RouteHead";
-import { createPersonStructuredData } from "@/components/seo/structuredData";
 import { ROUTE_META } from "@/app/routeMeta";
+import { CV_JSONLD } from "@/app/routeStructuredData";
 import { CAREER_TIMELINE, CV_PROFILE, EDUCATION, SKILLS } from "@/content/cv";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
@@ -156,12 +156,7 @@ const CVPage = () => {
         title={ROUTE_META.cv.title}
         description={ROUTE_META.cv.description}
         canonicalPath={ROUTE_META.cv.path}
-        jsonLd={createPersonStructuredData({
-          name: CV_PROFILE.name,
-          jobTitle: CV_PROFILE.headline,
-          description: CV_PROFILE.summary,
-          sameAs: Object.values(CV_PROFILE.profiles),
-        })}
+        jsonLd={CV_JSONLD}
       />
       <main className="pt-16">
         <section className="section-padding bg-background">

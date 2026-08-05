@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { LazyMotion, domAnimation } from "framer-motion";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
+import { MUSIC_ANALYTICS_JSONLD } from "@/app/routeStructuredData";
 import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataService";
 import AnalyticsHero from "@/components/MusicAnalytics/AnalyticsHero";
 import ArtistPicker from "@/components/MusicAnalytics/ArtistPicker";
@@ -83,6 +84,7 @@ export default function MusicAnalyticsPage() {
         title={ROUTE_META.musicAnalytics.title}
         description={ROUTE_META.musicAnalytics.description}
         canonicalPath={ROUTE_META.musicAnalytics.path}
+        jsonLd={MUSIC_ANALYTICS_JSONLD}
       />
 
       <main className="pt-20">

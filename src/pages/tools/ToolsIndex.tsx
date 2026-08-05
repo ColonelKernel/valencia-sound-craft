@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 import { Compass, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
 
 import RouteHead from "@/components/seo/RouteHead";
-import { createToolStructuredData } from "@/components/seo/structuredData";
 import ToolSubnav from "@/components/tools/ToolSubnav";
 import { ROUTE_META } from "@/app/routeMeta";
+import { TOOLS_INDEX_JSONLD } from "@/app/routeStructuredData";
 
 const toolCards = [
   {
@@ -45,13 +45,7 @@ const ToolsIndex = () => (
       title={ROUTE_META.toolsIndex.title}
       description={ROUTE_META.toolsIndex.description}
       canonicalPath={ROUTE_META.toolsIndex.path}
-      jsonLd={createToolStructuredData({
-        name: "Valencia Sound Craft Tools",
-        description:
-          "A routed collection of interactive music tools for rhythm, harmony, theory, and composition.",
-        canonicalPath: ROUTE_META.toolsIndex.path,
-        educationalUse: ["music theory", "practice", "composition", "rhythm training"],
-      })}
+      jsonLd={TOOLS_INDEX_JSONLD}
     />
 
     <main className="min-h-screen bg-background pt-24">

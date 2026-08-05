@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
+import { PROJECTS_JSONLD } from "@/app/routeStructuredData";
 import { PROJECTS, PROJECT_SECTIONS, type Project } from "@/content/projects";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
@@ -54,6 +55,7 @@ const ProjectsPage = () => {
         title={ROUTE_META.projects.title}
         description={ROUTE_META.projects.description}
         canonicalPath={ROUTE_META.projects.path}
+        jsonLd={PROJECTS_JSONLD}
       />
       <main className="pt-16">
         <section className="section-padding bg-background">

@@ -3,6 +3,7 @@ import { Globe2, ScatterChart } from "lucide-react";
 
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
+import { GROOVE_ATLAS_JSONLD } from "@/app/routeStructuredData";
 import { cn } from "@/lib/utils";
 
 // Each lens is its own chunk: the Leaflet map and the canvas feel-space lab
@@ -37,6 +38,7 @@ const GrooveAtlasPage = () => {
         title={ROUTE_META.grooveAtlas.title}
         description={ROUTE_META.grooveAtlas.description}
         canonicalPath={ROUTE_META.grooveAtlas.path}
+        jsonLd={GROOVE_ATLAS_JSONLD}
       />
       <main className="pt-16">
         <div className="sticky top-16 z-40 border-b border-border bg-background/90 backdrop-blur-xl">

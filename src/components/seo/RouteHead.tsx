@@ -9,7 +9,6 @@ export interface RouteMetaConfig {
   description: string;
   /** Omit on pages that must not declare a canonical URL (e.g. the 404). */
   canonicalPath?: string;
-  ogImage?: string;
   jsonLd?: RouteStructuredData;
 }
 
@@ -42,7 +41,7 @@ function resolveUrl(path: string) {
   return new URL(path, origin).toString();
 }
 
-const RouteHead = ({ title, description, canonicalPath, ogImage, jsonLd }: RouteMetaConfig) => {
+const RouteHead = ({ title, description, canonicalPath, jsonLd }: RouteMetaConfig) => {
   useEffect(() => {
     document.title = title;
     upsertMeta('meta[name="description"]', "name", "description", description);
@@ -60,12 +59,6 @@ const RouteHead = ({ title, description, canonicalPath, ogImage, jsonLd }: Route
       // A page without a canonical (the 404) must not inherit the previous
       // route's canonical link.
       document.head.querySelector('link[rel="canonical"]')?.remove();
-    }
-
-    if (ogImage) {
-      upsertMeta('meta[property="og:image"]', "property", "og:image", resolveUrl(ogImage));
-      upsertMeta('meta[name="twitter:image"]', "name", "twitter:image", resolveUrl(ogImage));
-      upsertMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
     }
 
     const scriptId = "route-jsonld";
@@ -92,7 +85,7 @@ const RouteHead = ({ title, description, canonicalPath, ogImage, jsonLd }: Route
         current.remove();
       }
     };
-  }, [canonicalPath, description, jsonLd, ogImage, title]);
+  }, [canonicalPath, description, jsonLd, title]);
 
   return null;
 };

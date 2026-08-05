@@ -2,10 +2,10 @@ import { lazy, Suspense } from "react";
 
 import Hero from "@/components/Hero";
 import RouteHead from "@/components/seo/RouteHead";
-import { createPersonStructuredData } from "@/components/seo/structuredData";
 import SystemsPreview from "@/components/SystemsPreview";
 import { useInView } from "@/hooks/useInView";
 import { ROUTE_META } from "@/app/routeMeta";
+import { HOME_JSONLD } from "@/app/routeStructuredData";
 
 const AnalyticsPreview = lazy(() => import("@/components/AnalyticsPreview"));
 const Services = lazy(() => import("@/components/Services"));
@@ -47,19 +47,7 @@ const Index = () => {
         title={ROUTE_META.home.title}
         description={ROUTE_META.home.description}
         canonicalPath={ROUTE_META.home.path}
-        jsonLd={createPersonStructuredData({
-          name: "Zach Scheffler",
-          jobTitle: "Music Producer & Creative Technologist",
-          description:
-            "Music producer, guitarist, and creative technologist in Valencia, Spain, building interactive rhythm and harmony tools.",
-          sameAs: [
-            "https://www.linkedin.com/in/zscheff/",
-            "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L",
-            "https://soundcloud.com/streetcarscandal",
-            "https://www.youtube.com/@ColonelKernel22",
-            "https://www.instagram.com/streetcarscandal/",
-          ],
-        })}
+        jsonLd={HOME_JSONLD}
       />
       <main>
         <Hero />

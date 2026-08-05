@@ -1,16 +1,10 @@
-import { createToolStructuredData } from "@/components/seo/structuredData";
 import type { RouteMetaConfig } from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
+import { MAP_JSONLD } from "@/app/routeStructuredData";
 
 export const mapToolMeta: RouteMetaConfig = {
   ...ROUTE_META.map,
   canonicalPath: ROUTE_META.map.path,
-  jsonLd: createToolStructuredData({
-    name: "Valencia Sound Craft Rhythm Map",
-    description:
-      "A geographic rhythm browser that links countries, cultural groove structures, and playable sequencer state.",
-    canonicalPath: ROUTE_META.map.path,
-    educationalUse: ["geographic music exploration", "rhythm study"],
-  }),
+  jsonLd: MAP_JSONLD,
 };
 
