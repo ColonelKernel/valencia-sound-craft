@@ -3,6 +3,8 @@ import path from "path";
 import type { Plugin } from "vite";
 
 import { ROUTE_META } from "../src/app/routeMeta";
+import { ROUTE_JSONLD } from "../src/app/routeStructuredData";
+import { serializeJsonLd } from "./jsonld";
 
 const SITE_ORIGIN = "https://zachscheffler.com";
 
@@ -47,11 +49,12 @@ export function stampRouteHeadsPlugin(): Plugin {
       const escapeHtml = (value: string) =>
         value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
-      const routes = Object.values(ROUTE_META).filter(
-        (route) => route.path !== "/" && route.path !== "*",
-      );
+      const routeEntries = Object.entries(ROUTE_META).filter(
+        ([, route]) => route.path !== "/" && route.path !== "*",
+      ) as Array<[keyof typeof ROUTE_META, (typeof ROUTE_META)[keyof typeof ROUTE_META]]>;
+      const routes = routeEntries.map(([, route]) => route);
 
-      for (const route of routes) {
+      for (const [routeKey, route] of routeEntries) {
         const title = escapeHtml(route.title);
         const description = escapeHtml(route.description);
         const url = `${SITE_ORIGIN}${route.path}`;
@@ -85,6 +88,24 @@ export function stampRouteHeadsPlugin(): Plugin {
           /<link rel="canonical" href="[^"]*">/,
           `<link rel="canonical" href="${url}">`,
         );
+        // The shared og-image is fine; its alt describing the homepage photo
+        // is not — describe the route instead.
+        replaceOnce(
+          /(<meta property="og:image:alt" content=")[^"]*(" \/>)/,
+          `$1${title}$2`,
+        );
+
+        // Structured data, statically visible to crawlers that never run JS.
+        // The id is load-bearing: RouteHead removes #route-jsonld on
+        // hydration before inserting its own copy of the SAME payload
+        // (both read ROUTE_JSONLD), so stamped and hydrated never diverge.
+        const jsonLd = ROUTE_JSONLD[routeKey];
+        if (jsonLd) {
+          replaceOnce(
+            /<\/head>/,
+            `  <script type="application/ld+json" id="route-jsonld">${serializeJsonLd(jsonLd, url)}</script>\n</head>`,
+          );
+        }
 
         // Flat <path>.html, NOT <path>/index.html: a directory with an index
         // triggers Netlify's automatic 301 to the trailing-slash URL before
@@ -122,6 +143,24 @@ export function stampRouteHeadsPlugin(): Plugin {
         replaceOnce(/\s*<link rel="canonical" href="[^"]*">/, "");
         replaceOnce(/<\/head>/, `  <meta name="robots" content="noindex">\n</head>`);
         fs.writeFileSync(path.join(dist, "404.html"), html);
+      }
+
+      // Home shell: the loop above skips "/", but the homepage still needs
+      // its Person JSON-LD statically. Rewrite dist/index.html LAST so the
+      // per-route stamps above always start from the pristine shell.
+      {
+        const homeJsonLd = ROUTE_JSONLD.home;
+        if (!homeJsonLd) {
+          throw new Error("stamp-route-heads: ROUTE_JSONLD is missing the home entry");
+        }
+        if (!/<\/head>/.test(shell)) {
+          throw new Error("stamp-route-heads: </head> not found in shell for home JSON-LD");
+        }
+        const homeHtml = shell.replace(
+          /<\/head>/,
+          `  <script type="application/ld+json" id="route-jsonld">${serializeJsonLd(homeJsonLd, `${SITE_ORIGIN}/`)}</script>\n</head>`,
+        );
+        fs.writeFileSync(shellPath, homeHtml);
       }
 
       // Netlify's `/* -> /index.html 200` rewrite shadows the extensionless
