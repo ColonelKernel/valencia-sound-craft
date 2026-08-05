@@ -1,0 +1,19 @@
+# Build config for the PORTFOLIO site (branch portfolio/rebuild → zachscheffler.com).
+# netlify.toml is read from the deployed branch, so `main` (the research
+# dossier, its own Netlify site) is unaffected — it has no netlify.toml.
+#
+# The production-branch setting itself (portfolio/rebuild, NOT main) cannot be
+# pinned here; it lives only in the Netlify UI. See DEPLOY.md.
+#
+# ⚠️ DO NOT add VITE_* keys to [build.environment]. The real values live in
+# the Netlify UI (scope: All); keys declared here SHADOW the UI values at
+# build time, and empty VITE_SUPABASE_* silently compiles the contact form
+# down to its fallback panel (see BACKEND_CONFIGURED in
+# src/components/Contact.tsx).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
