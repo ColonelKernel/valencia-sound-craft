@@ -49,6 +49,83 @@ export function stampRouteHeadsPlugin(): Plugin {
       const escapeHtml = (value: string) =>
         value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
+      // ---- Per-route modulepreload sets from the Vite manifest ----
+      // Route chunks are dynamic imports, so the browser only discovers them
+      // after the entry executes — one full RTT late. Preloading each route's
+      // chunk closure from its stamped shell collapses that wave.
+      const manifestPath = path.join(dist, ".vite", "manifest.json");
+      if (!fs.existsSync(manifestPath)) {
+        throw new Error(
+          "stamp-route-heads: dist/.vite/manifest.json not found — build.manifest must stay enabled",
+        );
+      }
+      type ManifestChunk = { file: string; imports?: string[] };
+      const manifest: Record<string, ManifestChunk & { dynamicImports?: string[] }> =
+        JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+
+      const collectFiles = (key: string, seen: Set<string>, out: Set<string>) => {
+        if (seen.has(key)) return;
+        seen.add(key);
+        const chunk = manifest[key];
+        if (!chunk) {
+          throw new Error(`stamp-route-heads: manifest key missing: ${key}`);
+        }
+        out.add(chunk.file);
+        for (const imp of chunk.imports ?? []) {
+          collectFiles(imp, seen, out);
+        }
+      };
+
+      // The entry graph is already modulepreload-ed by Vite in the shell.
+      const entryFiles = new Set<string>();
+      collectFiles("index.html", new Set(), entryFiles);
+
+      // Manifest keys for route chunks are NOT uniformly source paths (Rollup
+      // drops some facades, e.g. harmony becomes "_Tool-<hash>.js"), so the
+      // mapping zips ROUTE_META's authored key order with the entry's
+      // dynamicImports order — which mirrors the PAGES literal in App.tsx.
+      // The prefix check turns any drift into a loud build failure instead of
+      // silently preloading the wrong route's chunks.
+      const EXPECTED_CHUNK_PREFIX: Record<string, string> = {
+        home: "Index-",
+        toolsIndex: "ToolsIndex-",
+        rhythm: "Tool-",
+        harmony: "Tool-",
+        map: "Tool-",
+        circle: "Tool-",
+        tonnetz: "Tool-",
+        musicAnalytics: "MusicAnalyticsPage-",
+        grooveAtlas: "GrooveAtlasPage-",
+        projects: "ProjectsPage-",
+        work: "WorkPage-",
+        cv: "CVPage-",
+        notFound: "NotFound-",
+      };
+      const routeKeysInOrder = Object.keys(ROUTE_META);
+      const dynamicKeys = manifest["index.html"].dynamicImports ?? [];
+      if (dynamicKeys.length !== routeKeysInOrder.length) {
+        throw new Error(
+          `stamp-route-heads: ${routeKeysInOrder.length} ROUTE_META routes but ${dynamicKeys.length} entry dynamic imports — PAGES in App.tsx and ROUTE_META have drifted`,
+        );
+      }
+      const modulePreloadsByKey = new Map<string, string>();
+      routeKeysInOrder.forEach((routeKey, index) => {
+        const chunk = manifest[dynamicKeys[index]];
+        const prefix = EXPECTED_CHUNK_PREFIX[routeKey];
+        if (!prefix || !path.basename(chunk.file).startsWith(prefix)) {
+          throw new Error(
+            `stamp-route-heads: route "${routeKey}" mapped to chunk ${chunk.file} (expected basename prefix "${prefix}") — keep PAGES in App.tsx in ROUTE_META order`,
+          );
+        }
+        const files = new Set<string>();
+        collectFiles(dynamicKeys[index], new Set(), files);
+        const links = [...files]
+          .filter((file) => !entryFiles.has(file))
+          .map((file) => `  <link rel="modulepreload" crossorigin href="/${file}">`)
+          .join("\n");
+        modulePreloadsByKey.set(routeKey, links);
+      });
+
       const routeEntries = Object.entries(ROUTE_META).filter(
         ([, route]) => route.path !== "/" && route.path !== "*",
       ) as Array<[keyof typeof ROUTE_META, (typeof ROUTE_META)[keyof typeof ROUTE_META]]>;
@@ -111,6 +188,11 @@ export function stampRouteHeadsPlugin(): Plugin {
           );
         }
 
+        const preloads = modulePreloadsByKey.get(routeKey);
+        if (preloads) {
+          replaceOnce(/<\/head>/, `${preloads}\n</head>`);
+        }
+
         // Flat <path>.html, NOT <path>/index.html: a directory with an index
         // triggers Netlify's automatic 301 to the trailing-slash URL before
         // redirect rules run (verified live 2026-07-22), which contradicts the
@@ -147,6 +229,10 @@ export function stampRouteHeadsPlugin(): Plugin {
         replaceOnce(/\s*<link rel="canonical" href="[^"]*">/, "");
         replaceOnce(/\s*<link rel="preload" as="image" href="\/hero-photo\.webp"[^>]*>/, "");
         replaceOnce(/<\/head>/, `  <meta name="robots" content="noindex">\n</head>`);
+        const nfPreloads = modulePreloadsByKey.get("notFound");
+        if (nfPreloads) {
+          replaceOnce(/<\/head>/, `${nfPreloads}\n</head>`);
+        }
         fs.writeFileSync(path.join(dist, "404.html"), html);
       }
 
@@ -161,9 +247,10 @@ export function stampRouteHeadsPlugin(): Plugin {
         if (!/<\/head>/.test(shell)) {
           throw new Error("stamp-route-heads: </head> not found in shell for home JSON-LD");
         }
+        const homePreloads = modulePreloadsByKey.get("home") ?? "";
         const homeHtml = shell.replace(
           /<\/head>/,
-          `  <script type="application/ld+json" id="route-jsonld">${serializeJsonLd(homeJsonLd, `${SITE_ORIGIN}/`)}</script>\n</head>`,
+          `  <script type="application/ld+json" id="route-jsonld">${serializeJsonLd(homeJsonLd, `${SITE_ORIGIN}/`)}</script>\n${homePreloads}\n</head>`,
         );
         fs.writeFileSync(shellPath, homeHtml);
       }
