@@ -45,7 +45,37 @@ export function stampRouteHeadsPlugin(): Plugin {
         throw new Error("stamp-route-heads: dist/index.html not found after build");
       }
 
-      const shell = fs.readFileSync(shellPath, "utf8");
+      let shell = fs.readFileSync(shellPath, "utf8");
+
+      // ---- Non-blocking main stylesheet ---------------------------------
+      // The body is just <div id="root"> — nothing can paint before React
+      // mounts, and the CSS (still preloaded from the head) always lands
+      // before the far larger JS graph finishes executing. Moving the
+      // blocking <link> to body-end removes ~300ms of render-blocking from
+      // every route with zero inline JS (the classic preload-onload swap
+      // would need an inline handler the CSP forbids). The tiny inline style
+      // covers the residual race with the correct background/colors — keep
+      // it in sync with the :root tokens in src/index.css.
+      const cssLinkMatch = shell.match(
+        /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/,
+      );
+      if (!cssLinkMatch) {
+        throw new Error("stamp-route-heads: entry stylesheet link not found in shell");
+      }
+      const cssHref = cssLinkMatch[1];
+      const criticalStyle =
+        '<style>:root{color-scheme:dark}body{margin:0;background:#121212;color:#ebebeb;font-family:"DM Sans",system-ui,sans-serif}</style>';
+      shell = shell.replace(
+        cssLinkMatch[0],
+        `${criticalStyle}\n    <link rel="preload" as="style" crossorigin href="${cssHref}">`,
+      );
+      if (!/<\/body>/.test(shell)) {
+        throw new Error("stamp-route-heads: </body> not found in shell");
+      }
+      shell = shell.replace(
+        /<\/body>/,
+        `  <link rel="stylesheet" crossorigin href="${cssHref}">\n</body>`,
+      );
       const escapeHtml = (value: string) =>
         value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 
