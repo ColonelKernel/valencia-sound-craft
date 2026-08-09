@@ -151,4 +151,5 @@ export const ARTIST_PROFILES = {
   youtube: "https://www.youtube.com/@ColonelKernel22",
   instagram: "https://www.instagram.com/streetcarscandal/",
   linkedin: "https://www.linkedin.com/in/zscheff/",
+  github: "https://github.com/ColonelKernel",
 };

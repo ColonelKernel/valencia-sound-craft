@@ -9,7 +9,9 @@ import { CAREER_TIMELINE, CV_PROFILE, EDUCATION, SKILLS } from "@/content/cv";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 const PROFILE_LINKS: { label: string; url: string }[] = [
+  { label: "Email", url: `mailto:${CV_PROFILE.email}` },
   { label: "Portfolio", url: CV_PROFILE.site },
+  { label: "GitHub", url: CV_PROFILE.profiles.github },
   { label: "Research", url: CV_PROFILE.research },
   { label: "LinkedIn", url: CV_PROFILE.profiles.linkedin },
   { label: "Spotify", url: CV_PROFILE.profiles.spotify },
@@ -63,9 +65,15 @@ const CVPage = () => {
       doc.text(`${CV_PROFILE.headline} — ${CV_PROFILE.location}`, margin, y);
       y += 6;
 
+      // The PDF travels through pipelines detached from the site, so the
+      // header has to carry a reply channel of its own.
       doc.setFontSize(9);
       doc.setTextColor(120);
-      doc.text(`${CV_PROFILE.site}  ·  ${CV_PROFILE.research}`, margin, y);
+      doc.text(
+        `${CV_PROFILE.email}  ·  ${CV_PROFILE.site}  ·  ${CV_PROFILE.research}`,
+        margin,
+        y,
+      );
       y += 8;
 
       // Summary
@@ -140,7 +148,8 @@ const CVPage = () => {
       doc.setTextColor(90);
       for (const link of PROFILE_LINKS) {
         ensureSpace(5);
-        doc.text(`${link.label}: ${link.url}`, margin, y);
+        // Print the address itself, not the mailto: scheme prefix.
+        doc.text(`${link.label}: ${link.url.replace(/^mailto:/, "")}`, margin, y);
         y += 4.6;
       }
 

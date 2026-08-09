@@ -22,9 +22,9 @@ export const ROUTE_META = {
     path: "/",
     // Matches the static index.html title exactly, so the pre-hydration and
     // hydrated titles never differ.
-    title: "Valencia Sound Craft - Zach Scheffler | Music Producer & Creative Technologist",
+    title: "Zach Scheffler — Music Producer & Creative Technologist | Valencia Sound Craft",
     description:
-      "Music systems design, creative technology, and direct-linkable rhythm and harmony tools.",
+      "Zach Scheffler: music producer and creative technologist in Valencia. Audio software and interactive music tools, catalog analytics, and production credits. CV, projects, and contact.",
   },
   toolsIndex: {
     path: "/tools",

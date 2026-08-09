@@ -11,6 +11,17 @@ const Footer = () => {
             overflowed a 375px screen and put a horizontal scrollbar on every
             page of the site. */}
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+          <a href="/#contact" className="hover:text-foreground transition-colors">
+            Contact
+          </a>
+          <a
+            href="https://github.com/ColonelKernel"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            GitHub
+          </a>
           <a
             href="https://www.linkedin.com/in/zscheff/"
             target="_blank"
@@ -50,6 +61,17 @@ const Footer = () => {
             className="hover:text-foreground transition-colors"
           >
             Instagram
+          </a>
+          {/* Moved out of the primary nav: the research dossier is a PhD
+              application surface, and a hiring visitor reads it as "leaving
+              soon" if it sits alongside Work and Projects. */}
+          <a
+            href="https://research.zachscheffler.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            Music Research
           </a>
         </div>
 

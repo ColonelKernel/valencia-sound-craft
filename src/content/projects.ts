@@ -27,6 +27,18 @@ export interface Project {
 
 export const PROJECTS: Project[] = [
   {
+    id: "this-site",
+    kind: "web-app",
+    title: "This Site",
+    tagline:
+      "zachscheffler.com itself — a React SPA whose five music tools share one Web Audio transport and clock. Every commit has to pass typecheck, zero-warning lint, 30+ unit suites, a Playwright end-to-end run, a 150KB gzip budget, and a perfect Lighthouse accessibility score before it can deploy.",
+    stack: ["TypeScript", "React", "Web Audio", "Vitest + Playwright", "GitHub Actions"],
+    links: [
+      { label: "Source", url: "https://github.com/ColonelKernel/valencia-sound-craft" },
+      { label: "Tools", url: "/tools" },
+    ],
+  },
+  {
     id: "autoharm",
     kind: "web-app",
     title: "AutoHarm",

@@ -22,9 +22,10 @@ export const HOME_JSONLD: RouteStructuredData = createPersonStructuredData({
   name: "Zach Scheffler",
   jobTitle: "Music Producer & Creative Technologist",
   description:
-    "Music producer, guitarist, and creative technologist in Valencia, Spain, building interactive rhythm and harmony tools.",
+    "Music producer and creative technologist in Valencia, Spain, building audio software and interactive rhythm and harmony tools.",
   sameAs: [
     "https://www.linkedin.com/in/zscheff/",
+    "https://github.com/ColonelKernel",
     "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L",
     "https://soundcloud.com/streetcarscandal",
     "https://www.youtube.com/@ColonelKernel22",

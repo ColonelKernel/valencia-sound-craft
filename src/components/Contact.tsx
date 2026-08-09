@@ -184,10 +184,11 @@ const Contact = () => {
                 className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow appearance-none"
               >
                 <option value="">Select a project type</option>
-                <option>Guitar Lessons</option>
+                <option>Job opportunity / Recruiting</option>
                 <option>Mixing</option>
                 <option>Production</option>
                 <option>Video / Live Session</option>
+                <option>Guitar Lessons</option>
                 <option>Other</option>
               </select>
             </div>

@@ -1,16 +1,34 @@
-import { Guitar, Music, Video, ArrowRight } from "lucide-react";
+import { Code2, Music, Video, ArrowRight, type LucideIcon } from "lucide-react";
+import { Link } from "react-router-dom";
+
 import { useFadeIn } from "@/hooks/useFadeIn";
 
-const services = [
+interface ServiceCard {
+  icon: LucideIcon;
+  title: string;
+  points: string[];
+  cta: string;
+  /** In-app route for the CTA. Cards without one point at the contact form. */
+  href?: string;
+}
+
+/**
+ * Ordered for a hiring visitor, not a lessons enquiry: the software work leads,
+ * because this section is the first thing below the hero and it sets what kind
+ * of professional the reader thinks they are looking at. Guitar lessons stay
+ * bookable through the contact form's project-type field.
+ */
+const services: ServiceCard[] = [
   {
-    icon: Guitar,
-    title: "Guitar Lessons",
+    icon: Code2,
+    title: "Music Software & Tools",
     points: [
-      "Learn through real music — rock, jazz, Latin, and contemporary styles",
-      "Focus on improvisation, groove, and musical feel over theory alone",
-      "Available in Valencia or online — all levels welcome",
+      "Browser instruments and audio tools: rhythm engine, harmony lab, Tonnetz",
+      "TypeScript and Web Audio, five workspaces sharing one transport and clock",
+      "Shipped with tests, CI, and performance budgets — the source is public",
     ],
-    cta: "Contact to Book",
+    cta: "Try the tools",
+    href: "/tools",
   },
   {
     icon: Music,
@@ -32,16 +50,6 @@ const services = [
     ],
     cta: "Inquire",
   },
-  {
-    icon: Music,
-    title: "Interactive Music Tools",
-    points: [
-      "Custom-built fretboard visualizers, scale explorers, and metronomes",
-      "Designed to make music theory intuitive and accessible",
-      "Tools for guitarists, bassists, and multi-instrumentalists",
-    ],
-    cta: "Start a Project",
-  },
 ];
 
 const Services = () => {
@@ -55,7 +63,7 @@ const Services = () => {
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Services</h2>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((s, i) => (
             <div
               key={s.title}
@@ -71,12 +79,21 @@ const Services = () => {
                   </li>
                 ))}
               </ul>
-              <a
-                href="#contact"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
-              >
-                {s.cta} <ArrowRight size={14} />
-              </a>
+              {s.href ? (
+                <Link
+                  to={s.href}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
+                >
+                  {s.cta} <ArrowRight size={14} />
+                </Link>
+              ) : (
+                <a
+                  href="#contact"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
+                >
+                  {s.cta} <ArrowRight size={14} />
+                </a>
+              )}
             </div>
           ))}
         </div>

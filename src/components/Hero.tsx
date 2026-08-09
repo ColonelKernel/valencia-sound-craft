@@ -1,4 +1,5 @@
-import { ArrowRight, Headphones } from "lucide-react";
+import { ArrowRight, FileText, Headphones } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Decorative waveform: deterministic pseudo-random heights so the hero never
 // re-randomizes on re-render (and screenshots stay stable).
@@ -30,13 +31,22 @@ const Hero = () => {
 
       <div className="relative z-10 container mx-auto px-6 py-28 md:py-32">
         <div className="max-w-2xl space-y-7">
-          <p className="text-sm font-medium uppercase tracking-[0.34em] text-white/60">
-            Based in Valencia, Spain
-          </p>
+          {/* The availability pill sits in the first screenful on purpose: a
+              hiring visitor decides whether to keep reading in seconds, and
+              nothing else on the page says this person is a candidate. */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+            <p className="text-sm font-medium uppercase tracking-[0.34em] text-white/60">
+              Based in Valencia, Spain
+            </p>
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-100">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+              Open to new roles
+            </span>
+          </div>
 
           <div className="space-y-5">
             <h1 className="text-5xl font-bold leading-[1.05] text-white md:text-6xl lg:text-7xl [text-shadow:_0_2px_20px_rgba(0,0,0,0.6)]">
-              Music Producer, Guitarist &amp; Creative Technologist
+              Music Producer &amp; Creative Technologist
             </h1>
 
             <p className="max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
@@ -46,20 +56,40 @@ const Hero = () => {
             </p>
           </div>
 
-          <p className="text-sm text-white/50">
-            Based in Valencia, working with artists locally and worldwide.
+          <p className="max-w-xl text-sm leading-relaxed text-white/55">
+            East West Studios → World Bank and NORC data science → Rios Partners data
+            strategy → Berklee M.M., Music Production, Technology &amp; Innovation.
+          </p>
+
+          <p className="max-w-xl text-sm leading-relaxed text-white/75">
+            Currently open to full-time and contract roles in audio software engineering
+            and creative technology —{" "}
+            <Link to="/cv" className="font-medium text-white underline underline-offset-4 hover:text-white/80">
+              see my CV
+            </Link>{" "}
+            or{" "}
+            <a href="#contact" className="font-medium text-white underline underline-offset-4 hover:text-white/80">
+              get in touch
+            </a>
+            .
           </p>
 
           <div className="flex flex-col gap-4 sm:flex-row">
-            <a
-              href="#contact"
+            <Link
+              to="/cv"
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-[0_18px_40px_-24px_rgba(255,255,255,0.55)] hover:bg-white/90"
             >
-              Start a Project <ArrowRight size={16} />
+              <FileText size={16} /> View CV
+            </Link>
+            <a
+              href="#contact"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/25 px-6 py-3.5 text-sm font-medium text-white hover:bg-white/10"
+            >
+              Get in Touch <ArrowRight size={16} />
             </a>
             <a
               href="#portfolio"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/25 px-6 py-3.5 text-sm font-medium text-white hover:bg-white/10"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white"
             >
               <Headphones size={16} /> Listen to Work
             </a>

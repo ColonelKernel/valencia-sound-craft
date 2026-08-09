@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Brain, Disc3, Linkedin, Instagram, Menu, Music, Wrench, X } from "lucide-react";
+import { BarChart3, Brain, Disc3, Github, Linkedin, Instagram, Menu, Music, Wrench, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 
+// "Research" deliberately lives in the footer, not here: it points at the PhD
+// application dossier, and a hiring visitor reads a top-level Research tab as
+// "this candidate is on his way to a doctorate."
 const normalizedHomeLinks = [
   { label: "Home", href: "#hero" },
   { label: "Services", href: "#services" },
   { label: "About", href: "#about" },
-  { label: "Research", href: "https://research.zachscheffler.com" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -22,6 +24,7 @@ const toolLinks = [
 ];
 
 const socialLinks = [
+  { icon: Github, href: "https://github.com/ColonelKernel", label: "GitHub" },
   { icon: Linkedin, href: "https://www.linkedin.com/in/zscheff/", label: "LinkedIn" },
   {
     icon: Music,
@@ -189,22 +192,18 @@ const Navbar = () => {
           )}
         />
       </Link>
-      {/* Muted rather than accented: the CV supports the feature links above
-          rather than competing with them for attention. */}
+      {/* The only bordered item in the nav: for a hiring visitor the CV is the
+          conversion target, and it used to be the most muted link on the bar. */}
       <Link
         to="/cv"
         className={cn(
-          "group relative text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/cv" ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+          "inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+          location.pathname === "/cv"
+            ? "border-foreground/40 text-foreground"
+            : "border-border text-foreground hover:border-foreground/40 hover:bg-secondary/60",
         )}
       >
         CV
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            location.pathname === "/cv" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
       </Link>
     </>
   );
@@ -262,9 +261,9 @@ const Navbar = () => {
           ZS
         </Link>
 
-        {/* Desktop nav starts at lg, not md: with ten items plus the social
-            icons, 768–1023px was tight enough that "Groove Atlas" wrapped to
-            two lines. That range gets the mobile menu instead. */}
+        {/* Desktop nav starts at lg, not md: with this many items plus the
+            social icons, 768–1023px was tight enough that "Groove Atlas"
+            wrapped to two lines. That range gets the mobile menu instead. */}
         <div className="hidden items-center gap-6 whitespace-nowrap lg:flex">
           {isToolsRoute
             ? renderToolLinks()
@@ -391,7 +390,7 @@ const Navbar = () => {
                       <Link
                         to="/cv"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                        className="flex items-center gap-2 rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground hover:bg-secondary/70"
                       >
                         CV
                       </Link>

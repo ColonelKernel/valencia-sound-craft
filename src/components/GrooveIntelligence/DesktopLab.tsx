@@ -92,7 +92,15 @@ export default function DesktopLab({
           )}
           {!isLoading && scene && (
             <span className="font-mono text-[10px] text-muted-foreground/30">
-              {scene.grooves.length}/{scene.totalCount} sampled nodes · {scene.clusters.length} clusters · {scene.genreCount} genres
+              {scene.grooves.length}/{scene.totalCount} sampled nodes · {scene.clusters.length} clusters · {scene.genreCount} genres · data:{" "}
+              <a
+                href="https://magenta.tensorflow.org/datasets/e-gmd"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-muted-foreground/60"
+              >
+                E-GMD v1.0.0
+              </a>
             </span>
           )}
         </div>

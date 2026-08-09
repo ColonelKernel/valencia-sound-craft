@@ -38,12 +38,16 @@ export interface SkillGroup {
 /** Headline identity. First person, matching the site's voice. */
 export const CV_PROFILE = {
   name: "Zach Scheffler",
-  headline: "Music Producer, Creative Technologist & Data Scientist",
+  // One canonical identity across the hero, the meta title, the JSON-LD, and
+  // this PDF. "Data Scientist" moved into the summary, where it can be stated
+  // as dated, checkable history instead of a current job title.
+  headline: "Music Producer & Creative Technologist",
   location: "Valencia, Spain",
   summary:
-    "I didn't come up through a conservatory or a computer-science program — I came up through music production and public policy. I've been producing since 2013, spent the better part of a decade in data, and now build tools where music, data, and software meet.",
-  /** Where to reach me — the contact form, never a phone number. */
+    "I didn't come up through a conservatory or a computer-science program — I came up through music production and public policy. I've been producing since 2013, spent seven years in applied data work (2016–2023) across the World Bank, NORC, and Rios Partners, and now build software where music, data, and audio meet.",
+  /** Where to reach me — the contact form or email, never a phone number. */
   contactPath: "/#contact",
+  email: "zachscheffler@gmail.com",
   site: "https://zachscheffler.com",
   research: "https://research.zachscheffler.com",
   profiles: ARTIST_PROFILES,
@@ -56,7 +60,9 @@ export const CV_PROFILE = {
 export const CAREER_TIMELINE: TimelineEntry[] = [
   { years: "2009–2013", role: "Grinnell College", note: "B.A. — Latin ensembles, jazz and rock bands alongside coursework" },
   { years: "2013", role: "Streetcar Scandal", note: "Started producing original music" },
-  { years: "2014–2015", role: "East West Studios, LA", note: "Audio engineering intern — sessions incl. Frank Ocean and Stephen Stills" },
+  // Scoped to what can be substantiated on request: the room and the calibre
+  // of the work, not artist names an interviewer could ask to verify.
+  { years: "2014–2015", role: "East West Studios, LA", note: "Audio engineering intern — supported major-label recording sessions" },
   { years: "2015", role: "UCLA Extension", note: "Professional Certificate in Music Production" },
   { years: "2016–2018", role: "UCLA", note: "Master of Public Policy — thesis prepared for the World Bank" },
   { years: "2016–2019", role: "World Bank", note: "Consultant — led wellbeing data-collection fieldwork across Peru" },

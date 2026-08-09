@@ -149,7 +149,16 @@ export default function MobileAtlas({
                 <div className="rounded-[1.25rem] border border-border/70 bg-card/80 p-4">
                   <div className="text-sm font-semibold text-foreground">{scene?.totalCount ?? "—"} source grooves</div>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    AI narratives stream in per selected groove.
+                    From the{" "}
+                    <a
+                      href="https://magenta.tensorflow.org/datasets/e-gmd"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline underline-offset-2 hover:text-foreground"
+                    >
+                      Expanded Groove MIDI Dataset
+                    </a>{" "}
+                    (E-GMD v1.0.0, Google Magenta). AI narratives stream in per selected groove.
                   </p>
                 </div>
               </div>
