@@ -25,7 +25,7 @@ jobs:
           # The apikey is the site's PUBLIC publishable key — already shipped
           # verbatim in the zachscheffler.com JS bundle, not a secret.
           code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 \
-            -H "apikey: sb_publishable_k8udo0mt3Rem4VtHagQpsg_rHG6s1qV" \
+            -H "apikey: sb_publishable_hzOztH5IFInSeS1yIJnCNA_8LpEsKTD" \
             "https://uqcjivqzilisngdwtdzl.supabase.co/rest/v1/contact_messages?select=id&limit=1") \
             || { echo "::error::No HTTP response (DNS failure / timeout) — project unreachable, likely paused."; exit 1; }
           echo "HTTP $code"
