@@ -42,9 +42,13 @@ export const PROJECTS: Project[] = [
     id: "autoharm",
     kind: "web-app",
     title: "AutoHarm",
+    // Precise on purpose. "Machine learning" implied training that this repo
+    // doesn't contain (it ships ONNX inference over checkpoints exported from
+    // the original Max patch), and "any DAW" hid the real constraint: MIDI out
+    // needs a virtual port and a Web MIDI browser — Safari can't route it.
     tagline:
-      "Generative chord instrument — Markov corpus blend plus a JazzNet RNN/LSTM, playing live MIDI into any DAW. A web port of the Autoharmonizer Max patch.",
-    stack: ["TypeScript", "Web MIDI", "Machine learning"],
+      "Generative chord instrument — a four-corpus Markov blend (Nottingham, POP909, Bach, OpenBook) alongside JazzNet RNN and LSTM models running on-device in ONNX. Plays live MIDI into any DAW over a virtual port in Chrome, Edge, or Firefox, and exports every take as a .mid file. A web port of my Autoharmonizer Max patch.",
+    stack: ["TypeScript", "Web MIDI", "ONNX inference"],
     links: [
       { label: "Launch app", url: "https://autoharm.zachscheffler.com/" },
       { label: "Source", url: "https://github.com/ColonelKernel/AutoHarm-Web" },
@@ -73,7 +77,7 @@ export const PROJECTS: Project[] = [
     kind: "in-site",
     title: "Interactive Music Tools",
     tagline:
-      "Rhythm engine, harmony lab, rhythm map, circle of fifths, and Tonnetz — five workspaces sharing one key, tempo, and transport.",
+      "Rhythm engine, harmony lab, rhythm map, circle of fifths, and Tonnetz — five workspaces sharing one key, tempo, and transport, driven by a lookahead Web Audio scheduler that gives each track its own subdivision of the bar for real cross-rhythms.",
     stack: ["React", "Web Audio", "Music theory"],
     links: [{ label: "Open tools", url: "/tools" }],
   },

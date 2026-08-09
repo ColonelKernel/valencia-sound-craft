@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { CV_JSONLD } from "@/app/routeStructuredData";
-import { CAREER_TIMELINE, CV_PROFILE, EDUCATION, SKILLS } from "@/content/cv";
+import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, SKILLS } from "@/content/cv";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 const PROFILE_LINKS: { label: string; url: string }[] = [
@@ -26,134 +26,15 @@ const CVPage = () => {
   const downloadPdf = useCallback(async () => {
     setGenerating(true);
     try {
-      // Loaded on demand so the ~40 KB gzip PDF library never lands in the
-      // route chunk — it only downloads when a visitor actually exports.
-      const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF();
-
-      const margin = 14;
-      const width = 210 - margin * 2;
-      let y = 22;
-
-      const ensureSpace = (needed: number) => {
-        if (y + needed > 280) {
-          doc.addPage();
-          y = 22;
-        }
-      };
-
-      const sectionHeading = (label: string) => {
-        ensureSpace(16);
-        y += 4;
-        doc.setFontSize(9);
-        doc.setTextColor(120);
-        doc.text(label.toUpperCase(), margin, y);
-        y += 2;
-        doc.setDrawColor(210);
-        doc.line(margin, y, margin + width, y);
-        y += 6;
-      };
-
-      // Header
-      doc.setFontSize(22);
-      doc.setTextColor(20);
-      doc.text(CV_PROFILE.name, margin, y);
-      y += 7;
-
-      doc.setFontSize(11);
-      doc.setTextColor(90);
-      doc.text(`${CV_PROFILE.headline} — ${CV_PROFILE.location}`, margin, y);
-      y += 6;
-
-      // The PDF travels through pipelines detached from the site, so the
-      // header has to carry a reply channel of its own.
-      doc.setFontSize(9);
-      doc.setTextColor(120);
-      doc.text(
-        `${CV_PROFILE.email}  ·  ${CV_PROFILE.site}  ·  ${CV_PROFILE.research}`,
-        margin,
-        y,
-      );
-      y += 8;
-
-      // Summary
-      doc.setFontSize(10);
-      doc.setTextColor(60);
-      for (const line of doc.splitTextToSize(CV_PROFILE.summary, width) as string[]) {
-        ensureSpace(6);
-        doc.text(line, margin, y);
-        y += 5;
-      }
-
-      // Experience
-      sectionHeading("Experience & Education Timeline");
-      for (const entry of CAREER_TIMELINE) {
-        ensureSpace(12);
-        doc.setFontSize(10);
-        doc.setTextColor(20);
-        doc.text(entry.role, margin + 30, y);
-        doc.setTextColor(130);
-        doc.setFontSize(9);
-        doc.text(entry.years, margin, y);
-        y += 5;
-        doc.setTextColor(80);
-        for (const line of doc.splitTextToSize(entry.note, width - 30) as string[]) {
-          ensureSpace(5);
-          doc.text(line, margin + 30, y);
-          y += 4.6;
-        }
-        y += 2;
-      }
-
-      // Education
-      sectionHeading("Education");
-      for (const entry of EDUCATION) {
-        ensureSpace(16);
-        doc.setFontSize(10);
-        doc.setTextColor(20);
-        doc.text(entry.institution, margin, y);
-        y += 5;
-        doc.setFontSize(9);
-        doc.setTextColor(90);
-        doc.text(`${entry.credential} · ${entry.location} · ${entry.years}`, margin, y);
-        y += 4.6;
-        doc.setTextColor(120);
-        for (const line of doc.splitTextToSize(entry.detail, width) as string[]) {
-          ensureSpace(5);
-          doc.text(line, margin, y);
-          y += 4.4;
-        }
-        y += 3;
-      }
-
-      // Skills
-      sectionHeading("Skills");
-      for (const group of SKILLS) {
-        ensureSpace(10);
-        doc.setFontSize(9);
-        doc.setTextColor(20);
-        doc.text(`${group.label}:`, margin, y);
-        doc.setTextColor(90);
-        for (const line of doc.splitTextToSize(group.items.join(", "), width - 34) as string[]) {
-          doc.text(line, margin + 34, y);
-          y += 4.6;
-          ensureSpace(5);
-        }
-        y += 1.5;
-      }
-
-      // Links
-      sectionHeading("Links");
-      doc.setFontSize(9);
-      doc.setTextColor(90);
-      for (const link of PROFILE_LINKS) {
-        ensureSpace(5);
-        // Print the address itself, not the mailto: scheme prefix.
-        doc.text(`${link.label}: ${link.url.replace(/^mailto:/, "")}`, margin, y);
-        y += 4.6;
-      }
-
-      doc.save("Zach-Scheffler-CV.pdf");
+      // Both loaded on demand so the ~40 KB gzip PDF library and the layout
+      // never land in the route chunk — they download only when a visitor
+      // actually exports. drawCvPdf is the same routine the build plugin runs
+      // to emit the static copy, so the two can never disagree.
+      const [{ jsPDF }, { drawCvPdf }] = await Promise.all([
+        import("jspdf"),
+        import("@/content/cvPdf"),
+      ]);
+      drawCvPdf(new jsPDF()).save(CV_PDF_FILENAME);
     } finally {
       setGenerating(false);
     }
@@ -192,6 +73,14 @@ const CVPage = () => {
                   <Download size={15} />
                   {generating ? "Generating…" : "Download PDF"}
                 </button>
+                {/* The same document at a fixed URL, generated at build time —
+                    what to paste into an application form or an email. */}
+                <a
+                  href={`/${CV_PDF_FILENAME}`}
+                  className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Direct link <ArrowUpRight size={14} />
+                </a>
                 <Link
                   to={CV_PROFILE.contactPath}
                   className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"

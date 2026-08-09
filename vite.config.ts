@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { bundleReportPlugin } from "./build/bundleReportPlugin";
+import { emitCvPdfPlugin } from "./build/emitCvPdfPlugin";
 import { stampRouteHeadsPlugin } from "./build/stampRouteHeadsPlugin";
 
 // https://vitejs.dev/config/
@@ -17,6 +18,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "analyze" && bundleReportPlugin(),
     stampRouteHeadsPlugin(),
+    emitCvPdfPlugin(),
   ].filter(Boolean),
   build: {
     manifest: true,

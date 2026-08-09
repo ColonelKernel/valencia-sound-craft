@@ -16,6 +16,14 @@
 
 import { ARTIST_PROFILES } from "./work";
 
+/**
+ * One filename for both copies of the résumé: the client-generated download on
+ * /cv and the static build-time artifact at the site root. Two names for one
+ * document is a drift surface. Lives here rather than in cvPdf.ts so pages can
+ * link the file without pulling the PDF layout into their route chunk.
+ */
+export const CV_PDF_FILENAME = "Zach-Scheffler-CV.pdf";
+
 export interface TimelineEntry {
   years: string;
   role: string;
@@ -71,7 +79,13 @@ export const CAREER_TIMELINE: TimelineEntry[] = [
   { years: "2022", role: "MIT Professional Education", note: "Applied Data Science certificate" },
   { years: "2022–2023", role: "Rios Partners", note: "Consultant — founded the firm's data strategy team" },
   { years: "2024–2025", role: "Berklee College of Music, Valencia", note: "M.M. Music Production, Technology & Innovation" },
-  { years: "2025–present", role: "Valencia, Spain", note: "Producing records, recording sessions, and building music software" },
+  // The current row is the one a hiring reader looks for first, so it names a
+  // role rather than a city, and points at the work that backs it.
+  {
+    years: "2025–present",
+    role: "Independent producer & music-software developer",
+    note: "Valencia, Spain — producing records and recording sessions, and building music software: the zachscheffler.com tool suite, AutoHarm, and four Ableton Live extensions (github.com/ColonelKernel)",
+  },
 ];
 
 /** Degrees and certificates. Rendered by both /cv and the About sidebar. */
@@ -119,8 +133,26 @@ export const SKILLS: SkillGroup[] = [
     label: "Programming",
     items: ["TypeScript", "Python", "R", "SQL"],
   },
+  // Every item here is evidenced by public source in github.com/ColonelKernel:
+  // Web Audio and Web MIDI in this site's engine, Vitest/Playwright suites and
+  // the GitHub Actions gate in its CI, the gzip budget in scripts/, and the
+  // Lighthouse accessibility floor of 1.0 in lighthouserc.cjs.
   {
-    label: "Audio & DSP",
+    label: "Software engineering",
+    items: [
+      "React",
+      "Web Audio API",
+      "Web MIDI",
+      "Vitest & Playwright",
+      "GitHub Actions CI",
+      "Performance budgets",
+      "Accessibility (WCAG)",
+    ],
+  },
+  // "Audio engineering", not "Audio & DSP": the work here is recording, mixing,
+  // and signal flow. No DSP is implemented from scratch, so it isn't claimed.
+  {
+    label: "Audio engineering",
     items: ["Recording", "Mixing", "Signal flow", "Max/MSP", "VCV Rack"],
   },
   {

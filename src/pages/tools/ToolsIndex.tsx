@@ -95,6 +95,39 @@ const ToolsIndex = () => (
           ))}
         </div>
       </section>
+
+      {/* The engineering behind these tools was only legible to someone who
+          found the repo. For a technical reader it is the most interesting
+          thing on the page, so it says so here. */}
+      <section className="px-6 pb-24">
+        <div className="container mx-auto">
+          <article className="max-w-3xl rounded-[1.5rem] border border-border/70 bg-card/70 p-6 md:p-8">
+            <h2 className="text-xl font-semibold text-foreground">How it&rsquo;s built</h2>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              All five tools share one global transport and a single{" "}
+              <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">AudioContext</code> —
+              set a tempo on the rhythm map and the sequencer is already holding it. They are
+              written in TypeScript and React over the Web Audio and Web MIDI APIs, with the
+              route table, rhythm catalog, and page content modelled as typed data whose
+              invariants are enforced by tests rather than by convention.
+            </p>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              Nothing reaches this page without passing the gate: typecheck, a zero-warning
+              lint, the unit suites, an end-to-end Playwright run, a 150&nbsp;KB gzip budget on
+              the initial graph, and a Lighthouse accessibility score of 1.0 — all six enforced
+              in CI on every commit.
+            </p>
+            <a
+              href="https://github.com/ColonelKernel/valencia-sound-craft"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              Read the source
+            </a>
+          </article>
+        </div>
+      </section>
     </main>
   </>
 );

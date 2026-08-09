@@ -64,10 +64,11 @@ const ProjectsPage = () => {
               <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">Projects</p>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">Software I Build</h1>
               <p className="text-muted-foreground leading-relaxed">
-                These are tools I built because I kept wanting them mid-session. Some run right
-                here in the browser — the Groove Atlas, the analytics platform, the music tools.
-                Some live inside Ableton as extensions. All of them come from the same habit:
-                when the workflow fights you, build the thing that fights back.
+                I build audio software for the browser: Web Audio scheduling engines, Web MIDI
+                instruments that play into any DAW, and extensions that live inside Ableton.
+                These are tools I built because I kept wanting them mid-session — the Groove
+                Atlas, the analytics platform, the music tools. All of them come from the same
+                habit: when the workflow fights you, build the thing that fights back.
               </p>
             </div>
 

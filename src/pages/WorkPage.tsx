@@ -79,6 +79,20 @@ const WorkPage = () => {
               </div>
             </div>
 
+            {/* The credits above are only half the work; without this bridge a
+                visitor who came for the music never learns there is software. */}
+            <div className="fade-up mt-12 max-w-2xl rounded-[1.25rem] border border-border/70 bg-card/60 p-6">
+              <p className="text-muted-foreground leading-relaxed">
+                The other half of this work is software. The Ableton Live extensions,
+                generative instruments, and analysis tools I built in and around these
+                sessions live on the{" "}
+                <Link to="/projects" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
+                  projects page
+                </Link>
+                .
+              </p>
+            </div>
+
             <div className="fade-up mt-12">
               <Link
                 to="/"
