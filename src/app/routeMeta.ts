@@ -80,6 +80,15 @@ export const ROUTE_META = {
     description:
       "Software by Zach Scheffler: the AutoHarm chord instrument, Ableton Live extensions, in-browser music systems, and music-tech research.",
   },
+  // Key order here is load-bearing: build/stampRouteHeadsPlugin.ts zips it
+  // against the lazy-import order in src/App.tsx, so this entry and the PAGES
+  // entry must sit at the same ordinal position.
+  autoharm: {
+    path: "/projects/autoharm",
+    title: "AutoHarm Case Study | Valencia Sound Craft",
+    description:
+      "How AutoHarm works: a four-corpus Markov blend and two JazzNet ONNX models running in the browser, playing live MIDI into a DAW — ported from a Max for Live device.",
+  },
   work: {
     path: "/work",
     title: "Work | Valencia Sound Craft",

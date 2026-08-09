@@ -127,6 +127,7 @@ export function stampRouteHeadsPlugin(): Plugin {
         musicAnalytics: "MusicAnalyticsPage-",
         grooveAtlas: "GrooveAtlasPage-",
         projects: "ProjectsPage-",
+        autoharm: "AutoHarmCaseStudy-",
         work: "WorkPage-",
         cv: "CVPage-",
         notFound: "NotFound-",

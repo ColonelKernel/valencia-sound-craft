@@ -16,6 +16,16 @@ export interface RouteStructuredData {
   jobTitle?: string;
   sameAs?: string[];
   url?: string;
+  /** Article routes (case studies) name their author. */
+  author?: { "@type": "Person"; name: string };
+  /** The subject an article is about — e.g. the app a case study describes. */
+  about?: {
+    "@type": string;
+    name: string;
+    applicationCategory?: string;
+    operatingSystem?: string;
+    url?: string;
+  };
 }
 
 /**

@@ -20,6 +20,7 @@ const ROUTES = [
   "/tools/tonnetz",
   "/music-analytics",
   "/projects",
+  "/projects/autoharm",
   "/groove-atlas",
   // Legacy path — must cleanly redirect to /groove-atlas.
   "/groove-intelligence",

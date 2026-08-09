@@ -9,6 +9,7 @@ module.exports = {
         "http://127.0.0.1:4173/tools/harmony",
         "http://127.0.0.1:4173/cv",
         "http://127.0.0.1:4173/projects",
+        "http://127.0.0.1:4173/projects/autoharm",
       ],
       startServerCommand: "npm run preview -- --host 127.0.0.1 --port 4173",
       startServerReadyPattern: "Local:",

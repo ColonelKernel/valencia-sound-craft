@@ -50,6 +50,7 @@ export const PROJECTS: Project[] = [
       "Generative chord instrument — a four-corpus Markov blend (Nottingham, POP909, Bach, OpenBook) alongside JazzNet RNN and LSTM models running on-device in ONNX. Plays live MIDI into any DAW over a virtual port in Chrome, Edge, or Firefox, and exports every take as a .mid file. A web port of my Autoharmonizer Max patch.",
     stack: ["TypeScript", "Web MIDI", "ONNX inference"],
     links: [
+      { label: "Case study", url: "/projects/autoharm" },
       { label: "Launch app", url: "https://autoharm.zachscheffler.com/" },
       { label: "Source", url: "https://github.com/ColonelKernel/AutoHarm-Web" },
     ],

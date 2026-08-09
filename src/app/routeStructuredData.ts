@@ -106,6 +106,30 @@ export const PROJECTS_JSONLD: RouteStructuredData = {
   url: ROUTE_META.projects.path,
 };
 
+/**
+ * The case study is an article about the software, so it is a TechArticle
+ * rather than another SoftwareApplication — the app itself is described on the
+ * /projects collection page.
+ */
+export const AUTOHARM_JSONLD: RouteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  name: "AutoHarm: a generative chord instrument in the browser",
+  description: ROUTE_META.autoharm.description,
+  url: ROUTE_META.autoharm.path,
+  author: {
+    "@type": "Person",
+    name: "Zach Scheffler",
+  },
+  about: {
+    "@type": "SoftwareApplication",
+    name: "AutoHarm",
+    applicationCategory: "MultimediaApplication",
+    operatingSystem: "Web browser",
+    url: "https://autoharm.zachscheffler.com/",
+  },
+};
+
 export const WORK_JSONLD: RouteStructuredData = {
   "@context": "https://schema.org",
   "@type": "MusicGroup",
@@ -138,6 +162,7 @@ export const ROUTE_JSONLD: Partial<Record<RouteKey, RouteStructuredData>> = {
   musicAnalytics: MUSIC_ANALYTICS_JSONLD,
   grooveAtlas: GROOVE_ATLAS_JSONLD,
   projects: PROJECTS_JSONLD,
+  autoharm: AUTOHARM_JSONLD,
   work: WORK_JSONLD,
   cv: CV_JSONLD,
 };
