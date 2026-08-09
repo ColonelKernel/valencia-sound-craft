@@ -12,7 +12,7 @@ on:
 # (BACKEND_CONFIGURED in src/components/Contact.tsx).
 env:
   VITE_SUPABASE_URL: https://uqcjivqzilisngdwtdzl.supabase.co
-  VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_k8udo0mt3Rem4VtHagQpsg_rHG6s1qV
+  VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_hzOztH5IFInSeS1yIJnCNA_8LpEsKTD
 
 jobs:
   gates:
