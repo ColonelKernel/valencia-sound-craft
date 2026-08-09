@@ -34,7 +34,7 @@ export const PROJECTS: Project[] = [
       "Generative chord instrument — Markov corpus blend plus a JazzNet RNN/LSTM, playing live MIDI into any DAW. A web port of the Autoharmonizer Max patch.",
     stack: ["TypeScript", "Web MIDI", "Machine learning"],
     links: [
-      { label: "Launch app", url: "https://colonelkernel.github.io/AutoHarm-Web/" },
+      { label: "Launch app", url: "https://autoharm.zachscheffler.com/" },
       { label: "Source", url: "https://github.com/ColonelKernel/AutoHarm-Web" },
     ],
   },
