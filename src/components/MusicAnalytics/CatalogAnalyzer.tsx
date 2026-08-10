@@ -94,8 +94,17 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
     <div className="space-y-8">
       <div>
         <h3 className="text-lg font-semibold text-foreground">AI Investment Analysis</h3>
+        {/* Say what the "AI" actually is. The memo is a language model writing
+            over the metrics computed on this page — it adds no data of its own,
+            and the provider it calls is not currently configured. */}
         <p className="text-xs text-muted-foreground mt-1">
-          AI-generated analyst memo for catalog evaluation
+          A language model drafts an analyst memo from the metrics computed on this page —
+          it introduces no data of its own, and nothing here is investment advice.
+        </p>
+        <p className="text-xs text-muted-foreground/80 mt-2">
+          The model provider for this demo is not currently configured, so the memo
+          endpoint returns an error. Every other tab runs entirely in the browser and is
+          unaffected.
         </p>
       </div>
 

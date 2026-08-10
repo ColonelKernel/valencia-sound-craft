@@ -69,7 +69,7 @@ export const PROJECTS: Project[] = [
     kind: "in-site",
     title: "Music Catalog Intelligence",
     tagline:
-      "Catalog analytics dashboard for music investment analysis — forecasting and AI-assisted analysis over a demonstration dataset of public Spotify popularity data.",
+      "Catalog analytics dashboard for music investment analysis — forecasting, risk scoring, and side-by-side comparison over a demonstration dataset of public Spotify popularity data.",
     stack: ["React", "Recharts", "Supabase"],
     links: [{ label: "Open dashboard", url: "/music-analytics" }],
   },

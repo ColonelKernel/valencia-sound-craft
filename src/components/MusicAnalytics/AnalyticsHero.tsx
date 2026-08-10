@@ -12,8 +12,8 @@ const AnalyticsHero = () => (
           Music Catalog Intelligence Platform
         </h1>
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">
-          Evaluate music catalogs as financial assets. Forecast performance, assess risk,
-          and generate AI-powered investment memos.
+          Evaluate music catalogs as financial assets: forecast performance, assess risk,
+          and compare catalogs side by side.
         </p>
         <p className="mt-4 text-xs text-muted-foreground/80 leading-relaxed max-w-2xl">
           Demonstration dataset derived from public Spotify popularity data (2020 sample);

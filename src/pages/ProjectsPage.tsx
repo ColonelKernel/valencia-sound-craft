@@ -70,6 +70,24 @@ const ProjectsPage = () => {
                 Atlas, the analytics platform, the music tools. All of them come from the same
                 habit: when the workflow fights you, build the thing that fights back.
               </p>
+              {/* Employers in this space increasingly screen for AI-assisted
+                  workflow experience by name. Stating it plainly — alongside
+                  what keeps it honest — is better than leaving it implied. */}
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                This site and its tools are built in an AI-assisted, test-gated workflow:
+                content invariants are enforced by the test suite, and nothing merges
+                without passing typecheck, lint, unit and end-to-end runs, a bundle budget,
+                and an accessibility floor. The full source is public at{" "}
+                <a
+                  href="https://github.com/ColonelKernel/valencia-sound-craft"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+                >
+                  github.com/ColonelKernel/valencia-sound-craft
+                </a>
+                .
+              </p>
             </div>
 
             <div className="space-y-12">

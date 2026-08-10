@@ -66,7 +66,7 @@ export const ROUTE_META = {
     path: "/music-analytics",
     title: "Music Catalog Intelligence | Valencia Sound Craft",
     description:
-      "Catalog analytics dashboard for music investment analysis. Demonstration dataset derived from public Spotify popularity data, with forecasting and AI-assisted analysis.",
+      "Catalog analytics dashboard for music investment analysis: forecasting, risk scoring, and side-by-side comparison over a demonstration dataset derived from public Spotify popularity data.",
   },
   grooveAtlas: {
     path: "/groove-atlas",

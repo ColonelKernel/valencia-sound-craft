@@ -40,10 +40,16 @@ test("projects page renders every card with working links", async ({ page, baseU
     await expect(page.getByRole("heading", { name: project.title, exact: true })).toBeVisible();
   }
 
-  // External links open in new tabs with the exact verified URLs.
+  // External links open in new tabs with the exact verified URLs. A URL may
+  // appear more than once on the page — the repo is both the "This Site" card's
+  // source link and part of the page intro — so this asserts presence, not
+  // uniqueness, and would otherwise trip Playwright's strict mode.
   const external = PROJECTS.flatMap((p) => p.links).filter((l) => !l.url.startsWith("/"));
   for (const link of external) {
-    await expect(page.locator(`a[href="${link.url}"]`)).toBeAttached();
+    await expect(
+      page.locator(`a[href="${link.url}"]`).first(),
+      `no link on the page for ${link.url}`,
+    ).toBeAttached();
   }
 
   // An in-app project link navigates client-side.
