@@ -17,6 +17,23 @@ interface Props {
   data: ArtistMonthly[];
 }
 
+/**
+ * `functions.invoke` collapses every non-2xx into one opaque error, but the
+ * Response is still hanging off `context` — read the function's own message so
+ * a rate limit doesn't read the same as an outage.
+ */
+async function serverMessage(fnError: unknown): Promise<string | null> {
+  const context = (fnError as { context?: unknown } | null)?.context;
+  if (!(context instanceof Response)) return null;
+  try {
+    const body: unknown = await context.clone().json();
+    const message = (body as { error?: unknown } | null)?.error;
+    return typeof message === "string" && message ? message : null;
+  } catch {
+    return null;
+  }
+}
+
 function isAnalysisResult(value: unknown): value is AnalysisResult {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
@@ -64,7 +81,11 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
       // Honest failure states: if the function errors or returns something
       // that isn't a well-formed memo, say the analysis is unavailable —
       // never substitute canned text presented as AI output.
-      if (fnError) throw new Error("AI analysis unavailable. Please try again later.");
+      if (fnError) {
+        throw new Error(
+          (await serverMessage(fnError)) ?? "AI analysis unavailable. Please try again later.",
+        );
+      }
 
       let parsed: unknown;
       try {
@@ -95,16 +116,15 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
       <div>
         <h3 className="text-lg font-semibold text-foreground">AI Investment Analysis</h3>
         {/* Say what the "AI" actually is. The memo is a language model writing
-            over the metrics computed on this page — it adds no data of its own,
-            and the provider it calls is not currently configured. */}
+            over the metrics computed on this page — it adds no data of its own. */}
         <p className="text-xs text-muted-foreground mt-1">
           A language model drafts an analyst memo from the metrics computed on this page —
           it introduces no data of its own, and nothing here is investment advice.
         </p>
         <p className="text-xs text-muted-foreground/80 mt-2">
-          The model provider for this demo is not currently configured, so the memo
-          endpoint returns an error. Every other tab runs entirely in the browser and is
-          unaffected.
+          Written on request by Claude, called from a Supabase edge function. If the model
+          is unavailable you get the error, never canned text dressed up as analysis. Every
+          other tab runs entirely in the browser.
         </p>
       </div>
 

@@ -109,6 +109,33 @@ Only after the checklist above is green.
 deployment is left untouched throughout, so it keeps serving until DNS moves —
 zero downtime, instant revert.
 
+## Edge functions
+
+Three functions live in `supabase/functions/`, deployed to
+`uqcjivqzilisngdwtdzl` (pinned in `supabase/config.toml`):
+
+| Function | Used by | Secret |
+| --- | --- | --- |
+| `catalog-analyzer` | `/music-analytics` → AI Investment Analysis | `ANTHROPIC_API_KEY` |
+| `groove-narrative` | `/groove-atlas` → AI Narrative | `ANTHROPIC_API_KEY` |
+| `lastfm-artist` | artist enrichment | `LASTFM_API_KEY` (optional) |
+
+`catalog-analyzer` and `groove-narrative` call the Anthropic Messages API
+directly (`npm:@anthropic-ai/sdk`, model `claude-opus-5`). They previously used
+the Lovable AI gateway, which went away with the Lovable project and left both
+endpoints returning 500.
+
+Set the secret once, in the Supabase dashboard under **Edge Functions →
+Secrets** (or `supabase secrets set ANTHROPIC_API_KEY=…`), then deploy:
+
+```
+supabase functions deploy catalog-analyzer groove-narrative
+```
+
+Without the secret both functions return **503** with an honest message rather
+than failing opaquely; the Groove Atlas hides its narrative panel and the
+analytics memo shows the error. No other route depends on either.
+
 ## Post-cutover cleanup
 
 - [x] **Contact form / Supabase.** DONE 2026-08-03: repointed to the user's own

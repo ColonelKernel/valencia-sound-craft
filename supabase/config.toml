@@ -1,1 +1,4 @@
-project_id = "xvdskahnddnlvsfypcci"
+# The live project. The Lovable-era ref (xvdskahnddnlvsfypcci) was retired in
+# August 2026 — leaving it here meant a bare `supabase functions deploy` shipped
+# to a dead project and reported success.
+project_id = "uqcjivqzilisngdwtdzl"
