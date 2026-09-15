@@ -1,7 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { GlobalMusicProvider } from "@/state/globalMusicState";
 
@@ -34,8 +32,6 @@ const ROUTE_KEYS = Object.keys(ROUTE_META) as RouteKey[];
 const App = () => (
   <GlobalMusicProvider>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>

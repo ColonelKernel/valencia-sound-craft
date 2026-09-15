@@ -4,9 +4,10 @@
 # CSP notes (origin inventory verified 2026-08-04):
 # - script-src 'self' — no inline scripts, no eval anywhere in the bundle
 #   (JSON-LD data blocks are exempt from the inline-script check)
-# - style-src needs 'unsafe-inline': sonner injects a runtime <style>
-#   unconditionally, React style attributes abound, and the shell carries an
-#   inline critical-token style
+# - style-src needs 'unsafe-inline': build/stampRouteHeadsPlugin.ts injects an
+#   inline critical-token <style> into every stamped shell, and ~57 React
+#   style attributes across the live components are governed by the same
+#   directive. Hashing the one shell block would not help while those remain.
 # - img-src data: — leaflet inlines its marker PNGs as base64 in its CSS
 # - connect-src pins the PRODUCTION Supabase project (REST + edge functions)
 # - frame-src: click-to-load embed facades (EmbedFacade rewrites youtube.com
