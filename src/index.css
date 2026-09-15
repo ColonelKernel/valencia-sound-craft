@@ -51,22 +51,9 @@
     --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 18%;
-    --input: 0 0% 18%;
     --ring: 0 0% 92%;
 
     --radius: 0.375rem;
-
-    --surface-elevated: 0 0% 12%;
-    --text-tertiary: 0 0% 42%;
-
-    --sidebar-background: 0 0% 7%;
-    --sidebar-foreground: 0 0% 74%;
-    --sidebar-primary: 0 0% 90%;
-    --sidebar-primary-foreground: 0 0% 7%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 0 0% 16%;
-    --sidebar-ring: 0 0% 40%;
   }
 }
 

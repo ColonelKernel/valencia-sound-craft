@@ -73,7 +73,7 @@ const KeyboardVisualizer = ({
 
   function getKeyColor(note: string, isBlack: boolean): string {
     if (!isInScale(note)) {
-      return isBlack ? 'bg-stone-800' : 'bg-stone-100 dark:bg-stone-200';
+      return isBlack ? 'bg-stone-800' : 'bg-stone-100';
     }
     if (isFiltered(note)) {
       return isBlack ? 'bg-stone-700 opacity-40' : 'bg-stone-200 opacity-40';
@@ -82,7 +82,7 @@ const KeyboardVisualizer = ({
       return 'bg-amber-500';
     }
     // In scale
-    return isBlack ? 'bg-blue-600' : 'bg-amber-200 dark:bg-amber-100';
+    return isBlack ? 'bg-blue-600' : 'bg-amber-200';
   }
 
   function getTextColor(note: string, isBlack: boolean): string {
