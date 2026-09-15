@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from "react";
-import { LazyMotion, domAnimation } from "framer-motion";
+import { LazyMotion, MotionConfig, domAnimation } from "framer-motion";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { MUSIC_ANALYTICS_JSONLD } from "@/app/routeStructuredData";
@@ -79,6 +79,10 @@ export default function MusicAnalyticsPage() {
     // makes any future full `motion.` import throw in dev instead of silently
     // re-inflating the bundle.
     <LazyMotion features={domAnimation} strict>
+      {/* framer-motion drives transforms in JS, so the prefers-reduced-motion
+          rule in index.css — which only zeroes CSS durations — never reached
+          these panels. */}
+      <MotionConfig reducedMotion="user">
     <div className="min-h-screen bg-background">
       <RouteHead
         title={ROUTE_META.musicAnalytics.title}
@@ -87,7 +91,7 @@ export default function MusicAnalyticsPage() {
         jsonLd={MUSIC_ANALYTICS_JSONLD}
       />
 
-      <main className="pt-20">
+      <main className="pt-16">
         <AnalyticsHero />
 
         {/* Controls bar */}
@@ -237,6 +241,7 @@ export default function MusicAnalyticsPage() {
         </section>
       </main>
     </div>
+      </MotionConfig>
     </LazyMotion>
   );
 }

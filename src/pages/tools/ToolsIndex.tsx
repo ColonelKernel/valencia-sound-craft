@@ -50,7 +50,7 @@ const ToolsIndex = () => (
       jsonLd={TOOLS_INDEX_JSONLD}
     />
 
-    <main className="min-h-screen bg-background pt-24">
+    <main className="min-h-screen bg-background pt-16">
       <section className="border-b border-border/70 bg-secondary/30 px-6 py-10">
         <div className="container mx-auto space-y-6">
           <p className="eyebrow">Tools</p>

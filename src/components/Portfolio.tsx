@@ -12,7 +12,7 @@ const Portfolio = () => {
   const ref = useFadeIn();
 
   return (
-    <section id="portfolio" className="section-padding !pt-8 bg-secondary/50" ref={ref}>
+    <section id="portfolio" className="section-padding-tight" ref={ref}>
       <div className="container mx-auto">
         <div className="fade-up mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>

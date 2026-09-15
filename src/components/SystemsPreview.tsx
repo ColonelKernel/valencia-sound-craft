@@ -45,7 +45,7 @@ const previewCards = [
 ];
 
 const SystemsPreview = () => (
-  <section id="systems" className="section-padding !pb-8 border-y border-border/70 bg-secondary/50 scroll-mt-24">
+  <section id="systems" className="section-padding-tight scroll-mt-24">
     <div className="container mx-auto space-y-8">
       <div className="space-y-4">
         <p className="eyebrow">Systems</p>

@@ -18,7 +18,7 @@ interface SectionFallbackProps {
   className?: string;
 }
 
-const SectionFallback = ({ id, className = "bg-background" }: SectionFallbackProps) => (
+const SectionFallback = ({ id, className = "" }: SectionFallbackProps) => (
   <section id={id} className={`section-padding ${className}`}>
     <div className="container mx-auto">
       <div className="h-24 rounded-card border border-border/70 bg-card/45" />
@@ -32,7 +32,7 @@ const DeferredAnalyticsPreview = () => {
   return (
     <div ref={ref} className="min-h-[36rem]">
       {inView && (
-        <Suspense fallback={<SectionFallback className="bg-secondary/50" />}>
+        <Suspense fallback={<SectionFallback />}>
           <AnalyticsPreview />
         </Suspense>
       )}
@@ -56,12 +56,17 @@ const Index = () => {
           <Services />
         </Suspense>
 
-        <Suspense fallback={<SectionFallback id="portfolio" className="bg-secondary/50" />}>
-          <Portfolio />
-        </Suspense>
+        {/* Work, Systems and Analytics read as one band. The wrapper owns the
+            surface and both hairlines so the sections don't each paint their
+            own and leave a seam in the middle. */}
+        <div className="border-y border-border/60 bg-secondary/50">
+          <Suspense fallback={<SectionFallback id="portfolio" />}>
+            <Portfolio />
+          </Suspense>
 
-        <SystemsPreview />
-        <DeferredAnalyticsPreview />
+          <SystemsPreview />
+          <DeferredAnalyticsPreview />
+        </div>
 
         <Suspense fallback={<SectionFallback id="about" className="bg-background" />}>
           <About />

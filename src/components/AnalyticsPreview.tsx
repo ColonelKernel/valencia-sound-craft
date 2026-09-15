@@ -145,7 +145,7 @@ const metrics = [
 ];
 
 const AnalyticsPreview = () => (
-  <section className="section-padding border-y border-border/70 bg-secondary/50 scroll-mt-24">
+  <section className="section-padding-tight scroll-mt-24">
     <div className="container mx-auto space-y-8">
       <div className="space-y-4">
         <p className="eyebrow">Intelligence</p>
