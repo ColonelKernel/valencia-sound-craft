@@ -41,9 +41,12 @@ const Layout = () => {
   }, [location.pathname, location.hash]);
 
   return (
-    <div className="min-h-screen bg-background">
+    // Column layout so the footer sits at the bottom of the viewport on a page
+    // shorter than the screen (404), instead of floating mid-page. Navbar is
+    // fixed, so it contributes no height here.
+    <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
-      <div ref={contentRef} tabIndex={-1} className="outline-none">
+      <div ref={contentRef} tabIndex={-1} className="flex-1 outline-none">
         <RouteErrorBoundary key={location.pathname}>
           <Suspense fallback={routeFallback}>
             <Outlet />

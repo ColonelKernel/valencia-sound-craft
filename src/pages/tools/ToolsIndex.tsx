@@ -81,14 +81,14 @@ const ToolsIndex = () => (
           {toolCards.map((card) => (
             <article
               key={card.to}
-              className={cardClasses()}
+              className={cardClasses({}, "flex flex-col")}
             >
               <card.icon className="h-5 w-5 text-primary" />
               <h2 className="mt-4 text-xl font-semibold text-foreground">{card.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{card.description}</p>
+              <p className="mt-2 mb-5 text-sm leading-6 text-muted-foreground">{card.description}</p>
               <Link
                 to={card.to}
-                className={buttonClasses({ variant: "secondary", size: "sm" }, "mt-5")}
+                className={buttonClasses({ variant: "secondary", size: "sm" }, "mt-auto self-start")}
               >
                 <Compass className="h-4 w-4" />
                 Open tool

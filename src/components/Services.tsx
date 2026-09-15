@@ -76,7 +76,7 @@ const Services = () => {
           {services.map((s, i) => (
             <div
               key={s.title}
-              className={cardClasses({ padding: "md", interactive: true }, "fade-up group")}
+              className={cardClasses({ padding: "md", interactive: true }, "fade-up group flex flex-col")}
               style={{ transitionDelay: `${i * 100}ms` }}
             >
               <s.icon className="text-foreground mb-6" size={28} strokeWidth={1.5} />
@@ -90,7 +90,7 @@ const Services = () => {
               </ul>
               <Link
                 to={s.href}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
+                className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
               >
                 {s.cta} <ArrowRight size={14} />
               </Link>
