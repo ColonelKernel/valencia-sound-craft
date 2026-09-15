@@ -41,11 +41,6 @@ const HarmonyTool = () => {
             onPlayingChange={tool.setPlaying}
             chordProgression={tool.chordProgression}
             onChordProgressionChange={tool.setChordProgression}
-            initialTab="visualizer"
-            showOnlyTabs={["visualizer", "progression", "metronome", "reference"]}
-            hideShellHeading
-            hideToolSelector
-            disableToolPreload
           />
         }
       />
