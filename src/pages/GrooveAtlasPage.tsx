@@ -43,7 +43,7 @@ const GrooveAtlasPage = () => {
       />
       <main className="pt-16">
         <div className="sticky top-16 z-40 border-b border-border bg-background/90 backdrop-blur-xl">
-          <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 px-6 py-3">
+          <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 py-3">
             <div>
               <h1 className="font-display text-lg font-bold tracking-tight">Groove Atlas</h1>
               <p className="text-xs text-muted-foreground hidden sm:block">
@@ -72,13 +72,13 @@ const GrooveAtlasPage = () => {
         </div>
 
         {lens === "atlas" ? (
-          <section className="container mx-auto px-6 py-8">
+          <section className="container mx-auto py-8">
             <Suspense fallback={lensFallback}>
               <WorldAtlasLens />
             </Suspense>
           </section>
         ) : (
-          <Suspense fallback={<div className="container mx-auto px-6 py-8">{lensFallback}</div>}>
+          <Suspense fallback={<div className="container mx-auto py-8">{lensFallback}</div>}>
             <GrooveIntelligenceLab />
           </Suspense>
         )}

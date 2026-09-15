@@ -8,7 +8,7 @@ import RouteErrorBoundary from "./RouteErrorBoundary";
 
 const routeFallback = (
   <div className="min-h-screen bg-background pt-24">
-    <div className="container mx-auto px-6 py-10 text-sm text-muted-foreground">Loading route…</div>
+    <div className="container mx-auto py-10 text-sm text-muted-foreground">Loading route…</div>
   </div>
 );
 

@@ -100,7 +100,7 @@ export default function MobileAtlas({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <section className="border-b border-border/70 bg-secondary/35">
-        <div className="container mx-auto px-4 py-8 sm:px-6 sm:py-10">
+        <div className="container mx-auto py-8 sm:py-10">
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between gap-4">
               <Link
@@ -167,7 +167,7 @@ export default function MobileAtlas({
         </div>
       </section>
 
-      <main className="container mx-auto px-4 py-8 sm:px-6 sm:py-10">
+      <main className="container mx-auto py-8 sm:py-10">
         {!scene && isLoading && (
           <div className="rounded-[1.5rem] border border-border/70 bg-card/70 p-6 text-sm text-muted-foreground">
             Loading the groove atlas…

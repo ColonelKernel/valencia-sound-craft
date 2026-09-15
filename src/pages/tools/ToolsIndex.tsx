@@ -51,7 +51,7 @@ const ToolsIndex = () => (
     />
 
     <main className="min-h-screen bg-background pt-16">
-      <section className="border-b border-border/70 bg-secondary/30 px-6 py-10">
+      <section className="border-b border-border/70 bg-secondary/30 py-10">
         <div className="container mx-auto space-y-6">
           <p className="eyebrow">Tools</p>
           <div className="max-w-4xl space-y-4">
@@ -66,7 +66,7 @@ const ToolsIndex = () => (
         </div>
       </section>
 
-      <section className="px-6 py-8">
+      <section className="py-8">
         <div className="container mx-auto">
           <article className={cardClasses({}, "text-sm leading-7 text-muted-foreground")}>
             <p>
@@ -76,7 +76,7 @@ const ToolsIndex = () => (
         </div>
       </section>
 
-      <section className="px-6 pb-20">
+      <section className="pb-20">
         <div className="container mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           {toolCards.map((card) => (
             <article
@@ -101,7 +101,7 @@ const ToolsIndex = () => (
       {/* The engineering behind these tools was only legible to someone who
           found the repo. For a technical reader it is the most interesting
           thing on the page, so it says so here. */}
-      <section className="px-6 pb-24">
+      <section className="pb-24">
         <div className="container mx-auto">
           <article className={cardClasses({ padding: "md" }, "max-w-3xl")}>
             <h2 className="text-xl font-semibold text-foreground">How it&rsquo;s built</h2>

@@ -256,7 +256,7 @@ const Navbar = () => {
           : "border-b border-transparent bg-transparent",
       )}
     >
-      <div className="container mx-auto flex h-16 items-center justify-between px-6">
+      <div className="container mx-auto flex h-16 items-center justify-between">
         <Link to="/" className="font-display text-lg font-bold tracking-tight text-foreground">
           ZS
         </Link>

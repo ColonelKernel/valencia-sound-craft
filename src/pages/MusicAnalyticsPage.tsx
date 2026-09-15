@@ -96,7 +96,7 @@ export default function MusicAnalyticsPage() {
 
         {/* Controls bar */}
         <section className="sticky top-[64px] z-20 border-b border-border/30 bg-background/95 backdrop-blur-sm">
-          <div className="container mx-auto px-6">
+          <div className="container mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3">
               {/* Tabs */}
               <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
@@ -157,7 +157,7 @@ export default function MusicAnalyticsPage() {
 
         {/* Content */}
         <section className="py-8 md:py-12">
-          <div className="container mx-auto px-6">
+          <div className="container mx-auto">
             {/* Mount only the active tab. All tabs previously stayed mounted behind
                 display:none to dodge a Recharts DOM reconciliation crash; instead we
                 keep TabErrorBoundary around the active tab and give every chart

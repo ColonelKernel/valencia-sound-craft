@@ -31,7 +31,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.35)_0%,transparent_100%)]" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-6 py-28 md:py-32">
+      <div className="relative z-10 container mx-auto py-28 md:py-32">
         <div className="max-w-2xl space-y-7">
           {/* The availability pill sits in the first screenful on purpose: a
               hiring visitor decides whether to keep reading in seconds, and

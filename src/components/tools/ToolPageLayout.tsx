@@ -25,7 +25,7 @@ const ToolPageLayout = ({
   <>
     <RouteHead {...meta} />
     <main className="min-h-screen bg-background pt-16">
-      <section className="border-b border-border/70 bg-secondary/30 px-6 py-10">
+      <section className="border-b border-border/70 bg-secondary/30 py-10">
         <div className="container mx-auto space-y-6">
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <Link to="/" className="hover:text-foreground">
@@ -55,7 +55,7 @@ const ToolPageLayout = ({
         </div>
       </section>
 
-      <section className="px-6 py-8">
+      <section className="py-8">
         <div className="container mx-auto">
           <article className={cardClasses({}, "text-sm leading-7 text-muted-foreground")}>
             {summary}
@@ -63,7 +63,7 @@ const ToolPageLayout = ({
         </div>
       </section>
 
-      <section className="px-6 pb-20">
+      <section className="pb-20">
         <div className="container mx-auto">{children}</div>
       </section>
     </main>
