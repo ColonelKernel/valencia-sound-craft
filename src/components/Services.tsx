@@ -1,6 +1,7 @@
 import { Code2, Music, Video, ArrowRight, type LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 interface ServiceCard {
@@ -67,7 +68,7 @@ const Services = () => {
           {services.map((s, i) => (
             <div
               key={s.title}
-              className="fade-up group border border-border rounded-sm p-8 hover:border-foreground/20 transition-colors"
+              className={cardClasses({ padding: "md", interactive: true }, "fade-up group")}
               style={{ transitionDelay: `${i * 100}ms` }}
             >
               <s.icon className="text-foreground mb-6" size={28} strokeWidth={1.5} />

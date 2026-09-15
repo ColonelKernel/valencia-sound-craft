@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import AudioPlaylist from "./AudioPlaylist";
 import EmbedFacade from "./EmbedFacade";
 import { GLOBAL_PULSE, WORK_EMBEDS } from "@/content/work";
+import { buttonClasses } from "@/components/ui/button";
+import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 const Portfolio = () => {
@@ -19,7 +21,7 @@ const Portfolio = () => {
           </div>
           <Link
             to="/work"
-            className="inline-flex items-center gap-2 text-sm font-medium text-foreground border border-border rounded-2xl px-4 py-2.5 hover:bg-accent transition-colors"
+            className={buttonClasses({ variant: "secondary", size: "sm" })}
           >
             See all work <ArrowRight size={16} />
           </Link>
@@ -27,7 +29,7 @@ const Portfolio = () => {
 
         <div className="fade-up grid md:grid-cols-2 gap-6">
           {WORK_EMBEDS.map((embed) => (
-            <div key={embed.id} className="rounded-sm overflow-hidden border border-border bg-card">
+            <div key={embed.id} className={cardClasses({ padding: "none", flush: true })}>
               <div className="px-4 py-3 border-b border-border">
                 <p className="text-sm font-display font-semibold">{embed.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">

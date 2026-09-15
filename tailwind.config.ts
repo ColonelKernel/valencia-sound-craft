@@ -16,6 +16,9 @@ export default {
       fontFamily: {
         display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
         body: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        // font-mono is used across the tool UIs but was never defined, so it
+        // fell through to an uncontrolled stack.
+        mono: ['ui-monospace', 'SFMono-Regular', '"SF Mono"', 'Menlo', 'Consolas', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -55,6 +58,16 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        card: "var(--radius-card)",
+        control: "var(--radius-control)",
+      },
+      // Three shadows replace the one-off shadow-[...] values the page
+      // surfaces each invented. The glows inside the instrument UIs are
+      // effects rather than elevation and stay arbitrary.
+      boxShadow: {
+        card: "0 20px 45px -34px rgba(0, 0, 0, 0.8)",
+        "card-lg": "0 28px 70px -40px rgba(0, 0, 0, 0.85)",
+        cta: "0 18px 40px -24px rgba(255, 255, 255, 0.35)",
       },
       keyframes: {
         "fade-in": {

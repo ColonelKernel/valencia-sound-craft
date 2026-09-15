@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, FormEvent } from "react";
+import { buttonClasses } from "@/components/ui/button";
+import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 import { Send, Loader2 } from "lucide-react";
 
@@ -110,7 +112,7 @@ const Contact = () => {
         </div>
 
         {!BACKEND_CONFIGURED ? (
-          <div className="fade-up text-center py-16 border border-border rounded-sm px-6">
+          <div className={cardClasses({ padding: "none" }, "fade-up text-center py-16 px-6")}>
             <p className="text-xl font-display font-semibold mb-2">Reach out directly</p>
             <p className="text-muted-foreground text-sm max-w-md mx-auto">
               The quickest way to reach me right now is{" "}
@@ -131,7 +133,7 @@ const Contact = () => {
             tabIndex={-1}
             role="status"
             aria-live="polite"
-            className="fade-up text-center py-16 border border-border rounded-sm"
+            className={cardClasses({ padding: "none" }, "fade-up text-center py-16")}
           >
             <p className="text-xl font-display font-semibold mb-2">Thank you!</p>
             <p className="text-muted-foreground text-sm">Your message has been sent. I'll be in touch soon.</p>
@@ -150,7 +152,7 @@ const Contact = () => {
                   maxLength={100}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow"
+                  className="w-full border border-border bg-background px-4 py-3 text-sm rounded-control focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow"
                   placeholder="Your name"
                 />
               </div>
@@ -165,7 +167,7 @@ const Contact = () => {
                   maxLength={255}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow"
+                  className="w-full border border-border bg-background px-4 py-3 text-sm rounded-control focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow"
                   placeholder="your@email.com"
                 />
               </div>
@@ -181,7 +183,7 @@ const Contact = () => {
                 required
                 value={projectType}
                 onChange={(e) => setProjectType(e.target.value)}
-                className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow appearance-none"
+                className="w-full border border-border bg-background px-4 py-3 text-sm rounded-control focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow appearance-none"
               >
                 <option value="">Select a project type</option>
                 <option>Job opportunity / Recruiting</option>
@@ -204,7 +206,7 @@ const Contact = () => {
                 rows={5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full border border-border bg-background px-4 py-3 text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow resize-none"
+                className="w-full border border-border bg-background px-4 py-3 text-sm rounded-control focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow resize-none"
                 placeholder="Tell me about your project..."
               />
             </div>
@@ -255,7 +257,7 @@ const Contact = () => {
             <button
               type="submit"
               disabled={status === "submitting"}
-              className="w-full inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3.5 text-sm font-medium rounded-sm hover:bg-foreground/90 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+              className={buttonClasses({ size: "lg", block: true })}
             >
               {status === "submitting" ? (
                 <>

@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Compass, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
 
+import { cardClasses } from "@/components/ui/card";
+import { buttonClasses } from "@/components/ui/button";
 import RouteHead from "@/components/seo/RouteHead";
 import ToolSubnav from "@/components/tools/ToolSubnav";
 import { ROUTE_META } from "@/app/routeMeta";
@@ -66,7 +68,7 @@ const ToolsIndex = () => (
 
       <section className="px-6 py-8">
         <div className="container mx-auto">
-          <article className="rounded-[1.5rem] border border-border/70 bg-card/70 p-5 text-sm leading-7 text-muted-foreground shadow-[0_20px_50px_-40px_rgba(0,0,0,0.75)]">
+          <article className={cardClasses({}, "text-sm leading-7 text-muted-foreground")}>
             <p>
               Each tool lives on its own page, so you can bookmark it, share a link to it, or jump straight into it. Whatever you set in one tool — key, rhythm, tempo — carries over to the rest, whether you are exploring world rhythms on the map or building progressions in the harmony lab.
             </p>
@@ -79,14 +81,14 @@ const ToolsIndex = () => (
           {toolCards.map((card) => (
             <article
               key={card.to}
-              className="rounded-[1.5rem] border border-border/70 bg-card/75 p-5 shadow-[0_18px_45px_-34px_rgba(0,0,0,0.8)]"
+              className={cardClasses()}
             >
               <card.icon className="h-5 w-5 text-primary" />
               <h2 className="mt-4 text-xl font-semibold text-foreground">{card.title}</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{card.description}</p>
               <Link
                 to={card.to}
-                className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+                className={buttonClasses({ variant: "secondary", size: "sm" }, "mt-5")}
               >
                 <Compass className="h-4 w-4" />
                 Open tool
@@ -101,7 +103,7 @@ const ToolsIndex = () => (
           thing on the page, so it says so here. */}
       <section className="px-6 pb-24">
         <div className="container mx-auto">
-          <article className="max-w-3xl rounded-[1.5rem] border border-border/70 bg-card/70 p-6 md:p-8">
+          <article className={cardClasses({ padding: "md" }, "max-w-3xl")}>
             <h2 className="text-xl font-semibold text-foreground">How it&rsquo;s built</h2>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
               All five tools share one global transport and a single{" "}

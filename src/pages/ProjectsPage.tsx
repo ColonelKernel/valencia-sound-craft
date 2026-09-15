@@ -5,10 +5,11 @@ import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { PROJECTS_JSONLD } from "@/app/routeStructuredData";
 import { PROJECTS, PROJECT_SECTIONS, type Project } from "@/content/projects";
+import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 const ProjectCard = ({ project }: { project: Project }) => (
-  <article className="rounded-[1.5rem] border border-border/70 bg-card/75 p-5 flex flex-col gap-4">
+  <article className={cardClasses({}, "flex flex-col gap-4")}>
     <div>
       <h3 className="text-lg font-semibold text-foreground">{project.title}</h3>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{project.tagline}</p>

@@ -1,6 +1,9 @@
 import { ArrowRight, Brain, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { buttonClasses } from "@/components/ui/button";
+import { cardClasses } from "@/components/ui/card";
+
 const previewCards = [
   {
     to: "/groove-atlas",
@@ -59,7 +62,7 @@ const SystemsPreview = () => (
 
           <Link
             to="/tools"
-            className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-5 py-3 text-sm font-semibold text-foreground hover:bg-primary/15"
+            className={buttonClasses({ variant: "secondary" })}
           >
             Explore Tools
             <ArrowRight className="h-4 w-4" />
@@ -73,11 +76,10 @@ const SystemsPreview = () => (
           return (
             <article
               key={card.to}
-              className={`rounded-[1.5rem] border p-5 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)] ${
-                featured
-                  ? "md:col-span-2 xl:col-span-3 border-emerald-500/30 bg-emerald-950/20"
-                  : "border-border/70 bg-card/75"
-              }`}
+              className={cardClasses(
+                {},
+                featured && "md:col-span-2 xl:col-span-3 border-emerald-500/30 bg-emerald-950/20",
+              )}
             >
               <div className={featured ? "flex flex-col md:flex-row md:items-center md:gap-8" : ""}>
                 <div className={featured ? "flex-1" : ""}>

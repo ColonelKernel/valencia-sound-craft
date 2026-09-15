@@ -1,6 +1,8 @@
 import { ArrowRight, BarChart3, TrendingUp, Shield, Target } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { buttonClasses } from "@/components/ui/button";
+import { cardClasses } from "@/components/ui/card";
 import { sparklineBars, sparklineGeometry } from "@/lib/sparkline";
 
 const sparkData = {
@@ -160,7 +162,7 @@ const AnalyticsPreview = () => (
 
           <Link
             to="/music-analytics"
-            className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-5 py-3 text-sm font-semibold text-foreground hover:bg-primary/15"
+            className={buttonClasses({ variant: "secondary" })}
           >
             Open Dashboard
             <ArrowRight className="h-4 w-4" />
@@ -172,7 +174,7 @@ const AnalyticsPreview = () => (
         {metrics.map((m) => (
           <article
             key={m.label}
-            className="rounded-[1.5rem] border border-border/70 bg-card/75 p-5 shadow-[0_20px_45px_-34px_rgba(0,0,0,0.8)]"
+            className={cardClasses()}
           >
             <m.icon className="h-5 w-5 text-primary" />
             <h3 className="mt-4 text-lg font-semibold text-foreground">{m.label}</h3>

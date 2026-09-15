@@ -1,3 +1,4 @@
+import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 // Timeline and education live in the CV model so this section, the /cv page,
@@ -63,7 +64,7 @@ const About = () => {
           </div>
 
           <div className="fade-up" style={{ transitionDelay: "150ms" }}>
-            <div className="border border-border rounded-sm p-8 space-y-6">
+            <div className={cardClasses({ padding: "md" }, "space-y-6")}>
               {EDUCATION.map((entry, index) => (
                 <div
                   key={entry.institution}
@@ -85,7 +86,7 @@ const About = () => {
                   {["Rock", "Electronic", "Jazz", "Latin", "Pop", "Indie"].map((g) => (
                     <span
                       key={g}
-                      className="text-xs border border-border px-3 py-1.5 rounded-sm text-muted-foreground"
+                      className="text-xs border border-border px-3 py-1.5 rounded-full text-muted-foreground"
                     >
                       {g}
                     </span>
@@ -105,7 +106,7 @@ const About = () => {
 
         <div className="fade-up mt-16" style={{ transitionDelay: "250ms" }}>
           <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-6">The Path</p>
-          <ol className="border border-border rounded-sm divide-y divide-border">
+          <ol className={cardClasses({ padding: "none" }, "divide-y divide-border")}>
             {CAREER_TIMELINE.map((entry) => (
               <li key={`${entry.years}-${entry.role}`} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 px-5 py-3.5">
                 <span className="text-xs text-muted-foreground font-mono w-28 shrink-0">{entry.years}</span>

@@ -1,6 +1,8 @@
 import { ArrowRight, FileText, Headphones } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { buttonClasses } from "@/components/ui/button";
+
 // Decorative waveform: deterministic pseudo-random heights so the hero never
 // re-randomizes on re-render (and screenshots stay stable).
 const WAVEFORM_HEIGHTS = Array.from(
@@ -77,19 +79,19 @@ const Hero = () => {
           <div className="flex flex-col gap-4 sm:flex-row">
             <Link
               to="/cv"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-semibold text-black shadow-[0_18px_40px_-24px_rgba(255,255,255,0.55)] hover:bg-white/90"
+              className={buttonClasses({ variant: "onImage", size: "lg" })}
             >
               <FileText size={16} /> View CV
             </Link>
             <a
               href="#contact"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/25 px-6 py-3.5 text-sm font-medium text-white hover:bg-white/10"
+              className={buttonClasses({ variant: "onImageGhost", size: "lg" })}
             >
               Get in Touch <ArrowRight size={16} />
             </a>
             <a
               href="#portfolio"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white"
+              className={buttonClasses({ variant: "ghost", size: "lg" }, "text-white/80 hover:bg-white/10 hover:text-white")}
             >
               <Headphones size={16} /> Listen to Work
             </a>

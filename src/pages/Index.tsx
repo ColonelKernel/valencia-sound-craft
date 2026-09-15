@@ -21,7 +21,7 @@ interface SectionFallbackProps {
 const SectionFallback = ({ id, className = "bg-background" }: SectionFallbackProps) => (
   <section id={id} className={`section-padding ${className}`}>
     <div className="container mx-auto">
-      <div className="h-24 rounded-[1.75rem] border border-border/70 bg-card/45" />
+      <div className="h-24 rounded-card border border-border/70 bg-card/45" />
     </div>
   </section>
 );

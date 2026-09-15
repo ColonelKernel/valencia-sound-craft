@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import RouteHead, { type RouteMetaConfig } from "@/components/seo/RouteHead";
 import ToolSubnav from "@/components/tools/ToolSubnav";
+import { cardClasses } from "@/components/ui/card";
 
 interface ToolPageLayoutProps {
   meta: RouteMetaConfig;
@@ -56,7 +57,7 @@ const ToolPageLayout = ({
 
       <section className="px-6 py-8">
         <div className="container mx-auto">
-          <article className="rounded-[1.5rem] border border-border/70 bg-card/70 p-5 text-sm leading-7 text-muted-foreground shadow-[0_20px_50px_-40px_rgba(0,0,0,0.75)]">
+          <article className={cardClasses({}, "text-sm leading-7 text-muted-foreground")}>
             {summary}
           </article>
         </div>

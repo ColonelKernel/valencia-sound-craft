@@ -6,6 +6,8 @@ import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { CV_JSONLD } from "@/app/routeStructuredData";
 import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, SKILLS } from "@/content/cv";
+import { buttonClasses } from "@/components/ui/button";
+import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 const PROFILE_LINKS: { label: string; url: string }[] = [
@@ -68,7 +70,7 @@ const CVPage = () => {
                   type="button"
                   onClick={downloadPdf}
                   disabled={generating}
-                  className="inline-flex items-center gap-2 rounded-sm border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-foreground/40 hover:text-primary disabled:opacity-60"
+                  className={buttonClasses({ variant: "secondary" })}
                 >
                   <Download size={15} />
                   {generating ? "Generating…" : "Download PDF"}
@@ -94,7 +96,7 @@ const CVPage = () => {
               <h2 className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-5">
                 The Path
               </h2>
-              <ol className="border border-border rounded-sm divide-y divide-border">
+              <ol className={cardClasses({ padding: "none" }, "divide-y divide-border")}>
                 {CAREER_TIMELINE.map((entry) => (
                   <li
                     key={`${entry.years}-${entry.role}`}
@@ -115,7 +117,7 @@ const CVPage = () => {
                 <h2 className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-5">
                   Education
                 </h2>
-                <div className="border border-border rounded-sm p-6 space-y-6">
+                <div className={cardClasses({ padding: "md" }, "space-y-6")}>
                   {EDUCATION.map((entry) => (
                     <div
                       key={entry.institution}
@@ -135,7 +137,7 @@ const CVPage = () => {
                 <h2 className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-5">
                   Skills
                 </h2>
-                <div className="border border-border rounded-sm p-6 space-y-5">
+                <div className={cardClasses({ padding: "md" }, "space-y-5")}>
                   {SKILLS.map((group) => (
                     <div key={group.label}>
                       <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">

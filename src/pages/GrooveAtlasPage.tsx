@@ -4,7 +4,8 @@ import { Globe2, ScatterChart } from "lucide-react";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { GROOVE_ATLAS_JSONLD } from "@/app/routeStructuredData";
-import { cn } from "@/lib/utils";
+import { cardClasses } from "@/components/ui/card";
+import { buttonClasses } from "@/components/ui/button";
 
 // Each lens is its own chunk: the Leaflet map and the canvas feel-space lab
 // are both heavy, and most visits only open one of them.
@@ -19,7 +20,7 @@ const LENSES: Array<{ id: Lens; label: string; icon: typeof Globe2; hint: string
 ];
 
 const lensFallback = (
-  <div className="rounded-[1.5rem] border border-border/70 bg-card/60 p-6 text-sm text-muted-foreground">
+  <div className={cardClasses({ padding: "md" }, "text-sm text-muted-foreground")}>
     Loading lens…
   </div>
 );
@@ -57,11 +58,9 @@ const GrooveAtlasPage = () => {
                   aria-pressed={lens === id}
                   title={hint}
                   onClick={() => setLens(id)}
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition-colors",
-                    lens === id
-                      ? "border-primary/60 bg-primary/10 text-foreground"
-                      : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary/60",
+                  className={buttonClasses(
+                    { variant: "secondary", size: "sm" },
+                    lens === id && "border-primary/60 bg-primary/10 text-foreground",
                   )}
                 >
                   <Icon size={15} />

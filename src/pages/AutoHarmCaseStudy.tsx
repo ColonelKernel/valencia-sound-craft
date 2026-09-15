@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { AUTOHARM_JSONLD } from "@/app/routeStructuredData";
+import { buttonClasses } from "@/components/ui/button";
+import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 /**
@@ -56,7 +58,7 @@ const AutoHarmCaseStudy = () => {
                   href="https://autoharm.zachscheffler.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-sm border border-border px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-foreground/40 hover:text-primary"
+                  className={buttonClasses({ variant: "secondary" })}
                 >
                   Launch the app <ArrowUpRight size={14} />
                 </a>
@@ -71,7 +73,7 @@ const AutoHarmCaseStudy = () => {
               </div>
             </div>
 
-            <dl className="fade-up mb-14 grid max-w-3xl gap-px overflow-hidden rounded-[1.25rem] border border-border/70 bg-border/70 sm:grid-cols-2">
+            <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-14 grid max-w-3xl gap-px bg-border/70 sm:grid-cols-2")}>
               {AT_A_GLANCE.map((item) => (
                 <div key={item.label} className="bg-card/80 p-5">
                   <dt className="text-xs uppercase tracking-[0.2em] text-muted-foreground">

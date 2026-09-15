@@ -7,6 +7,7 @@ import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { WORK_JSONLD } from "@/app/routeStructuredData";
 import { GLOBAL_PULSE, WORK_EMBEDS } from "@/content/work";
+import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
 const WorkPage = () => {
@@ -37,7 +38,7 @@ const WorkPage = () => {
 
             <div className="fade-up grid md:grid-cols-2 gap-6">
               {WORK_EMBEDS.map((embed) => (
-                <div key={embed.id} className="rounded-sm overflow-hidden border border-border bg-card">
+                <div key={embed.id} className={cardClasses({ padding: "none", flush: true })}>
                   <div className="px-4 py-3 border-b border-border">
                     <p className="text-sm font-display font-semibold">{embed.title}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -66,7 +67,7 @@ const WorkPage = () => {
             <div className="fade-up grid lg:grid-cols-2 gap-6 items-start">
               <AudioPlaylist title={GLOBAL_PULSE.title} tracks={GLOBAL_PULSE.tracks} />
 
-              <div className="rounded-sm border border-border bg-card divide-y divide-border">
+              <div className={cardClasses({ padding: "none" }, "divide-y divide-border")}>
                 {GLOBAL_PULSE.tracks.map((track) => (
                   <div key={track.title} className="px-4 py-3">
                     <div className="flex items-baseline justify-between gap-3">
@@ -81,7 +82,7 @@ const WorkPage = () => {
 
             {/* The credits above are only half the work; without this bridge a
                 visitor who came for the music never learns there is software. */}
-            <div className="fade-up mt-12 max-w-2xl rounded-[1.25rem] border border-border/70 bg-card/60 p-6">
+            <div className={cardClasses({ padding: "md" }, "fade-up mt-12 max-w-2xl")}>
               <p className="text-muted-foreground leading-relaxed">
                 The other half of this work is software. The Ableton Live extensions,
                 generative instruments, and analysis tools I built in and around these
