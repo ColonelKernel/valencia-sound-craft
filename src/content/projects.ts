@@ -117,6 +117,15 @@ export const PROJECTS: Project[] = [
     links: [{ label: "Source", url: "https://github.com/ColonelKernel/AbletonLiveConsole" }],
   },
   {
+    id: "autoharmonizer",
+    kind: "ableton-extension",
+    title: "Autoharmonizer",
+    tagline:
+      "The Max for Live original that AutoHarm was ported from — a generative chord instrument built as a Max/MSP patch driving a Python side over OSC protocol v3, with an in-process ONNX and pure-JS bridge running the models.",
+    stack: ["Max/MSP", "Python", "OSC", "ONNX"],
+    links: [{ label: "Source", url: "https://github.com/ColonelKernel/Autoharmonizer" }],
+  },
+  {
     id: "research",
     kind: "research",
     title: "Music-Tech Research",
@@ -124,6 +133,15 @@ export const PROJECTS: Project[] = [
       "The research dossier behind the tools: session-state analysis across DAWs, the Autoharmonizer instrument, and a proposed research trajectory.",
     stack: ["Python", "Max/MSP", "MIR"],
     links: [{ label: "research.zachscheffler.com", url: "https://research.zachscheffler.com/" }],
+  },
+  {
+    id: "session-state",
+    kind: "research",
+    title: "Session-State Analyzer",
+    tagline:
+      "The analytical layer over four DAW session-state explorers — REAPER, Logic, Cubase, and Ableton Live — each gathering its evidence a different way behind one canonical contract, so a session can be compared across DAWs with measured observability and an explainable alignment.",
+    stack: ["Python", "DAW project formats", "MIR"],
+    links: [{ label: "Source", url: "https://github.com/ColonelKernel/session-state-analyzer" }],
   },
 ];
 

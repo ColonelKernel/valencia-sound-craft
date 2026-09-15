@@ -5,7 +5,10 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  // `.claude/worktrees/` holds live git worktrees for other branches (gitignored).
+  // CI lints a clean clone and never sees them; a local checkout does, and their
+  // code would otherwise fail this repo's `--max-warnings 0` gate.
+  { ignores: ["dist", ".claude/**"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
