@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { ATLAS_COUNTRY_CENTROIDS } from "../Blipblox/atlasCountryCentroids";
-import { DRUM_PRESETS, getCountryMapData } from "./drumPresets";
+import { DRUM_PRESETS, filterRhythms, getCountryMapData } from "./drumPresets";
+import { getInstrument } from "./drumSoundEngine";
 
 describe("getCountryMapData", () => {
   it("uses country centroids for mapped countries", () => {
@@ -38,6 +39,47 @@ describe("getCountryMapData", () => {
 
     expectedCounts.forEach((count, countryCode) => {
       expect(countriesByCode.get(countryCode)?.rhythmCount).toBe(count);
+    });
+  });
+});
+
+describe("filterRhythms", () => {
+  it("filters by region correctly", () => {
+    const result = filterRhythms({ region: "flamenco" });
+
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((rhythm) => rhythm.region === "flamenco")).toBe(true);
+  });
+
+  it("filters by BPM range", () => {
+    const result = filterRhythms({ region: "brazil", bpm: 120 });
+
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((rhythm) =>
+      rhythm.region === "brazil" &&
+      rhythm.tempoRange[0] <= 120 &&
+      rhythm.tempoRange[1] >= 120,
+    )).toBe(true);
+  });
+
+  it("returns deterministic results for the same filters", () => {
+    const first = filterRhythms({ region: "middle_east", bpm: 110 }).map((rhythm) => rhythm.name);
+    const second = filterRhythms({ region: "middle_east", bpm: 110 }).map((rhythm) => rhythm.name);
+
+    expect(first).toEqual(second);
+  });
+});
+
+describe("timbre mapping", () => {
+  it("ensures all pattern keys have timbres", () => {
+    DRUM_PRESETS.forEach((rhythm) => {
+      rhythm.tracks.forEach((track) => {
+        expect(getInstrument(track.instrumentId)).toBeTruthy();
+      });
+
+      rhythm.variationTracks?.forEach((track) => {
+        expect(getInstrument(track.instrumentId)).toBeTruthy();
+      });
     });
   });
 });
