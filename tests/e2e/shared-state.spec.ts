@@ -12,9 +12,9 @@ import { getQuickPlayRhythms } from "../../src/components/Blipblox/rhythmEngineM
 
 const toolNav = (page: Page) => page.getByRole("navigation", { name: "Tool navigation" });
 
-// Only one GlobalRhythmEngine mounts at initial load, but the DrumMachine's
-// Atlas panel can mount a second one on click — engine locators stay scoped
-// to the standalone section so they remain unambiguous either way.
+// Engine locators stay scoped to the standalone section. The DrumMachine that
+// could mount a second engine from its Atlas panel is gone, but scoping keeps
+// these assertions specific rather than incidentally unique.
 const engineSection = (page: Page) =>
   page.locator('section[aria-labelledby="rhythm-engine-section"]');
 
@@ -63,13 +63,14 @@ test("tempo set on the rhythm engine propagates to the tonnetz", async ({ page }
 
   // Regression guard: the DrumMachine's Atlas panel used to open by default,
   // mounting a second full engine (and a second Leaflet map) on every visit.
+  // That component is gone; this now guards against reintroducing any second
+  // mount on the route.
   await expect(page.getByRole("heading", { name: "Global Rhythm Atlas Engine" })).toHaveCount(1);
 
   // The engine's tempo control is the only native range input inside the
-  // rhythm-engine section (Swing/Strength are Radix sliders; the legacy
-  // DrumMachine lives in a separate article). "End" jumps a native range
-  // input to its max (220), which is deterministic regardless of the
-  // rhythm's default tempo and fires React's onChange.
+  // rhythm-engine section (Swing/Strength are Radix sliders). "End" jumps a
+  // native range input to its max (220), which is deterministic regardless of
+  // the rhythm's default tempo and fires React's onChange.
   const tempoSlider = page
     .locator('section[aria-labelledby="rhythm-engine-section"] input[type="range"]')
     .first();
