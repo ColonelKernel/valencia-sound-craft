@@ -9,8 +9,8 @@ interface ServiceCard {
   title: string;
   points: string[];
   cta: string;
-  /** In-app route for the CTA. Cards without one point at the contact form. */
-  href?: string;
+  /** In-app route for the CTA — every card sends the reader to the work itself. */
+  href: string;
 }
 
 /**
@@ -18,6 +18,12 @@ interface ServiceCard {
  * because this section is the first thing below the hero and it sets what kind
  * of professional the reader thinks they are looking at. Guitar lessons stay
  * bookable through the contact form's project-type field.
+ *
+ * Every bullet below names something that exists. The music cards used to read
+ * as service-agency copy ("clarity, depth, and character"), which on a page
+ * aimed at hiring managers undercut the specific card above it — so they cite
+ * the releases and sessions in src/content/work.ts instead, and point at /work
+ * where the reader can hear them rather than at a contact form.
  */
 const services: ServiceCard[] = [
   {
@@ -33,23 +39,25 @@ const services: ServiceCard[] = [
   },
   {
     icon: Music,
-    title: "Mixing & Production",
+    title: "Production & Mixing",
     points: [
-      "Production and mixing that bring clarity, depth, and character to your tracks",
-      "Blending live instruments with modern production techniques",
-      "From early demos to polished, release-ready masters",
+      "Global Pulse — a five-track debut EP, written, produced and mixed as my Berklee Valencia culminating experience",
+      "Field recordings, modular synthesis, AI-assisted vocal processing and a multi-DAW pipeline, across Neo Soul, experimental electronic and rock",
+      "Streetcar Scandal — my own artist project, writing and producing under that name since 2013",
     ],
-    cta: "Inquire",
+    cta: "Hear the EP",
+    href: "/work",
   },
   {
     icon: Video,
-    title: "Video & Live Sessions",
+    title: "Recording & Live Sessions",
     points: [
-      "High-quality live performance recording — multi-camera + pro audio",
-      "Designed for artists, venues, and social media content",
-      "Full post-production: editing, mixing, and delivery",
+      "Verva, Russafa Archives — I recorded the band's sessions at Berklee Valencia's studios",
+      "Cristian Chiaburu, Momentum — live studio session video",
+      "La Vitti — a five-song live session, recorded and filmed in Valencia",
     ],
-    cta: "Inquire",
+    cta: "Watch the sessions",
+    href: "/work",
   },
 ];
 
@@ -80,21 +88,12 @@ const Services = () => {
                   </li>
                 ))}
               </ul>
-              {s.href ? (
-                <Link
-                  to={s.href}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
-                >
-                  {s.cta} <ArrowRight size={14} />
-                </Link>
-              ) : (
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
-                >
-                  {s.cta} <ArrowRight size={14} />
-                </a>
-              )}
+              <Link
+                to={s.href}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
+              >
+                {s.cta} <ArrowRight size={14} />
+              </Link>
             </div>
           ))}
         </div>
