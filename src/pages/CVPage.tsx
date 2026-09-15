@@ -54,8 +54,8 @@ const CVPage = () => {
         <section className="section-padding bg-background">
           <div className="container mx-auto max-w-4xl">
             <div className="fade-up mb-12">
-              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">CV</p>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+              <p className="eyebrow mb-3">CV</p>
+              <h1 className="type-h1 mb-4">
                 {CV_PROFILE.name}
               </h1>
               <p className="text-lg text-muted-foreground mb-2">
@@ -93,7 +93,7 @@ const CVPage = () => {
             </div>
 
             <div className="fade-up mb-12">
-              <h2 className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-5">
+              <h2 className="eyebrow mb-5">
                 The Path
               </h2>
               <ol className={cardClasses({ padding: "none" }, "divide-y divide-border")}>
@@ -114,7 +114,7 @@ const CVPage = () => {
 
             <div className="fade-up mb-12 grid gap-8 md:grid-cols-2">
               <div>
-                <h2 className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-5">
+                <h2 className="eyebrow mb-5">
                   Education
                 </h2>
                 <div className={cardClasses({ padding: "md" }, "space-y-6")}>
@@ -134,7 +134,7 @@ const CVPage = () => {
               </div>
 
               <div>
-                <h2 className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-5">
+                <h2 className="eyebrow mb-5">
                   Skills
                 </h2>
                 <div className={cardClasses({ padding: "md" }, "space-y-5")}>
@@ -160,7 +160,7 @@ const CVPage = () => {
             </div>
 
             <div className="fade-up mb-12">
-              <h2 className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-5">
+              <h2 className="eyebrow mb-5">
                 Elsewhere
               </h2>
               <div className="flex flex-wrap gap-x-6 gap-y-3">

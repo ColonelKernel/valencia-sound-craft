@@ -53,9 +53,9 @@ const ToolsIndex = () => (
     <main className="min-h-screen bg-background pt-24">
       <section className="border-b border-border/70 bg-secondary/30 px-6 py-10">
         <div className="container mx-auto space-y-6">
-          <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Tools</p>
+          <p className="eyebrow">Tools</p>
           <div className="max-w-4xl space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+            <h1 className="type-h1">
               One Music System, Five Connected Tools
             </h1>
             <p className="text-base text-muted-foreground md:text-lg">

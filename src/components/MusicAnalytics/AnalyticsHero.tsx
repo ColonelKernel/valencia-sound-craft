@@ -8,7 +8,7 @@ const AnalyticsHero = () => (
         <p className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-3">
           Catalog Intelligence Platform
         </p>
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-3">
+        <h1 className="type-h1 mb-3">
           Music Catalog Intelligence Platform
         </h1>
         <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">

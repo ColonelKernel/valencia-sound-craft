@@ -62,8 +62,8 @@ const ProjectsPage = () => {
         <section className="section-padding bg-background">
           <div className="container mx-auto">
             <div className="fade-up mb-12 max-w-2xl">
-              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">Projects</p>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">Software I Build</h1>
+              <p className="eyebrow mb-3">Projects</p>
+              <h1 className="type-h1 mb-6">Software I Build</h1>
               <p className="text-muted-foreground leading-relaxed">
                 I build audio software for the browser: Web Audio scheduling engines, Web MIDI
                 instruments that play into any DAW, and extensions that live inside Ableton.
@@ -97,7 +97,7 @@ const ProjectsPage = () => {
                 if (items.length === 0) return null;
                 return (
                   <div key={section.kind} className="fade-up">
-                    <h2 className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-5">
+                    <h2 className="eyebrow mb-5">
                       {section.title}
                     </h2>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

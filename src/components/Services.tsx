@@ -60,8 +60,8 @@ const Services = () => {
     <section id="services" className="section-padding bg-background" ref={ref}>
       <div className="container mx-auto">
         <div className="fade-up mb-16">
-          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">What I Do</p>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Services</h2>
+          <p className="eyebrow mb-3">What I Do</p>
+          <h2 className="type-h1">Services</h2>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

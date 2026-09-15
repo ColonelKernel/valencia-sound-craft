@@ -16,8 +16,8 @@ const Portfolio = () => {
       <div className="container mx-auto">
         <div className="fade-up mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">Selected Work</p>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Music &amp; Video</h2>
+            <p className="eyebrow mb-3">Selected Work</p>
+            <h2 className="type-h1">Music &amp; Video</h2>
           </div>
           <Link
             to="/work"

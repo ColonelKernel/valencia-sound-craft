@@ -116,9 +116,9 @@ export default function MobileAtlas({
               <div className="space-y-4">
                 <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Groove Intelligence</p>
                 <div className="space-y-3">
-                  <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
+                  <h2 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
                     A pocket atlas of the groove field, tuned for touch.
-                  </h1>
+                  </h2>
                   <p className="max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
                     Browse a curated sample of the full groove lab, tap into a groove, and
                     inspect its feel, step pattern, AI narrative, and nearest neighbors. The

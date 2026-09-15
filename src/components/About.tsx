@@ -13,8 +13,8 @@ const About = () => {
       <div className="container mx-auto">
         <div className="grid md:grid-cols-2 gap-16 items-start">
           <div className="fade-up">
-            <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">About</p>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
+            <p className="eyebrow mb-3">About</p>
+            <h2 className="type-h1 mb-8">
               Sound, Performance &amp; Production
             </h2>
 
@@ -105,7 +105,7 @@ const About = () => {
         </div>
 
         <div className="fade-up mt-16" style={{ transitionDelay: "250ms" }}>
-          <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-6">The Path</p>
+          <p className="eyebrow mb-6">The Path</p>
           <ol className={cardClasses({ padding: "none" }, "divide-y divide-border")}>
             {CAREER_TIMELINE.map((entry) => (
               <li key={`${entry.years}-${entry.role}`} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 px-5 py-3.5">

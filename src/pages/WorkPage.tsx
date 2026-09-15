@@ -25,8 +25,8 @@ const WorkPage = () => {
         <section className="section-padding bg-background">
           <div className="container mx-auto">
             <div className="fade-up mb-12 max-w-2xl">
-              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">Selected Work</p>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">Music &amp; Video</h1>
+              <p className="eyebrow mb-3">Selected Work</p>
+              <h1 className="type-h1 mb-6">Music &amp; Video</h1>
               <p className="text-muted-foreground leading-relaxed">
                 Everything here is work I can put my name on: the EP I wrote and produced at
                 Berklee Valencia, sessions I recorded for other artists, and video work for
@@ -58,8 +58,8 @@ const WorkPage = () => {
         <section className="section-padding !pt-0 bg-background">
           <div className="container mx-auto">
             <div className="fade-up mb-8 max-w-2xl">
-              <p className="text-xs tracking-[0.3em] uppercase text-muted-foreground mb-3">The EP</p>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{GLOBAL_PULSE.title}</h2>
+              <p className="eyebrow mb-3">The EP</p>
+              <h2 className="type-h2 mb-3">{GLOBAL_PULSE.title}</h2>
               <p className="text-sm text-muted-foreground mb-3">{GLOBAL_PULSE.subtitle}</p>
               <p className="text-muted-foreground leading-relaxed">{GLOBAL_PULSE.description}</p>
             </div>

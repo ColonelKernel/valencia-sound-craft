@@ -40,9 +40,9 @@ const ToolPageLayout = ({
           </div>
 
           <div className="space-y-4">
-            <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">{eyebrow}</p>
+            <p className="eyebrow">{eyebrow}</p>
             <div className="max-w-4xl space-y-3">
-              <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+              <h1 className="type-h1">
                 {title}
               </h1>
               <p className="max-w-3xl text-base text-muted-foreground md:text-lg">

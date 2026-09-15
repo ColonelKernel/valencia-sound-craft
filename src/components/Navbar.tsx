@@ -132,7 +132,7 @@ const Navbar = () => {
         to="/work"
         className={cn(
           "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/work" ? "text-foreground" : "text-amber-400 hover:text-amber-300",
+          location.pathname === "/work" ? "text-foreground" : "text-muted-foreground hover:text-foreground",
         )}
       >
         <Disc3 size={14} />
@@ -148,7 +148,7 @@ const Navbar = () => {
         to="/projects"
         className={cn(
           "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/projects" ? "text-foreground" : "text-violet-400 hover:text-violet-300",
+          location.pathname === "/projects" ? "text-foreground" : "text-muted-foreground hover:text-foreground",
         )}
       >
         <Wrench size={14} />
@@ -164,7 +164,7 @@ const Navbar = () => {
         to="/groove-atlas"
         className={cn(
           "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/groove-atlas" ? "text-foreground" : "text-emerald-400 hover:text-emerald-300",
+          location.pathname === "/groove-atlas" ? "text-foreground" : "text-muted-foreground hover:text-foreground",
         )}
       >
         <Brain size={14} />
@@ -358,7 +358,7 @@ const Navbar = () => {
                       <Link
                         to="/work"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-amber-400 hover:bg-secondary/70"
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
                       >
                         <Disc3 size={14} />
                         Work
@@ -366,7 +366,7 @@ const Navbar = () => {
                       <Link
                         to="/projects"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-violet-400 hover:bg-secondary/70"
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
                       >
                         <Wrench size={14} />
                         Projects
@@ -374,7 +374,7 @@ const Navbar = () => {
                       <Link
                         to="/groove-atlas"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-emerald-400 hover:bg-secondary/70"
+                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
                       >
                         <Brain size={14} />
                         Groove Atlas

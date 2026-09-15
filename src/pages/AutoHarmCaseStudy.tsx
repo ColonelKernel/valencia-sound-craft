@@ -44,10 +44,10 @@ const AutoHarmCaseStudy = () => {
               >
                 <ArrowLeft size={16} /> Projects
               </Link>
-              <p className="mt-8 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              <p className="eyebrow mt-8">
                 Case study
               </p>
-              <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">AutoHarm</h1>
+              <h1 className="type-h1 mt-3">AutoHarm</h1>
               <p className="mt-5 leading-relaxed text-muted-foreground">
                 A browser-native generative chord instrument — a four-corpus Markov blend
                 alongside two JazzNet ONNX models — that plays live MIDI into a DAW, ported
@@ -98,7 +98,7 @@ const AutoHarmCaseStudy = () => {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                <h2 className="type-h2">
                   The approach
                 </h2>
                 <p>
@@ -120,7 +120,7 @@ const AutoHarmCaseStudy = () => {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                <h2 className="type-h2">
                   Trade-offs
                 </h2>
                 <p>
@@ -142,7 +142,7 @@ const AutoHarmCaseStudy = () => {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                <h2 className="type-h2">
                   What shipped
                 </h2>
                 <p>
@@ -169,7 +169,7 @@ const AutoHarmCaseStudy = () => {
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                <h2 className="type-h2">
                   What&rsquo;s next
                 </h2>
                 <p>

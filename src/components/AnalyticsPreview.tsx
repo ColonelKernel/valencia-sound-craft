@@ -148,10 +148,10 @@ const AnalyticsPreview = () => (
   <section className="section-padding border-y border-border/70 bg-secondary/50 scroll-mt-24">
     <div className="container mx-auto space-y-8">
       <div className="space-y-4">
-        <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">Intelligence</p>
+        <p className="eyebrow">Intelligence</p>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl space-y-3">
-            <h2 className="text-4xl font-bold tracking-tight md:text-5xl">
+            <h2 className="type-h1">
               Music Catalog Intelligence Platform
             </h2>
             <p className="text-sm text-muted-foreground md:text-base">

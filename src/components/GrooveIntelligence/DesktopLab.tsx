@@ -65,7 +65,7 @@ export default function DesktopLab({
     <div className="flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-[hsl(240,10%,4%)] text-foreground">
       <header className="z-10 flex shrink-0 items-center justify-between border-b border-white/5 px-6 py-3">
         <div>
-          <h1 className="font-mono text-sm font-semibold tracking-wide">Groove Intelligence Lab</h1>
+          <h2 className="font-mono text-sm font-semibold tracking-wide">Groove Intelligence Lab</h2>
           <p className="font-mono text-[10px] tracking-wider text-muted-foreground/50">
             FIELD INTERFACE · PERCEPTUAL RHYTHM SPACE
           </p>
