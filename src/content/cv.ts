@@ -129,20 +129,28 @@ export const SKILLS: SkillGroup[] = [
     label: "Music technology",
     items: ["MIDI systems", "Generative composition", "Ableton Live", "Pro Tools", "Logic Pro", "REAPER"],
   },
+  // Ordered by depth of public evidence, not by market demand. C++ is second
+  // rather than first because TypeScript carries more of the public tree, but
+  // it is listed because vcv-rack-mcp is a real C++ codebase, not a binding:
+  // plugins/RackMCP/src/{core,rackside}/ is hand-written, and tests/cpp/ holds
+  // 18 suites of its own.
   {
     label: "Programming",
-    items: ["TypeScript", "Python", "R", "SQL"],
+    items: ["TypeScript", "C++", "Python", "R", "SQL"],
   },
   // Every item here is evidenced by public source in github.com/ColonelKernel:
   // Web Audio and Web MIDI in this site's engine, Vitest/Playwright suites and
   // the GitHub Actions gate in its CI, the gzip budget in scripts/, and the
-  // Lighthouse accessibility floor of 1.0 in lighthouserc.cjs.
+  // Lighthouse accessibility floor of 1.0 in lighthouserc.cjs. CMake and the
+  // real-time discipline come from vcv-rack-mcp, whose C++ suite includes an
+  // allocation-free audio-thread test and a fuzz target.
   {
     label: "Software engineering",
     items: [
       "React",
       "Web Audio API",
       "Web MIDI",
+      "CMake",
       "Vitest & Playwright",
       "GitHub Actions CI",
       "Performance budgets",

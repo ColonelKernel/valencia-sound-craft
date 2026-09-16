@@ -8,7 +8,12 @@
  * are scaffolds or unreleased stay off this page entirely.
  */
 
-export type ProjectKind = "web-app" | "in-site" | "ableton-extension" | "research";
+export type ProjectKind =
+  | "web-app"
+  | "in-site"
+  | "audio-tooling"
+  | "ableton-extension"
+  | "research";
 
 export interface ProjectLink {
   label: string;
@@ -83,6 +88,15 @@ export const PROJECTS: Project[] = [
     links: [{ label: "Open tools", url: "/tools" }],
   },
   {
+    id: "vcv-rack-mcp",
+    kind: "audio-tooling",
+    title: "VCV Rack MCP",
+    tagline:
+      "A Model Context Protocol server that lets an agent build modular patches in VCV Rack. The rack side is a C++ plugin that applies every edit as a transaction it can roll back; the TypeScript server validates the whole plan before anything touches the running rack.",
+    stack: ["C++", "TypeScript", "CMake", "MCP"],
+    links: [{ label: "Source", url: "https://github.com/ColonelKernel/vcv-rack-mcp" }],
+  },
+  {
     id: "drum-cartographer",
     kind: "ableton-extension",
     title: "Drum Rack Cartographer",
@@ -148,6 +162,7 @@ export const PROJECTS: Project[] = [
 export const PROJECT_SECTIONS: Array<{ kind: ProjectKind; title: string }> = [
   { kind: "web-app", title: "Live Web Apps" },
   { kind: "in-site", title: "On This Site" },
+  { kind: "audio-tooling", title: "Audio Tooling" },
   { kind: "ableton-extension", title: "Ableton Live Extensions" },
   { kind: "research", title: "Research" },
 ];
