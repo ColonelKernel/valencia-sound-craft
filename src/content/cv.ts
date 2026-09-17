@@ -86,7 +86,7 @@ export const CAREER_TIMELINE: TimelineEntry[] = [
   // the 2021 NORC performance review and corroborated in it by his manager:
   // R web scrapers over the Tanzanian examinations council site, assembled to
   // map primary-to-secondary retention for USAID's country strategy.
-  { years: "2020–2022", role: "NORC at the University of Chicago", note: "Research analyst — wrote R scrapers that assembled 6M+ national exam records in Tanzania; NLP over social-media corpora for NIH- and Facebook-funded studies" },
+  { years: "2020–2022", role: "NORC at the University of Chicago", note: "Research associate — wrote R scrapers that assembled 6M+ national exam records in Tanzania; NLP over social-media corpora for NIH- and Facebook-funded studies" },
   { years: "2022", role: "MIT Professional Education", note: "Applied Data Science certificate" },
   { years: "2022–2023", role: "Rios Partners", note: "Consultant — founded the firm's data strategy team" },
   { years: "2024–2025", role: "Berklee College of Music, Valencia", note: "M.M. Music Production, Technology & Innovation" },
