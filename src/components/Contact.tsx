@@ -186,11 +186,11 @@ const Contact = () => {
                 className="w-full border border-border bg-background px-4 py-3 text-sm rounded-control focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow appearance-none"
               >
                 <option value="">Select a project type</option>
-                <option>Job opportunity / Recruiting</option>
-                <option>Mixing</option>
-                <option>Production</option>
-                <option>Video / Live Session</option>
-                <option>Guitar Lessons</option>
+                <option>Full-time role</option>
+                <option>Contract / consulting</option>
+                <option>Data science / ML project</option>
+                <option>Audio software / engineering</option>
+                <option>Production or session work</option>
                 <option>Other</option>
               </select>
             </div>
@@ -207,7 +207,7 @@ const Contact = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="w-full border border-border bg-background px-4 py-3 text-sm rounded-control focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow resize-none"
-                placeholder="Tell me about your project..."
+                placeholder="Tell me about the role or the project…"
               />
             </div>
 
@@ -271,7 +271,7 @@ const Contact = () => {
             </button>
 
             <p className="text-center text-xs text-muted-foreground pt-2">
-              Open to collaborations, sessions, and new projects.
+              Open to full-time and contract roles, and to collaborations.
             </p>
           </form>
         )}

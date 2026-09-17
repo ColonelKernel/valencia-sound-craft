@@ -52,20 +52,25 @@ const Index = () => {
       <main>
         <Hero />
 
-        <Suspense fallback={<SectionFallback id="services" className="bg-background" />}>
+        <Suspense fallback={<SectionFallback id="evidence" className="bg-background" />}>
           <Services />
         </Suspense>
 
-        {/* Work, Systems and Analytics read as one band. The wrapper owns the
+        {/* Analytics, Systems and Work read as one band. The wrapper owns the
             surface and both hairlines so the sections don't each paint their
-            own and leave a seam in the middle. */}
+            own and leave a seam in the middle.
+
+            Order is deliberate: the data and engineering artifacts come before
+            the music. A reader hiring for data or ML who meets the EP player
+            first has already filed this as a musician's site by the time the
+            analytics platform appears. */}
         <div className="border-y border-border/60 bg-secondary/50">
+          <DeferredAnalyticsPreview />
+          <SystemsPreview />
+
           <Suspense fallback={<SectionFallback id="portfolio" />}>
             <Portfolio />
           </Suspense>
-
-          <SystemsPreview />
-          <DeferredAnalyticsPreview />
         </div>
 
         <Suspense fallback={<SectionFallback id="about" className="bg-background" />}>

@@ -4,7 +4,7 @@ const Footer = () => {
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
         <div className="flex flex-col items-center md:items-start gap-1">
           <span className="font-display font-bold text-foreground">ZS</span>
-          <span>Valencia, Spain</span>
+          <span>San Francisco Bay Area</span>
         </div>
 
         {/* Wraps on narrow viewports: five links at gap-6 need ~395px, which

@@ -15,24 +15,25 @@ const About = () => {
           <div className="fade-up">
             <p className="eyebrow mb-3">About</p>
             <h2 className="type-h1 mb-8">
-              Sound, Performance &amp; Production
+              From Policy Data to Production Systems
             </h2>
 
             <div className="space-y-5 text-muted-foreground leading-relaxed">
               <p>
                 I didn't come up through a conservatory or a computer-science program. I came
-                up through music production and public policy. I've been producing since
-                2013 — first in college Latin ensembles and rock bands, then as an audio
-                engineering intern at East West Studios in LA — and I spent the better part
-                of a decade in data: a Master of Public Policy at UCLA, field research for
-                the World Bank in Peru, computational social science at NORC, and building a
-                data strategy team at Rios Partners.
+                up through public policy and data, and through music production. A Master of
+                Public Policy at UCLA, field research for the World Bank in Peru,
+                computational social science at NORC, and a data strategy team I founded at
+                Rios Partners — alongside producing since 2013, first in college Latin
+                ensembles and rock bands, then as an audio engineering intern at East West
+                Studios in LA.
               </p>
               <p>
                 In 2024 I moved to Valencia for an M.M. in Music Production, Technology &amp;
-                Innovation at Berklee. That path continues to inform how I work: I produce
-                records the way I build software — iteratively, under version control, with
-                the data close at hand.
+                Innovation at Berklee, finishing in 2025. That path is why the two halves
+                stopped being separate: I produce records the way I build software —
+                iteratively, under version control, with the data close at hand — and I
+                build models the way I mix, by listening to what the thing actually does.
               </p>
               <p>
                 At Berklee, I completed{" "}
@@ -95,9 +96,9 @@ const About = () => {
               </div>
               <div className="border-t border-border pt-6">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Location</p>
-                <p className="font-display font-semibold">Valencia, Spain</p>
+                <p className="font-display font-semibold">San Francisco Bay Area</p>
                 <p className="text-sm text-muted-foreground">
-                  Available for sessions in Valencia and remote work worldwide.
+                  Open to full-time and contract roles — Bay Area or remote.
                 </p>
               </div>
             </div>

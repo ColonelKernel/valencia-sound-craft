@@ -38,7 +38,7 @@ const Hero = () => {
               nothing else on the page says this person is a candidate. */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
             <p className="text-sm font-medium uppercase tracking-[0.34em] text-white/60">
-              Based in Valencia, Spain
+              San Francisco Bay Area
             </p>
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-100">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
@@ -47,25 +47,30 @@ const Hero = () => {
           </div>
 
           <div className="space-y-5">
+            {/* "ML" rather than "Machine Learning": the postings title the role
+                that way, and the long form is a 42-character unbroken phrase at
+                text-5xl, which mobile-layout.spec.ts guards against at 375px. */}
             <h1 className="text-5xl font-bold leading-[1.05] text-white md:text-6xl lg:text-7xl [text-shadow:_0_2px_20px_rgba(0,0,0,0.6)]">
-              Music Producer &amp; Creative Technologist
+              Data Scientist &amp; ML Engineer
             </h1>
 
             <p className="max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-              I produce records, engineer sessions, and build the software and data tools
-              behind them — from studio work in Valencia to interactive instruments that
-              run in your browser.
+              Seven years of applied data work — the World Bank, NORC, and a data strategy
+              team I founded at Rios Partners — and a decade in audio. I take models from
+              experiment to production, and my proving ground is the hardest real-time
+              target there is: sound.
             </p>
           </div>
 
           <p className="max-w-xl text-sm leading-relaxed text-white/55">
-            East West Studios → World Bank and NORC data science → Rios Partners data
-            strategy → Berklee M.M., Music Production, Technology &amp; Innovation.
+            UCLA M.P.P. → World Bank → NORC at the University of Chicago → Rios Partners
+            data strategy → MIT Applied Data Science → Berklee M.M., Music Production,
+            Technology &amp; Innovation.
           </p>
 
           <p className="max-w-xl text-sm leading-relaxed text-white/75">
-            Currently open to full-time and contract roles in audio software engineering
-            and creative technology —{" "}
+            Currently open to full-time and contract roles in data science and machine
+            learning engineering, Bay Area or remote —{" "}
             <Link to="/cv" className="font-medium text-white underline underline-offset-4 hover:text-white/80">
               see my CV
             </Link>{" "}
@@ -83,17 +88,20 @@ const Hero = () => {
             >
               <FileText size={16} /> View CV
             </Link>
+            {/* Slot two sends a hiring reader at the evidence rather than the
+                contact form: "get in touch" already exists as an inline link one
+                paragraph up, so spending a button on it was duplication. */}
             <a
-              href="#contact"
+              href="#evidence"
               className={buttonClasses({ variant: "onImageGhost", size: "lg" })}
             >
-              Get in Touch <ArrowRight size={16} />
+              See the evidence <ArrowRight size={16} />
             </a>
             <a
               href="#portfolio"
               className={buttonClasses({ variant: "ghost", size: "lg" }, "text-white/80 hover:bg-white/10 hover:text-white")}
             >
-              <Headphones size={16} /> Listen to Work
+              <Headphones size={16} /> Hear the audio work
             </a>
           </div>
         </div>

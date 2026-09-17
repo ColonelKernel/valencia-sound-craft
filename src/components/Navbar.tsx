@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 // "this candidate is on his way to a doctorate."
 const normalizedHomeLinks = [
   { label: "Home", href: "#hero" },
-  { label: "Services", href: "#services" },
+  { label: "Systems", href: "#evidence" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
 ];
@@ -100,7 +100,7 @@ const Navbar = () => {
   }, [isHomePage]);
 
   // On subpages the section anchors must route back to the homepage first;
-  // a bare "#services" would only mutate the hash on the current route.
+  // a bare "#evidence" would only mutate the hash on the current route.
   const resolveHomeHref = (href: string) =>
     href.startsWith("#") && !isHomePage ? `/${href}` : href;
 
