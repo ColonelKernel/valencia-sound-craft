@@ -87,6 +87,12 @@ export const ROUTE_META = {
     description:
       "How AutoHarm works: a four-corpus Markov blend and two JazzNet ONNX models running in the browser, playing live MIDI into a DAW — ported from a Max for Live device.",
   },
+  catalogIntelligence: {
+    path: "/projects/catalog-intelligence",
+    title: "Music Catalog Intelligence: Case Study | Zach Scheffler",
+    description:
+      "How the catalog analytics platform works: a modeled Spotify dataset, a trailing-median rule for sparse buckets, a hand-weighted acquisition score, and the prediction interval's known limitation.",
+  },
   work: {
     path: "/work",
     title: "Work | Zach Scheffler",

@@ -22,6 +22,7 @@ const PAGES: Record<RouteKey, LazyExoticComponent<ComponentType>> = {
   // Must stay at the same index as its ROUTE_META entry — the head-stamping
   // plugin pairs the two lists positionally.
   autoharm: lazy(() => import("./pages/AutoHarmCaseStudy")),
+  catalogIntelligence: lazy(() => import("./pages/CatalogIntelligenceCaseStudy")),
   work: lazy(() => import("./pages/WorkPage")),
   cv: lazy(() => import("./pages/CVPage")),
   notFound: lazy(() => import("./pages/NotFound")),

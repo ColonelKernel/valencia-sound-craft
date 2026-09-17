@@ -130,6 +130,25 @@ export const AUTOHARM_JSONLD: RouteStructuredData = {
   },
 };
 
+export const CATALOG_INTELLIGENCE_JSONLD: RouteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  name: "Music Catalog Intelligence: analyzing a modeled catalog dataset",
+  description: ROUTE_META.catalogIntelligence.description,
+  url: ROUTE_META.catalogIntelligence.path,
+  author: {
+    "@type": "Person",
+    name: "Zach Scheffler",
+  },
+  about: {
+    "@type": "SoftwareApplication",
+    name: "Music Catalog Intelligence",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web browser",
+    url: ROUTE_META.musicAnalytics.path,
+  },
+};
+
 export const WORK_JSONLD: RouteStructuredData = {
   "@context": "https://schema.org",
   "@type": "MusicGroup",
@@ -163,6 +182,7 @@ export const ROUTE_JSONLD: Partial<Record<RouteKey, RouteStructuredData>> = {
   grooveAtlas: GROOVE_ATLAS_JSONLD,
   projects: PROJECTS_JSONLD,
   autoharm: AUTOHARM_JSONLD,
+  catalogIntelligence: CATALOG_INTELLIGENCE_JSONLD,
   work: WORK_JSONLD,
   cv: CV_JSONLD,
 };
