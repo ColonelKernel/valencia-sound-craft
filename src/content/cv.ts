@@ -82,7 +82,11 @@ export const CAREER_TIMELINE: TimelineEntry[] = [
   { years: "2016–2018", role: "UCLA", note: "Master of Public Policy — thesis prepared for the World Bank" },
   { years: "2016–2019", role: "World Bank", note: "Consultant — led wellbeing data-collection fieldwork across Peru" },
   { years: "2018–2023", role: "7DrumCity", note: "Mentor & workshop leader" },
-  { years: "2020–2022", role: "NORC at the University of Chicago", note: "Research associate — NLP, GIS, and web-scraping at national scale" },
+  // "National scale" was doing a number's job here. The figure is his own, from
+  // the 2021 NORC performance review and corroborated in it by his manager:
+  // R web scrapers over the Tanzanian examinations council site, assembled to
+  // map primary-to-secondary retention for USAID's country strategy.
+  { years: "2020–2022", role: "NORC at the University of Chicago", note: "Research analyst — wrote R scrapers that assembled 6M+ national exam records in Tanzania; NLP over social-media corpora for NIH- and Facebook-funded studies" },
   { years: "2022", role: "MIT Professional Education", note: "Applied Data Science certificate" },
   { years: "2022–2023", role: "Rios Partners", note: "Consultant — founded the firm's data strategy team" },
   { years: "2024–2025", role: "Berklee College of Music, Valencia", note: "M.M. Music Production, Technology & Innovation" },
@@ -111,7 +115,7 @@ export const EDUCATION: EducationEntry[] = [
     location: "Los Angeles, CA",
     years: "2016–2018",
     detail:
-      "Thesis: Results-Based Financing for Hospitals — The Case of the Kyrgyz Republic (prepared for the World Bank).",
+      "Applied Policy Project (team of five) for the World Bank: Results-Based Financing for Hospitals, the Case of the Kyrgyz Republic — difference-in-differences analysis of a 64-hospital randomized trial, on quarterly panel data from 2014 to 2017.",
   },
   {
     institution: "MIT Professional Education",
@@ -143,6 +147,7 @@ export const SKILLS: SkillGroup[] = [
       "Data pipelines",
       "NLP",
       "Statistical modeling",
+      "Causal inference",
       "Forecasting",
       "Clustering",
       "ONNX inference",
