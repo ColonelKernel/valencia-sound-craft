@@ -941,7 +941,7 @@ const GlobalRhythmEngine = ({
           )}
         </div>
 
-        {/* The map chunk (~62 KB + carto tile handshakes) stays out of the
+        {/* The map chunk (~62 KB + basemap tile handshakes) stays out of the
             route's critical path until the section nears the viewport. The
             600px rootMargin mounts it well before a scrolling user arrives —
             and immediately on routes where the engine sits near the top. */}

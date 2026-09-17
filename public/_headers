@@ -9,6 +9,10 @@
 #   style attributes across the live components are governed by the same
 #   directive. Hashing the one shell block would not help while those remain.
 # - img-src data: — leaflet inlines its marker PNGs as base64 in its CSS
+# - img-src server.arcgisonline.com — the Leaflet basemap. Was CARTO until
+#   2026-09-17, when CARTO started serving watermarked tiles to keyless
+#   callers; see the comment above TILE_URL in GlobalRhythmMap.tsx. This
+#   host and that constant must change together or the tiles are blocked.
 # - connect-src pins the PRODUCTION Supabase project (REST + edge functions)
 # - frame-src: click-to-load embed facades (EmbedFacade rewrites youtube.com
 #   to youtube-nocookie.com; both allowed since the rewrite is a string
@@ -18,7 +22,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://a.basemaps.cartocdn.com https://b.basemaps.cartocdn.com https://c.basemaps.cartocdn.com https://d.basemaps.cartocdn.com; font-src 'self'; connect-src 'self' https://uqcjivqzilisngdwtdzl.supabase.co; frame-src https://open.spotify.com https://www.youtube-nocookie.com https://www.youtube.com https://w.soundcloud.com; media-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; manifest-src 'self'
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://server.arcgisonline.com; font-src 'self'; connect-src 'self' https://uqcjivqzilisngdwtdzl.supabase.co; frame-src https://open.spotify.com https://www.youtube-nocookie.com https://www.youtube.com https://w.soundcloud.com; media-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; manifest-src 'self'
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
 
 # Vite fingerprints everything under /assets, so those URLs are immutable.

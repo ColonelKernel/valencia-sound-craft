@@ -194,6 +194,14 @@ if (typeof document !== "undefined" && !document.getElementById("atlas-pulse-css
   const style = document.createElement("style");
   style.id = "atlas-pulse-css";
   style.textContent = `
+    /* Esri's Dark Gray Canvas draws land a good deal lighter than the
+       near-black basemap this card was designed around. Scoped to the tile
+       pane so the markers, rings and glows keep their full brightness —
+       putting it on the map container would dim the data along with the
+       ground. */
+    .leaflet-tile-pane {
+      filter: brightness(0.62) contrast(1.08) saturate(0.85);
+    }
     .atlas-ring {
       transition: transform 60ms ease-out, opacity 60ms ease-out;
     }
@@ -345,28 +353,41 @@ function useRhythmPreview() {
   return { playPreview, stopPreview, isPlaying };
 }
 
-// CARTO basemap tiles ({a-d}.basemaps.cartocdn.com) are the only third-party
-// runtime origin. The hints used to live in the static shell, but that warmed
-// four speculative connections on every route; injecting them when the map
-// actually mounts still front-runs the tile burst (this chunk loads moments
-// before leaflet requests tiles). Tiles load as plain <img> (non-CORS), so no
-// crossorigin attribute. Links persist after unmount; the guard keeps them
+// The basemap is the only third-party runtime origin.
+//
+// This used to be CARTO's dark_all. CARTO began gating its free basemaps and
+// now serves a watermarked tile — "API KEY REQUIRED", diagonally, on every
+// tile — rather than a 4xx, so nothing in the app could detect the failure:
+// the response is a 200 with a valid PNG body. The map simply became defaced,
+// on two routes, silently. Any keyless tile CDN can do this again; if the
+// basemap ever looks wrong, suspect the provider before the code.
+//
+// Esri's World Dark Gray Base replaces it — keyless, the same near-black
+// cartography the design was built around, and well inside its zoom range
+// (this map is clamped to z2–z6). It serves no @2x variant, so the {r} retina
+// suffix is gone. The host is also pinned in the img-src allowlist in
+// public/_headers: changing it here alone would leave the tiles blocked by
+// CSP.
+//
+// The hints used to live in the static shell, but that warmed speculative
+// connections on every route; injecting them when the map actually mounts
+// still front-runs the tile burst (this chunk loads moments before leaflet
+// requests tiles). Tiles load as plain <img> (non-CORS), so no crossorigin
+// attribute. Links persist after unmount; the guard keeps them
 // single-instance across remounts.
-const TILE_HOSTS = [
-  "https://a.basemaps.cartocdn.com",
-  "https://b.basemaps.cartocdn.com",
-  "https://c.basemaps.cartocdn.com",
-  "https://d.basemaps.cartocdn.com",
-];
+const TILE_HOSTS = ["https://server.arcgisonline.com"];
 
-function useCartoTileHints() {
+const TILE_URL =
+  "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+
+function useBasemapTileHints() {
   useEffect(() => {
-    if (document.head.querySelector("link[data-carto-hint]")) return;
+    if (document.head.querySelector("link[data-tile-hint]")) return;
     TILE_HOSTS.forEach((href, i) => {
       const link = document.createElement("link");
       link.rel = i === 0 ? "preconnect" : "dns-prefetch";
       link.href = href;
-      link.setAttribute("data-carto-hint", "");
+      link.setAttribute("data-tile-hint", "");
       document.head.append(link);
     });
   }, []);
@@ -379,7 +400,7 @@ const GlobalRhythmMap = ({
   onCountryHover,
   onCountrySelect,
 }: GlobalRhythmMapProps) => {
-  useCartoTileHints();
+  useBasemapTileHints();
   const [hoveredRhythm, setHoveredRhythm] = useState<Rhythm | null>(null);
   const { playPreview, stopPreview } = useRhythmPreview();
 
@@ -532,11 +553,11 @@ const GlobalRhythmMap = ({
           worldCopyJump={true}
           style={{ height: 430, width: "100%", background: "hsl(var(--secondary))" }}
         >
-          {/* CARTO's free basemap terms and OSM's ODbL require visible
-              attribution; Leaflet renders it as the standard corner label. */}
+          {/* Esri's terms and OSM's ODbL both require visible attribution;
+              Leaflet renders it as the standard corner label. */}
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url={TILE_URL}
+            attribution='Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, and the GIS user community'
           />
           <FocusContinent continent={focusContinent} />
           <FocusSelectedCountry marker={selectedMarker} />
