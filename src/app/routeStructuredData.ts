@@ -149,6 +149,25 @@ export const CATALOG_INTELLIGENCE_JSONLD: RouteStructuredData = {
   },
 };
 
+export const SESSION_STATE_JSONLD: RouteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  name: "Session-State Analyzer: measuring what four DAWs will tell you",
+  description: ROUTE_META.sessionState.description,
+  url: ROUTE_META.sessionState.path,
+  author: {
+    "@type": "Person",
+    name: "Zach Scheffler",
+  },
+  about: {
+    "@type": "SoftwareApplication",
+    name: "Session-State Analyzer",
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Python 3.10+",
+    url: "https://github.com/ColonelKernel/session-state-analyzer",
+  },
+};
+
 export const WORK_JSONLD: RouteStructuredData = {
   "@context": "https://schema.org",
   "@type": "MusicGroup",
@@ -183,6 +202,7 @@ export const ROUTE_JSONLD: Partial<Record<RouteKey, RouteStructuredData>> = {
   projects: PROJECTS_JSONLD,
   autoharm: AUTOHARM_JSONLD,
   catalogIntelligence: CATALOG_INTELLIGENCE_JSONLD,
+  sessionState: SESSION_STATE_JSONLD,
   work: WORK_JSONLD,
   cv: CV_JSONLD,
 };

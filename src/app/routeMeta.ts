@@ -93,6 +93,12 @@ export const ROUTE_META = {
     description:
       "How the catalog analytics platform works: a modeled Spotify dataset, a trailing-median rule for sparse buckets, a hand-weighted acquisition score, and the prediction interval's known limitation.",
   },
+  sessionState: {
+    path: "/projects/session-state",
+    title: "Session-State Analyzer: Case Study | Zach Scheffler",
+    description:
+      "How the session-state analyzer works: one canonical schema across four DAWs, partial observability as a first-class evidence tag, a reached-set compatibility profile, and a role classifier benchmarked against MedleyDB.",
+  },
   work: {
     path: "/work",
     title: "Work | Zach Scheffler",

@@ -158,7 +158,10 @@ export const PROJECTS: Project[] = [
     tagline:
       "The analytical layer over four DAW session-state explorers — REAPER, Logic, Cubase, and Ableton Live — each gathering its evidence a different way behind one canonical contract, so a session can be compared across DAWs with measured observability and an explainable alignment.",
     stack: ["Python", "DAW project formats", "MIR"],
-    links: [{ label: "Source", url: "https://github.com/ColonelKernel/session-state-analyzer" }],
+    links: [
+      { label: "Case study", url: "/projects/session-state" },
+      { label: "Source", url: "https://github.com/ColonelKernel/session-state-analyzer" },
+    ],
   },
 ];
 

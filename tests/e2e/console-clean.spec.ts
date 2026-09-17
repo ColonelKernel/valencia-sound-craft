@@ -22,6 +22,7 @@ const ROUTES = [
   "/projects",
   "/projects/autoharm",
   "/projects/catalog-intelligence",
+  "/projects/session-state",
   "/groove-atlas",
   // Legacy path — must cleanly redirect to /groove-atlas.
   "/groove-intelligence",

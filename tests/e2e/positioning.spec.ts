@@ -79,3 +79,16 @@ for (const path of EVIDENCE_ROUTES) {
     await expect(heading).toBeVisible();
   });
 }
+
+test("the session-state case study keeps the caveat on its own headline number", async ({ page }) => {
+  await page.goto("/projects/session-state");
+
+  // 99.3% is the most quotable figure in the portfolio and the most
+  // misleading one without its qualifier: some taxonomy keywords were added
+  // because benchmarking exposed them as misses on the same corpus. The
+  // source file says so; this page must not quote the number and drop it.
+  const body = page.locator("body");
+  await expect(body).toContainText("99.3%");
+  await expect(body).toContainText("in-sample");
+  await expect(body).toContainText("not of held-out generalization");
+});
