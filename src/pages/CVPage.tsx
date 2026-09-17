@@ -65,6 +65,14 @@ const CVPage = () => {
                 {CV_PROFILE.summary}
               </p>
 
+              {/* The ask. This page listed history for a year and never said
+                  what it was for; a reader had to infer it from the hero on a
+                  different route. Foreground colour so it reads as a statement
+                  rather than more body copy. */}
+              <p className={cardClasses({ padding: "none" }, "mt-6 max-w-2xl px-4 py-3 text-sm font-medium leading-relaxed text-foreground")}>
+                {CV_PROFILE.target}
+              </p>
+
               <div className="mt-7 flex flex-wrap items-center gap-4">
                 <button
                   type="button"

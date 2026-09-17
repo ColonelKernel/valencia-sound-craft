@@ -49,6 +49,12 @@ describe("drawCvPdf", () => {
     expect(body).toContain(CV_PROFILE.site);
   });
 
+  it("states what he is looking for", () => {
+    // The PDF is read detached from the site, often by someone deciding which
+    // pile it goes in. Without this line the reader has history and no ask.
+    expect(body).toContain(CV_PROFILE.target);
+  });
+
   it("draws every timeline entry, education entry, and skill group", () => {
     for (const entry of CAREER_TIMELINE) {
       expect(body, `missing timeline role: ${entry.role}`).toContain(entry.role);

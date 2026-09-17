@@ -198,7 +198,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
     doc.setTextColor(150);
     doc.text("Demonstration dataset derived from public Spotify popularity data (2020 sample); modeled proxies, not live streaming figures.", 14, y);
     y += 4;
-    doc.text("Valencia Sound Craft — Music Catalog Intelligence Platform", 14, y);
+    doc.text("Zach Scheffler — Music Catalog Intelligence Platform", 14, y);
 
     doc.save(`acquisition-report-${a.artist.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }, [selected, selectedArtist, lastfm, mode]);

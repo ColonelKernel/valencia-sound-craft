@@ -20,9 +20,9 @@ import { ARTIST_PROFILES } from "../content/work";
 
 export const HOME_JSONLD: RouteStructuredData = createPersonStructuredData({
   name: "Zach Scheffler",
-  jobTitle: "Music Producer & Creative Technologist",
+  jobTitle: "Data Scientist & Machine Learning Engineer",
   description:
-    "Music producer and creative technologist in Valencia, Spain, building audio software and interactive rhythm and harmony tools.",
+    "Data scientist and machine learning engineer in the San Francisco Bay Area, building production ML systems and audio software.",
   sameAs: [
     "https://www.linkedin.com/in/zscheff/",
     "https://github.com/ColonelKernel",
@@ -34,7 +34,7 @@ export const HOME_JSONLD: RouteStructuredData = createPersonStructuredData({
 });
 
 export const TOOLS_INDEX_JSONLD: RouteStructuredData = createToolStructuredData({
-  name: "Valencia Sound Craft Tools",
+  name: "Music Tools",
   description:
     "A routed collection of interactive music tools for rhythm, harmony, theory, and composition.",
   canonicalPath: ROUTE_META.toolsIndex.path,
@@ -42,7 +42,7 @@ export const TOOLS_INDEX_JSONLD: RouteStructuredData = createToolStructuredData(
 });
 
 export const RHYTHM_JSONLD: RouteStructuredData = createToolStructuredData({
-  name: "Valencia Sound Craft Rhythm Engine",
+  name: "Rhythm Engine",
   description:
     "A rhythm sequencing and exploration workspace for global groove structures, cultural rhythm identity, and real-time playback.",
   canonicalPath: ROUTE_META.rhythm.path,
@@ -50,7 +50,7 @@ export const RHYTHM_JSONLD: RouteStructuredData = createToolStructuredData({
 });
 
 export const HARMONY_JSONLD: RouteStructuredData = createToolStructuredData({
-  name: "Valencia Sound Craft Harmony Lab",
+  name: "Harmony Lab",
   description:
     "A harmony workspace combining mode visualization, progression building, theory references, and timing tools.",
   canonicalPath: ROUTE_META.harmony.path,
@@ -58,7 +58,7 @@ export const HARMONY_JSONLD: RouteStructuredData = createToolStructuredData({
 });
 
 export const MAP_JSONLD: RouteStructuredData = createToolStructuredData({
-  name: "Valencia Sound Craft Rhythm Map",
+  name: "Rhythm Map",
   description:
     "A geographic rhythm browser that links countries, cultural groove structures, and playable sequencer state.",
   canonicalPath: ROUTE_META.map.path,
@@ -66,7 +66,7 @@ export const MAP_JSONLD: RouteStructuredData = createToolStructuredData({
 });
 
 export const CIRCLE_JSONLD: RouteStructuredData = createToolStructuredData({
-  name: "Valencia Sound Craft Circle of Fifths",
+  name: "Circle of Fifths",
   description:
     "An interactive circle of fifths that keeps key and mode in step with the harmony and Tonnetz tools.",
   canonicalPath: ROUTE_META.circle.path,
@@ -74,7 +74,7 @@ export const CIRCLE_JSONLD: RouteStructuredData = createToolStructuredData({
 });
 
 export const TONNETZ_JSONLD: RouteStructuredData = createToolStructuredData({
-  name: "Valencia Sound Craft Tonnetz",
+  name: "Tonnetz",
   description:
     "A Tonnetz harmonic space explorer that plays in the same key and tempo as the rest of the music tools.",
   canonicalPath: ROUTE_META.tonnetz.path,

@@ -104,6 +104,16 @@ export function drawCvPdf<T extends CvPdfDoc>(doc: T): T {
     y += 5;
   }
 
+  // The ask, stated once, right under the summary. Darker than body copy so a
+  // skimming reader lands on it before the timeline.
+  y += 2;
+  doc.setTextColor(20);
+  for (const line of doc.splitTextToSize(CV_PROFILE.target, width)) {
+    ensureSpace(6);
+    doc.text(line, margin, y);
+    y += 5;
+  }
+
   // Experience
   sectionHeading("Experience & Education Timeline");
   for (const entry of CAREER_TIMELINE) {

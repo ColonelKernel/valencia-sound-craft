@@ -47,12 +47,19 @@ export interface SkillGroup {
 export const CV_PROFILE = {
   name: "Zach Scheffler",
   // One canonical identity across the hero, the meta title, the JSON-LD, and
-  // this PDF. "Data Scientist" moved into the summary, where it can be stated
-  // as dated, checkable history instead of a current job title.
-  headline: "Music Producer & Creative Technologist",
-  location: "Valencia, Spain",
+  // this PDF. The headline leads with the data work because that is both the
+  // longest-running thread here (2016-2023) and the market being addressed;
+  // the audio work is the differentiator and is stated as such, not demoted.
+  headline: "Data Scientist & Machine Learning Engineer",
+  location: "San Francisco Bay Area",
   summary:
-    "I didn't come up through a conservatory or a computer-science program — I came up through music production and public policy. I've been producing since 2013, spent seven years in applied data work (2016–2023) across the World Bank, NORC, and Rios Partners, and now build software where music, data, and audio meet.",
+    "Seven years of applied data work (2016\u20132023) across the World Bank, NORC at the University of Chicago, and Rios Partners, where I founded the firm's data strategy team \u2014 NLP, geospatial, and web-scraping pipelines, and the statistical modeling built on them. I didn't come up through a computer-science program; I came up through public policy and music production, and I still ship the models myself. Since 2024 the proving ground has been audio: neural models running on-device, and a real-time C++ codebase with an allocation-free audio-thread test.",
+  /**
+   * What I'm looking for. /cv never stated this \u2014 it listed history and left
+   * the reader to infer the ask. Rendered on the page and drawn into the PDF.
+   */
+  target:
+    "Targeting data scientist and machine-learning engineer roles \u2014 San Francisco Bay Area or remote. Also open to senior software engineering work in audio and media.",
   /** Where to reach me — the contact form or email, never a phone number. */
   contactPath: "/#contact",
   email: "zachscheffler@gmail.com",
@@ -84,7 +91,7 @@ export const CAREER_TIMELINE: TimelineEntry[] = [
   {
     years: "2025–present",
     role: "Independent producer & music-software developer",
-    note: "Valencia, Spain — producing records and recording sessions, and building music software: the zachscheffler.com tool suite, AutoHarm, and four Ableton Live extensions (github.com/ColonelKernel)",
+    note: "Producing records and recording sessions, and building music software: the zachscheffler.com tool suite, AutoHarm, the vcv-rack-mcp C++ audio tooling, and four Ableton Live extensions (github.com/ColonelKernel)",
   },
 ];
 
@@ -125,9 +132,22 @@ export const EDUCATION: EducationEntry[] = [
 
 /** Skills, grouped. Self-reported on the résumé and evidenced by public work. */
 export const SKILLS: SkillGroup[] = [
+  // Data leads because the headline does. Every item is evidenced: forecasting
+  // in src/lib/linearRegression.ts, clustering in GrooveIntelligence/clustering.ts,
+  // the metric layer in src/lib/catalogAnalytics.ts, and ONNX inference in
+  // AutoHarm. Deliberately absent: "deep learning", "embeddings", "PyTorch" \u2014
+  // this repo ships inference over checkpoints it did not train, and says so.
   {
-    label: "Music technology",
-    items: ["MIDI systems", "Generative composition", "Ableton Live", "Pro Tools", "Logic Pro", "REAPER"],
+    label: "Data science & ML",
+    items: [
+      "Data pipelines",
+      "NLP",
+      "Statistical modeling",
+      "Forecasting",
+      "Clustering",
+      "ONNX inference",
+      "Web scraping",
+    ],
   },
   // Ordered by depth of public evidence, not by market demand. C++ is second
   // rather than first because TypeScript carries more of the public tree, but
@@ -164,8 +184,8 @@ export const SKILLS: SkillGroup[] = [
     items: ["Recording", "Mixing", "Signal flow", "Max/MSP", "VCV Rack"],
   },
   {
-    label: "Data systems",
-    items: ["Data pipelines", "NLP", "Web scraping", "Statistical modeling"],
+    label: "Music technology",
+    items: ["MIDI systems", "Generative composition", "Ableton Live", "Pro Tools", "Logic Pro", "REAPER"],
   },
   {
     label: "Languages",
