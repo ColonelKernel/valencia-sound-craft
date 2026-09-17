@@ -51,6 +51,26 @@ const RhythmTool = () => {
           </p>
         </div>
       }
+      engineering={
+        <>
+          <p>
+            The sequencer does not schedule notes with{" "}
+            <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">setTimeout</code>. A
+            timer wakes every 25&nbsp;ms and queues every step that falls inside the next
+            100&nbsp;ms, stamping each one with a time taken from the{" "}
+            <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">AudioContext</code>{" "}
+            clock. The timer is allowed to be late; the audio is not. When a Blipblox is
+            connected over Web MIDI the same loop also emits a 24-pulse-per-quarter MIDI clock,
+            so the hardware and the browser stay on one timebase.
+          </p>
+          <p>
+            Playback is a single-owner lock rather than a boolean. Asking to play hands the
+            transport to one tool and takes it from whoever held it, which is why opening the
+            harmony lab mid-groove stops the groove instead of layering two clocks on top of
+            each other. The exclusivity is asserted in the unit suite, not left to convention.
+          </p>
+        </>
+      }
     >
       <RhythmToolUI
         summaryLabel={tool.summaryLabel}

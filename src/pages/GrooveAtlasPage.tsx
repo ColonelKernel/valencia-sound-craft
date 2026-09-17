@@ -82,6 +82,54 @@ const GrooveAtlasPage = () => {
             <GrooveIntelligenceLab />
           </Suspense>
         )}
+
+        {/* The feel-space lens is the most quantitative thing on the site after
+            the catalog dashboard, and none of that was visible from the page. */}
+        <section className="border-t border-border/70 bg-secondary/20 py-12">
+          <div className="container mx-auto">
+            <article className={cardClasses({ padding: "md" }, "max-w-3xl")}>
+              <h2 className="text-xl font-semibold text-foreground">How this is built</h2>
+              <div className="mt-4 space-y-4 text-sm leading-7 text-muted-foreground">
+                <p>
+                  The feel-space lens runs k-means over 1,000 performances sampled from the
+                  Expanded Groove MIDI Dataset (E-GMD v1.0.0, Google Magenta), in a
+                  five-dimensional feature space: tempo, note density, syncopation, swing ratio
+                  and velocity variance, each normalized before any distance is taken. Seeding
+                  is farthest-point rather than random: the first centroid is the groove
+                  nearest the middle of the field, and each next one is whichever groove is
+                  furthest from everything chosen so far. That makes the layout deterministic,
+                  and a clustering that reshuffles on reload is a clustering nobody can reason
+                  about.
+                </p>
+                <p>
+                  What the clusters buy is rendering. Points go into a quadtree and a
+                  level-of-detail manager decides, from the camera and the viewport, whether to
+                  draw cluster centroids, a handful of representatives, or the individual
+                  grooves. Zoomed out, the canvas draws a dozen shapes instead of a thousand.
+                  The camera, the spatial index and the LOD rules each have their own unit
+                  suite, because they are the parts where a wrong answer looks like a rendering
+                  bug rather than a logic error.
+                </p>
+                <p>
+                  The two lenses are separate chunks and switching unmounts the inactive one,
+                  which is also how its audio gets stopped. The atlas side is Leaflet over 195
+                  country centroids, with 103 ethnomusicological citations attached to 39 of
+                  the traditions — every one fetched and read before it was recorded, and
+                  traditions that could not be credibly sourced left uncited rather than
+                  decorated. The feel-space side is a canvas. Neither loads until you ask.
+                </p>
+              </div>
+              <a
+                href="https://github.com/ColonelKernel/valencia-sound-craft"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4 hover:text-primary"
+              >
+                Read the source
+              </a>
+            </article>
+          </div>
+        </section>
       </main>
     </>
   );

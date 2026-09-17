@@ -11,6 +11,16 @@ interface ToolPageLayoutProps {
   title: string;
   description: string;
   summary: ReactNode;
+  /**
+   * How the tool is built, for a technical reader. Optional so a route can
+   * ship without one, but every tool route should have it: without it these
+   * pages read as toys, and the engineering behind them was only legible to
+   * someone who found the repo.
+   *
+   * Pass paragraphs only — the layout owns the <h2> so the heading level
+   * cannot drift out of order across five separately-authored routes.
+   */
+  engineering?: ReactNode;
   children: ReactNode;
 }
 
@@ -20,6 +30,7 @@ const ToolPageLayout = ({
   title,
   description,
   summary,
+  engineering,
   children,
 }: ToolPageLayoutProps) => (
   <>
@@ -63,9 +74,33 @@ const ToolPageLayout = ({
         </div>
       </section>
 
-      <section className="pb-20">
+      <section className={engineering ? "pb-10" : "pb-20"}>
         <div className="container mx-auto">{children}</div>
       </section>
+
+      {/* Below the tool, not above it: the artifact should be the first thing
+          a visitor can touch, and the account of how it works is what they
+          read once it has earned their attention. */}
+      {engineering ? (
+        <section className="border-t border-border/70 bg-secondary/20 py-12">
+          <div className="container mx-auto">
+            <article className={cardClasses({ padding: "md" }, "max-w-3xl")}>
+              <h2 className="text-xl font-semibold text-foreground">How this is built</h2>
+              <div className="mt-4 space-y-4 text-sm leading-7 text-muted-foreground">
+                {engineering}
+              </div>
+              <a
+                href="https://github.com/ColonelKernel/valencia-sound-craft"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4 hover:text-primary"
+              >
+                Read the source
+              </a>
+            </article>
+          </div>
+        </section>
+      ) : null}
     </main>
   </>
 );

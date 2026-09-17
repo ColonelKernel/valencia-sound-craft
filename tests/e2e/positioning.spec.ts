@@ -57,3 +57,25 @@ test("the CV states what he is looking for", async ({ page }) => {
   await expect(page.locator("body")).toContainText("Targeting data scientist");
   await expect(page.locator("body")).toContainText("San Francisco Bay Area");
 });
+
+const EVIDENCE_ROUTES = [
+  "/tools/rhythm",
+  "/tools/harmony",
+  "/tools/map",
+  "/tools/circle",
+  "/tools/tonnetz",
+  "/groove-atlas",
+];
+
+for (const path of EVIDENCE_ROUTES) {
+  test(`${path} explains how it is built`, async ({ page }) => {
+    await page.goto(path);
+
+    // Without this block every one of these routes reads as a toy: the
+    // engineering behind them was written down only in source comments, which
+    // a hiring reader never opens. The heading is owned by the layout, so
+    // asserting it here also pins the heading level.
+    const heading = page.getByRole("heading", { name: "How this is built", level: 2 });
+    await expect(heading).toBeVisible();
+  });
+}

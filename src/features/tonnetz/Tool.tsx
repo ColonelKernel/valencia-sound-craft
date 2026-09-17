@@ -27,6 +27,27 @@ const TonnetzTool = () => {
           </p>
         </div>
       }
+      engineering={
+        <>
+          <p>
+            The lattice is a 12&nbsp;&times;&nbsp;6 hex grid whose triads are related by the
+            neo-Riemannian transforms — P flips a triad between major and minor, L moves it by
+            a major third, R by a minor third, and S, N and H are compounds of those three.
+            Each is a pure function from one triad to another, so chord suggestion is not a
+            lookup table of progressions: it applies every transform to whatever you are
+            currently on and labels each result by whether it stays inside the active scale.
+          </p>
+          <p>
+            The grid animates in SVG with SMIL, and a CSS{" "}
+            <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">
+              prefers-reduced-motion
+            </code>{" "}
+            rule cannot reach SMIL — so the preference is read in JavaScript at mount and the
+            looping animations are simply not rendered. Chords play through the shared audio
+            context and, when a device is present, out over Web MIDI.
+          </p>
+        </>
+      }
     >
       <TonnetzToolUI
         tool={

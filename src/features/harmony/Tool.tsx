@@ -27,6 +27,26 @@ const HarmonyTool = () => {
           </p>
         </div>
       }
+      engineering={
+        <>
+          <p>
+            Key, mode, tempo, chord progression and transport live in one hand-written store
+            read through{" "}
+            <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">useSyncExternalStore</code>{" "}
+            with a selector per subscriber, so changing the tempo does not re-render the tools
+            that only care about the key. There is no state library here — the store is about
+            eighty lines, and every transition it allows is covered by a test.
+          </p>
+          <p>
+            Two details are load-bearing. Selecting a rhythm may only <em>suggest</em> a tempo,
+            and the suggestion is ignored the moment the user sets a tempo anywhere — a
+            command and a hint are different events, and collapsing them is how a shared
+            transport starts overwriting the user. And mode names are normalized at the
+            boundary, so &ldquo;major&rdquo; and &ldquo;Ionian&rdquo; can never end up compared
+            as strings and found unequal.
+          </p>
+        </>
+      }
     >
       <HarmonyToolUI
         workspace={

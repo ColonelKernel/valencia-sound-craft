@@ -27,6 +27,22 @@ const CircleTool = () => {
           </p>
         </div>
       }
+      engineering={
+        <>
+          <p>
+            This page holds no key of its own. The wheel renders from the shared tonal center
+            and writes back to it, which is the whole reason the harmony lab and the Tonnetz
+            are already in the right key when you open them. A local copy would have been
+            easier and would have started drifting the first time two tabs disagreed.
+          </p>
+          <p>
+            Everything else on screen is derived, not stored: the key signature, the relative
+            minor, the chord summary and the relationship lines between segments are all
+            memoized computations over the current key. Drawing is plain SVG with hit targets
+            sized for touch, so there is no charting library in the chunk.
+          </p>
+        </>
+      }
     >
       <CircleToolUI
         tool={
