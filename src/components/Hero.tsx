@@ -19,11 +19,11 @@ const Hero = () => {
       <div className="absolute inset-0">
         <img
           src="/hero-photo.webp"
-          srcSet="/hero-photo-750.webp 750w, /hero-photo.webp 1050w"
+          srcSet="/hero-photo-750.webp 750w, /hero-photo.webp 1400w"
           sizes="100vw"
-          alt="Music production studio"
-          width={1050}
-          height={1400}
+          alt="Zach Scheffler's home studio: guitars and a bass on the wall, studio monitors, and a workstation running a DAW"
+          width={1400}
+          height={1050}
           className="h-full w-full object-cover"
           {...{ fetchpriority: "high" }}
         />

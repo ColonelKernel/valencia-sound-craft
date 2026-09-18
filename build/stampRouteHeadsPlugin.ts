@@ -204,7 +204,7 @@ export function stampRouteHeadsPlugin(): Plugin {
           /(<meta property="og:image:alt" content=")[^"]*(" \/>)/,
           `$1${title}$2`,
         );
-        // The hero image only renders on "/" — preloading its 113 KB with
+        // The hero image only renders on "/" — preloading its 126 KB with
         // fetchpriority=high on every other route just competes with that
         // route's real critical path.
         replaceOnce(/\s*<link rel="preload" as="image" href="\/hero-photo\.webp"[^>]*>/, "");
