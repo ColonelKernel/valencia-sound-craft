@@ -49,7 +49,7 @@
   Cache-Control: public, max-age=86400
 /hero-photo-750.webp
   Cache-Control: public, max-age=86400
-/og-image.jpg
+/og-image.png
   Cache-Control: public, max-age=86400
 /favicon.ico
   Cache-Control: public, max-age=86400

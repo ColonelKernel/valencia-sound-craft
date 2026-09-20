@@ -1,13 +1,15 @@
 /**
  * CV PDF layout — the single drawing routine behind both copies of the résumé.
  *
- * Two callers share this file:
- *   1. src/pages/CVPage.tsx, which dynamic-imports jspdf when a visitor clicks
- *      Download, so the library never lands in the route chunk.
- *   2. build/emitCvPdfPlugin.ts, which runs the same code under Node at build
- *      time and writes dist/Zach-Scheffler-CV.pdf — a stable, crawlable URL to
- *      put on applications. Because both go through here, the static file
- *      cannot drift from src/content/cv.ts.
+ * One caller draws the document: build/emitCvPdfPlugin.ts, which runs this
+ * under Node at build time and writes dist/Zach-Scheffler-CV.pdf — a stable,
+ * crawlable URL to put on applications. /cv links that file directly.
+ *
+ * It used to have a second caller: CVPage.tsx dynamic-imported jspdf to redraw
+ * the same document in the browser. That shipped ~241 KB gzip of jsPDF,
+ * html2canvas and purify to reproduce a file the build already emits, so the
+ * download button now points at the artifact. src/content/cvPdf.test.ts is the
+ * remaining non-build caller, and it is what keeps this in step with cv.ts.
  *
  * CONSTRAINTS, both load-bearing:
  *   - Relative imports only. The build plugin enters the Vite config load

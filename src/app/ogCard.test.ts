@@ -93,4 +93,13 @@ describe("social card", () => {
   it("no longer ships the photograph it replaced", () => {
     expect(() => readFileSync(join(root, "public", "og-image.jpg"))).toThrow();
   });
+
+  it("is the file public/_headers actually caches", () => {
+    // Deleting og-image.jpg left the cache rule pointing at it, so the card
+    // that ships was served with no Cache-Control at all — invisible, because
+    // nothing renders a headers file. Pin the rule to the card's real name.
+    const headers = readFileSync(join(root, "public", "_headers"), "utf8");
+    expect(headers).toContain("/og-image.png");
+    expect(headers).not.toContain("/og-image.jpg");
+  });
 });
