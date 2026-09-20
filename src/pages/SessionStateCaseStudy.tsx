@@ -175,8 +175,8 @@ const SessionStateCaseStudy = () => {
                     cannot argue with is worse than no reconstruction.
                   </p>
                   <p>
-                    Benchmarked against the instrument labels of MedleyDB&rsquo;s 330
-                    multitracks plus a curated set of decorated export names, it reaches{" "}
+                    Benchmarked against MedleyDB&rsquo;s instrument labels plus a curated set
+                    of decorated export names, it reaches{" "}
                     <strong className="text-foreground">99.3% over 6,467 weighted instances</strong>,
                     with per-role precision, recall and F1 reported for all twelve roles.
                     Labels the taxonomy has no bucket for are scored as correct only when the

@@ -22,6 +22,35 @@ import { useFadeIn } from "@/hooks/useFadeIn";
  * while this page was being written, every time in the direction of a smaller
  * claim, and the page says so because that is the interesting part.
  *
+ * Re-audited 2026-09-20 against the atlas repository, because three passages
+ * did not reconcile with each other and a page arguing for reproducible
+ * numbers cannot leave that standing. Three were wrong:
+ *
+ *   - The density model's sample. The page said a column missing for 21
+ *     cities shrank it from 196 to 149. Adding urban_area_km2 to spec F's
+ *     requirements drops 22 cities and leaves 174; no combination of the
+ *     covariate columns reaches 149. Corrected to 22 and 174.
+ *   - "thirteen of them the highest-ridership European systems" — twelve are
+ *     European, and they are not the largest: the biggest system dropped is
+ *     Guangzhou, and the German ones are mid-sized. Corrected to twelve,
+ *     with the superlative removed.
+ *   - Operating model reaches 81, not the 108 that ownership reaches. The
+ *     two were sharing a number.
+ *
+ * Two others read as contradictions and were not. "28 of the 30 Chinese
+ * systems" is exact — ridership_long.csv has 28 station_entries and 2 already
+ * unlinked_trips — and verify_camet.py tests all thirty regardless of label,
+ * which is why 14+12+4 exceeds 28. And "a sixth, Kochi" always referred to
+ * the five disputed systems; a sentence about nine sat between them. Both
+ * passages now say so rather than leaving the reader to work it out.
+ *
+ * Everything else checked out: spec F at n=196 and adjusted R² 0.677, the age
+ * elasticity +0.628 → +0.362, population +0.386, boardings +1.048 with Asia
+ * and −1.015 without, trips per capita 52/47/32, 49 of 58 countries on one
+ * convention, the CAMET totals and their 1.666 ratio, Taiyuan and Ürümqi to
+ * the unit, 14/12/4 and twenty-six relabelled, the five disputed systems by
+ * name, 33 monthly series, and 201/108/67/41 on the attribute counts.
+ *
  * The repository credits "Built with Claude (Cowork)". Nothing on this page
  * claims the code was hand-written; the claims are about data assembly,
  * measurement and the decisions behind them.
@@ -294,11 +323,15 @@ const TransitAtlasCaseStudy = () => {
                   <p>
                     So the headline Chinese figure is boardings, and the label was wrong. The
                     check is written as a script that tests each city&rsquo;s recorded value
-                    against <em>both</em> columns rather than applying the inference wholesale:
-                    fourteen match to within 0.2%, twelve more to within 6% — the atlas carries
-                    some 2025 figures against a 2024 report — and four match neither, because
-                    their vintage predates the report entirely. Wuxi&rsquo;s number is from
-                    2016. Those four were cleared to unknown rather than guessed.
+                    against <em>both</em> columns rather than applying the inference wholesale,
+                    and it tests all thirty rather than only the twenty-eight — a label that
+                    already reads <span className="font-mono text-xs">unlinked_trips</span> is
+                    still worth confirming. Fourteen match to within 0.2%, twelve more to within
+                    6% — the atlas carries some 2025 figures against a 2024 report — and four
+                    match neither, because their vintage predates the report entirely.
+                    Wuxi&rsquo;s number is from 2016. Those four were cleared to unknown rather
+                    than guessed, which is why twenty-six is the number in the heading and
+                    thirty is the number tested.
                   </p>
                 </div>
               </div>
@@ -316,9 +349,9 @@ const TransitAtlasCaseStudy = () => {
                     both, so with population already in the model the density coefficient was
                     algebraically minus the <em>area</em> coefficient — a geometric identity
                     about a denominator I had constructed, wearing the clothes of a behavioural
-                    elasticity. It also required a column missing for 21 cities, thirteen of
-                    them the highest-ridership European systems, which shrank the sample from
-                    196 to 149 and inflated the very gap it sat beside.
+                    elasticity. It also required a column missing for 22 cities, twelve of
+                    them European, which shrank the sample from 196 to 174 and inflated the
+                    very gap it sat beside.
                   </p>
                   <p>
                     <strong className="text-foreground">
@@ -392,18 +425,19 @@ const TransitAtlasCaseStudy = () => {
                   </p>
                   <p>
                     The system attributes thin out fast behind the headline ones. Opening year is
-                    complete at 201 of 201, but ownership and operating model reach 108, grade of
-                    automation 67, and farebox recovery only 41. Anything built on those is a
+                    complete at 201 of 201, but ownership reaches 108, operating model 81, grade
+                    of automation 67, and farebox recovery only 41. Anything built on those is a
                     statement about a subset, and a subset nobody sampled deliberately.
                   </p>
                   <p>
                     Five systems&rsquo; ridership figures match no source that could be located —
                     Doha, Dhaka, Nagpur, Incheon and Taoyuan — and they are marked disputed in
-                    the dataset rather than left looking sound. Nine systems have no established
-                    counting convention. A sixth, Kochi, was checked while this page was being
-                    written and could not be confirmed either: the operator&rsquo;s table carried
-                    only four months of the year in question, so it is recorded as unverified
-                    rather than verified.
+                    the dataset rather than left looking sound. A sixth, Kochi, was checked while
+                    this page was being written and could not be confirmed either: the
+                    operator&rsquo;s table carried only four months of the year in question, so
+                    it is recorded as unverified rather than verified. Separately, nine of the
+                    196 systems carrying a ridership figure have no established counting
+                    convention at all.
                   </p>
                   <p>
                     And the counts here are recomputed from the data files rather than taken from
