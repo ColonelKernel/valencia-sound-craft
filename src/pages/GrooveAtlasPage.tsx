@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from "react";
 import { Globe2, ScatterChart } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
@@ -122,14 +123,31 @@ const GrooveAtlasPage = () => {
                   decorated. The feel-space side is a canvas. Neither loads until you ask.
                 </p>
               </div>
-              <a
-                href="https://github.com/ColonelKernel/valencia-sound-craft"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4 hover:text-primary"
-              >
-                Read the source
-              </a>
+              {/* This route is a top-level nav item and the homepage's featured
+                  card, and it contained no internal link at all — the only way
+                  out was the navbar. */}
+              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium">
+                <a
+                  href="https://github.com/ColonelKernel/valencia-sound-craft"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-foreground underline underline-offset-4 hover:text-primary"
+                >
+                  Read the source
+                </a>
+                <Link
+                  to={ROUTE_META.projects.path}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Other projects
+                </Link>
+                <Link
+                  to={ROUTE_META.cv.path}
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  CV
+                </Link>
+              </div>
             </article>
           </div>
         </section>

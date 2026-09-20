@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import CaseStudyFooter from "@/components/CaseStudyFooter";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { TRANSIT_ATLAS_JSONLD } from "@/app/routeStructuredData";
@@ -414,6 +415,8 @@ const TransitAtlasCaseStudy = () => {
                 </div>
               </div>
             </div>
+
+            <CaseStudyFooter current="transitAtlas" />
           </div>
         </section>
       </main>

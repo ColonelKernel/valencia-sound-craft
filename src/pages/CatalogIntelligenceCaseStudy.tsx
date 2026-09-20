@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import CaseStudyFooter from "@/components/CaseStudyFooter";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { CATALOG_INTELLIGENCE_JSONLD } from "@/app/routeStructuredData";
@@ -273,6 +274,8 @@ const CatalogIntelligenceCaseStudy = () => {
                 </div>
               </div>
             </div>
+
+            <CaseStudyFooter current="catalogIntelligence" />
           </div>
         </section>
       </main>

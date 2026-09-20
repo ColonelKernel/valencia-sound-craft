@@ -247,6 +247,43 @@ const Navbar = () => {
     </>
   );
 
+  /**
+   * The way back out of a subnav.
+   *
+   * On any /tools* or /music-analytics route this bar replaced the whole site
+   * nav with the subnav, so CV, Projects, Work and Groove Atlas all vanished —
+   * and the five tool pages contain no internal link of their own. Six of
+   * sixteen routes could not reach the CV except through the wordmark, on a
+   * site whose own comment calls the CV the conversion target. The subnav
+   * stays; it just no longer traps anyone.
+   */
+  const renderSubnavEscape = () => (
+    <div className="flex items-center gap-5 border-l border-border pl-4">
+      <Link to="/projects" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+        Projects
+      </Link>
+      <Link to="/cv" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+        CV
+      </Link>
+    </div>
+  );
+
+  /** The same escape, in the mobile sheet. @see renderSubnavEscape */
+  const renderMobileSubnavEscape = () => (
+    <div className="mt-2 space-y-2 border-t border-border pt-3">
+      {[{ to: "/projects", label: "Projects" }, { to: "/cv", label: "CV" }].map((link) => (
+        <Link
+          key={link.to}
+          to={link.to}
+          onClick={() => setMenuOpen(false)}
+          className="block rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+        >
+          {link.label}
+        </Link>
+      ))}
+    </div>
+  );
+
   return (
     <nav
       className={cn(
@@ -270,6 +307,8 @@ const Navbar = () => {
             : isAnalyticsRoute
               ? renderAnalyticsNav()
               : renderHomeLinks()}
+
+          {(isToolsRoute || isAnalyticsRoute) && renderSubnavEscape()}
 
           <div className="ml-2 flex items-center gap-3 border-l border-border pl-4">
             {socialLinks.map((socialLink) => (
@@ -302,7 +341,9 @@ const Navbar = () => {
         <div className="border-b border-border bg-background/96 px-6 pb-6 pt-2 backdrop-blur-xl lg:hidden">
           <div className="space-y-2">
             {isToolsRoute
-              ? toolLinks.map((link) => (
+              ? (
+                  <>
+                    {toolLinks.map((link) => (
                   <NavLink
                     key={link.to}
                     to={link.to}
@@ -317,9 +358,12 @@ const Navbar = () => {
                       )
                     }
                   >
-                    {link.label}
-                  </NavLink>
-                ))
+                        {link.label}
+                      </NavLink>
+                    ))}
+                    {renderMobileSubnavEscape()}
+                  </>
+                )
               : isAnalyticsRoute
                 ? (
                     <>
@@ -333,6 +377,7 @@ const Navbar = () => {
                       <div className="block rounded-2xl px-4 py-3 text-sm font-medium bg-secondary text-foreground">
                         Analytics
                       </div>
+                      {renderMobileSubnavEscape()}
                     </>
                   )
                 : (

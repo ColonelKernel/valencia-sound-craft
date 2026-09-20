@@ -29,6 +29,15 @@ const MUSIC_LINKS: { label: string; url: string }[] = [
   { label: "YouTube", url: CV_PROFILE.profiles.youtube },
 ];
 
+const SkillLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
+  <Link
+    to={to}
+    className="text-foreground underline underline-offset-4 transition-colors hover:text-primary"
+  >
+    {children}
+  </Link>
+);
+
 const CVPage = () => {
   const ref = useFadeIn();
 
@@ -184,6 +193,29 @@ const CVPage = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* The chips were unevidenced on the page and evidenced only in
+                    a code comment (src/content/cv.ts, above SKILLS) — which no
+                    reviewer reads. This route linked nowhere but the homepage
+                    and /#contact; the four case studies it sits on top of were
+                    reachable from /projects alone. */}
+                <p className="mt-6 text-sm leading-7 text-muted-foreground">
+                  Where these are demonstrated: forecasting and the metric layer in{" "}
+                  <SkillLink to={ROUTE_META.catalogIntelligence.path}>
+                    catalog intelligence
+                  </SkillLink>
+                  , clustering in{" "}
+                  <SkillLink to={ROUTE_META.grooveAtlas.path}>the groove atlas</SkillLink>,
+                  ONNX inference in{" "}
+                  <SkillLink to={ROUTE_META.autoharm.path}>AutoHarm</SkillLink>, the
+                  geospatial pipeline in{" "}
+                  <SkillLink to={ROUTE_META.transitAtlas.path}>the transit atlas</SkillLink>,
+                  and the schema and classifier work in{" "}
+                  <SkillLink to={ROUTE_META.sessionState.path}>
+                    the session-state analyzer
+                  </SkillLink>
+                  .
+                </p>
               </div>
             </div>
 

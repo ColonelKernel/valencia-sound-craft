@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import CaseStudyFooter from "@/components/CaseStudyFooter";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { SESSION_STATE_JSONLD } from "@/app/routeStructuredData";
@@ -262,6 +263,8 @@ const SessionStateCaseStudy = () => {
                 </div>
               </div>
             </div>
+
+            <CaseStudyFooter current="sessionState" />
           </div>
         </section>
       </main>

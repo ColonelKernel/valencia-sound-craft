@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import CaseStudyFooter from "@/components/CaseStudyFooter";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { AUTOHARM_JSONLD } from "@/app/routeStructuredData";
@@ -182,14 +183,7 @@ const AutoHarmCaseStudy = () => {
               </div>
             </div>
 
-            <div className="fade-up mt-14">
-              <Link
-                to="/projects"
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ArrowLeft size={16} /> Back to projects
-              </Link>
-            </div>
+            <CaseStudyFooter current="autoharm" />
           </div>
         </section>
       </main>
