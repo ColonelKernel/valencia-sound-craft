@@ -1,42 +1,11 @@
 // Rhythm Translation Engine — meter normalization, groove mapping, polyrhythm splitting
 
-
 // ─── Meter Normalization ─────────────────────────────────────
 
 export interface MeterInfo {
   numerator: number;
   denominator: number;
   cycleLength: number;
-}
-
-/**
- * Convert a time signature to a step grid size.
- * 7/8 → 14, 6/8 → 12, 4/4 → 16, 12-beat → 12 or 16 approx
- */
-export function normalizeMeter(
-  timeSignature: [number, number],
-  targetGrid?: 16 | 32
-): { steps: number; subdivisionPerBeat: number } {
-  const [num, denom] = timeSignature;
-
-  if (targetGrid) {
-    return { steps: targetGrid, subdivisionPerBeat: Math.round(targetGrid / num) };
-  }
-
-  // Natural step counts based on meter
-  if (denom === 8) {
-    // Compound / odd meters in 8ths
-    const steps = num * 2; // each 8th = 2 subdivisions
-    return { steps: Math.min(steps, 32), subdivisionPerBeat: 2 };
-  }
-
-  if (denom === 4) {
-    const steps = num * 4; // 16th note grid
-    return { steps: Math.min(steps, 32), subdivisionPerBeat: 4 };
-  }
-
-  // Fallback
-  return { steps: 16, subdivisionPerBeat: 4 };
 }
 
 // ─── Groove Mapping ──────────────────────────────────────────
@@ -100,25 +69,6 @@ export interface PolyLayer {
   midiPattern: number[];
   velocityPattern: number[];
   label: string;
-}
-
-/**
- * Split a pattern with multiple tracks into separate MIDI channels
- * for polyrhythmic playback.
- */
-export function splitPolyrhythm(
-  tracks: { instrumentId: string; steps: number[]; subdivisions: number }[],
-  baseChannel: number = 0
-): PolyLayer[] {
-  return tracks.map((track, idx) => {
-    const groove = mapGroove(track.steps);
-    return {
-      channel: (baseChannel + idx) % 16,
-      midiPattern: groove.midiPattern,
-      velocityPattern: groove.velocityPattern,
-      label: track.instrumentId,
-    };
-  });
 }
 
 // ─── Pattern Morphing ────────────────────────────────────────

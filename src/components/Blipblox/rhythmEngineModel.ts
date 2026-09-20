@@ -776,7 +776,7 @@ function compareDefinitions(left: StructuredRhythmDefinition, right: StructuredR
 
 export const RHYTHM_LIBRARY = GLOBAL_RHYTHM_ATLAS.flatMap(buildCountryDefinitions).sort(compareDefinitions);
 
-export const RHYTHM_LIBRARY_BY_ID = new Map(
+const RHYTHM_LIBRARY_BY_ID = new Map(
   RHYTHM_LIBRARY.map((definition) => [definition.id, definition] as const),
 );
 
@@ -804,10 +804,6 @@ export function getDefaultRhythmDefinitionForCountry(country: string) {
   }
 
   return buildCountryDefinitions(atlasRhythm)[0] || null;
-}
-
-export function getCountryRhythmDefinitions(country: string) {
-  return RHYTHM_LIBRARY.filter((definition) => definition.country === country);
 }
 
 export function getRegionCountries(region: RhythmBrowserRegion | "All" = "All") {
@@ -918,10 +914,6 @@ export function validateStructuredRhythm(definition: StructuredRhythmDefinition)
   }
 
   return errors;
-}
-
-export function validateRhythmLibrary() {
-  return RHYTHM_LIBRARY.flatMap(validateStructuredRhythm);
 }
 
 export function buildCompositePattern(layers: SequencerLayer[]) {

@@ -39,7 +39,7 @@ interface EditHistory {
   loopCount: number;
 }
 
-export class AdaptiveEngine {
+class AdaptiveEngine {
   private history: EditHistory = {
     densityTrend: 0,
     editCount: 0,

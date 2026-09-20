@@ -117,7 +117,7 @@ export const MODE_INTERVAL_NAMES: Record<string, string[]> = {
 };
 
 // ─── Chord Associations ─────────────────────────────────────
-export const MODE_CHORDS: Record<string, string[]> = {
+const MODE_CHORDS: Record<string, string[]> = {
   Ionian:     ['Imaj7','IIm7','IIIm7','IVmaj7','V7','VIm7','VIIm7b5'],
   Dorian:     ['Im7','IIm7','bIIImaj7','IV7','Vm7','VIm7b5','bVIImaj7'],
   Phrygian:   ['Im7','bII7','bIIImaj7','IVm7','Vm7b5','bVImaj7','bVIIm7'],
@@ -163,7 +163,6 @@ export const MODE_CHORDS: Record<string, string[]> = {
 };
 
 export const ALL_ROOTS = ['C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B'];
-export const MODE_NAMES = Object.keys(MODE_INTERVALS);
 
 const ENHARMONIC: Record<string, string> = {
   'C#':'Db','Db':'C#','D#':'Eb','Eb':'D#','F#':'Gb','Gb':'F#','G#':'Ab','Ab':'G#','A#':'Bb','Bb':'A#',
@@ -391,15 +390,6 @@ export function getIntervalName(note: string, scaleNotes: string[], mode: string
     if (enhIdx !== -1) return intervals[enhIdx];
   }
   return '';
-}
-
-// ─── Finger positions (basic open-position pattern) ─────────
-// Returns suggested finger (0=open, 1-4) for a fret relative to a position
-export function getFingerForFret(fret: number, lowestFretInPosition: number): number {
-  if (fret === 0) return 0;
-  const rel = fret - lowestFretInPosition;
-  if (rel < 0) return 1;
-  return Math.min(rel + 1, 4);
 }
 
 // ─── ABC notation ───────────────────────────────────────────

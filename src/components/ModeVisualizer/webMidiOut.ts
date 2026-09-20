@@ -24,7 +24,7 @@ export async function requestMidiAccess(): Promise<MidiOutputDevice[]> {
   return getOutputDevices();
 }
 
-export function getOutputDevices(): MidiOutputDevice[] {
+function getOutputDevices(): MidiOutputDevice[] {
   if (!midiAccess) return [];
   const devices: MidiOutputDevice[] = [];
   midiAccess.outputs.forEach((output) => {
@@ -43,17 +43,12 @@ export function selectOutput(deviceId: string): boolean {
   return false;
 }
 
-export function getActiveOutput(): MidiOutputDevice | null {
-  if (!activeOutput) return null;
-  return { id: activeOutput.id, name: activeOutput.name || 'Unknown', output: activeOutput };
-}
-
 export function isConnected(): boolean {
   return activeOutput !== null;
 }
 
 // Send note-on for a set of notes (chord)
-export function sendNoteOn(notes: string[], velocity = 100, channel = 0): void {
+function sendNoteOn(notes: string[], velocity = 100, channel = 0): void {
   if (!activeOutput) return;
   const statusByte = 0x90 | (channel & 0x0F);
   activeNoteOffs = [];
@@ -66,7 +61,7 @@ export function sendNoteOn(notes: string[], velocity = 100, channel = 0): void {
 }
 
 // Send note-off for previously sent notes
-export function sendNoteOff(channel = 0): void {
+function sendNoteOff(channel = 0): void {
   if (!activeOutput) return;
   const statusByte = 0x80 | (channel & 0x0F);
   for (const midi of activeNoteOffs) {

@@ -595,7 +595,7 @@ export interface DrumInstrument {
   play: (ctx: AudioContext, time: number, velocity: number, pitch: number, decay: number) => void;
 }
 
-export const DRUM_INSTRUMENTS: DrumInstrument[] = [
+const DRUM_INSTRUMENTS: DrumInstrument[] = [
   // Acoustic
   { id: 'kick', name: 'Kick', shortName: 'KD', category: 'kick', defaultVelocity: 0.9, defaultPitch: 1, defaultDecay: 0.5, color: 'bg-amber-500', play: playKick },
   { id: 'snare', name: 'Snare', shortName: 'SN', category: 'snare', defaultVelocity: 0.85, defaultPitch: 1, defaultDecay: 0.3, color: 'bg-blue-500', play: playSnare },

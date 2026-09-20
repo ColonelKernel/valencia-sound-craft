@@ -32,7 +32,7 @@ function materialPath(fileName: string) {
   return `${MATERIAL_ROOT}/${fileName}`;
 }
 
-export const RHYTHM_LESSONS: RhythmLessonMaterial[] = [
+const RHYTHM_LESSONS: RhythmLessonMaterial[] = [
   {
     id: "lesson_afroperuvian_overview",
     title: "Afro-Peruvian Rhythms Overview",
@@ -525,7 +525,7 @@ export const RHYTHM_LESSONS: RhythmLessonMaterial[] = [
   },
 ];
 
-export const RHYTHM_WEB_SOURCES: RhythmReferenceSource[] = [
+const RHYTHM_WEB_SOURCES: RhythmReferenceSource[] = [
   {
     id: "source_african_music_britannica",
     title: "African Music",

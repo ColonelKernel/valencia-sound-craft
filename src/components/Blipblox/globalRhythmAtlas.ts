@@ -277,7 +277,7 @@ export const CANONICAL_COUNTRY_LIST = [
   "Palestine",
 ] as const;
 
-export const COUNTRY_METADATA: CountryMetadata[] = [
+const COUNTRY_METADATA: CountryMetadata[] = [
   { country: "Afghanistan", region: "South Asia", continent: "Asia" },
   { country: "Albania", region: "Balkans", continent: "Europe" },
   { country: "Algeria", region: "North Africa", continent: "Africa" },
@@ -1912,10 +1912,6 @@ function sum(values: number[]): number {
   return values.reduce((total, value) => total + value, 0);
 }
 
-function midpoint([minimum, maximum]: [number, number]) {
-  return Math.round((minimum + maximum) / 2);
-}
-
 function unique<T>(values: T[]): T[] {
   return Array.from(new Set(values));
 }
@@ -2200,23 +2196,6 @@ export function getPlaybackVelocityPattern(rhythm: Rhythm): number[] {
   });
 }
 
-export function getRhythmStepBoundaries(rhythm: Rhythm): number[] {
-  const boundaries = [0];
-  const totalUnits = sum(rhythm.subdivision);
-  let runningTotal = 0;
-
-  rhythm.subdivision.forEach((group) => {
-    runningTotal += group;
-    const stepIndex = Math.min(31, Math.floor((runningTotal / totalUnits) * 32));
-
-    if (!boundaries.includes(stepIndex)) {
-      boundaries.push(stepIndex);
-    }
-  });
-
-  return boundaries.sort((left, right) => left - right);
-}
-
 export function filterAtlasRhythms(filters: {
   country?: string;
   continent?: RhythmContinent | "All";
@@ -2244,33 +2223,20 @@ export function filterAtlasRhythms(filters: {
   });
 }
 
-export function filterByContinent(rhythms: Rhythm[], selectedContinent?: RhythmContinent | "All"): Rhythm[] {
-  if (!selectedContinent || selectedContinent === "All") return rhythms;
-  return rhythms.filter((r) => r.continent === selectedContinent);
-}
-
-export function filterByTag(rhythms: Rhythm[], tag?: RhythmTag | "All"): Rhythm[] {
-  if (!tag || tag === "All") return rhythms;
-  return rhythms.filter((r) => r.tags.includes(tag));
-}
-
 export const GLOBAL_RHYTHM_ATLAS: Rhythm[] = COUNTRY_METADATA.map((metadata) =>
   hydrateTemplate(resolveTemplate(metadata), metadata),
 );
-
-export const GLOBAL_RHYTHM_METERS = unique(GLOBAL_RHYTHM_ATLAS.map((rhythm) => rhythm.meter)).sort();
-export const GLOBAL_RHYTHM_CONTINENTS = unique(GLOBAL_RHYTHM_ATLAS.map((rhythm) => rhythm.continent)).sort() as RhythmContinent[];
 export const GLOBAL_RHYTHM_TAGS = unique(GLOBAL_RHYTHM_ATLAS.flatMap((rhythm) => rhythm.tags)).sort() as RhythmTag[];
 
 // Indexed lookups for performance
-export const ATLAS_BY_CONTINENT = new Map<RhythmContinent, Rhythm[]>();
+const ATLAS_BY_CONTINENT = new Map<RhythmContinent, Rhythm[]>();
 GLOBAL_RHYTHM_ATLAS.forEach((rhythm) => {
   const list = ATLAS_BY_CONTINENT.get(rhythm.continent) || [];
   list.push(rhythm);
   ATLAS_BY_CONTINENT.set(rhythm.continent, list);
 });
 
-export const ATLAS_BY_TAG = new Map<RhythmTag, Rhythm[]>();
+const ATLAS_BY_TAG = new Map<RhythmTag, Rhythm[]>();
 GLOBAL_RHYTHM_ATLAS.forEach((rhythm) => {
   rhythm.tags.forEach((tag) => {
     const list = ATLAS_BY_TAG.get(tag) || [];
@@ -2303,12 +2269,4 @@ export function validateGlobalRhythmAtlas(): string[] {
   });
 
   return errors;
-}
-
-export function getAtlasSummary(rhythm: Rhythm) {
-  return {
-    bpm: midpoint(rhythm.bpmRange),
-    velocityPattern: getPlaybackVelocityPattern(rhythm),
-    boundaries: getRhythmStepBoundaries(rhythm),
-  };
 }

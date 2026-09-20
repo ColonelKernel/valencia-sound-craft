@@ -5,7 +5,7 @@ const ENHARMONIC: Record<string, string> = {
   'Db': 'C#', 'Eb': 'D#', 'Fb': 'E', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#', 'Cb': 'B',
 };
 
-export function normalize(note: string): string {
+function normalize(note: string): string {
   return ENHARMONIC[note] || note;
 }
 
@@ -24,7 +24,7 @@ export function triadLabel(t: TonnetzTriadData): string {
   return `${ALL_NOTES[t.root]}${t.type === 'minor' ? 'm' : ''}`;
 }
 
-export function triadNotes(root: number, type: 'major' | 'minor'): [number, number, number] {
+function triadNotes(root: number, type: 'major' | 'minor'): [number, number, number] {
   if (type === 'major') return [root, (root + 4) % 12, (root + 7) % 12];
   return [root, (root + 3) % 12, (root + 7) % 12];
 }
@@ -35,12 +35,12 @@ export function makeTriad(root: number, type: 'major' | 'minor'): TonnetzTriadDa
 
 // ─── Neo-Riemannian Transformations ─────────────────────────
 // P (Parallel): C major ↔ C minor — change quality, keep root
-export function transformP(t: TonnetzTriadData): TonnetzTriadData {
+function transformP(t: TonnetzTriadData): TonnetzTriadData {
   return makeTriad(t.root, t.type === 'major' ? 'minor' : 'major');
 }
 
 // R (Relative): C major → A minor, A minor → C major
-export function transformR(t: TonnetzTriadData): TonnetzTriadData {
+function transformR(t: TonnetzTriadData): TonnetzTriadData {
   if (t.type === 'major') {
     return makeTriad((t.root + 9) % 12, 'minor'); // down m3
   }
@@ -48,7 +48,7 @@ export function transformR(t: TonnetzTriadData): TonnetzTriadData {
 }
 
 // L (Leading-tone exchange): C major → E minor, E minor → C major
-export function transformL(t: TonnetzTriadData): TonnetzTriadData {
+function transformL(t: TonnetzTriadData): TonnetzTriadData {
   if (t.type === 'major') {
     return makeTriad((t.root + 4) % 12, 'minor'); // up M3
   }
@@ -56,15 +56,15 @@ export function transformL(t: TonnetzTriadData): TonnetzTriadData {
 }
 
 // Compound transforms
-export function transformN(t: TonnetzTriadData): TonnetzTriadData {
+function transformN(t: TonnetzTriadData): TonnetzTriadData {
   return transformR(transformL(transformP(t))); // Nebenverwandt
 }
 
-export function transformS(t: TonnetzTriadData): TonnetzTriadData {
+function transformS(t: TonnetzTriadData): TonnetzTriadData {
   return transformL(transformP(transformR(t))); // Slide
 }
 
-export function transformH(t: TonnetzTriadData): TonnetzTriadData {
+function transformH(t: TonnetzTriadData): TonnetzTriadData {
   return transformL(transformP(transformL(t))); // Hexatonic pole
 }
 

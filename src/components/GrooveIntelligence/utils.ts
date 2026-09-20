@@ -121,7 +121,7 @@ function norm(v: number, [min, max]: [number, number]) {
 }
 
 // Cool (blue/cyan) → Warm (orange/red)
-export function syncopationColor(ns: number): string {
+function syncopationColor(ns: number): string {
   const h = 220 - ns * 200; // 220 (blue) → 20 (orange-red)
   return `hsl(${h}, 80%, 60%)`;
 }
@@ -168,11 +168,4 @@ export function interpretGroove(g: NormalizedGroove): string {
   else if (g.norm_density < 0.25) parts.push("— sparse, breathing rhythmic space");
 
   return parts.join(" ") + ".";
-}
-
-// Simple hash noise for drift
-export function noise2D(x: number, y: number, t: number): [number, number] {
-  const s1 = Math.sin(x * 12.9898 + y * 78.233 + t * 0.3) * 43758.5453;
-  const s2 = Math.sin(x * 63.7264 + y * 10.873 + t * 0.5) * 28461.2319;
-  return [(s1 - Math.floor(s1)) - 0.5, (s2 - Math.floor(s2)) - 0.5];
 }

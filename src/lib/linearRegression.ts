@@ -1,5 +1,5 @@
 /** Simple linear regression: y = slope * x + intercept */
-export function linearRegression(points: { x: number; y: number }[]) {
+function linearRegression(points: { x: number; y: number }[]) {
   const n = points.length;
   if (n < 2) return { slope: 0, intercept: points[0]?.y ?? 0 };
 

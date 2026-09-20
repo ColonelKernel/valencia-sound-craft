@@ -284,7 +284,7 @@ export function playGrooveSequence(density: number, swing: number, velocity: num
 
 // ─── MIDI Export ───
 
-export function generateMidiFile(groove: NormalizedGroove, pattern: DrumPattern): Uint8Array {
+function generateMidiFile(groove: NormalizedGroove, pattern: DrumPattern): Uint8Array {
   const bpm = groove.bpm;
   const ppq = 480; // ticks per quarter note
   const ticksPerStep = ppq / 4; // 16th note = quarter / 4

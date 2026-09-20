@@ -6,7 +6,7 @@ import { type InstrumentTimbre } from "./audioSynth";
 export const NOTES_SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 export const NOTES_FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 
-export const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 
 // ─── Types ──────────────────────────────────────────────────
 export type ChordSource = 'diatonic' | 'borrowed' | 'secondary-dom' | 'tritone-sub' | 'inserted' | 'transformed';
@@ -60,7 +60,7 @@ export interface ChordSuggestion {
 }
 
 // ─── Parallel Borrow Modes ──────────────────────────────────
-export const PARALLEL_BORROW_MODES: Record<string, string[]> = {
+const PARALLEL_BORROW_MODES: Record<string, string[]> = {
   'Ionian': ['Aeolian', 'Dorian', 'Mixolydian', 'Phrygian', 'Lydian'],
   'Dorian': ['Ionian', 'Aeolian', 'Mixolydian'],
   'Phrygian': ['Aeolian', 'Phrygian Dominant'],
@@ -141,11 +141,11 @@ export function shouldUseFlatsForKey(root: string): boolean {
   return root.includes('b') || ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'].includes(root);
 }
 
-export function getChromatic(root: string): string[] {
+function getChromatic(root: string): string[] {
   return shouldUseFlatsForKey(root) ? NOTES_FLAT : NOTES_SHARP;
 }
 
-export function transposeNote(note: string, semitones: number, useFlats: boolean): string {
+function transposeNote(note: string, semitones: number, useFlats: boolean): string {
   const chromatic = useFlats ? NOTES_FLAT : NOTES_SHARP;
   let idx = chromatic.indexOf(note);
   if (idx === -1) {
@@ -163,12 +163,6 @@ export function transposeChord(chord: ChordSpelling, semitones: number, useFlats
     notes: chord.notes.map(n => transposeNote(n, semitones, useFlats)),
     name: chord.name.replace(/^[A-G][#b]?/, transposeNote(chord.rootNote, semitones, useFlats)),
   };
-}
-
-export function getNoteIndex(note: string): number {
-  let idx = NOTES_SHARP.indexOf(note);
-  if (idx === -1) idx = NOTES_FLAT.indexOf(note);
-  return idx;
 }
 
 // ─── Chord Function Analysis ────────────────────────────────
@@ -576,7 +570,7 @@ function writeVarLen(value: number): number[] {
   return bytes;
 }
 
-export function buildMidiFile(chords: ProgressionChord[], bpm: number, beatsPerChord: number): Uint8Array {
+function buildMidiFile(chords: ProgressionChord[], bpm: number, beatsPerChord: number): Uint8Array {
   const ticksPerBeat = 480;
   const chordTicks = ticksPerBeat * beatsPerChord;
   const velocity = 100;
@@ -630,46 +624,6 @@ export function downloadMidi(chords: ProgressionChord[], bpm: number, beatsPerCh
   a.download = `${root}_${mode}_progression.mid`;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-// ─── Audio Playback ─────────────────────────────────────────
-// Playback helpers schedule against the app-wide shared AudioContext.
-
-export function playChordTones(notes: string[], duration = 0.8, timbre: InstrumentTimbre = 'piano') {
-  const ctx = getAudioContext();
-  const NOTE_FREQ: Record<string, number> = {
-    'C': 261.63, 'C#': 277.18, 'Db': 277.18,
-    'D': 293.66, 'D#': 311.13, 'Eb': 311.13,
-    'E': 329.63, 'F': 349.23, 'F#': 369.99, 'Gb': 369.99,
-    'G': 392.00, 'G#': 415.30, 'Ab': 415.30,
-    'A': 440.00, 'A#': 466.16, 'Bb': 466.16, 'B': 493.88,
-  };
-
-  const volume = 0.08;
-
-  notes.forEach((note, i) => {
-    const freq = NOTE_FREQ[note];
-    if (!freq) return;
-    const startTime = ctx.currentTime + i * 0.03;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    switch (timbre) {
-      case 'guitar': osc.type = 'triangle'; break;
-      case 'organ': osc.type = 'sine'; break;
-      case 'synth-pad': osc.type = 'sawtooth'; break;
-      case 'bright-lead': osc.type = 'square'; break;
-      case 'warm-bass': osc.type = 'sine'; break;
-      default: osc.type = 'triangle'; break;
-    }
-    osc.frequency.value = timbre === 'warm-bass' ? freq / 2 : freq;
-    gain.gain.value = volume;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(startTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-    osc.stop(startTime + duration + 0.05);
-  });
 }
 
 // ─── Rhythmic Feel Data ─────────────────────────────────────
@@ -752,7 +706,7 @@ export const VOICING_TYPES: { id: VoicingType; label: string; desc: string }[] =
   { id: 'guitar', label: 'Guitar', desc: 'Open string-friendly' },
 ];
 
-export function applyVoicing(notes: string[], voicing: VoicingType): string[] {
+function applyVoicing(notes: string[], voicing: VoicingType): string[] {
   if (notes.length < 3) return notes;
   switch (voicing) {
     case 'close': return notes;
@@ -802,7 +756,7 @@ export interface ExpressiveParams {
 
 export const DEFAULT_EXPRESSIVE: ExpressiveParams = { tension: 50, density: 50, movement: 50, brightness: 50 };
 
-export function getExpressivePlaybackParams(params: ExpressiveParams) {
+function getExpressivePlaybackParams(params: ExpressiveParams) {
   return {
     velocityMultiplier: 0.5 + (params.density / 200),
     detuneRange: (params.tension / 100) * 15,

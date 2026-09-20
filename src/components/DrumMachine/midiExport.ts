@@ -517,36 +517,7 @@ const MAPPING_TABLES: Record<MidiMapping, Record<string, number>> = {
   'custom':             GM_MAP,
 };
 
-export const MIDI_MAPPINGS: { id: MidiMapping; label: string; category: string }[] = [
-  // DAW Built-in
-  { id: 'general-midi',     label: 'General MIDI',          category: 'Standard' },
-  { id: 'ableton',          label: 'Ableton Drum Rack',     category: 'DAW' },
-  { id: 'logic-drummer',    label: 'Logic Pro Drummer',     category: 'DAW' },
-  { id: 'fl-fpc',           label: 'FL Studio FPC',         category: 'DAW' },
-  { id: 'reason-kong',      label: 'Reason Kong',           category: 'DAW' },
-  // Professional Drum VSTs
-  { id: 'superior-drummer', label: 'Superior Drummer 3',    category: 'VST' },
-  { id: 'ezdrummer',        label: 'EZdrummer 3',           category: 'VST' },
-  { id: 'addictive-drums',  label: 'Addictive Drums 2',     category: 'VST' },
-  { id: 'bfd',              label: 'BFD3',                  category: 'VST' },
-  { id: 'slate-ssd',        label: 'Steven Slate SSD5',     category: 'VST' },
-  { id: 'getgood-drums',    label: 'GetGood Drums',         category: 'VST' },
-  { id: 'modo-drum',        label: 'MODO Drum',             category: 'VST' },
-  { id: 'mt-power',         label: 'MT Power DrumKit',      category: 'VST' },
-  { id: 'ugritone',         label: 'Ugritone KVLT/KSHMR',   category: 'VST' },
-  // Hardware / Samplers
-  { id: 'battery',          label: 'NI Battery 4',          category: 'Sampler' },
-  { id: 'maschine',         label: 'NI Maschine',           category: 'Sampler' },
-  { id: 'mpc',              label: 'Akai MPC',              category: 'Sampler' },
-  { id: 'kontakt-studio',   label: 'Kontakt Studio Drummer', category: 'Sampler' },
-  { id: 'xln-xo',           label: 'XLN Audio XO',          category: 'Sampler' },
-  // Open Source
-  { id: 'hydrogen',         label: 'Hydrogen',              category: 'Free' },
-  // Custom
-  { id: 'custom',           label: 'Custom (GM base)',       category: 'Custom' },
-];
-
-export function getMidiNote(instrumentId: string, mapping: MidiMapping): number {
+function getMidiNote(instrumentId: string, mapping: MidiMapping): number {
   const table = MAPPING_TABLES[mapping] || GM_MAP;
   return table[instrumentId] ?? GM_MAP[instrumentId] ?? 36;
 }
