@@ -38,7 +38,7 @@ const services: ServiceCard[] = [
     icon: LineChart,
     title: "Applied Data Science",
     points: [
-      "Seven years across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it",
+      "Applied data work from 2016 to 2023 across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it",
       "World Transit Atlas — 201 metro and light-rail systems assembled from OpenStreetMap and open agency data, with a ridership comparability audit that dismantled my own headline finding",
       "NLP, geospatial and web-scraping pipelines; statistical modeling and forecasting in Python, R and SQL. UCLA M.P.P. with a thesis prepared for the World Bank; MIT Applied Data Science certificate",
     ],
@@ -63,7 +63,7 @@ const services: ServiceCard[] = [
     points: [
       "TypeScript and Web Audio: five routed workspaces sharing one transport, clock and lookahead scheduler",
       "C++ and CMake in vcv-rack-mcp, with an allocation-free audio-thread test and a fuzz target in its suite",
-      "Every commit passes typecheck, a zero-warning lint, 30+ unit suites, a Playwright run, a 150 KB gzip budget and a perfect Lighthouse accessibility score",
+      "Every push and pull request passes typecheck, a zero-warning lint, the unit suites, a Playwright run, a 150 KB gzip budget and Lighthouse CI holding accessibility at 1.0 on all sixteen routes",
     ],
     cta: "See the projects",
     href: "/projects",

@@ -55,3 +55,24 @@ describe("routeStructuredData", () => {
     expect(serialized).not.toMatch(/\d{3}[.\-\s]\d{3}[.\-\s]\d{4}/);
   });
 });
+
+describe("stamped and hydrated payloads cannot diverge", () => {
+  /**
+   * build/stampRouteHeadsPlugin.ts states twice that this is impossible,
+   * because both surfaces read ROUTE_JSONLD. It was not quite true. The
+   * stamper writes each route's own URL, while RouteHead resolves
+   * `jsonLd.url ?? canonicalPath` — so any entry carrying a `url` that is not
+   * its own route silently wins on the client and loses on the server.
+   *
+   * createPersonStructuredData hardcoded "/", which is truthy, so /cv stamped
+   * ".../cv" and then hydrated to ".../". Every other route happened to set
+   * its own path. This is the assertion that makes the plugin's comment true.
+   */
+  it("gives every route's JSON-LD its own path, so neither surface rewrites the other", () => {
+    for (const [key, jsonLd] of Object.entries(ROUTE_JSONLD)) {
+      if (!jsonLd || !("url" in jsonLd) || jsonLd.url === undefined) continue;
+      const expected = ROUTE_META[key as keyof typeof ROUTE_META].path;
+      expect(jsonLd.url, `${key} JSON-LD url must be its own route`).toBe(expected);
+    }
+  });
+});

@@ -13,7 +13,7 @@ dashboard — all sharing one transport, key, and tempo.
 
 | Route | What it is |
 | --- | --- |
-| [`/`](https://zachscheffler.com/) | Portfolio home: services, selected work, analytics preview, contact |
+| [`/`](https://zachscheffler.com/) | Portfolio home: evidence, selected work, analytics preview, contact |
 | [`/tools`](https://zachscheffler.com/tools) | Index of the interconnected music tools |
 | [`/tools/rhythm`](https://zachscheffler.com/tools/rhythm) | Rhythm Engine — world-rhythm atlas, browser, and step sequencer in sync |
 | [`/tools/harmony`](https://zachscheffler.com/tools/harmony) | Harmony Lab — modes, chord progressions, metronome, theory references |
@@ -23,8 +23,12 @@ dashboard — all sharing one transport, key, and tempo.
 | [`/music-analytics`](https://zachscheffler.com/music-analytics) | Catalog-intelligence dashboard (demonstration dataset from public Spotify popularity data) |
 | [`/groove-atlas`](https://zachscheffler.com/groove-atlas) | World atlas of rhythm traditions with cited sources + a feel-space lab |
 | [`/projects`](https://zachscheffler.com/projects) | Software: AutoHarm, Ableton Live extensions, music-tech research |
+| [`/projects/transit-atlas`](https://zachscheffler.com/projects/transit-atlas) | Case study — 201 metro systems, and the finding that did not survive |
+| [`/projects/catalog-intelligence`](https://zachscheffler.com/projects/catalog-intelligence) | Case study — the catalog dashboard's methods and their known limits |
+| [`/projects/session-state`](https://zachscheffler.com/projects/session-state) | Case study — one schema across four DAWs, with partial observability |
+| [`/projects/autoharm`](https://zachscheffler.com/projects/autoharm) | Case study — Markov blend plus ONNX models, playing live MIDI |
 | [`/work`](https://zachscheffler.com/work) | Music & video: the Global Pulse EP, session recordings, Streetcar Scandal |
-| [`/cv`](https://zachscheffler.com/cv) | CV with client-side PDF export |
+| [`/cv`](https://zachscheffler.com/cv) | CV, linking the PDF emitted at build time |
 
 ## Architecture
 
@@ -69,7 +73,7 @@ Every commit on the production branch passes, locally and in CI
   libraries banned from the entry chunk
 - `npm run e2e` — Playwright suite against a production build
 - `npm run lighthouse` — Lighthouse CI with an **accessibility floor of 1.0**
-  across all audited routes
+  across all sixteen routes
 
 ## Local development
 
@@ -90,4 +94,4 @@ panel.
 Fonts: DM Sans and Space Grotesk, self-hosted under the
 [SIL Open Font License](public/fonts/LICENSE.md). Rhythm-tradition entries in
 the Groove Atlas cite published ethnomusicological sources inline. Basemap
-tiles by [CARTO](https://carto.com/), data © OpenStreetMap contributors.
+tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors.

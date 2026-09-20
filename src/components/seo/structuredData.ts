@@ -37,6 +37,16 @@ export function createPersonStructuredData(config: {
   jobTitle: string;
   description: string;
   sameAs: string[];
+  /**
+   * The route this Person block describes. Two routes use it — "/" and "/cv" —
+   * and this used to be hardcoded to "/", which made /cv the one route whose
+   * JSON-LD differed before and after hydration: the build stamped
+   * ".../cv" while RouteHead read the hardcoded "/" back out
+   * (it takes `jsonLd.url ?? canonicalPath`, and "/" is truthy) and rewrote
+   * the tag to ".../". The stamp plugin comments twice that stamped and
+   * hydrated payloads cannot diverge; on that one route they did.
+   */
+  canonicalPath: string;
 }) {
   return {
     "@context": "https://schema.org" as const,
@@ -45,7 +55,7 @@ export function createPersonStructuredData(config: {
     jobTitle: config.jobTitle,
     description: config.description,
     sameAs: config.sameAs,
-    url: "/",
+    url: config.canonicalPath,
   };
 }
 

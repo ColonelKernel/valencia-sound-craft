@@ -108,7 +108,7 @@ export const GLOBAL_PULSE = {
   title: "Global Pulse",
   subtitle: "Debut EP · Berklee Valencia culminating experience · 2025",
   description:
-    "Five tracks moving through Neo Soul/R&B, experimental electronic, rock, and 1970s textures — built from field recordings, modular synthesis, AI-assisted vocal processing, and a multi-DAW pipeline.",
+    "Five tracks moving through Neo Soul/R&B, experimental electronic, rock, and 1970s textures — built from field recordings, modular synthesis, creative vocal processing, and a multi-DAW pipeline.",
   tracks: [
     {
       title: "Activate",

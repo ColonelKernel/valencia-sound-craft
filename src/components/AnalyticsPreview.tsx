@@ -139,7 +139,7 @@ const metrics = [
     icon: BarChart3,
     label: "Catalog Depth",
     value: "Album Distribution",
-    desc: "Playcount concentration across discography",
+    desc: "Release distribution across a catalog",
     spark: <BarSpark values={sparkData.catalog} />,
   },
 ];
@@ -186,7 +186,7 @@ const AnalyticsPreview = () => (
       </div>
 
       <p className="text-[11px] text-muted-foreground/60">
-        Built on a public Spotify popularity dataset (2020 sample), public APIs, and simplified
+        Built on a public Spotify popularity dataset (2020 sample), self-hosted, and simplified
         financial modeling
       </p>
     </div>

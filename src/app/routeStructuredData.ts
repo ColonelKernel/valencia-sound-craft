@@ -23,6 +23,7 @@ export const HOME_JSONLD: RouteStructuredData = createPersonStructuredData({
   jobTitle: "Data Scientist & Machine Learning Engineer",
   description:
     "Data scientist and machine learning engineer in the San Francisco Bay Area, building production ML systems and audio software.",
+  canonicalPath: ROUTE_META.home.path,
   sameAs: [
     "https://www.linkedin.com/in/zscheff/",
     "https://github.com/ColonelKernel",
@@ -201,6 +202,7 @@ export const CV_JSONLD: RouteStructuredData = createPersonStructuredData({
   name: CV_PROFILE.name,
   jobTitle: CV_PROFILE.headline,
   description: CV_PROFILE.summary,
+  canonicalPath: ROUTE_META.cv.path,
   sameAs: Object.values(CV_PROFILE.profiles),
 });
 

@@ -7,7 +7,7 @@ const Footer = () => {
           <span>San Francisco Bay Area</span>
         </div>
 
-        {/* Wraps on narrow viewports: five links at gap-6 need ~395px, which
+        {/* Wraps on narrow viewports: these links at gap-6 need ~395px, which
             overflowed a 375px screen and put a horizontal scrollbar on every
             page of the site. */}
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">

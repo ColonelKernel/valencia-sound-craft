@@ -68,7 +68,7 @@ export const CV_PROFILE = {
   headline: "Data Scientist & Machine Learning Engineer",
   location: "San Francisco Bay Area",
   summary:
-    "Seven years of applied data work (2016\u20132023) across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it \u2014 NLP, geospatial, and web-scraping pipelines, and the statistical modeling built on them. I didn't come up through a computer-science program; I came up through public policy and music production, and I still ship the models myself. Since 2024 the proving ground has been audio: neural models running on-device, and a real-time C++ codebase with an allocation-free audio-thread test.",
+    "Applied data work from 2016 to 2023 across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it \u2014 NLP, geospatial, and web-scraping pipelines, and the statistical modeling built on them. I didn't come up through a computer-science program; I came up through public policy and music production, and I still ship the models myself. Since 2024 the proving ground has been audio: neural models running on-device, and a real-time C++ codebase with an allocation-free audio-thread test.",
   /**
    * What I'm looking for. /cv never stated this \u2014 it listed history and left
    * the reader to infer the ask. Rendered on the page and drawn into the PDF.

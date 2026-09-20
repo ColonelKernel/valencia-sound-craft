@@ -35,7 +35,7 @@ const HarmonyTool = () => {
             <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">useSyncExternalStore</code>{" "}
             with a selector per subscriber, so changing the tempo does not re-render the tools
             that only care about the key. There is no state library here — the store is about
-            eighty lines, and every transition it allows is covered by a test.
+            two hundred lines, and every transition it allows is covered by a test.
           </p>
           <p>
             Two details are load-bearing. Selecting a rhythm may only <em>suggest</em> a tempo,

@@ -107,7 +107,7 @@ const Contact = () => {
           <p className="eyebrow mb-3">Get in Touch</p>
           <h2 className="type-h1 mb-4">Start a Conversation</h2>
           <p className="text-muted-foreground">
-            Tell me about the role, or the project — I'll get back to you within 24–48 hours.
+            Tell me about the role, or the project.
           </p>
         </div>
 
@@ -124,7 +124,7 @@ const Contact = () => {
               >
                 LinkedIn
               </a>
-              {" "}— message me there and I'll get back to you within 24–48 hours.
+              {" "}— message me there.
             </p>
           </div>
         ) : status === "success" ? (

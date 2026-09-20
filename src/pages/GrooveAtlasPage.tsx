@@ -91,10 +91,13 @@ const GrooveAtlasPage = () => {
               <h2 className="text-xl font-semibold text-foreground">How this is built</h2>
               <div className="mt-4 space-y-4 text-sm leading-7 text-muted-foreground">
                 <p>
-                  The feel-space lens runs k-means over 1,000 performances sampled from the
-                  Expanded Groove MIDI Dataset (E-GMD v1.0.0, Google Magenta), in a
-                  five-dimensional feature space: tempo, note density, syncopation, swing ratio
-                  and velocity variance, each normalized before any distance is taken. Seeding
+                  The feel-space lens runs k-means over 280 grooves drawn from the Expanded
+                  Groove MIDI Dataset (E-GMD v1.0.0, Google Magenta). This page used to say a
+                  thousand, which is the row count: the dataset repeats each performance across
+                  its train and eval splits, so the rows deduplicate to roughly 400 distinct
+                  grooves, and 280 is what the canvas holds at frame rate. The clustering runs
+                  in a five-dimensional feature space: tempo, note density, syncopation, swing
+                  ratio and velocity variance, each normalized before any distance is taken. Seeding
                   is farthest-point rather than random: the first centroid is the groove
                   nearest the middle of the field, and each next one is whichever groove is
                   furthest from everything chosen so far. That makes the layout deterministic,

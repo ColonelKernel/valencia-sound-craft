@@ -5,6 +5,12 @@ on:
     branches:
       - portfolio/rebuild
       - main
+  # The site claims "nothing merges without passing" these gates. Without a
+  # pull_request trigger that was only true of direct pushes.
+  pull_request:
+    branches:
+      - portfolio/rebuild
+      - main
   workflow_dispatch:
 
 # PUBLIC values, shipped verbatim in the site bundle — not secrets. They must
@@ -64,3 +70,44 @@ jobs:
 
       - name: Run e2e suite
         run: npm run e2e
+
+  lighthouse:
+    name: Lighthouse (accessibility floor 1.0)
+    needs: gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # This job exists because three places on the site told readers it did:
+      # /tools, /projects and the homepage all claimed a perfect Lighthouse
+      # accessibility score gated every commit, and nothing in CI ran it. The
+      # claim is now true. lighthouserc.cjs starts its own preview server and
+      # gates accessibility at 1.0 as an error across all sixteen routes;
+      # performance and the paint metrics stay warnings, so a slow runner
+      # cannot turn a perf wobble into a red build.
+      #
+      # No browser install step: chrome-launcher finds the Chrome that
+      # ubuntu-latest ships, which is how every local run of this same command
+      # resolves one too. Pinning CHROME_PATH to Playwright's chromium was
+      # tried and rejected — it adds a second browser toolchain to save
+      # nothing.
+      - name: Lighthouse CI
+        run: npm run lighthouse
+
+      # The HTML reports are the whole point on a failure: without them a red
+      # build says "accessibility 0.98" and not which element caused it.
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          retention-days: 14

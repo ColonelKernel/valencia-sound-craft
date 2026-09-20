@@ -551,7 +551,7 @@ const GlobalRhythmMap = ({
       )}
 
       {/* Brightness lift keeps the dark aesthetic while making country
-          shapes and labels on the CARTO dark tiles actually readable. */}
+          shapes and labels on the Esri dark-gray tiles actually readable. */}
       <div className="rounded-xl overflow-hidden border border-border [&_.leaflet-tile]:brightness-150">
         <MapContainer
           center={[18, 10]}

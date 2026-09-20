@@ -7,7 +7,7 @@ import { ROUTE_META } from "@/app/routeMeta";
  * The method, on the page that uses it.
  *
  * This route carried seven chart tabs, about eighty words of prose, and no
- * outward link of any kind — including to its own 2,300-word case study,
+ * outward link of any kind — including to its own case study,
  * which was reachable only from /projects. A reader arriving from the
  * homepage could see every number the dashboard produces and nothing about
  * how any of them is computed, or that the underlying figures are not

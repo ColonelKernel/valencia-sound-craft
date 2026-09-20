@@ -55,10 +55,11 @@ const Hero = () => {
             </h1>
 
             <p className="max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-              Seven years of applied data work — the World Bank, NORC, and the data
+              Applied data work from 2016 to 2023 — the World Bank, NORC, and the data
               strategy practice I grew from an informal group at Rios Partners — and a
-              decade in audio. I take models from experiment to production, and my proving
-              ground is the hardest real-time target there is: sound.
+              decade in audio. I take models from experiment to production, and audio is
+              where that gets tested hardest: a late buffer is audible, so the deadline is
+              not negotiable.
             </p>
           </div>
 

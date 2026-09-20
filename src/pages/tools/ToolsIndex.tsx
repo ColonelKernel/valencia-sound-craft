@@ -115,9 +115,14 @@ const ToolsIndex = () => (
             </p>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
               Nothing reaches this page without passing the gate: typecheck, a zero-warning
-              lint, the unit suites, an end-to-end Playwright run, a 150&nbsp;KB gzip budget on
-              the initial graph, and a Lighthouse accessibility score of 1.0 — all six enforced
-              in CI on every commit.
+              lint, the unit suites, a production build, an end-to-end Playwright run, a
+              150&nbsp;KB gzip budget on the initial graph, and Lighthouse CI holding an
+              accessibility score of 1.0 across all sixteen routes. Every one of those runs in
+              GitHub Actions on each push and pull request —{" "}
+              <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">
+                .github/workflows/ci.yml
+              </code>
+              , if you want to check rather than take my word for it.
             </p>
             <a
               href="https://github.com/ColonelKernel/valencia-sound-craft"

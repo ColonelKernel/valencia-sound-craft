@@ -1,6 +1,11 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { GLOBAL_RHYTHM_ATLAS } from "@/components/Blipblox/globalRhythmAtlas";
+import { ATLAS_COUNTRY_CENTROIDS } from "@/components/Blipblox/atlasCountryCentroids";
+import { MAX_RENDERED_GROOVES } from "@/components/GrooveIntelligence/utils";
 import { ATLAS_CITATIONS, getScholarshipForRhythm } from "./atlasCitations";
 
 /**
@@ -47,5 +52,44 @@ describe("ATLAS_CITATIONS", () => {
     // 39 traditions passed fetch-verification (12 original + 27 expansion,
     // 2026-07-21); growing this map is welcome, silently shrinking it is not.
     expect(Object.keys(ATLAS_CITATIONS).length).toBeGreaterThanOrEqual(39);
+  });
+});
+
+describe("the numbers /groove-atlas states about this data", () => {
+  /**
+   * The page quotes three figures in prose. They were correct when written and
+   * nothing kept them that way — the existing coverage asserts only
+   * `>= 39` traditions, so adding a tradition would silently falsify the page.
+   *
+   * Importing this data into the route would pull the whole citation corpus
+   * into a chunk that the feel-space lens does not need, so the numbers stay
+   * as literals and this test is what pins them, exactly as
+   * src/app/ogCard.test.ts pins the social card's copy.
+   */
+  const page = readFileSync(
+    join(__dirname, "..", "pages", "GrooveAtlasPage.tsx"),
+    "utf8",
+  );
+
+  it("states the citation and tradition counts this file actually contains", () => {
+    const traditions = Object.keys(ATLAS_CITATIONS).length;
+    const citations = Object.values(ATLAS_CITATIONS).reduce(
+      (total, entry) => total + entry.citations.length,
+      0,
+    );
+    expect(page).toContain(`${citations} ethnomusicological citations`);
+    expect(page).toContain(`attached to ${traditions} of`);
+  });
+
+  it("states the centroid count the atlas map actually plots", () => {
+    // Keyed by country code, not an array.
+    const centroids = Object.keys(ATLAS_COUNTRY_CENTROIDS).length;
+    expect(page).toContain(`Leaflet over ${centroids}`);
+  });
+
+  it("states the number of grooves k-means actually sees", () => {
+    // Not the dataset's row count: index.tsx dedupes, then samples to
+    // MAX_RENDERED_GROOVES before clusterGrooves is called.
+    expect(page).toContain(`k-means over ${MAX_RENDERED_GROOVES} grooves`);
   });
 });
