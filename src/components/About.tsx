@@ -23,8 +23,8 @@ const About = () => {
                 I didn't come up through a conservatory or a computer-science program. I came
                 up through public policy and data, and through music production. A Master of
                 Public Policy at UCLA, field research for the World Bank in Peru,
-                computational social science at NORC, and a data strategy team I founded at
-                Rios Partners — alongside producing since 2013, first in college Latin
+                computational social science at NORC, and a data strategy practice I grew from
+                an informal group at Rios Partners — alongside producing since 2013, first in college Latin
                 ensembles and rock bands, then as an audio engineering intern at East West
                 Studios in LA.
               </p>
@@ -44,18 +44,21 @@ const About = () => {
                 emulations to forge distinctive sonic landscapes.
               </p>
               <p>
-                I work with artists to take ideas from early sketches to fully realized,
-                release-ready tracks, combining live instruments with digital tools and
-                data-driven production workflows. I also build interactive music tools —
-                like fretboard visualizers, metronomes, and chord progression builders —
-                to help musicians learn, practice, and create more effectively.
+                The music software came out of the same habit. This site runs a suite of
+                connected tools — a rhythm engine over a cited world atlas, a harmony lab, a
+                circle of fifths and a Tonnetz — sharing one transport and clock, alongside
+                AutoHarm, which plays live MIDI into a DAW from ONNX models running
+                on-device. They exist because I wanted them while producing, and building
+                them is how I learned to ship real-time systems.
               </p>
               <p className="text-foreground font-medium">
-                I'm especially interested in projects that sit between genres — where
-                traditional instruments meet modern production and technology.
+                The through-line is measurement. Whether it is retention rates across six
+                million exam records, ridership across 201 transit systems, or the latency
+                budget of an audio callback, the work is deciding what a number means before
+                trusting it — and saying so when it turns out not to mean that.
               </p>
               <p>
-                Outside of client work, I write and produce original music under the name{" "}
+                I also write and produce original music under the name{" "}
                 <span className="text-foreground font-semibold">Streetcar Scandal</span> — a
                 project I've been producing since 2013, blending indie rock, electronic
                 textures, and raw songwriting. It's where I experiment freely and push ideas
@@ -81,19 +84,6 @@ const About = () => {
                   <p className="text-xs text-muted-foreground mt-1">{entry.detail}</p>
                 </div>
               ))}
-              <div className="border-t border-border pt-6">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Genres</p>
-                <div className="flex flex-wrap gap-2">
-                  {["Rock", "Electronic", "Jazz", "Latin", "Pop", "Indie"].map((g) => (
-                    <span
-                      key={g}
-                      className="text-xs border border-border px-3 py-1.5 rounded-full text-muted-foreground"
-                    >
-                      {g}
-                    </span>
-                  ))}
-                </div>
-              </div>
               <div className="border-t border-border pt-6">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Location</p>
                 <p className="font-display font-semibold">San Francisco Bay Area</p>

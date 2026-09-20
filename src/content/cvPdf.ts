@@ -16,7 +16,7 @@
  *     types, so anything touching window/document fails typecheck.
  */
 
-import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, SKILLS } from "./cv";
+import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, EXPERIENCE, SKILLS } from "./cv";
 
 export { CV_PDF_FILENAME };
 
@@ -114,7 +114,45 @@ export function drawCvPdf<T extends CvPdfDoc>(doc: T): T {
     y += 5;
   }
 
-  // Experience
+  // Experience. This comes before the timeline because it is what a hiring
+  // reader is looking for; the timeline that follows is the index, not the
+  // account.
+  sectionHeading("Experience");
+  for (const entry of EXPERIENCE) {
+    // Keep the role line with at least its first body line rather than
+    // stranding a heading at the foot of a page.
+    ensureSpace(18);
+    doc.setFontSize(10.5);
+    doc.setTextColor(20);
+    doc.text(`${entry.role} — ${entry.org}`, margin, y);
+    y += 4.8;
+
+    doc.setFontSize(8.5);
+    doc.setTextColor(130);
+    doc.text(entry.location ? `${entry.location} · ${entry.period}` : entry.period, margin, y);
+    y += 5;
+
+    doc.setFontSize(9.5);
+    doc.setTextColor(60);
+    for (const line of doc.splitTextToSize(entry.summary, width)) {
+      ensureSpace(5);
+      doc.text(line, margin, y);
+      y += 4.6;
+    }
+
+    doc.setTextColor(80);
+    for (const highlight of entry.highlights) {
+      const lines = doc.splitTextToSize(highlight, width - 4);
+      lines.forEach((line: string, index: number) => {
+        ensureSpace(5);
+        // The bullet sits on the first line only; continuations hang under it.
+        doc.text(index === 0 ? `•  ${line}` : `   ${line}`, margin + 1, y);
+        y += 4.4;
+      });
+    }
+    y += 3.5;
+  }
+
   sectionHeading("Experience & Education Timeline");
   for (const entry of CAREER_TIMELINE) {
     ensureSpace(12);

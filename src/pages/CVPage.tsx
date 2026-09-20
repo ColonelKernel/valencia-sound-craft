@@ -5,17 +5,26 @@ import { Link } from "react-router-dom";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { CV_JSONLD } from "@/app/routeStructuredData";
-import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, SKILLS } from "@/content/cv";
+import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, EXPERIENCE, SKILLS } from "@/content/cv";
 import { buttonClasses } from "@/components/ui/button";
 import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
+/**
+ * The links a technical reviewer opens. These used to sit in one flat row with
+ * Spotify, SoundCloud and YouTube at identical weight, so the row read as
+ * eight equally-plausible next clicks and GitHub was the third of them.
+ */
 const PROFILE_LINKS: { label: string; url: string }[] = [
+  { label: "GitHub", url: CV_PROFILE.profiles.github },
   { label: "Email", url: `mailto:${CV_PROFILE.email}` },
   { label: "Portfolio", url: CV_PROFILE.site },
-  { label: "GitHub", url: CV_PROFILE.profiles.github },
   { label: "Research", url: CV_PROFILE.research },
   { label: "LinkedIn", url: CV_PROFILE.profiles.linkedin },
+];
+
+/** The catalog. Still here, deliberately quieter — it is evidence, not the ask. */
+const MUSIC_LINKS: { label: string; url: string }[] = [
   { label: "Spotify", url: CV_PROFILE.profiles.spotify },
   { label: "SoundCloud", url: CV_PROFILE.profiles.soundcloud },
   { label: "YouTube", url: CV_PROFILE.profiles.youtube },
@@ -101,6 +110,42 @@ const CVPage = () => {
             </div>
 
             <div className="fade-up mb-12">
+              <h2 className="eyebrow mb-5">Experience</h2>
+              <div className="space-y-4">
+                {EXPERIENCE.map((entry) => (
+                  <article
+                    key={`${entry.org}-${entry.period}`}
+                    className={cardClasses({ padding: "md" })}
+                  >
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                      <h3 className="font-display text-base font-semibold text-foreground">
+                        {entry.role}
+                        <span className="text-muted-foreground font-normal"> · {entry.org}</span>
+                      </h3>
+                      <p className="font-mono text-xs text-muted-foreground shrink-0">
+                        {entry.location ? `${entry.location} · ` : ""}
+                        {entry.period}
+                      </p>
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {entry.summary}
+                    </p>
+                    <ul className="mt-3 space-y-2">
+                      {entry.highlights.map((highlight) => (
+                        <li
+                          key={highlight}
+                          className="relative pl-4 text-sm leading-relaxed text-muted-foreground before:absolute before:left-0 before:top-[0.6em] before:h-1 before:w-1 before:rounded-full before:bg-muted-foreground/60"
+                        >
+                          {highlight}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="fade-up mb-12">
               <h2 className="eyebrow mb-5">
                 The Path
               </h2>
@@ -181,6 +226,23 @@ const CVPage = () => {
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-primary"
                   >
                     {link.label} <ArrowUpRight size={14} />
+                  </a>
+                ))}
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground/70">
+                  Catalog
+                </span>
+                {MUSIC_LINKS.map((link) => (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {link.label} <ArrowUpRight size={13} />
                   </a>
                 ))}
               </div>

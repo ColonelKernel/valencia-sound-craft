@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, SKILLS } from "./cv";
+import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, EXPERIENCE, SKILLS } from "./cv";
 import { CV_PDF_LINKS, drawCvPdf, type CvPdfDoc } from "./cvPdf";
 
 /**
@@ -65,6 +65,31 @@ describe("drawCvPdf", () => {
     for (const group of SKILLS) {
       expect(body, `missing skill group: ${group.label}`).toContain(group.label);
     }
+  });
+
+  it("draws every experience entry in full, highlights included", () => {
+    // The PDF is what reaches an applicant tracking system, so a highlight
+    // that renders on /cv and silently misses the document would be invisible
+    // exactly where it matters most.
+    for (const entry of EXPERIENCE) {
+      expect(body, `missing role: ${entry.role} at ${entry.org}`).toContain(
+        `${entry.role} — ${entry.org}`,
+      );
+      expect(body, `missing period: ${entry.period}`).toContain(entry.period);
+      expect(body).toContain(entry.summary);
+      for (const highlight of entry.highlights) {
+        expect(body, `missing highlight: ${highlight.slice(0, 40)}`).toContain(highlight);
+      }
+    }
+  });
+
+  it("keeps the two World Bank engagements distinct", () => {
+    // The merged row implied continuous tenure and used the junior title for
+    // the more senior posting. Both titles must survive into the document.
+    expect(body).toContain("Policy Analyst — World Bank");
+    expect(body).toContain("Consultant — World Bank");
+    expect(body).toContain("Lima, Peru");
+    expect(body).toContain("Washington, DC");
   });
 
   it("draws each profile link with the mailto scheme stripped", () => {

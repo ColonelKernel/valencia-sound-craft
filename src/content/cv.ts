@@ -43,6 +43,21 @@ export interface SkillGroup {
   items: string[];
 }
 
+export interface ExperienceEntry {
+  org: string;
+  role: string;
+  /**
+   * Omitted where no source document states it. NORC's entry carries no
+   * location for that reason — inventing "Chicago" to make the column look
+   * even would be the same class of error as the ones this file exists to
+   * prevent.
+   */
+  location?: string;
+  period: string;
+  summary: string;
+  highlights: string[];
+}
+
 /** Headline identity. First person, matching the site's voice. */
 export const CV_PROFILE = {
   name: "Zach Scheffler",
@@ -53,7 +68,7 @@ export const CV_PROFILE = {
   headline: "Data Scientist & Machine Learning Engineer",
   location: "San Francisco Bay Area",
   summary:
-    "Seven years of applied data work (2016\u20132023) across the World Bank, NORC at the University of Chicago, and Rios Partners, where I founded the firm's data strategy team \u2014 NLP, geospatial, and web-scraping pipelines, and the statistical modeling built on them. I didn't come up through a computer-science program; I came up through public policy and music production, and I still ship the models myself. Since 2024 the proving ground has been audio: neural models running on-device, and a real-time C++ codebase with an allocation-free audio-thread test.",
+    "Seven years of applied data work (2016\u20132023) across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it \u2014 NLP, geospatial, and web-scraping pipelines, and the statistical modeling built on them. I didn't come up through a computer-science program; I came up through public policy and music production, and I still ship the models myself. Since 2024 the proving ground has been audio: neural models running on-device, and a real-time C++ codebase with an allocation-free audio-thread test.",
   /**
    * What I'm looking for. /cv never stated this \u2014 it listed history and left
    * the reader to infer the ask. Rendered on the page and drawn into the PDF.
@@ -80,15 +95,23 @@ export const CAREER_TIMELINE: TimelineEntry[] = [
   { years: "2014–2015", role: "East West Studios, LA", note: "Audio engineering intern — supported major-label recording sessions" },
   { years: "2015", role: "UCLA Extension", note: "Professional Certificate in Music Production" },
   { years: "2016–2018", role: "UCLA", note: "Master of Public Policy — thesis prepared for the World Bank" },
-  { years: "2016–2019", role: "World Bank", note: "Consultant — led wellbeing data-collection fieldwork across Peru" },
+  // Two engagements, not one. The merged 2016–2019 row implied continuous
+  // tenure the UCLA M.P.P. occupies most of, and gave the Peru fieldwork the
+  // junior of the two titles; EXPERIENCE below carries the detail.
+  { years: "2016", role: "World Bank, Washington DC", note: "Consultant — measurement-validity research on subjective wellbeing in Peru" },
+  { years: "2018–2019", role: "World Bank, Lima", note: "Policy Analyst — supervised 14 field teams across two provinces for a wellbeing study" },
   { years: "2018–2023", role: "7DrumCity", note: "Mentor & workshop leader" },
   // "National scale" was doing a number's job here. The figure is his own, from
   // the 2021 NORC performance review and corroborated in it by his manager:
   // R web scrapers over the Tanzanian examinations council site, assembled to
   // map primary-to-secondary retention for USAID's country strategy.
-  { years: "2020–2022", role: "NORC at the University of Chicago", note: "Research associate — wrote R scrapers that assembled 6M+ national exam records in Tanzania; NLP over social-media corpora for NIH- and Facebook-funded studies" },
+  // Dec 2019, not 2020: the site rounded a start date the résumé states
+  // precisely. The social-media studies were funded by the Robert Wood Johnson
+  // Foundation and by Facebook; the NIH-funded work here was NSHAP, which is
+  // accelerometry and biomarkers rather than NLP.
+  { years: "2019–2022", role: "NORC at the University of Chicago", note: "Research associate — wrote R scrapers that assembled 6M+ national exam records in Tanzania; NLP over social-media corpora for Robert Wood Johnson- and Facebook-funded studies" },
   { years: "2022", role: "MIT Professional Education", note: "Applied Data Science certificate" },
-  { years: "2022–2023", role: "Rios Partners", note: "Consultant — founded the firm's data strategy team" },
+  { years: "2022–2023", role: "Rios Partners", note: "Consultant — grew the firm's data strategy work into a standing practice and led it; built an enterprise data inventory for CMS" },
   { years: "2024–2025", role: "Berklee College of Music, Valencia", note: "M.M. Music Production, Technology & Innovation" },
   // The current row is the one a hiring reader looks for first, so it names a
   // role rather than a city, and points at the work that backs it.
@@ -96,6 +119,73 @@ export const CAREER_TIMELINE: TimelineEntry[] = [
     years: "2025–present",
     role: "Independent producer & music-software developer",
     note: "Producing records and recording sessions, and building music software: the zachscheffler.com tool suite, AutoHarm, the vcv-rack-mcp C++ audio tooling, and four Ableton Live extensions (github.com/ColonelKernel)",
+  },
+];
+
+/**
+ * Professional experience, in full.
+ *
+ * CAREER_TIMELINE is a path: one line each, degrees and jobs interleaved, so a
+ * reader can see the shape of a career in ten seconds. It was also the only
+ * account of the work on this site — twelve words for three years at the World
+ * Bank, on a site that spends four thousand on a side project. For a hiring
+ * reader that ratio is backwards, and this section fixes it.
+ *
+ * Every line below comes from a source document: the December 2023 résumé, the
+ * 2021 NORC performance review, and the CMS inventory bullets. Where those
+ * disagreed, the disagreement was resolved rather than averaged — the World
+ * Bank was two engagements with two different titles, and the NORC start date
+ * is December 2019.
+ */
+export const EXPERIENCE: ExperienceEntry[] = [
+  {
+    org: "Rios Partners",
+    role: "Consultant",
+    period: "Aug 2022 – Aug 2023",
+    summary:
+      "Grew the firm's data strategy work from an informal group into a standing practice, and led it.",
+    highlights: [
+      "Established a new enterprise data inventory for the Centers for Medicare and Medicaid Services.",
+      "Proposed a dashboard over that inventory for cross-division usage analysis and redundancy reduction.",
+    ],
+  },
+  {
+    org: "NORC at the University of Chicago",
+    role: "Research Associate",
+    period: "Dec 2019 – Aug 2022",
+    summary:
+      "Statistical analysis, text analysis, and data collection across international development, public health, and social-media research.",
+    highlights: [
+      "Wrote R scrapers that assembled over 6 million exam records from Tanzania's National Examinations Council, mapping primary-to-secondary retention rates to inform USAID's Country Development Cooperation Strategy for Tanzania.",
+      "Social Data Collaboratory: NLP over social-media corpora — smokeless-tobacco marketing on Twitter, funded by the Robert Wood Johnson Foundation, and political messaging in the aftermath of January 6, funded by Facebook.",
+      "Analyzed accelerometry and biomarker data from NSHAP in R.",
+      "Contributed to three USAID proposals: DARPA Habitus, Ethiopia CLA, and the Serbia impact evaluation.",
+      "Gave two brown-bag lectures — to INPRO and to the NORC R users group — on functional and object-oriented programming, and on web scraping, in R.",
+    ],
+  },
+  {
+    org: "World Bank",
+    role: "Policy Analyst",
+    location: "Lima, Peru",
+    period: "Jun 2018 – Sep 2019",
+    summary:
+      "Fieldwork and analysis on subjective wellbeing with Senior Economist Jed Friedman, in the development economics group.",
+    highlights: [
+      "Managed and supervised 14 field teams across two provinces, covering metropolitan Lima and the rural Sierra Central.",
+      "Built the project database and automated it in R, generating progress reports on fieldwork in real time.",
+      "Semiparametric regression estimation of the relationship between cortisol levels and subjective-wellbeing measures.",
+    ],
+  },
+  {
+    org: "World Bank",
+    role: "Consultant",
+    location: "Washington, DC",
+    period: "Jun – Dec 2016",
+    summary:
+      "Research reports on subjective wellbeing for a measurement-validity study in Peru.",
+    highlights: [
+      "Assessed difference-in-differences methods and Likert survey instruments against the study's design.",
+    ],
   },
 ];
 

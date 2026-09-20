@@ -11,6 +11,13 @@ interface ServiceCard {
   cta: string;
   /** In-app route for the CTA — every card sends the reader to the work itself. */
   href: string;
+  /**
+   * A second destination, where one card has two things a reader wants. The
+   * data card points at the atlas — 201 systems, the one unambiguously
+   * geospatial artifact here, and previously unreachable from this page —
+   * without taking the CV away from the reader who came for it.
+   */
+  secondary?: { label: string; href: string };
 }
 
 /**
@@ -31,12 +38,13 @@ const services: ServiceCard[] = [
     icon: LineChart,
     title: "Applied Data Science",
     points: [
-      "Seven years across the World Bank, NORC at the University of Chicago, and Rios Partners, where I founded the firm's data strategy team",
-      "NLP, geospatial and web-scraping pipelines; statistical modeling and forecasting in Python, R and SQL",
-      "UCLA Master of Public Policy with a thesis prepared for the World Bank; MIT Applied Data Science certificate",
+      "Seven years across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it",
+      "World Transit Atlas — 201 metro and light-rail systems assembled from OpenStreetMap and open agency data, with a ridership comparability audit that dismantled my own headline finding",
+      "NLP, geospatial and web-scraping pipelines; statistical modeling and forecasting in Python, R and SQL. UCLA M.P.P. with a thesis prepared for the World Bank; MIT Applied Data Science certificate",
     ],
-    cta: "Read the CV",
-    href: "/cv",
+    cta: "Open the transit atlas",
+    href: "/projects/transit-atlas",
+    secondary: { label: "Read the CV", href: "/cv" },
   },
   {
     icon: Brain,
@@ -89,12 +97,22 @@ const Services = () => {
                   </li>
                 ))}
               </ul>
-              <Link
-                to={s.href}
-                className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
-              >
-                {s.cta} <ArrowRight size={14} />
-              </Link>
+              <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2">
+                <Link
+                  to={s.href}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:gap-2.5 transition-all"
+                >
+                  {s.cta} <ArrowRight size={14} />
+                </Link>
+                {s.secondary && (
+                  <Link
+                    to={s.secondary.href}
+                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {s.secondary.label} <ArrowRight size={13} />
+                  </Link>
+                )}
+              </div>
             </div>
           ))}
         </div>
