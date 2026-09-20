@@ -108,10 +108,20 @@ const CatalogIntelligenceCaseStudy = () => {
                   <p>
                     There is also a fallback I would rather disclose than hide: if date
                     parsing yields nothing usable, the service synthesizes twelve months per
-                    artist and shapes them with a sine factor between 0.85 and 1.15. It
+                    artist and shapes them with a sine factor running 0.55 to 1.15. It
                     fires only when the real aggregation produces an empty map, and on this
                     dataset it does not fire. But it exists, and a reader deciding whether
                     to trust a number should know the code can manufacture a season.
+                  </p>
+                  <p>
+                    This paragraph said 0.85 to 1.15 until writing the tests for it showed
+                    otherwise. 0.85 is the offset, not the floor; the sine reaches −1 at the
+                    tenth month, so the real range is 0.55 to 1.15. The same arithmetic
+                    exposes a second thing worth stating: the twelve sine terms cancel over
+                    a full period, so the factors sum to 10.2 rather than 12 and a
+                    synthesized year carries 85% of the artist's total rather than all of
+                    it. Both figures are now asserted in src/lib/musicDataService.test.ts,
+                    which is the only reason this page can claim them.
                   </p>
                   <p>
                     The CSV is self-hosted rather than fetched from a third party at runtime,

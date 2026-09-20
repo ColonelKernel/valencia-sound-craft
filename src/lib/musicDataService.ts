@@ -7,6 +7,12 @@ import Papa from "papaparse";
  * modeled proxies (track_popularity × 1,000,000) bucketed by album release
  * month; when release dates are missing, months are synthesized. Any
  * user-facing copy must describe this as modeled demonstration data.
+ *
+ * Export rule, as in catalogAnalytics.ts: a symbol is exported because a
+ * component imports it or because musicDataService.test.ts pins its rule
+ * directly. toChartRows and aggregateToMonthly are exported for the second
+ * reason — the synthetic fallback is disclosed by name on the case-study
+ * page, so it is tested at the function rather than through a fetch stub.
  */
 export interface ChartRow {
   artist: string;
@@ -47,28 +53,38 @@ export async function fetchAndParseChartData(): Promise<FetchResult> {
 
   if (!parsed.data?.length) throw new Error("No data found in dataset.");
 
-  // Map rows → ChartRow using track_artist, track_popularity, track_album_release_date
-  const rows: ChartRow[] = [];
-  for (const row of parsed.data) {
-    const artist = row["track_artist"]?.trim();
-    if (!artist) continue;
-
-    const popularity = parseInt(row["track_popularity"] ?? "0", 10);
-    // Use popularity as a proxy for "streams" (scale up for realistic numbers)
-    const streams = isNaN(popularity) ? 0 : popularity * 1_000_000;
-
-    const date = row["track_album_release_date"]?.trim() ?? "";
-    rows.push({ artist, streams, date });
-  }
-
-  const monthly = aggregateToMonthly(rows);
+  const monthly = aggregateToMonthly(toChartRows(parsed.data));
   const topArtists = getTopArtists(monthly, 5);
 
   cache = { monthly, topArtists };
   return cache;
 }
 
-function aggregateToMonthly(rows: ChartRow[]): ArtistMonthly[] {
+/**
+ * Parsed CSV records → ChartRow, reading the only three columns this service
+ * touches: track_artist, track_popularity, track_album_release_date.
+ *
+ * Popularity is an integer 0-100; multiplying by a million is what makes the
+ * axes read like streams. It is the single step that turns a popularity
+ * sample into something a reader may mistake for listening data, which is why
+ * every page that renders the result says so.
+ */
+export function toChartRows(records: Record<string, string>[]): ChartRow[] {
+  const rows: ChartRow[] = [];
+  for (const row of records) {
+    const artist = row["track_artist"]?.trim();
+    if (!artist) continue;
+
+    const popularity = parseInt(row["track_popularity"] ?? "0", 10);
+    const streams = isNaN(popularity) ? 0 : popularity * 1_000_000;
+
+    const date = row["track_album_release_date"]?.trim() ?? "";
+    rows.push({ artist, streams, date });
+  }
+  return rows;
+}
+
+export function aggregateToMonthly(rows: ChartRow[]): ArtistMonthly[] {
   const map = new Map<string, number>();
 
   // Check if dates have month granularity
@@ -83,7 +99,15 @@ function aggregateToMonthly(rows: ChartRow[]): ArtistMonthly[] {
     }
   }
 
-  // If date-based aggregation produced nothing, synthesize months
+  // If date-based aggregation produced nothing, synthesize months.
+  //
+  // Disclosed by name on /projects/catalog-intelligence, and it does not fire
+  // on the shipped dataset. Two properties worth stating since the page
+  // describes this shape in prose: the factor runs 0.55 to 1.15 across the
+  // twelve discrete months, not 0.85 to 1.15 — 0.85 is the offset, not the
+  // floor — and because the twelve sine terms cancel over a full period, the
+  // factors sum to 10.2 rather than 12, so a synthesized year carries 85% of
+  // the artist's real total. Both are pinned in musicDataService.test.ts.
   if (map.size === 0) {
     const artistTotals = new Map<string, number>();
     for (const r of rows) {
