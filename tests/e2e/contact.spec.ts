@@ -5,6 +5,10 @@ import { test, expect } from "@playwright/test";
  * project, network failure), the visitor must land on the error alert with
  * both fallback channels — a mailto link carrying their typed message and the
  * LinkedIn link — instead of hanging on a disabled "Sending..." button.
+ *
+ * Whichever way the build was configured, this test asserts something: the
+ * failure path when the form is present, the direct-contact panel when it is
+ * not. It never reports green having run nothing.
  */
 
 test("failed submit surfaces the error alert with mailto + LinkedIn fallbacks", async ({ page }) => {
@@ -17,9 +21,21 @@ test("failed submit surfaces the error alert with mailto + LinkedIn fallbacks", 
   await contact.scrollIntoViewIfNeeded();
 
   // Builds without Supabase env vars render the direct-contact panel instead
-  // of the form; the failure path doesn't exist there.
+  // of the form, so the failure path genuinely does not exist there. This used
+  // to be a bare test.skip, which meant the site's most important negative
+  // path reported green having executed nothing — and a build that lost its
+  // env vars (which is exactly what a VITE_* key in netlify.toml causes) would
+  // have looked no different. Assert the fallback instead: whichever branch
+  // shipped, one of them is now checked.
   const form = contact.locator("form");
-  test.skip((await form.count()) === 0, "backend not configured in this build — no form to test");
+  if ((await form.count()) === 0) {
+    const panel = contact.getByText("Reach out directly");
+    await expect(panel).toBeVisible();
+    await expect(
+      contact.getByRole("link", { name: "LinkedIn" }),
+    ).toHaveAttribute("href", /linkedin\.com/);
+    return;
+  }
 
   await page.getByLabel("Name").fill("Playwright Probe");
   await page.getByLabel("Email").fill("probe@example.com");

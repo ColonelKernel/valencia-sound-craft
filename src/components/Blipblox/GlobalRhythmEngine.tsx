@@ -832,7 +832,11 @@ const GlobalRhythmEngine = ({
       exportTracks,
       tempo,
       "general-midi",
-      0,
+      // This was a hardcoded 0, so the swing branch in generateMidiFile had no
+      // reachable caller and every export came out straight — including from a
+      // session the visitor had just swung to 30% and listened to. The slider
+      // holds a fraction; the exporter takes a percentage.
+      swing * 100,
       false,
       1,
       parseMeterSignature(activeDefinition.meter),
@@ -843,7 +847,7 @@ const GlobalRhythmEngine = ({
       midiData,
       `${activeDefinition.country.toLowerCase().replace(/[^a-z0-9]+/g, "-")}_${tempo}bpm.mid`,
     );
-  }, [activeDefinition.country, activeDefinition.meter, effectiveLayers, tempo]);
+  }, [activeDefinition.country, activeDefinition.meter, effectiveLayers, swing, tempo]);
 
   const handleExportJson = useCallback(() => {
     const payload = {

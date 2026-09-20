@@ -1,3 +1,17 @@
+/**
+ * Ordinary least squares over (x, y) pairs, and a forecast with a band.
+ *
+ * This is the file the CV names under "Forecasting" and the catalog case
+ * study cites by formula, so its edges are asserted in
+ * linearRegression.test.ts rather than left to the callers.
+ *
+ * The band's known limitation is deliberate and disclosed on both
+ * /music-analytics and the case study: the margin has no dependence on how
+ * far ahead the point is, so it is the same width twelve months out as one,
+ * where a real prediction interval widens. Do not quietly "fix" that here —
+ * the page explains it, and a correction has to move together with the copy.
+ */
+
 /** Simple linear regression: y = slope * x + intercept */
 function linearRegression(points: { x: number; y: number }[]) {
   const n = points.length;
@@ -23,6 +37,14 @@ export function forecast(
   points: { x: number; y: number }[],
   futureCount: number
 ): { x: number; y: number; lower: number; upper: number }[] {
+  // No observations, no forecast. Without this the margin below evaluates
+  // 1.96 * 0 * Math.sqrt(1 + 1/0) — that is 0 * Infinity, which is NaN, and
+  // every caller feeds the result straight into Recharts: catalogAnalytics
+  // rankArtists, StreamingDashboard's chart and quarter column, and
+  // PortfolioBuilder's aggregate. An artist with no rows silently drew a
+  // band bounded by NaN. Returning nothing is also the honest answer.
+  if (points.length === 0) return [];
+
   const { slope, intercept } = linearRegression(points);
   const lastX = points[points.length - 1]?.x ?? 0;
 

@@ -66,7 +66,16 @@ describe("filterRhythms", () => {
     const first = filterRhythms({ region: "middle_east", bpm: 110 }).map((rhythm) => rhythm.name);
     const second = filterRhythms({ region: "middle_east", bpm: 110 }).map((rhythm) => rhythm.name);
 
+    // Comparing the two calls alone passes for any pure function, including
+    // one that returns nothing — which is what this asserted before. The
+    // determinism claim is only worth making about a non-empty result, and
+    // the order has to be stable, not just the membership.
+    expect(first.length).toBeGreaterThan(0);
     expect(first).toEqual(second);
+
+    // And it has to be a filter, not a pass-through: the determinism of
+    // "return everything" is not the property being claimed.
+    expect(first.length).toBeLessThan(DRUM_PRESETS.length);
   });
 });
 

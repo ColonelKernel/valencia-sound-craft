@@ -587,7 +587,16 @@ export function generateMidiFile(
 
         let tick = barOffset + Math.round(stepIdx * ticksPerStep);
 
-        // Apply swing to even-indexed steps (off-beats)
+        // Delay the odd-indexed steps — the off-beats. The comment here used
+        // to say "even-indexed steps (off-beats)", which is two claims that
+        // cannot both hold; the code is right and the ordinal was wrong.
+        //
+        // This matches the audio engine exactly, which is the point: there,
+        // getSwingAdjustedStepAdvance lengthens each even step to (1 + s)·d
+        // and shortens each odd one to (1 - s)·d, so odd onsets land s·d late
+        // and even onsets stay on the grid. Shifting odd ticks by
+        // ticksPerStep · s is the same displacement, expressed directly.
+        // `swing` arrives as a percentage here and as a fraction there.
         if (swing > 0 && stepIdx % 2 === 1) {
           tick += Math.round(ticksPerStep * swing / 100);
         }
