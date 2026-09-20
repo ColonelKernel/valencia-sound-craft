@@ -1,9 +1,22 @@
+/**
+ * The analytics behind /music-analytics, and the subject of the case study at
+ * /projects/catalog-intelligence.
+ *
+ * Export rule: a symbol here is exported because a component imports it or
+ * because src/lib/catalogAnalytics.test.ts pins its rule directly. The
+ * thresholds in this file — the half-of-trailing-median filter, the 1.3/0.7
+ * segmentation cuts, the 0.30/0.30/0.20/0.20 acquisition weights — are
+ * described in prose on the case-study page, so they are tested at the
+ * function rather than only through whatever a chart happens to render.
+ * Helpers that no test and no component needs stay module-private.
+ */
+
 import type { ArtistMonthly } from "./musicDataService";
 import { forecast } from "./linearRegression";
 
 /* ── Revenue ── */
 const REVENUE_PER_STREAM = 0.003;
-export const toRevenue = (streams: number) => streams * REVENUE_PER_STREAM;
+const toRevenue = (streams: number) => streams * REVENUE_PER_STREAM;
 
 /* ── Formatting helpers ── */
 export function formatMetric(n: number, mode: "streams" | "revenue"): string {

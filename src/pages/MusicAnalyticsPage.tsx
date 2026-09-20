@@ -7,6 +7,7 @@ import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataServi
 import AnalyticsHero from "@/components/MusicAnalytics/AnalyticsHero";
 import ArtistPicker from "@/components/MusicAnalytics/ArtistPicker";
 import TabErrorBoundary from "@/components/MusicAnalytics/TabErrorBoundary";
+import HowThisWorks from "@/components/MusicAnalytics/HowThisWorks";
 // Every tab — including the initial Overview — is code-split: recharts alone
 // is ~100 KB gzip, and the page has its own loading state while the CSV data
 // fetches, which masks the chunk fetch. Nothing chart-heavy belongs in the
@@ -163,6 +164,14 @@ export default function MusicAnalyticsPage() {
                 keep TabErrorBoundary around the active tab and give every chart
                 wrapper an explicit min-height so ResponsiveContainer always mounts
                 into a sized parent. */}
+            {/* The panels open at <h3>, so the document jumped h1 -> h3 and
+                Lighthouse failed the route's accessibility gate. This names
+                the active view for a screen reader — which the visual design
+                does with the highlighted tab, and nothing else did — and
+                restores the level the panel headings were already assuming. */}
+            <h2 className="sr-only">
+              {TABS.find((t) => t.id === tab)?.label} view
+            </h2>
             <TabErrorBoundary resetKey={tab}>
               <Suspense
                 fallback={
@@ -231,14 +240,13 @@ export default function MusicAnalyticsPage() {
               </Suspense>
             </TabErrorBoundary>
 
-            {/* Footer label */}
-            <p className="mt-12 text-[10px] text-muted-foreground/60 text-center">
-              Demonstration dataset derived from public Spotify popularity data (2020 sample).
-              Stream counts are modeled proxies — not live streaming figures — combined with
-              simplified financial modeling for illustration.
-            </p>
           </div>
         </section>
+
+        {/* The caveat used to be a 10px line under the charts, which is where a
+            disclosure goes when nobody intends it to be read. It now opens the
+            method section below, at the same size as everything else. */}
+        <HowThisWorks />
       </main>
     </div>
       </MotionConfig>

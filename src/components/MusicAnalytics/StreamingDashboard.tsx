@@ -262,45 +262,32 @@ export default function StreamingDashboard({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border/50">
-              <th className="text-left p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Artist</th>
-              <th
-                className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors"
-                onClick={() => setSortKey("total")}
-                role="button"
-                tabIndex={0}
-                aria-label={`Sort by total ${mode === "revenue" ? "revenue" : "streams"}`}
-                aria-sort={sortKey === "total" ? "descending" : "none"}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSortKey("total");
-                  }
-                }}
-              >
-                Total {mode === "revenue" ? "Rev" : "Streams"} {sortKey === "total" && "▾"}
+              <th scope="col" className="text-left p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Artist</th>
+              {/* role="button" on a <th> replaces its columnheader role, which
+                  both forbids aria-sort and drops the cell out of the table
+                  semantics screen readers navigate by. The control goes inside
+                  the header instead: the <th> stays a columnheader and keeps
+                  aria-sort, and a real <button> brings its own keyboard
+                  handling and an accessible name matching its visible text. */}
+              <th scope="col" className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider" aria-sort={sortKey === "total" ? "descending" : "none"}>
+                <button type="button" onClick={() => setSortKey("total")} className="inline-flex items-center gap-1 uppercase tracking-wider transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 rounded">
+                  Total {mode === "revenue" ? "Rev" : "Streams"}
+                  <span aria-hidden="true">{sortKey === "total" ? "▾" : ""}</span>
+                </button>
               </th>
               <th
+                scope="col"
                 className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider"
                 title="Release-month bucket with the highest modeled stream total — reflects the catalog era of the artist's most popular releases, not a streaming peak."
               >
                 Peak Era
               </th>
-              <th className="text-center p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Trend</th>
-              <th
-                className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider cursor-pointer hover:text-foreground transition-colors"
-                onClick={() => setSortKey("forecastQ")}
-                role="button"
-                tabIndex={0}
-                aria-label="Sort by quarterly forecast"
-                aria-sort={sortKey === "forecastQ" ? "descending" : "none"}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSortKey("forecastQ");
-                  }
-                }}
-              >
-                Forecast Q {sortKey === "forecastQ" && "▾"}
+              <th scope="col" className="text-center p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider">Trend</th>
+              <th scope="col" className="text-right p-4 font-medium text-muted-foreground text-xs uppercase tracking-wider" aria-sort={sortKey === "forecastQ" ? "descending" : "none"}>
+                <button type="button" onClick={() => setSortKey("forecastQ")} className="inline-flex items-center gap-1 uppercase tracking-wider transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 rounded">
+                  Forecast Q
+                  <span aria-hidden="true">{sortKey === "forecastQ" ? "▾" : ""}</span>
+                </button>
               </th>
             </tr>
           </thead>

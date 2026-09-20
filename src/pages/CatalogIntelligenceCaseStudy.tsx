@@ -137,9 +137,23 @@ const CatalogIntelligenceCaseStudy = () => {
                     partly defined by it.
                   </p>
                   <p>
-                    It is deliberately conservative. A genuine 60% decline survives the
-                    filter and gets reported, because it should be. The rule only removes
-                    buckets that are not comparable to the ones before them.
+                    This page used to claim the rule was conservative enough that a genuine
+                    60% decline still got reported. Writing unit tests for the filter showed
+                    that is not true, and the correction is worth more than the claim was.
+                    The comparison is against the trailing median, not against the previous
+                    month — so in a catalog that has been flat, the median <em>is</em> the
+                    previous month, and anything more than 50% below it is discarded. A real
+                    collapse and a partial month look identical to this rule, and it throws
+                    away both.
+                  </p>
+                  <p>
+                    What survives, then, is a decline of up to half. Past that the dashboard
+                    goes quiet rather than reporting a fall it cannot distinguish from
+                    missing data. Fixing it properly means separating the two cases with
+                    something the dataset does not currently carry — track counts per
+                    bucket, so a thin month is identifiable as thin rather than as small.
+                    Until then the filter's silence is a known blind spot, and the test that
+                    found it now pins the behaviour so the prose cannot drift back.
                   </p>
                 </div>
               </div>
