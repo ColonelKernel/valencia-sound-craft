@@ -1,15 +1,7 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Every crawler is allowed everywhere. This previously named Googlebot,
+# Bingbot, Twitterbot and facebookexternalhit in four separate blocks that
+# each said exactly what the wildcard below says — per-agent blocks earn
+# their place only when they differ from it.
 User-agent: *
 Allow: /
 

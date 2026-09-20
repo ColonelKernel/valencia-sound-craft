@@ -59,12 +59,20 @@ test("cv page never exposes a phone number", async ({ page }) => {
   expect(body).not.toMatch(/(?:\+?\d{1,2}[\s.-])?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/);
 });
 
-test("download button generates a PDF", async ({ page }) => {
+test("the download serves the PDF the build emitted", async ({ page }) => {
   await page.goto("/cv");
 
-  const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: /download pdf/i }).click();
-  const download = await downloadPromise;
+  // No longer a button that draws the document in the browser — it is a link
+  // to the static copy build/emitCvPdfPlugin.ts writes from the same
+  // drawCvPdf(). Assert the file is really served, not just that the anchor
+  // exists: a dead href would still pass a visibility check.
+  const link = page.getByRole("link", { name: /download pdf/i });
+  await expect(link).toHaveAttribute("href", "/Zach-Scheffler-CV.pdf");
+  await expect(link).toHaveAttribute("download", "");
 
-  expect(download.suggestedFilename()).toBe("Zach-Scheffler-CV.pdf");
+  const response = await page.request.get("/Zach-Scheffler-CV.pdf");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toContain("pdf");
+  // %PDF- magic, so a 200 serving the SPA fallback HTML cannot pass.
+  expect((await response.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });

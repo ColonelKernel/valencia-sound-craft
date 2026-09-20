@@ -1,4 +1,3 @@
-import { useCallback, useState } from "react";
 import { ArrowLeft, ArrowUpRight, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -32,24 +31,6 @@ const MUSIC_LINKS: { label: string; url: string }[] = [
 
 const CVPage = () => {
   const ref = useFadeIn();
-  const [generating, setGenerating] = useState(false);
-
-  const downloadPdf = useCallback(async () => {
-    setGenerating(true);
-    try {
-      // Both loaded on demand so the ~40 KB gzip PDF library and the layout
-      // never land in the route chunk — they download only when a visitor
-      // actually exports. drawCvPdf is the same routine the build plugin runs
-      // to emit the static copy, so the two can never disagree.
-      const [{ jsPDF }, { drawCvPdf }] = await Promise.all([
-        import("jspdf"),
-        import("@/content/cvPdf"),
-      ]);
-      drawCvPdf(new jsPDF()).save(CV_PDF_FILENAME);
-    } finally {
-      setGenerating(false);
-    }
-  }, []);
 
   return (
     <div className="min-h-screen" ref={ref}>
@@ -83,22 +64,16 @@ const CVPage = () => {
               </p>
 
               <div className="mt-7 flex flex-wrap items-center gap-4">
-                <button
-                  type="button"
-                  onClick={downloadPdf}
-                  disabled={generating}
-                  className={buttonClasses({ variant: "secondary" })}
-                >
+                {/* This was a button that dynamic-imported jsPDF and drew the
+                    document in the browser — while build/emitCvPdfPlugin.ts
+                    already emits the identical PDF from the same drawCvPdf(),
+                    at a fixed URL, at build time. Same document, none of the
+                    library, and it still works with JavaScript broken. The
+                    separate "Direct link" existed to expose that static file
+                    and is now what the button points at. */}
+                <a href={`/${CV_PDF_FILENAME}`} download className={buttonClasses({ variant: "secondary" })}>
                   <Download size={15} />
-                  {generating ? "Generating…" : "Download PDF"}
-                </button>
-                {/* The same document at a fixed URL, generated at build time —
-                    what to paste into an application form or an email. */}
-                <a
-                  href={`/${CV_PDF_FILENAME}`}
-                  className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Direct link <ArrowUpRight size={14} />
+                  Download PDF
                 </a>
                 <Link
                   to={CV_PROFILE.contactPath}

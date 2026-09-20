@@ -48,3 +48,10 @@ playwright-report/
 # Local scratch/output directories — never ship artifacts from these.
 output/
 tmp/
+
+# Local working directories, untracked and previously un-ignored, so every
+# `git status` opened dirty. This repo is public: the thesis proposal in
+# particular is a draft that has not been published anywhere. Delete these two
+# lines to start tracking either.
+.agents/
+proposal/

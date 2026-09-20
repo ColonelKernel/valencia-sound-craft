@@ -22,8 +22,15 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   build: {
     manifest: true,
+    chunkSizeWarningLimit: 520,
     rollupOptions: {
       output: {
+        // abcjs lands in a chunk that measures 500.8 kB against Rollup's
+        // 500 kB default — 0.16% over, so the warning flapped between builds
+        // and made the build output nondeterministically noisy. It is lazily
+        // loaded by the notation view and never reaches the entry graph, so
+        // the gzip budget in scripts/check-bundle-budget.mjs is the check that
+        // actually governs here, and it is unaffected.
         manualChunks(id) {
           // Rollup's synthetic CommonJS helper module is imported by every
           // chunk that touches a CJS dep; pinned to its own tiny chunk so it

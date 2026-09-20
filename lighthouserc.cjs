@@ -14,6 +14,16 @@ module.exports = {
         "http://127.0.0.1:4173/projects/transit-atlas",
         "http://127.0.0.1:4173/projects/session-state",
         "http://127.0.0.1:4173/music-analytics",
+        // The six heaviest routes were the six omitted: leaflet on the map
+        // and the atlas, recharts on the analytics dashboard, the canvas
+        // feel-space lens, and the embed facades on /work. An accessibility
+        // floor of 1.0 applied only to the routes least likely to break it is
+        // not a floor. All sixteen real routes are audited now.
+        "http://127.0.0.1:4173/tools/map",
+        "http://127.0.0.1:4173/tools/circle",
+        "http://127.0.0.1:4173/tools/tonnetz",
+        "http://127.0.0.1:4173/groove-atlas",
+        "http://127.0.0.1:4173/work",
       ],
       startServerCommand: "npm run preview -- --host 127.0.0.1 --port 4173",
       startServerReadyPattern: "Local:",

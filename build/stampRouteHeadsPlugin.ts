@@ -116,6 +116,42 @@ export function stampRouteHeadsPlugin(): Plugin {
       // dynamicImports order — which mirrors the PAGES literal in App.tsx.
       // The prefix check turns any drift into a loud build failure instead of
       // silently preloading the wrong route's chunks.
+      /**
+       * Which source module each route must resolve to.
+       *
+       * The guard below used to compare only the OUTPUT basename against
+       * EXPECTED_CHUNK_PREFIX, and all five tool routes share the basename
+       * "Tool" — they are five different files all named Tool.tsx. So
+       * reordering rhythm/harmony/map/circle/tonnetz among themselves passed
+       * every check and silently stamped the wrong modulepreloads onto four
+       * routes: invisible to typecheck, lint and the test suites, and visible
+       * only as four routes preloading another route's chunks.
+       *
+       * The manifest key is the source path, which is unique. Vite emits a
+       * bare "_Chunk-hash.js" key instead for a chunk that is also reachable
+       * from elsewhere, and those fall back to the basename check — but a
+       * swap moves two positions, at most one of which is anonymous, so the
+       * other end still fails.
+       */
+      const EXPECTED_MODULE: Record<string, string> = {
+        home: "src/pages/Index.tsx",
+        toolsIndex: "src/pages/tools/ToolsIndex.tsx",
+        rhythm: "src/features/rhythm/Tool.tsx",
+        harmony: "src/features/harmony/Tool.tsx",
+        map: "src/features/map/Tool.tsx",
+        circle: "src/features/circle/Tool.tsx",
+        tonnetz: "src/features/tonnetz/Tool.tsx",
+        musicAnalytics: "src/pages/MusicAnalyticsPage.tsx",
+        grooveAtlas: "src/pages/GrooveAtlasPage.tsx",
+        projects: "src/pages/ProjectsPage.tsx",
+        autoharm: "src/pages/AutoHarmCaseStudy.tsx",
+        catalogIntelligence: "src/pages/CatalogIntelligenceCaseStudy.tsx",
+        transitAtlas: "src/pages/TransitAtlasCaseStudy.tsx",
+        sessionState: "src/pages/SessionStateCaseStudy.tsx",
+        work: "src/pages/WorkPage.tsx",
+        cv: "src/pages/CVPage.tsx",
+        notFound: "src/pages/NotFound.tsx",
+      };
       const EXPECTED_CHUNK_PREFIX: Record<string, string> = {
         home: "Index-",
         toolsIndex: "ToolsIndex-",
@@ -144,11 +180,25 @@ export function stampRouteHeadsPlugin(): Plugin {
       }
       const modulePreloadsByKey = new Map<string, string>();
       routeKeysInOrder.forEach((routeKey, index) => {
-        const chunk = manifest[dynamicKeys[index]];
+        const moduleKey = dynamicKeys[index];
+        const chunk = manifest[moduleKey];
+        const expectedModule = EXPECTED_MODULE[routeKey];
         const prefix = EXPECTED_CHUNK_PREFIX[routeKey];
-        if (!prefix || !path.basename(chunk.file).startsWith(prefix)) {
+        if (!expectedModule || !prefix) {
           throw new Error(
-            `stamp-route-heads: route "${routeKey}" mapped to chunk ${chunk.file} (expected basename prefix "${prefix}") — keep PAGES in App.tsx in ROUTE_META order`,
+            `stamp-route-heads: route "${routeKey}" has no expected module or chunk prefix — add it alongside its ROUTE_META entry`,
+          );
+        }
+        if (moduleKey.startsWith("_")) {
+          // Anonymous chunk key: the basename is all there is to check.
+          if (!path.basename(chunk.file).startsWith(prefix)) {
+            throw new Error(
+              `stamp-route-heads: route "${routeKey}" mapped to chunk ${chunk.file} (expected basename prefix "${prefix}") — keep PAGES in App.tsx in ROUTE_META order`,
+            );
+          }
+        } else if (moduleKey !== expectedModule) {
+          throw new Error(
+            `stamp-route-heads: route "${routeKey}" mapped to module ${moduleKey} (expected ${expectedModule}) — keep PAGES in App.tsx in ROUTE_META order`,
           );
         }
         const files = new Set<string>();

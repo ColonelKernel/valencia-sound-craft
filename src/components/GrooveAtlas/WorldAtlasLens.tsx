@@ -248,6 +248,9 @@ const WorldAtlasLens = () => {
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(20rem,1fr)] items-start">
       <div className="rounded-[1.5rem] border border-border/70 overflow-hidden">
         <GlobalRhythmMap
+          // This lens puts the map straight under the page <h1>, ahead of the
+          // tradition panel's own <h2>.
+          headingLevel="h2"
           rhythms={GLOBAL_RHYTHM_ATLAS}
           selectedCountry={selected?.country}
           onCountrySelect={handleCountrySelect}

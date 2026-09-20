@@ -16,6 +16,14 @@ interface GlobalRhythmMapProps {
   focusContinent?: RhythmContinent | "All";
   onCountrySelect?: (rhythm: Rhythm) => void;
   onCountryHover?: (rhythm: Rhythm | null) => void;
+  /**
+   * Heading level for this panel's title. The component is mounted in two
+   * documents with different outlines: under an <h3> inside the rhythm engine
+   * on /tools/map, and directly under the page <h1> on /groove-atlas, where a
+   * fixed <h4> skipped two levels and failed the accessibility gate. The
+   * default preserves the engine's outline.
+   */
+  headingLevel?: "h2" | "h3" | "h4";
 }
 
 type RegionAnchor = {
@@ -399,6 +407,7 @@ const GlobalRhythmMap = ({
   focusContinent,
   onCountryHover,
   onCountrySelect,
+  headingLevel: Heading = "h4",
 }: GlobalRhythmMapProps) => {
   useBasemapTileHints();
   const [hoveredRhythm, setHoveredRhythm] = useState<Rhythm | null>(null);
@@ -464,10 +473,10 @@ const GlobalRhythmMap = ({
     <div className="rounded-xl border border-border bg-card p-3 sm:p-4 md:p-5 space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h4 className="text-base font-semibold flex items-center gap-2 text-foreground">
+          <Heading className="text-base font-semibold flex items-center gap-2 text-foreground">
             <Globe2 className="w-4 h-4 text-primary" />
             Rhythm Atlas Map
-          </h4>
+          </Heading>
           <p className="text-[11px] text-muted-foreground mt-1 max-w-2xl">
             Click any marker to load that country's atlas rhythm directly into the sequencer.
           </p>
