@@ -23,7 +23,7 @@ test("failed submit surfaces the error alert with mailto + LinkedIn fallbacks", 
 
   await page.getByLabel("Name").fill("Playwright Probe");
   await page.getByLabel("Email").fill("probe@example.com");
-  await page.getByLabel("Project Type").selectOption("Data science / ML project");
+  await page.getByLabel("Reason for reaching out").selectOption("Data science / ML project");
   await page.getByLabel("Message").fill("End-to-end failure-path check");
 
   await page.getByRole("button", { name: /send message/i }).click();

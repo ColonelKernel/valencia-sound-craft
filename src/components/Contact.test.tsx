@@ -41,7 +41,7 @@ afterEach(() => {
 const fillAndSubmit = (overrides?: { company?: string }) => {
   fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Ada Lovelace" } });
   fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ada@example.com" } });
-  fireEvent.change(screen.getByLabelText("Project Type"), { target: { value: "Data science / ML project" } });
+  fireEvent.change(screen.getByLabelText("Reason for reaching out"), { target: { value: "Data science / ML project" } });
   fireEvent.change(screen.getByLabelText("Message"), {
     target: { value: "Analytical engine mix notes" },
   });

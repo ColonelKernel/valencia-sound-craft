@@ -105,9 +105,9 @@ const Contact = () => {
       <div className="container mx-auto max-w-2xl">
         <div className="fade-up text-center mb-12">
           <p className="eyebrow mb-3">Get in Touch</p>
-          <h2 className="type-h1 mb-4">Start a Project</h2>
+          <h2 className="type-h1 mb-4">Start a Conversation</h2>
           <p className="text-muted-foreground">
-            Tell me what you're working on — I'll get back to you within 24–48 hours.
+            Tell me about the role, or the project — I'll get back to you within 24–48 hours.
           </p>
         </div>
 
@@ -175,17 +175,17 @@ const Contact = () => {
 
             <div>
               <label htmlFor="contact-project-type" className="block text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                Project Type
+                Reason for reaching out
               </label>
               <select
-                aria-label="Project Type"
+                aria-label="Reason for reaching out"
                 id="contact-project-type"
                 required
                 value={projectType}
                 onChange={(e) => setProjectType(e.target.value)}
                 className="w-full border border-border bg-background px-4 py-3 text-sm rounded-control focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow appearance-none"
               >
-                <option value="">Select a project type</option>
+                <option value="">Select one</option>
                 <option>Full-time role</option>
                 <option>Contract / consulting</option>
                 <option>Data science / ML project</option>
