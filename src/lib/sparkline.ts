@@ -30,7 +30,7 @@ export interface SparklineGeometry {
 const round = (n: number): number => Math.round(n * 100) / 100;
 
 function points(
-  values: number[],
+  values: readonly number[],
   width: number,
   height: number,
   padY: number,
@@ -56,7 +56,7 @@ function points(
  * an empty series so callers can render `<path d="">` without a guard.
  */
 export function sparklineGeometry(
-  values: number[],
+  values: readonly number[],
   { width = 100, height = 40, padY = 4 }: SparklineOptions = {},
 ): SparklineGeometry {
   if (values.length === 0) {
@@ -83,7 +83,7 @@ export interface SparkBar {
  * between bars.
  */
 export function sparklineBars(
-  values: number[],
+  values: readonly number[],
   { width = 100, height = 40, gap = 0.3 }: SparklineOptions & { gap?: number } = {},
 ): SparkBar[] {
   if (values.length === 0) {

@@ -4,13 +4,24 @@ import { Link } from "react-router-dom";
 import { buttonClasses } from "@/components/ui/button";
 import { cardClasses } from "@/components/ui/card";
 import { sparklineBars, sparklineGeometry } from "@/lib/sparkline";
+import { ANALYTICS_SPARKS } from "@/content/analyticsSparks";
 
-const sparkData = {
-  acquisition: [42, 48, 45, 55, 58, 52, 61, 67, 63, 72, 78, 74],
-  revenue: [12, 18, 22, 28, 31, 35, 33, 40, 46, 52, 55, 61],
-  risk: [30, 45, 25, 50, 35, 55, 28, 42, 38, 48, 32, 40],
-  catalog: [85, 62, 48, 35, 28, 20, 15, 12],
-};
+/**
+ * These four series used to be hand-written arrays — invented numbers plotted
+ * beside four real statistical method names, under a heading about evaluating
+ * catalogs as financial assets. They carried aria-hidden, so a screen reader
+ * skipped them and the markup was defensible; a sighted reviewer still read
+ * four charts next to "Revenue Forecasting / Linear Regression" with no way
+ * to tell they were decoration.
+ *
+ * They are now derived from public/data/spotify_songs.csv by
+ * scripts/generate-analytics-sparks.ts, through the same src/lib functions
+ * /music-analytics runs on. Committed rather than computed at load, because
+ * the landing page must not pull an 820 KB CSV onto its scroll path — which
+ * is the same reason these are inline SVG rather than recharts.
+ * src/content/analyticsSparks.test.ts fails if the file and the CSV drift.
+ */
+const sparkData = ANALYTICS_SPARKS;
 
 /**
  * Inline SVG sparklines — deliberately not recharts. These four 40px decorative
@@ -28,7 +39,7 @@ const AreaSpark = ({
   stroke,
   gradientId,
 }: {
-  values: number[];
+  values: readonly number[];
   stroke: string;
   gradientId: string;
 }) => {
@@ -62,7 +73,7 @@ const AreaSpark = ({
   );
 };
 
-const LineSpark = ({ values, stroke }: { values: number[]; stroke: string }) => {
+const LineSpark = ({ values, stroke }: { values: readonly number[]; stroke: string }) => {
   const { line } = sparklineGeometry(values, { width: SPARK_W, height: SPARK_H });
   return (
     <svg
@@ -86,7 +97,7 @@ const LineSpark = ({ values, stroke }: { values: number[]; stroke: string }) => 
   );
 };
 
-const BarSpark = ({ values }: { values: number[] }) => {
+const BarSpark = ({ values }: { values: readonly number[] }) => {
   const bars = sparklineBars(values, { width: SPARK_W, height: SPARK_H, gap: 0.3 });
   return (
     <svg
@@ -119,6 +130,7 @@ const metrics = [
     label: "Acquisition Scoring",
     value: "0–100",
     desc: "Weighted model evaluating growth, stability, longevity & momentum",
+    plotted: "Scores for the twelve largest catalogs in the sample",
     spark: <AreaSpark values={sparkData.acquisition} stroke="hsl(var(--primary))" gradientId="sparkAcq" />,
   },
   {
@@ -126,6 +138,7 @@ const metrics = [
     label: "Revenue Forecasting",
     value: "Linear Regression",
     desc: "Stream-to-revenue projections with confidence bands",
+    plotted: "Modeled revenue by release month, last 24 months of the sample",
     spark: <LineSpark values={sparkData.revenue} stroke="hsl(142 71% 45%)" />,
   },
   {
@@ -133,6 +146,7 @@ const metrics = [
     label: "Risk Analysis",
     value: "Rolling Variance",
     desc: "Volatility tracking and catalog diversification scoring",
+    plotted: "Rolling three-month variance over those same months",
     spark: <AreaSpark values={sparkData.risk} stroke="hsl(0 84% 60%)" gradientId="sparkRisk" />,
   },
   {
@@ -140,6 +154,7 @@ const metrics = [
     label: "Catalog Depth",
     value: "Album Distribution",
     desc: "Release distribution across a catalog",
+    plotted: "Releases per year across the sample, most recent first",
     spark: <BarSpark values={sparkData.catalog} />,
   },
 ];
@@ -180,6 +195,10 @@ const AnalyticsPreview = () => (
             <h3 className="mt-4 text-lg font-semibold text-foreground">{m.label}</h3>
             <p className="mt-1 text-xs font-medium text-primary/80">{m.value}</p>
             <div className="mt-3">{m.spark}</div>
+            {/* The chart itself is aria-hidden, so this caption is the only
+                thing that says what it plots — to a screen reader and to a
+                sighted reader who reasonably assumes it is decoration. */}
+            <p className="mt-1.5 text-[11px] leading-5 text-muted-foreground/70">{m.plotted}</p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{m.desc}</p>
           </article>
         ))}
