@@ -19,9 +19,12 @@ test("overview renders real values from the dataset, not empty chart frames", as
 }) => {
   await page.goto("/music-analytics");
 
-  // The page fetches and parses a CSV before anything can render.
+  // The page fetches and parses a CSV before anything can render. Wait on the
+  // skeleton's aria-busy rather than on placeholder text: a text wait silently
+  // becomes a no-op the moment the copy changes, which is exactly what
+  // happened when "Loading…" was replaced by DashboardSkeleton.
   await expect(page.getByRole("button", { name: "Overview" })).toBeVisible();
-  await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 20_000 });
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 20_000 });
 
   // The artist filter is populated from the parsed data, so a real option
   // beyond the "All Artists" placeholder proves the CSV resolved.
@@ -43,7 +46,7 @@ test("overview renders real values from the dataset, not empty chart frames", as
 
 test("acquisition tab computes a score with its four components", async ({ page }) => {
   await page.goto("/music-analytics");
-  await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 20_000 });
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 20_000 });
 
   await page.getByRole("button", { name: "Acquisition" }).click();
 
@@ -62,7 +65,7 @@ test("acquisition tab computes a score with its four components", async ({ page 
 
 test("the streams/revenue toggle changes the numbers on screen", async ({ page }) => {
   await page.goto("/music-analytics");
-  await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 20_000 });
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 20_000 });
 
   const metric = page.locator("text=/^\\$?\\d+(\\.\\d+)?[KMB]$/").first();
   await expect(metric).toBeVisible({ timeout: 20_000 });

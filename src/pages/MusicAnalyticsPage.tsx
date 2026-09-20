@@ -7,6 +7,7 @@ import { fetchAndParseChartData, type ArtistMonthly } from "@/lib/musicDataServi
 import AnalyticsHero from "@/components/MusicAnalytics/AnalyticsHero";
 import ArtistPicker from "@/components/MusicAnalytics/ArtistPicker";
 import TabErrorBoundary from "@/components/MusicAnalytics/TabErrorBoundary";
+import DashboardSkeleton from "@/components/MusicAnalytics/DashboardSkeleton";
 import HowThisWorks from "@/components/MusicAnalytics/HowThisWorks";
 // Every tab — including the initial Overview — is code-split: recharts alone
 // is ~100 KB gzip, and the page has its own loading state while the CSV data
@@ -173,13 +174,10 @@ export default function MusicAnalyticsPage() {
               {TABS.find((t) => t.id === tab)?.label} view
             </h2>
             <TabErrorBoundary resetKey={tab}>
-              <Suspense
-                fallback={
-                  <div className="flex min-h-[24rem] items-center justify-center text-sm text-muted-foreground">
-                    Loading…
-                  </div>
-                }
-              >
+              {/* Eagerly imported, unlike every panel: it is a few hundred
+                  bytes of markup, and a fallback that has to be fetched is a
+                  fallback that arrives after the thing it was covering for. */}
+              <Suspense fallback={<DashboardSkeleton />}>
               {tab === "overview" && (
                 <StreamingDashboard
                   data={data}

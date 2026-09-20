@@ -81,7 +81,10 @@ export const WORK_EMBEDS: WorkEmbed[] = [
     year: "2026",
     embedUrl: "https://www.youtube.com/embed/KtgLL1YZW4c",
     height: 315,
-    description: "From a five-song live session I recorded with La Vitti in Valencia.",
+    // The two Berklee Valencia credits below/above stay: a named studio is a
+    // credential. This one carried only the city, which does no work for a
+    // reader deciding whether I can run a live session.
+    description: "From a five-song live session I recorded and shot with La Vitti.",
   },
   {
     id: "soundcloud-streetcar-scandal",

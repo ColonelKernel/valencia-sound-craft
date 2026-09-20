@@ -7,6 +7,7 @@ import {
 import type { ArtistMonthly } from "@/lib/musicDataService";
 import { forecast } from "@/lib/linearRegression";
 import { formatMetric, robustMoMGrowth } from "@/lib/catalogAnalytics";
+import DashboardSkeleton from "./DashboardSkeleton";
 
 interface Props {
   data: ArtistMonthly[];
@@ -131,12 +132,9 @@ export default function StreamingDashboard({
   );
 
   if (loading) {
-    return (
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <div className="h-4 w-4 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
-        Fetching chart data…
-      </div>
-    );
+    // Same component the route's Suspense fallback renders, so the chunk
+    // arriving does not collapse the page before the data arrives to refill it.
+    return <DashboardSkeleton />;
   }
 
   if (error) {
