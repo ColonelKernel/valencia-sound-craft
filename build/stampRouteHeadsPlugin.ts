@@ -199,12 +199,11 @@ export function stampRouteHeadsPlugin(): Plugin {
           /<link rel="canonical" href="[^"]*">/,
           `<link rel="canonical" href="${url}">`,
         );
-        // The shared og-image is fine; its alt describing the homepage photo
-        // is not — describe the route instead.
-        replaceOnce(
-          /(<meta property="og:image:alt" content=")[^"]*(" \/>)/,
-          `$1${title}$2`,
-        );
+        // og:image:alt is deliberately NOT stamped. It describes the image,
+        // and every route shares one card — so writing the route title into it
+        // made /cv claim its picture depicted "CV | Zach Scheffler", which is
+        // wrong for a screen-reader user and wrong as alt text. The shell's
+        // description of the card is correct for every route that uses it.
         // The hero image only renders on "/" — preloading its 126 KB with
         // fetchpriority=high on every other route just competes with that
         // route's real critical path.

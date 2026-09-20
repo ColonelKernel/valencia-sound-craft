@@ -1,0 +1,10 @@
+{
+  "width": 1200,
+  "height": 630,
+  "name": "Zach Scheffler",
+  "title": "Data Scientist & ML Engineer",
+  "location": "San Francisco Bay Area",
+  "availability": "Open to new roles",
+  "credentials": "World Bank · NORC at the University of Chicago · Rios Partners",
+  "generatedBy": "scripts/generate-og-card.mjs"
+}

@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "budget": "vite build --mode analyze && node scripts/check-bundle-budget.mjs"
+    "budget": "vite build --mode analyze && node scripts/check-bundle-budget.mjs",
+    "og-card": "node scripts/generate-og-card.mjs"
   },
   "dependencies": {
     "@radix-ui/react-progress": "^1.1.7",

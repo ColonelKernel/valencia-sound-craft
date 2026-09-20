@@ -108,8 +108,13 @@ export const ROUTE_META = {
   work: {
     path: "/work",
     title: "Work | Zach Scheffler",
+    // Leads with the capability, not the postcode. This read "session
+    // recordings for Valencia artists", which is what Google indexed and what
+    // a recruiter searching the name saw — a local session résumé rather than
+    // audio engineering depth. The Berklee Valencia credit stays on the page
+    // itself, where it is a credential rather than an address.
     description:
-      "Selected music and video work by Zach Scheffler: the Global Pulse EP, session recordings for Valencia artists, and releases as Streetcar Scandal.",
+      "Selected music and video work by Zach Scheffler: the Global Pulse EP, studio and live-session recording, mixing and video production, and releases as Streetcar Scandal.",
   },
   cv: {
     path: "/cv",
