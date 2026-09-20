@@ -86,6 +86,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # `npm run lighthouse` is `lhci autorun`, which serves dist/ via
+      # `vite preview` — it does not build. Jobs get a fresh runner and share
+      # no filesystem with `gates`, so without this the preview server has
+      # nothing to serve, never prints its ready pattern, and every route
+      # fails as CHROME_INTERSTITIAL_ERROR against chrome-error://chromewebdata.
+      # (The e2e job avoids this because playwright.config.ts's webServer
+      # command builds first.)
+      - name: Production build
+        run: npm run build
+
       # This job exists because three places on the site told readers it did:
       # /tools, /projects and the homepage all claimed a perfect Lighthouse
       # accessibility score gated every commit, and nothing in CI ran it. The
