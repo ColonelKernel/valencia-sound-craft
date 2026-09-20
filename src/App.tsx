@@ -23,6 +23,7 @@ const PAGES: Record<RouteKey, LazyExoticComponent<ComponentType>> = {
   // plugin pairs the two lists positionally.
   autoharm: lazy(() => import("./pages/AutoHarmCaseStudy")),
   catalogIntelligence: lazy(() => import("./pages/CatalogIntelligenceCaseStudy")),
+  transitAtlas: lazy(() => import("./pages/TransitAtlasCaseStudy")),
   sessionState: lazy(() => import("./pages/SessionStateCaseStudy")),
   work: lazy(() => import("./pages/WorkPage")),
   cv: lazy(() => import("./pages/CVPage")),

@@ -11,6 +11,7 @@ module.exports = {
         "http://127.0.0.1:4173/projects",
         "http://127.0.0.1:4173/projects/autoharm",
         "http://127.0.0.1:4173/projects/catalog-intelligence",
+        "http://127.0.0.1:4173/projects/transit-atlas",
         "http://127.0.0.1:4173/projects/session-state",
       ],
       startServerCommand: "npm run preview -- --host 127.0.0.1 --port 4173",

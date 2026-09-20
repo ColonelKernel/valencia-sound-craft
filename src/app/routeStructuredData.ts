@@ -149,6 +149,25 @@ export const CATALOG_INTELLIGENCE_JSONLD: RouteStructuredData = {
   },
 };
 
+export const TRANSIT_ATLAS_JSONLD: RouteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  name: "World Transit Atlas: assembling 201 transit networks from open data",
+  description: ROUTE_META.transitAtlas.description,
+  url: ROUTE_META.transitAtlas.path,
+  author: {
+    "@type": "Person",
+    name: "Zach Scheffler",
+  },
+  about: {
+    "@type": "SoftwareApplication",
+    name: "World Transit Atlas",
+    applicationCategory: "BrowserApplication",
+    operatingSystem: "Web browser",
+    url: "https://colonelkernel.github.io/world-transit-atlas/",
+  },
+};
+
 export const SESSION_STATE_JSONLD: RouteStructuredData = {
   "@context": "https://schema.org",
   "@type": "TechArticle",
@@ -202,6 +221,7 @@ export const ROUTE_JSONLD: Partial<Record<RouteKey, RouteStructuredData>> = {
   projects: PROJECTS_JSONLD,
   autoharm: AUTOHARM_JSONLD,
   catalogIntelligence: CATALOG_INTELLIGENCE_JSONLD,
+  transitAtlas: TRANSIT_ATLAS_JSONLD,
   sessionState: SESSION_STATE_JSONLD,
   work: WORK_JSONLD,
   cv: CV_JSONLD,

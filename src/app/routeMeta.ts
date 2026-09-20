@@ -93,6 +93,12 @@ export const ROUTE_META = {
     description:
       "How the catalog analytics platform works: a modeled Spotify dataset, a trailing-median rule for sparse buckets, a hand-weighted acquisition score, and the prediction interval's known limitation.",
   },
+  transitAtlas: {
+    path: "/projects/transit-atlas",
+    title: "World Transit Atlas: Case Study | Zach Scheffler",
+    description:
+      "How the transit atlas works: 201 metro and light-rail systems assembled from OpenStreetMap and open agency data, 899k vertices simplified to fit one static file, and why only 33 of them carry ridership.",
+  },
   sessionState: {
     path: "/projects/session-state",
     title: "Session-State Analyzer: Case Study | Zach Scheffler",

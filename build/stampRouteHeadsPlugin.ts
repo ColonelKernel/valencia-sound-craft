@@ -129,6 +129,7 @@ export function stampRouteHeadsPlugin(): Plugin {
         projects: "ProjectsPage-",
         autoharm: "AutoHarmCaseStudy-",
         catalogIntelligence: "CatalogIntelligenceCaseStudy-",
+        transitAtlas: "TransitAtlasCaseStudy-",
         sessionState: "SessionStateCaseStudy-",
         work: "WorkPage-",
         cv: "CVPage-",

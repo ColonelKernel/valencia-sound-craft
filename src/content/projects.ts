@@ -9,6 +9,7 @@
  */
 
 export type ProjectKind =
+  | "data"
   | "web-app"
   | "in-site"
   | "audio-tooling"
@@ -31,6 +32,19 @@ export interface Project {
 }
 
 export const PROJECTS: Project[] = [
+  {
+    id: "transit-atlas",
+    kind: "data",
+    title: "World Transit Atlas",
+    tagline:
+      "An interactive atlas of 201 metro, light-rail and tram systems \u2014 1,298 lines and 22,641 stations assembled from OpenStreetMap, citylines.co and public agency open data, with monthly ridership for the 33 systems that publish it. Real geometry, not schematic; 899k OSM vertices simplified to 217k so the whole thing ships as one static file.",
+    stack: ["Python", "R", "Overpass API", "GeoJSON", "D3-style canvas"],
+    links: [
+      { label: "Case study", url: "/projects/transit-atlas" },
+      { label: "Live atlas", url: "https://colonelkernel.github.io/world-transit-atlas/" },
+      { label: "Source", url: "https://github.com/ColonelKernel/world-transit-atlas" },
+    ],
+  },
   {
     id: "this-site",
     kind: "web-app",
@@ -166,6 +180,10 @@ export const PROJECTS: Project[] = [
 ];
 
 export const PROJECT_SECTIONS: Array<{ kind: ProjectKind; title: string }> = [
+  // Data leads the page for the same reason the homepage leads with it: this
+  // is the section a data-science reader is looking for, and it used to not
+  // exist at all.
+  { kind: "data", title: "Data & Geospatial" },
   { kind: "web-app", title: "Live Web Apps" },
   { kind: "in-site", title: "On This Site" },
   { kind: "audio-tooling", title: "Audio Tooling" },
