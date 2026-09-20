@@ -38,7 +38,10 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { chromium } from "playwright";
+// From @playwright/test, the declared devDependency, rather than from
+// "playwright" — that package is only present transitively, so importing it
+// directly works today and breaks on any install that hoists differently.
+import { chromium } from "@playwright/test";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC = join(root, "public");
