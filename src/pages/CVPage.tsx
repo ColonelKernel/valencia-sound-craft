@@ -204,9 +204,7 @@ const CVPage = () => {
                   <SkillLink to={ROUTE_META.catalogIntelligence.path}>
                     catalog intelligence
                   </SkillLink>
-                  , clustering in{" "}
-                  <SkillLink to={ROUTE_META.grooveAtlas.path}>the groove atlas</SkillLink>,
-                  ONNX inference in{" "}
+                  , ONNX inference in{" "}
                   <SkillLink to={ROUTE_META.autoharm.path}>AutoHarm</SkillLink>, the
                   geospatial pipeline in{" "}
                   <SkillLink to={ROUTE_META.transitAtlas.path}>the transit atlas</SkillLink>,

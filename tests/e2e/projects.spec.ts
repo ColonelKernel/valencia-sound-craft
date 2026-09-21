@@ -52,9 +52,11 @@ test("projects page renders every card with working links", async ({ page, baseU
     ).toBeAttached();
   }
 
-  // An in-app project link navigates client-side.
-  await page.getByRole("link", { name: /open atlas/i }).click();
-  await expect(page).toHaveURL(/\/groove-atlas$/);
+  // An in-app project link navigates client-side. This used to click through
+  // to the Groove Atlas, which is retired; the dashboard is the surviving
+  // in-site destination with the same shape.
+  await page.getByRole("link", { name: /open dashboard/i }).first().click();
+  await expect(page).toHaveURL(/\/music-analytics$/);
 
   await page.waitForTimeout(500);
   expect(errors).toEqual([]);

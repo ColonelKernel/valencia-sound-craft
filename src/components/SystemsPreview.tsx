@@ -1,4 +1,4 @@
-import { ArrowRight, BarChart3, Brain, Globe2, Hexagon, Music2, TrainFront, Waves } from "lucide-react";
+import { ArrowRight, BarChart3, Globe2, Hexagon, Music2, TrainFront, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { buttonClasses } from "@/components/ui/button";
@@ -78,16 +78,6 @@ const featured = [
     caption: "Modeled revenue by release month, last 24 months of the sample",
     spark: true,
   },
-  {
-    to: ROUTE_META.grooveAtlas.path,
-    icon: Brain,
-    tag: "World Atlas + Feel-Space",
-    title: "Groove Atlas",
-    description:
-      "A world map of rhythm traditions with cited sources, paired with a canvas feel-space that clusters groove families by rhythmic feel.",
-    cta: "Open Groove Atlas",
-    spark: false,
-  },
 ];
 
 const tools = [
@@ -125,9 +115,9 @@ const SystemsPreview = () => (
           <p className="eyebrow">Systems</p>
           <h2 className="type-h1">Things I Built and Can Show You</h2>
           <p className="text-sm text-muted-foreground md:text-base">
-            The transit atlas and the catalog platform, the groove atlas that sits between
-            them, and the interactive tools underneath — each one open in the browser, with
-            the data and the method on the page beside it.
+            The transit atlas and the catalog platform, and the interactive tools
+            underneath them — each one open in the browser, with the data and the method
+            on the page beside it.
           </p>
         </div>
         <Link to={ROUTE_META.projects.path} className={buttonClasses({ variant: "secondary" })}>
@@ -136,7 +126,7 @@ const SystemsPreview = () => (
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         {featured.map((card) => (
           <article key={card.to} className={cardClasses({}, "flex flex-col")}>
             <div className="flex items-center gap-2">

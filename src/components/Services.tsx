@@ -62,7 +62,7 @@ const services: ServiceCard[] = [
     points: [
       "AutoHarm — a four-corpus Markov blend and two JazzNet ONNX models, on-device, playing live MIDI into a DAW",
       "Music Catalog Intelligence — acquisition scoring, regression forecasting and rolling-variance risk",
-      "Groove Atlas — k-means over a drum-performance dataset, rendered as a canvas that holds frame rate",
+      "Session-State Analyzer — a twelve-role track classifier at 99.3%, reported with the in-sample caveat that number carries",
     ],
     cta: "Open the case study",
     href: "/projects/autoharm",

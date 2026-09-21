@@ -17,11 +17,11 @@ interface GlobalRhythmMapProps {
   onCountrySelect?: (rhythm: Rhythm) => void;
   onCountryHover?: (rhythm: Rhythm | null) => void;
   /**
-   * Heading level for this panel's title. The component is mounted in two
-   * documents with different outlines: under an <h3> inside the rhythm engine
-   * on /tools/rhythm, and directly under the page <h1> on /groove-atlas, where a
-   * fixed <h4> skipped two levels and failed the accessibility gate. The
-   * default preserves the engine's outline.
+   * Heading level for this panel's title. A fixed <h4> skipped two levels
+   * where this mounted directly under a page <h1>, and failed the
+   * accessibility gate. The default preserves the rhythm engine's outline,
+   * which is the only place it renders now that the Groove Atlas is retired;
+   * the prop stays so the next host does not have to rediscover the bug.
    */
   headingLevel?: "h2" | "h3" | "h4";
 }

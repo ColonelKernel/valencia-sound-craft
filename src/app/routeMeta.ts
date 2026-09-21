@@ -60,12 +60,6 @@ export const ROUTE_META = {
     description:
       "Catalog analytics dashboard for music investment analysis: forecasting, risk scoring, and side-by-side comparison over a demonstration dataset derived from public Spotify popularity data.",
   },
-  grooveAtlas: {
-    path: "/groove-atlas",
-    title: "Groove Atlas | Zach Scheffler",
-    description:
-      "A world atlas of rhythm traditions with cited ethnomusicological sources, paired with an interactive feel-space lab for exploring groove families.",
-  },
   projects: {
     path: "/projects",
     title: "Projects | Zach Scheffler",

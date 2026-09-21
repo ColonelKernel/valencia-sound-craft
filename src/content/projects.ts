@@ -50,7 +50,7 @@ export const PROJECTS: Project[] = [
     kind: "web-app",
     title: "This Site",
     tagline:
-      "zachscheffler.com itself — a React SPA whose four music tools share one Web Audio transport and clock. Every push and pull request has to pass typecheck, zero-warning lint, the unit suites, a production build, a Playwright end-to-end run, a 150KB gzip budget on the initial graph, and Lighthouse CI holding accessibility at 1.0 across all fifteen routes.",
+      "zachscheffler.com itself — a React SPA whose four music tools share one Web Audio transport and clock. Every push and pull request has to pass typecheck, zero-warning lint, the unit suites, a production build, a Playwright end-to-end run, a 150KB gzip budget on the initial graph, and Lighthouse CI holding accessibility at 1.0 across all fourteen routes.",
     stack: ["TypeScript", "React", "Web Audio", "Vitest + Playwright", "GitHub Actions"],
     links: [
       { label: "Source", url: "https://github.com/ColonelKernel/valencia-sound-craft" },
@@ -73,15 +73,6 @@ export const PROJECTS: Project[] = [
       { label: "Launch app", url: "https://autoharm.zachscheffler.com/" },
       { label: "Source", url: "https://github.com/ColonelKernel/AutoHarm-Web" },
     ],
-  },
-  {
-    id: "groove-atlas",
-    kind: "in-site",
-    title: "Groove Atlas",
-    tagline:
-      "A world map of rhythm traditions with verified ethnomusicological citations, paired with a canvas feel-space lab over a drum-performance dataset.",
-    stack: ["React", "Leaflet", "Canvas", "Web Audio"],
-    links: [{ label: "Open atlas", url: "/groove-atlas" }],
   },
   {
     id: "music-analytics",

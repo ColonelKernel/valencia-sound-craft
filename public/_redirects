@@ -7,9 +7,10 @@
 # dist/404.html (a shell copy that mounts the SPA NotFound page) with a real
 # 404 status instead of soft-404ing as the homepage.
 
-# Legacy path: reached the client-side <Navigate> via the old wildcard; now a
-# host-level 301 so inbound links land on the canonical URL in one hop.
-/groove-intelligence    /groove-atlas    301
+# The Groove Atlas is retired. Its own path and the older /groove-intelligence
+# one both land on the rhythm engine, which still mounts the same world map.
+/groove-atlas           /tools/rhythm    301
+/groove-intelligence    /tools/rhythm    301
 
 # /tools/map mounted GlobalRhythmEngine with the same props as /tools/rhythm,
 # and the atlas renders inside that engine — it was the same tool at two URLs.

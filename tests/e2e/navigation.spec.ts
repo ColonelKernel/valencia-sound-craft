@@ -62,10 +62,6 @@ test("navbar navigation reaches work, groove atlas, analytics, and home with man
   await expect(page).toHaveURL(/\/projects$/);
   await expect(page).toHaveTitle(ROUTE_META.projects.title, { timeout: 15_000 });
 
-  await page.getByRole("link", { name: "Groove Atlas" }).first().click();
-  await expect(page).toHaveURL(/\/groove-atlas$/);
-  await expect(page).toHaveTitle(ROUTE_META.grooveAtlas.title, { timeout: 15_000 });
-
   await page.getByRole("link", { name: "CV", exact: true }).first().click();
   await expect(page).toHaveURL(/\/cv$/);
   await expect(page).toHaveTitle(ROUTE_META.cv.title, { timeout: 15_000 });

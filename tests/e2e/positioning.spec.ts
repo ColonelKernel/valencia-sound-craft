@@ -89,7 +89,6 @@ const EVIDENCE_ROUTES = [
   "/tools/harmony",
   "/tools/circle",
   "/tools/tonnetz",
-  "/groove-atlas",
 ];
 
 for (const path of EVIDENCE_ROUTES) {

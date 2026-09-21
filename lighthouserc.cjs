@@ -15,15 +15,13 @@ module.exports = {
         "http://127.0.0.1:4173/projects/session-state",
         "http://127.0.0.1:4173/music-analytics",
         // The six routes this file used to omit were the six heaviest:
-        // /music-analytics (recharts, listed above), /tools/map and
-        // /groove-atlas (leaflet and the canvas feel-space lens), /work (embed
-        // facades), and the two remaining harmony tools. An accessibility floor
-        // of 1.0 applied only to the routes least likely to break it is not a
-        // floor. All fifteen real routes are audited now — /tools/map was
-        // merged into /tools/rhythm, which mounts the same atlas.
+        // /music-analytics (recharts, listed above), /work (embed facades),
+        // and the harmony tools. An accessibility floor of 1.0 applied only to
+        // the routes least likely to break it is not a floor. All fourteen
+        // real routes are audited now — /tools/map merged into /tools/rhythm,
+        // and /groove-atlas is retired.
         "http://127.0.0.1:4173/tools/circle",
         "http://127.0.0.1:4173/tools/tonnetz",
-        "http://127.0.0.1:4173/groove-atlas",
         "http://127.0.0.1:4173/work",
       ],
       startServerCommand: "npm run preview -- --host 127.0.0.1 --port 4173",

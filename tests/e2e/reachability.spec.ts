@@ -62,8 +62,16 @@ test("the CV points back at the work it claims", async ({ page }) => {
   await expect(page).toHaveURL(/\/projects\/catalog-intelligence$/);
 });
 
-test("the groove atlas is no longer a dead end", async ({ page }) => {
-  await page.goto("/groove-atlas");
-  await page.getByRole("link", { name: "Other projects" }).click();
-  await expect(page).toHaveURL(/\/projects$/);
+test("the retired groove atlas lands somewhere real", async ({ page }) => {
+  // This used to assert the atlas was not a dead end. The route is retired,
+  // so the guarantee that replaces it is that its links do not 404: both the
+  // atlas path and its older alias reach the rhythm engine, which still
+  // mounts the same world map.
+  for (const legacy of ["/groove-atlas", "/groove-intelligence"]) {
+    await page.goto(legacy);
+    await expect(page).toHaveURL(/\/tools\/rhythm$/);
+    await expect(
+      page.getByRole("heading", { name: "Global Rhythm Atlas Engine" }),
+    ).toBeVisible({ timeout: 20_000 });
+  }
 });

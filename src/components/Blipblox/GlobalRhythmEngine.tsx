@@ -20,9 +20,7 @@ import { normalizeMode } from "@/music-core/modeAliases";
 import StepSequencer from "./StepSequencer";
 import PatternMorpher from "./PatternMorpher";
 // Lazy: the Leaflet map stack (~170 KB min) otherwise loads eagerly with the
-// engine on /tools/rhythm, where the map sits below the fold. The Groove
-// Atlas's WorldAtlasLens keeps its own static import — there the map is the
-// hero and must not pop in late.
+// engine on /tools/rhythm, where the map sits below the fold.
 const GlobalRhythmMap = lazy(() => import("./GlobalRhythmMap"));
 import {
   GLOBAL_RHYTHM_ATLAS,

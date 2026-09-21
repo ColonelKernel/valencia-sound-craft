@@ -33,7 +33,6 @@ const REQUIRED_DESTINATIONS = [
   // cannot be absent from the homepage's work grid.
   "/projects/transit-atlas",
   ROUTE_META.musicAnalytics.path,
-  ROUTE_META.grooveAtlas.path,
   ROUTE_META.rhythm.path,
   ROUTE_META.harmony.path,
   ROUTE_META.circle.path,
@@ -55,7 +54,6 @@ describe("SystemsPreview", () => {
     const headings = [...container.querySelectorAll("h3")].map((h) => h.textContent ?? "");
     expect(headings[0]).toMatch(/World Transit Atlas/i);
     expect(headings.join(" | ")).toMatch(/Music Catalog Intelligence/i);
-    expect(headings.join(" | ")).toMatch(/Groove Atlas/i);
   });
 
   it("plots the derived series, not decoration, and captions what it plots", () => {

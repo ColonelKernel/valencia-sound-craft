@@ -8,7 +8,7 @@ import { test, expect } from "@playwright/test";
  * a horizontal scrollbar, because the footer renders on all routes.
  */
 
-const ROUTES = ["/", "/cv", "/work", "/projects", "/groove-atlas", "/tools"];
+const ROUTES = ["/", "/cv", "/work", "/projects", "/tools", "/tools/rhythm"];
 
 test.use({ viewport: { width: 375, height: 812 } });
 
@@ -34,9 +34,9 @@ for (const route of ROUTES) {
  * The navbar must stay one row at every width.
  *
  * Regression guard: the desktop nav used to appear at md (768px). With ten
- * items plus social icons it was too tight there, and "Groove Atlas" wrapped
- * onto a second line. It now switches at lg, so 768–1023px gets the menu
- * button instead.
+ * items plus social icons it was too tight there, and the longest link
+ * wrapped onto a second line. It now switches at lg, so 768–1023px gets the
+ * menu button instead.
  */
 const NAV_WIDTHS = [768, 900, 1023, 1024, 1280, 1440];
 

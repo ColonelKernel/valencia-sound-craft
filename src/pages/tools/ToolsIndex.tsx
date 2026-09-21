@@ -111,7 +111,7 @@ const ToolsIndex = () => (
               Nothing reaches this page without passing the gate: typecheck, a zero-warning
               lint, the unit suites, a production build, an end-to-end Playwright run, a
               150&nbsp;KB gzip budget on the initial graph, and Lighthouse CI holding an
-              accessibility score of 1.0 across all fifteen routes. Every one of those runs in
+              accessibility score of 1.0 across all fourteen routes. Every one of those runs in
               GitHub Actions on each push and pull request —{" "}
               <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">
                 .github/workflows/ci.yml

@@ -83,14 +83,6 @@ export const MUSIC_ANALYTICS_JSONLD: RouteStructuredData = {
   url: ROUTE_META.musicAnalytics.path,
 };
 
-export const GROOVE_ATLAS_JSONLD: RouteStructuredData = {
-  "@context": "https://schema.org",
-  "@type": "CollectionPage",
-  name: "Groove Atlas",
-  description: ROUTE_META.grooveAtlas.description,
-  url: ROUTE_META.grooveAtlas.path,
-};
-
 export const PROJECTS_JSONLD: RouteStructuredData = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
@@ -210,7 +202,6 @@ export const ROUTE_JSONLD: Partial<Record<RouteKey, RouteStructuredData>> = {
   circle: CIRCLE_JSONLD,
   tonnetz: TONNETZ_JSONLD,
   musicAnalytics: MUSIC_ANALYTICS_JSONLD,
-  grooveAtlas: GROOVE_ATLAS_JSONLD,
   projects: PROJECTS_JSONLD,
   autoharm: AUTOHARM_JSONLD,
   catalogIntelligence: CATALOG_INTELLIGENCE_JSONLD,

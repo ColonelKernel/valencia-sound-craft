@@ -15,7 +15,6 @@ const PAGES: Record<RouteKey, LazyExoticComponent<ComponentType>> = {
   circle: lazy(() => import("@/features/circle/Tool")),
   tonnetz: lazy(() => import("@/features/tonnetz/Tool")),
   musicAnalytics: lazy(() => import("./pages/MusicAnalyticsPage")),
-  grooveAtlas: lazy(() => import("./pages/GrooveAtlasPage")),
   projects: lazy(() => import("./pages/ProjectsPage")),
   // Must stay at the same index as its ROUTE_META entry — the head-stamping
   // plugin pairs the two lists positionally.
@@ -35,8 +34,11 @@ const App = () => (
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          {/* Legacy path from before the Groove Lab / Rhythm Map merge. */}
-          <Route path="/groove-intelligence" element={<Navigate to="/groove-atlas" replace />} />
+          {/* The Groove Atlas is retired. Both its own path and the older
+              /groove-intelligence one land on the rhythm engine, which still
+              mounts the same world map. */}
+          <Route path="/groove-atlas" element={<Navigate to="/tools/rhythm" replace />} />
+          <Route path="/groove-intelligence" element={<Navigate to="/tools/rhythm" replace />} />
           {/* /tools/map mounted GlobalRhythmEngine with the same props as
               /tools/rhythm, and the atlas renders inside that engine. Merged.
               public/_redirects carries the host-level 301 for direct hits;

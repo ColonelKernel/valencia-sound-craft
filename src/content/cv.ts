@@ -229,7 +229,7 @@ export const EDUCATION: EducationEntry[] = [
 /** Skills, grouped. Self-reported on the résumé and evidenced by public work. */
 export const SKILLS: SkillGroup[] = [
   // Data leads because the headline does. Every item is evidenced: forecasting
-  // in src/lib/linearRegression.ts, clustering in GrooveIntelligence/clustering.ts,
+  // in src/lib/linearRegression.ts,
   // the metric layer in src/lib/catalogAnalytics.ts, and ONNX inference in
   // AutoHarm. Deliberately absent: "deep learning", "embeddings", "PyTorch" \u2014
   // this repo ships inference over checkpoints it did not train, and says so.

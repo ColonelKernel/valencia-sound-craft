@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Brain, Disc3, Github, Linkedin, Instagram, Menu, Music, Wrench, X } from "lucide-react";
+import { BarChart3, Disc3, Github, Linkedin, Instagram, Menu, Music, Wrench, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -160,22 +160,6 @@ const Navbar = () => {
         />
       </Link>
       <Link
-        to="/groove-atlas"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/groove-atlas" ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <Brain size={14} />
-        Groove Atlas
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            location.pathname === "/groove-atlas" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
-      <Link
         to="/music-analytics"
         className={cn(
           "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
@@ -250,9 +234,9 @@ const Navbar = () => {
    * The way back out of a subnav.
    *
    * On any /tools* or /music-analytics route this bar replaced the whole site
-   * nav with the subnav, so CV, Projects, Work and Groove Atlas all vanished —
+   * nav with the subnav, so CV, Projects and Work all vanished —
    * and the five tool pages contain no internal link of their own. Six of
-   * fifteen routes could not reach the CV except through the wordmark, on a
+   * fourteen routes could not reach the CV except through the wordmark, on a
    * site whose own comment calls the CV the conversion target. The subnav
    * stays; it just no longer traps anyone.
    */
@@ -298,7 +282,7 @@ const Navbar = () => {
         </Link>
 
         {/* Desktop nav starts at lg, not md: with this many items plus the
-            social icons, 768–1023px was tight enough that "Groove Atlas"
+            social icons, 768–1023px was tight enough that the longest link
             wrapped to two lines. That range gets the mobile menu instead. */}
         <div className="hidden items-center gap-6 whitespace-nowrap lg:flex">
           {isToolsRoute
@@ -414,14 +398,6 @@ const Navbar = () => {
                       >
                         <Wrench size={14} />
                         Projects
-                      </Link>
-                      <Link
-                        to="/groove-atlas"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                      >
-                        <Brain size={14} />
-                        Groove Atlas
                       </Link>
                       <Link
                         to="/music-analytics"

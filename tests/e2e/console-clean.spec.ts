@@ -23,8 +23,9 @@ const ROUTES = [
   "/projects/catalog-intelligence",
   "/projects/transit-atlas",
   "/projects/session-state",
+  // Retired route and its older alias — both must cleanly redirect to
+  // /tools/rhythm, which still mounts the same world map.
   "/groove-atlas",
-  // Legacy path — must cleanly redirect to /groove-atlas.
   "/groove-intelligence",
   "/work",
   "/cv",
