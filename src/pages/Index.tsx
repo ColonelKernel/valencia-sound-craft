@@ -3,11 +3,9 @@ import { lazy, Suspense } from "react";
 import Hero from "@/components/Hero";
 import RouteHead from "@/components/seo/RouteHead";
 import SystemsPreview from "@/components/SystemsPreview";
-import { useInView } from "@/hooks/useInView";
 import { ROUTE_META } from "@/app/routeMeta";
 import { HOME_JSONLD } from "@/app/routeStructuredData";
 
-const AnalyticsPreview = lazy(() => import("@/components/AnalyticsPreview"));
 const Services = lazy(() => import("@/components/Services"));
 const Portfolio = lazy(() => import("@/components/Portfolio"));
 const About = lazy(() => import("@/components/About"));
@@ -25,20 +23,6 @@ const SectionFallback = ({ id, className = "" }: SectionFallbackProps) => (
     </div>
   </section>
 );
-
-const DeferredAnalyticsPreview = () => {
-  const { ref, inView } = useInView<HTMLDivElement>();
-
-  return (
-    <div ref={ref} className="min-h-[36rem]">
-      {inView && (
-        <Suspense fallback={<SectionFallback />}>
-          <AnalyticsPreview />
-        </Suspense>
-      )}
-    </div>
-  );
-};
 
 const Index = () => {
   return (
@@ -65,7 +49,6 @@ const Index = () => {
             first has already filed this as a musician's site by the time the
             analytics platform appears. */}
         <div className="border-y border-border/60 bg-secondary/50">
-          <DeferredAnalyticsPreview />
           <SystemsPreview />
 
           <Suspense fallback={<SectionFallback id="portfolio" />}>

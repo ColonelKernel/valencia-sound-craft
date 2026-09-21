@@ -69,39 +69,3 @@ export function sparklineGeometry(
 
   return { line, area };
 }
-
-export interface SparkBar {
-  x: number;
-  width: number;
-  y: number;
-  height: number;
-}
-
-/**
- * Evenly spaced bars sized to a value series, heights scaled so the tallest bar
- * fills the plot area. `gap` is the fraction (0..1) of each slot left as spacing
- * between bars.
- */
-export function sparklineBars(
-  values: readonly number[],
-  { width = 100, height = 40, gap = 0.3 }: SparklineOptions & { gap?: number } = {},
-): SparkBar[] {
-  if (values.length === 0) {
-    return [];
-  }
-
-  const max = Math.max(...values, 0) || 1;
-  const slot = width / values.length;
-  const barWidth = slot * (1 - gap);
-  const offset = (slot - barWidth) / 2;
-
-  return values.map((value, index) => {
-    const barHeight = height * (Math.max(value, 0) / max);
-    return {
-      x: round(index * slot + offset),
-      width: round(barWidth),
-      y: round(height - barHeight),
-      height: round(barHeight),
-    };
-  });
-}

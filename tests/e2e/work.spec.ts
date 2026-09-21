@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-import { GLOBAL_PULSE, WORK_EMBEDS } from "../../src/content/work";
+import { GLOBAL_PULSE, HOMEPAGE_EMBEDS, WORK_EMBEDS } from "../../src/content/work";
 
 /**
  * /work — the dedicated music & video page, plus the homepage Work section
@@ -73,14 +73,19 @@ test("homepage work section is always expanded with real labels and a link to /w
   // id="portfolio" (so anchor nav works during load), and scrolling the
   // fallback races its detachment when the real chunk mounts on slow machines.
   // This auto-retrying expect only passes once the real section is in.
+  // The homepage shows a teaser; /work shows all of them. Asserting the
+  // teaser count rather than WORK_EMBEDS.length is the point — if the
+  // homepage ever silently grows back into a second copy of /work, this
+  // fails.
   await expect(section.getByRole("button", { name: /^Load .* player$/ })).toHaveCount(
-    WORK_EMBEDS.length,
+    HOMEPAGE_EMBEDS,
     { timeout: 15_000 },
   );
+  expect(HOMEPAGE_EMBEDS).toBeLessThan(WORK_EMBEDS.length);
   await section.scrollIntoViewIfNeeded();
   await expect(section.locator("iframe")).toHaveCount(0);
 
-  await section.getByRole("link", { name: /see all work/i }).click();
+  await section.getByRole("link", { name: /see all/i }).click();
   await expect(page).toHaveURL(/\/work$/);
 
   await page.waitForTimeout(500);
