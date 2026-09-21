@@ -1,14 +1,5 @@
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { Link } from "react-router-dom";
-
-import CaseStudyFinding from "@/components/CaseStudyFinding";
-import CaseStudyFooter from "@/components/CaseStudyFooter";
-import RouteHead from "@/components/seo/RouteHead";
-import { ROUTE_META } from "@/app/routeMeta";
+import CaseStudyLayout from "@/components/CaseStudyLayout";
 import { SESSION_STATE_JSONLD } from "@/app/routeStructuredData";
-import { buttonClasses } from "@/components/ui/button";
-import { cardClasses } from "@/components/ui/card";
-import { useFadeIn } from "@/hooks/useFadeIn";
 
 /**
  * Case study for the session-state analyzer — the Python side of the
@@ -33,66 +24,28 @@ const AT_A_GLANCE: { label: string; value: string }[] = [
   { label: "Verified", value: "586 tests passing, 2 skipped, run against the checkout this page describes" },
 ];
 
-const SessionStateCaseStudy = () => {
-  const ref = useFadeIn();
-
-  return (
-    <div className="min-h-screen" ref={ref}>
-      <RouteHead
-        title={ROUTE_META.sessionState.title}
-        description={ROUTE_META.sessionState.description}
-        canonicalPath={ROUTE_META.sessionState.path}
-        jsonLd={SESSION_STATE_JSONLD}
-      />
-
-      <main className="pt-16">
-        <section className="section-padding bg-background">
-          <div className="container mx-auto">
-            <div className="fade-up mb-10">
-              <Link
-                to="/projects"
-                className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ArrowLeft size={14} /> All projects
-              </Link>
-
-              <p className="eyebrow mb-3">Case study</p>
-              <h1 className="type-h1 mb-5">Session-State Analyzer</h1>
-
-              <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                A music session is a structured record of thousands of decisions — tracks,
-                routing, processing, automation — and almost every dataset in music
-                information retrieval throws it away and keeps only the rendered audio. This
-                project represents the session instead, in one form that four different DAWs
-                can be read into, and then measures how much of it each DAW is actually
-                willing to tell you.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-4">
-                <a
-                  href="https://github.com/ColonelKernel/session-state-analyzer"
-                  className={buttonClasses({ variant: "primary" })}
-                >
-                  Source <ArrowUpRight size={15} />
-                </a>
-                <a
-                  href="https://session-state-analyzer-n2lj2kmjjijdzta7oarpyt.streamlit.app/"
-                  className={buttonClasses({ variant: "secondary" })}
-                >
-                  Live workbench <ArrowUpRight size={15} />
-                </a>
-              </div>
-
-              {/* A recruiter who clicks a dead demo learns something worse than
-                  nothing. Free Streamlit hosting sleeps on idle, so the link
-                  says what to expect instead of pretending it is always warm. */}
-              <p className="mt-3 max-w-2xl text-xs leading-relaxed text-muted-foreground">
-                The workbench is on Streamlit&rsquo;s free tier, which sleeps when idle. If it
-                greets you with a wake-up prompt, it takes about a minute to come back.
-              </p>
-            </div>
-
-            <CaseStudyFinding>
+const SessionStateCaseStudy = () => (
+  <CaseStudyLayout
+    slug="sessionState"
+    jsonLd={SESSION_STATE_JSONLD}
+    title="Session-State Analyzer"
+    lede={
+      <>
+        A music session is a structured record of thousands of decisions — tracks,
+        routing, processing, automation — and almost every dataset in music
+        information retrieval throws it away and keeps only the rendered audio. This
+        project represents the session instead, in one form that four different DAWs
+        can be read into, and then measures how much of it each DAW is actually
+        willing to tell you.
+      </>
+    }
+    actions={[
+      { label: "Source", href: "https://github.com/ColonelKernel/session-state-analyzer" },
+      { label: "Live workbench", href: "https://session-state-analyzer-n2lj2kmjjijdzta7oarpyt.streamlit.app/" },
+    ]}
+    glance={AT_A_GLANCE}
+    finding={
+      <>
               <p>
                 MIR datasets keep the rendered audio and throw away the session that produced
                 it. I built the missing half: one canonical schema for a music session, with
@@ -111,18 +64,12 @@ const SessionStateCaseStudy = () => {
                 confidence bucket is right 92.5% of the time, which is not low confidence, it
                 is badly calibrated confidence.
               </p>
-            </CaseStudyFinding>
+      </>
+    }
+  >
 
-            <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-16 divide-y divide-border")}>
-              {AT_A_GLANCE.map((row) => (
-                <div key={row.label} className="grid gap-1 px-5 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-                  <dt className="text-sm font-medium text-foreground">{row.label}</dt>
-                  <dd className="text-sm leading-relaxed text-muted-foreground">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
 
-            <div className="fade-up max-w-2xl space-y-12">
+
               <div>
                 <h2 className="type-h2 mb-4">Partial observability as a value, not a gap</h2>
                 <div className="space-y-4 leading-relaxed text-muted-foreground">
@@ -282,14 +229,7 @@ const SessionStateCaseStudy = () => {
                   </p>
                 </div>
               </div>
-            </div>
-
-            <CaseStudyFooter current="sessionState" />
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-};
+  </CaseStudyLayout>
+);
 
 export default SessionStateCaseStudy;

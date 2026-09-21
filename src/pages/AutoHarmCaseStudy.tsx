@@ -1,14 +1,5 @@
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { Link } from "react-router-dom";
-
-import CaseStudyFinding from "@/components/CaseStudyFinding";
-import CaseStudyFooter from "@/components/CaseStudyFooter";
-import RouteHead from "@/components/seo/RouteHead";
-import { ROUTE_META } from "@/app/routeMeta";
+import CaseStudyLayout from "@/components/CaseStudyLayout";
 import { AUTOHARM_JSONLD } from "@/app/routeStructuredData";
-import { buttonClasses } from "@/components/ui/button";
-import { cardClasses } from "@/components/ui/card";
-import { useFadeIn } from "@/hooks/useFadeIn";
 
 /**
  * Case study for AutoHarm. Every technical claim here is checked against the
@@ -24,57 +15,25 @@ const AT_A_GLANCE: { label: string; value: string }[] = [
   { label: "Backend", value: "None — fully client-side, models served as static assets" },
 ];
 
-const AutoHarmCaseStudy = () => {
-  const ref = useFadeIn();
-
-  return (
-    <div className="min-h-screen" ref={ref}>
-      <RouteHead
-        title={ROUTE_META.autoharm.title}
-        description={ROUTE_META.autoharm.description}
-        canonicalPath={ROUTE_META.autoharm.path}
-        jsonLd={AUTOHARM_JSONLD}
-      />
-      <main className="pt-16">
-        <section className="section-padding bg-background">
-          <div className="container mx-auto">
-            <div className="fade-up mb-10 max-w-2xl">
-              <Link
-                to="/projects"
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ArrowLeft size={16} /> Projects
-              </Link>
-              <p className="eyebrow mt-8">
-                Case study
-              </p>
-              <h1 className="type-h1 mt-3">AutoHarm</h1>
-              <p className="mt-5 leading-relaxed text-muted-foreground">
-                A browser-native generative chord instrument — a four-corpus Markov blend
-                alongside two JazzNet ONNX models — that plays live MIDI into a DAW, ported
-                from my Autoharmonizer Max for Live device.
-              </p>
-              <div className="mt-7 flex flex-wrap items-center gap-4">
-                <a
-                  href="https://autoharm.zachscheffler.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={buttonClasses({ variant: "secondary" })}
-                >
-                  Launch the app <ArrowUpRight size={14} />
-                </a>
-                <a
-                  href="https://github.com/ColonelKernel/AutoHarm-Web"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Source <ArrowUpRight size={14} />
-                </a>
-              </div>
-            </div>
-
-            <CaseStudyFinding>
+const AutoHarmCaseStudy = () => (
+  <CaseStudyLayout
+    slug="autoharm"
+    jsonLd={AUTOHARM_JSONLD}
+    title="AutoHarm"
+    lede={
+      <>
+        A browser-native generative chord instrument — a four-corpus Markov blend
+        alongside two JazzNet ONNX models — that plays live MIDI into a DAW, ported
+        from my Autoharmonizer Max for Live device.
+      </>
+    }
+    actions={[
+      { label: "Launch the app", href: "https://autoharm.zachscheffler.com/" },
+      { label: "Source", href: "https://github.com/ColonelKernel/AutoHarm-Web" },
+    ]}
+    glance={AT_A_GLANCE}
+    finding={
+      <>
               <p>
                 I took a generative harmony engine that needed Max/MSP, a Python server and
                 two free UDP ports before you heard a note, and made it a URL: a four-corpus
@@ -93,18 +52,10 @@ const AutoHarmCaseStudy = () => {
                 What it still costs: 4/4 only, and MIDI out needs a virtual port you create
                 yourself and a browser that implements Web MIDI, which Safari does not.
               </p>
-            </CaseStudyFinding>
+      </>
+    }
+  >
 
-            <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-14 grid max-w-3xl gap-px bg-border/70 sm:grid-cols-2")}>
-              {AT_A_GLANCE.map((item) => (
-                <div key={item.label} className="bg-card/80 p-5">
-                  <dt className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                    {item.label}
-                  </dt>
-                  <dd className="mt-2 text-sm leading-6 text-foreground">{item.value}</dd>
-                </div>
-              ))}
-            </dl>
 
             <div className="fade-up max-w-2xl space-y-10 leading-relaxed text-muted-foreground">
               <div className="space-y-4">
@@ -204,12 +155,7 @@ const AutoHarmCaseStudy = () => {
               </div>
             </div>
 
-            <CaseStudyFooter current="autoharm" />
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-};
+  </CaseStudyLayout>
+);
 
 export default AutoHarmCaseStudy;

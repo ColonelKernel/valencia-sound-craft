@@ -1,14 +1,5 @@
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { Link } from "react-router-dom";
-
-import CaseStudyFooter from "@/components/CaseStudyFooter";
-import RouteHead from "@/components/seo/RouteHead";
-import { ROUTE_META } from "@/app/routeMeta";
+import CaseStudyLayout from "@/components/CaseStudyLayout";
 import { TRANSIT_ATLAS_JSONLD } from "@/app/routeStructuredData";
-import { buttonClasses } from "@/components/ui/button";
-import CaseStudyFinding from "@/components/CaseStudyFinding";
-import { cardClasses } from "@/components/ui/card";
-import { useFadeIn } from "@/hooks/useFadeIn";
 
 /**
  * Case study for the world transit atlas.
@@ -69,57 +60,27 @@ const AT_A_GLANCE: { label: string; value: string }[] = [
   { label: "Status", value: "Live on GitHub Pages. Geometry is complete; ridership is not, and the page says which is which." },
 ];
 
-const TransitAtlasCaseStudy = () => {
-  const ref = useFadeIn();
-
-  return (
-    <div className="min-h-screen" ref={ref}>
-      <RouteHead
-        title={ROUTE_META.transitAtlas.title}
-        description={ROUTE_META.transitAtlas.description}
-        canonicalPath={ROUTE_META.transitAtlas.path}
-        jsonLd={TRANSIT_ATLAS_JSONLD}
-      />
-
-      <main className="pt-16">
-        <section className="section-padding bg-background">
-          <div className="container mx-auto">
-            <div className="fade-up mb-10">
-              <Link
-                to="/projects"
-                className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ArrowLeft size={14} /> All projects
-              </Link>
-
-              <p className="eyebrow mb-3">Case study</p>
-              <h1 className="type-h1 mb-5">World Transit Atlas</h1>
-
-              <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                Every urban rail network on earth that publishes its geometry, in one map you
-                can scrub through time. 201 systems, drawn at their real coordinates rather
-                than as schematic diagrams, with monthly ridership layered on for the systems
-                that report it. My graduate degree is in transportation policy; this is the
-                dataset I wanted then and could not assemble.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-4">
-                <a
-                  href="https://colonelkernel.github.io/world-transit-atlas/"
-                  className={buttonClasses({ variant: "primary" })}
-                >
-                  Open the atlas <ArrowUpRight size={15} />
-                </a>
-                <a
-                  href="https://github.com/ColonelKernel/world-transit-atlas"
-                  className={buttonClasses({ variant: "secondary" })}
-                >
-                  Source <ArrowUpRight size={15} />
-                </a>
-              </div>
-            </div>
-
-            <CaseStudyFinding>
+const TransitAtlasCaseStudy = () => (
+  <CaseStudyLayout
+    slug="transitAtlas"
+    jsonLd={TRANSIT_ATLAS_JSONLD}
+    title="World Transit Atlas"
+    lede={
+      <>
+        Every urban rail network on earth that publishes its geometry, in one map you
+can scrub through time. 201 systems, drawn at their real coordinates rather
+than as schematic diagrams, with monthly ridership layered on for the systems
+that report it. My graduate degree is in transportation policy; this is the
+dataset I wanted then and could not assemble.
+      </>
+    }
+    actions={[
+      { label: "Open the atlas", href: "https://colonelkernel.github.io/world-transit-atlas/" },
+      { label: "Source", href: "https://github.com/ColonelKernel/world-transit-atlas" },
+    ]}
+    glance={AT_A_GLANCE}
+    finding={
+      <>
               <p>
                 I assembled a complete 201-city cross-section — every urban rail network
                 that publishes its geometry — and regressed ridership on city form.
@@ -137,18 +98,12 @@ const TransitAtlasCaseStudy = () => {
                 +0.36 once station counts are controlled for; and the counting convention —
                 the variable this was all for — cannot be separated from geography at all.
               </p>
-            </CaseStudyFinding>
+      </>
+    }
+  >
 
-            <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-16 divide-y divide-border")}>
-              {AT_A_GLANCE.map((row) => (
-                <div key={row.label} className="grid gap-1 px-5 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-                  <dt className="text-sm font-medium text-foreground">{row.label}</dt>
-                  <dd className="text-sm leading-relaxed text-muted-foreground">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
 
-            <div className="fade-up max-w-2xl space-y-12">
+
               <div>
                 <h2 className="type-h2 mb-4">The gap the map fills</h2>
                 <div className="space-y-4 leading-relaxed text-muted-foreground">
@@ -468,14 +423,7 @@ const TransitAtlasCaseStudy = () => {
                   </p>
                 </div>
               </div>
-            </div>
-
-            <CaseStudyFooter current="transitAtlas" />
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-};
+  </CaseStudyLayout>
+);
 
 export default TransitAtlasCaseStudy;

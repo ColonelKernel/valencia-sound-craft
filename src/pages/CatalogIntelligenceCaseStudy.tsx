@@ -1,14 +1,5 @@
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { Link } from "react-router-dom";
-
-import CaseStudyFinding from "@/components/CaseStudyFinding";
-import CaseStudyFooter from "@/components/CaseStudyFooter";
-import RouteHead from "@/components/seo/RouteHead";
-import { ROUTE_META } from "@/app/routeMeta";
+import CaseStudyLayout from "@/components/CaseStudyLayout";
 import { CATALOG_INTELLIGENCE_JSONLD } from "@/app/routeStructuredData";
-import { buttonClasses } from "@/components/ui/button";
-import { cardClasses } from "@/components/ui/card";
-import { useFadeIn } from "@/hooks/useFadeIn";
 
 /**
  * Case study for the catalog analytics platform on /music-analytics.
@@ -31,53 +22,26 @@ const AT_A_GLANCE: { label: string; value: string }[] = [
   { label: "Status", value: "Demonstration dataset with modeled proxies. Not live streaming figures, and not investment advice." },
 ];
 
-const CatalogIntelligenceCaseStudy = () => {
-  const ref = useFadeIn();
-
-  return (
-    <div className="min-h-screen" ref={ref}>
-      <RouteHead
-        title={ROUTE_META.catalogIntelligence.title}
-        description={ROUTE_META.catalogIntelligence.description}
-        canonicalPath={ROUTE_META.catalogIntelligence.path}
-        jsonLd={CATALOG_INTELLIGENCE_JSONLD}
-      />
-
-      <main className="pt-16">
-        <section className="section-padding bg-background">
-          <div className="container mx-auto">
-            <div className="fade-up mb-10">
-              <Link
-                to="/projects"
-                className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ArrowLeft size={14} /> All projects
-              </Link>
-
-              <p className="eyebrow mb-3">Case study</p>
-              <h1 className="type-h1 mb-5">Music Catalog Intelligence</h1>
-
-              <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                A dashboard that treats a music catalog as a financial asset — forecasting
-                performance, scoring acquisition risk, and comparing catalogs side by side.
-                It runs entirely in the browser over a public dataset, and most of what is
-                interesting about it is the decisions made where the data is weakest.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link to="/music-analytics" className={buttonClasses({ variant: "primary" })}>
-                  Open the dashboard <ArrowUpRight size={15} />
-                </Link>
-                <a
-                  href="https://github.com/ColonelKernel/zachscheffler-com"
-                  className={buttonClasses({ variant: "secondary" })}
-                >
-                  Source <ArrowUpRight size={15} />
-                </a>
-              </div>
-            </div>
-
-            <CaseStudyFinding>
+const CatalogIntelligenceCaseStudy = () => (
+  <CaseStudyLayout
+    slug="catalogIntelligence"
+    jsonLd={CATALOG_INTELLIGENCE_JSONLD}
+    title="Music Catalog Intelligence"
+    lede={
+      <>
+        A dashboard that treats a music catalog as a financial asset — forecasting
+        performance, scoring acquisition risk, and comparing catalogs side by side.
+        It runs entirely in the browser over a public dataset, and most of what is
+        interesting about it is the decisions made where the data is weakest.
+      </>
+    }
+    actions={[
+      { label: "Open the dashboard", href: "/music-analytics" },
+      { label: "Source", href: "https://github.com/ColonelKernel/zachscheffler-com" },
+    ]}
+    glance={AT_A_GLANCE}
+    finding={
+      <>
               <p>
                 I built a catalog analytics dashboard on the public 2020 Spotify sample — a
                 weighted acquisition score, an OLS revenue forecast, and rolling-variance
@@ -100,18 +64,12 @@ const CatalogIntelligenceCaseStudy = () => {
                 are a prior, not a fit — this dataset contains no acquisition outcomes to fit
                 them against.
               </p>
-            </CaseStudyFinding>
+      </>
+    }
+  >
 
-            <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-16 divide-y divide-border")}>
-              {AT_A_GLANCE.map((row) => (
-                <div key={row.label} className="grid gap-1 px-5 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-                  <dt className="text-sm font-medium text-foreground">{row.label}</dt>
-                  <dd className="text-sm leading-relaxed text-muted-foreground">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
 
-            <div className="fade-up max-w-2xl space-y-12">
+
               <div>
                 <h2 className="type-h2 mb-4">What the data is, and what it is not</h2>
                 <div className="space-y-4 leading-relaxed text-muted-foreground">
@@ -291,14 +249,7 @@ const CatalogIntelligenceCaseStudy = () => {
                   </p>
                 </div>
               </div>
-            </div>
-
-            <CaseStudyFooter current="catalogIntelligence" />
-          </div>
-        </section>
-      </main>
-    </div>
-  );
-};
+  </CaseStudyLayout>
+);
 
 export default CatalogIntelligenceCaseStudy;
