@@ -69,7 +69,7 @@ const CatalogIntelligenceCaseStudy = () => {
                   Open the dashboard <ArrowUpRight size={15} />
                 </Link>
                 <a
-                  href="https://github.com/ColonelKernel/valencia-sound-craft"
+                  href="https://github.com/ColonelKernel/zachscheffler-com"
                   className={buttonClasses({ variant: "secondary" })}
                 >
                   Source <ArrowUpRight size={15} />

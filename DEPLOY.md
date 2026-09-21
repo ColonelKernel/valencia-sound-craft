@@ -4,7 +4,7 @@ Runbook for moving the portfolio off Lovable onto a static host.
 
 ## Why we moved
 
-`ColonelKernel/valencia-sound-craft` was originally created by Lovable — its
+`ColonelKernel/zachscheffler-com` was originally created by Lovable — its
 bot (`gpt-engineer-app[bot]`) authored much of the early history, and the
 Lovable project two-way-syncs the **`main`** branch.
 
@@ -29,7 +29,7 @@ Domains**: Netlify publishes an apex `A` record, so the domain stays put.
 Cloudflare Pages only offers a CNAME target, which needs nameservers moved to
 Cloudflare to work at an apex.
 
-Add new site → Import an existing project → GitHub → `ColonelKernel/valencia-sound-craft`
+Add new site → Import an existing project → GitHub → `ColonelKernel/zachscheffler-com`
 (private repo — grant access).
 
 | Setting | Value |

@@ -83,12 +83,12 @@ const ProjectsPage = () => {
                 without passing typecheck, lint, unit and end-to-end runs, a bundle budget,
                 and an accessibility floor. The full source is public at{" "}
                 <a
-                  href="https://github.com/ColonelKernel/valencia-sound-craft"
+                  href="https://github.com/ColonelKernel/zachscheffler-com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
                 >
-                  github.com/ColonelKernel/valencia-sound-craft
+                  github.com/ColonelKernel/zachscheffler-com
                 </a>
                 .
               </p>

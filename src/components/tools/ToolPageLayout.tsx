@@ -90,7 +90,7 @@ const ToolPageLayout = ({
                 {engineering}
               </div>
               <a
-                href="https://github.com/ColonelKernel/valencia-sound-craft"
+                href="https://github.com/ColonelKernel/zachscheffler-com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-foreground underline underline-offset-4 hover:text-primary"
