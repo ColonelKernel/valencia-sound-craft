@@ -16,22 +16,24 @@ import {
 } from "../components/seo/structuredData";
 import { ROUTE_META, type RouteKey } from "./routeMeta";
 import { CV_PROFILE } from "../content/cv";
-import { ARTIST_PROFILES } from "../content/work";
+import { ARTIST_PROFILES } from "../content/profiles";
 
+/**
+ * The homepage Person record.
+ *
+ * jobTitle and description were literals here, and the transportation reframe
+ * changed CV_PROFILE.headline and ROUTE_META.home.description without reaching
+ * them — so for a while the page said "Transportation Data Scientist" and the
+ * structured data a crawler reads said something else. Both now come from the
+ * constants the visible copy is built from, and sameAs comes from
+ * ARTIST_PROFILES like every other sameAs in this file.
+ */
 export const HOME_JSONLD: RouteStructuredData = createPersonStructuredData({
-  name: "Zach Scheffler",
-  jobTitle: "Data Scientist & Machine Learning Engineer",
-  description:
-    "Data scientist and machine learning engineer in the San Francisco Bay Area, building production ML systems and audio software.",
+  name: CV_PROFILE.name,
+  jobTitle: CV_PROFILE.headline,
+  description: ROUTE_META.home.description,
   canonicalPath: ROUTE_META.home.path,
-  sameAs: [
-    "https://www.linkedin.com/in/zscheff/",
-    "https://github.com/ColonelKernel",
-    "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L",
-    "https://soundcloud.com/streetcarscandal",
-    "https://www.youtube.com/@ColonelKernel22",
-    "https://www.instagram.com/streetcarscandal/",
-  ],
+  sameAs: Object.values(ARTIST_PROFILES),
 });
 
 export const TOOLS_INDEX_JSONLD: RouteStructuredData = createToolStructuredData({

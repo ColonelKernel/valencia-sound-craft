@@ -1,7 +1,20 @@
 import { useEffect, useState } from "react";
-import { BarChart3, Disc3, Github, Linkedin, Instagram, Menu, Music, Wrench, X } from "lucide-react";
+import {
+  BarChart3,
+  Disc3,
+  Github,
+  Linkedin,
+  Instagram,
+  Menu,
+  Music,
+  Wrench,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
+import { ROUTE_META } from "@/app/routeMeta";
+import { ARTIST_PROFILES } from "@/content/profiles";
 import { TOOL_NAV_LINKS } from "@/content/tools";
 import { cn } from "@/lib/utils";
 
@@ -15,16 +28,58 @@ const normalizedHomeLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
+/**
+ * The route destinations, once.
+ *
+ * The desktop bar and the mobile sheet each wrote this list out by hand in
+ * their own markup — same four destinations, same icons, same order, two
+ * copies. Adding or removing one meant editing both and remembering that the
+ * second existed; retiring the Groove Atlas meant deleting two nearly
+ * identical eight-line blocks.
+ *
+ * `emphasis` is Analytics, which reads as primary until you are on it.
+ * `cta` is the CV, the only bordered item in the bar — for a hiring visitor it
+ * is the conversion target, and it used to be the most muted link there.
+ */
+const ROUTE_LINKS: Array<{
+  label: string;
+  to: string;
+  icon?: LucideIcon;
+  emphasis?: boolean;
+  cta?: boolean;
+}> = [
+  { label: "Work", to: ROUTE_META.work.path, icon: Disc3 },
+  { label: "Projects", to: ROUTE_META.projects.path, icon: Wrench },
+  { label: "Analytics", to: ROUTE_META.musicAnalytics.path, icon: BarChart3, emphasis: true },
+  { label: "CV", to: ROUTE_META.cv.path, cta: true },
+];
 
+/** The animated underline every non-CTA desktop link carries. */
+const Underline = ({ active }: { active: boolean }) => (
+  <span
+    className={cn(
+      "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
+      active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+    )}
+  />
+);
+
+
+/**
+ * The icon row, built from the one list of profile URLs.
+ *
+ * These four were string literals here, four more were literals in Footer.tsx,
+ * and one was a literal in Contact.tsx — while ARTIST_PROFILES in content/work.ts
+ * already held all six and routeStructuredData.ts was already reading from it.
+ * So the JSON-LD sameAs and the visible links could disagree, and did: the
+ * Spotify href here carried a "?si=" share token that the canonical URL does
+ * not, which is a tracking parameter nobody chose to publish.
+ */
 const socialLinks = [
-  { icon: Github, href: "https://github.com/ColonelKernel", label: "GitHub" },
-  { icon: Linkedin, href: "https://www.linkedin.com/in/zscheff/", label: "LinkedIn" },
-  {
-    icon: Music,
-    href: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L?si=65RGI1x2TsSZK57Ip69JOQ",
-    label: "Spotify",
-  },
-  { icon: Instagram, href: "https://www.instagram.com/streetcarscandal/", label: "Instagram" },
+  { icon: Github, href: ARTIST_PROFILES.github, label: "GitHub" },
+  { icon: Linkedin, href: ARTIST_PROFILES.linkedin, label: "LinkedIn" },
+  { icon: Music, href: ARTIST_PROFILES.spotify, label: "Spotify" },
+  { icon: Instagram, href: ARTIST_PROFILES.instagram, label: "Instagram" },
 ];
 
 const Navbar = () => {
@@ -112,76 +167,49 @@ const Navbar = () => {
             )}
           >
             {link.label}
-            <span
-              className={cn(
-                "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-                isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-              )}
-            />
+            <Underline active={isActive} />
           </a>
         );
       })}
-      <Link
-        to="/work"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/work" ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <Disc3 size={14} />
-        Work
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            location.pathname === "/work" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
-      <Link
-        to="/projects"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          location.pathname === "/projects" ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        <Wrench size={14} />
-        Projects
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            location.pathname === "/projects" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
-      <Link
-        to="/music-analytics"
-        className={cn(
-          "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
-          isAnalyticsRoute ? "text-foreground" : "text-primary hover:text-primary/80",
-        )}
-      >
-        <BarChart3 size={14} />
-        Analytics
-        <span
-          className={cn(
-            "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-            isAnalyticsRoute ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-          )}
-        />
-      </Link>
-      {/* The only bordered item in the nav: for a hiring visitor the CV is the
-          conversion target, and it used to be the most muted link on the bar. */}
-      <Link
-        to="/cv"
-        className={cn(
-          "inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-          location.pathname === "/cv"
-            ? "border-foreground/40 text-foreground"
-            : "border-border text-foreground hover:border-foreground/40 hover:bg-secondary/60",
-        )}
-      >
-        CV
-      </Link>
+      {ROUTE_LINKS.map((link) => {
+        const active = location.pathname === link.to;
+
+        if (link.cta) {
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className={cn(
+                "inline-flex items-center rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                active
+                  ? "border-foreground/40 text-foreground"
+                  : "border-border text-foreground hover:border-foreground/40 hover:bg-secondary/60",
+              )}
+            >
+              {link.label}
+            </Link>
+          );
+        }
+
+        return (
+          <Link
+            key={link.to}
+            to={link.to}
+            className={cn(
+              "group relative inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-0.5 py-1.5",
+              active
+                ? "text-foreground"
+                : link.emphasis
+                  ? "text-primary hover:text-primary/80"
+                  : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {link.icon && <link.icon size={14} />}
+            {link.label}
+            <Underline active={active} />
+          </Link>
+        );
+      })}
     </>
   );
 
@@ -201,12 +229,7 @@ const Navbar = () => {
         {({ isActive }) => (
           <>
             {link.label}
-            <span
-              className={cn(
-                "absolute -bottom-0.5 left-0 h-px w-full origin-left bg-current transition-transform duration-200 ease-out",
-                isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-              )}
-            />
+            <Underline active={isActive} />
           </>
         )}
       </NavLink>
@@ -377,37 +400,23 @@ const Navbar = () => {
                           </a>
                         );
                       })}
-                      <Link
-                        to="/work"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                      >
-                        <Disc3 size={14} />
-                        Work
-                      </Link>
-                      <Link
-                        to="/projects"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-                      >
-                        <Wrench size={14} />
-                        Projects
-                      </Link>
-                      <Link
-                        to="/music-analytics"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-primary hover:bg-secondary/70"
-                      >
-                        <BarChart3 size={14} />
-                        Analytics
-                      </Link>
-                      <Link
-                        to="/cv"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-2xl border border-border px-4 py-3 text-sm font-medium text-foreground hover:bg-secondary/70"
-                      >
-                        CV
-                      </Link>
+                      {ROUTE_LINKS.map((link) => (
+                        <Link
+                          key={link.to}
+                          to={link.to}
+                          onClick={() => setMenuOpen(false)}
+                          className={cn(
+                            "flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium hover:bg-secondary/70",
+                            link.cta && "border border-border text-foreground",
+                            link.emphasis
+                              ? "text-primary"
+                              : !link.cta && "text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          {link.icon && <link.icon size={14} />}
+                          {link.label}
+                        </Link>
+                      ))}
                     </>
                   )}
           </div>

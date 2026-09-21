@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, FormEvent } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
+import { ARTIST_PROFILES } from "@/content/profiles";
 import { Send, Loader2 } from "lucide-react";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -117,7 +118,7 @@ const Contact = () => {
             <p className="text-muted-foreground text-sm max-w-md mx-auto">
               The quickest way to reach me right now is{" "}
               <a
-                href="https://www.linkedin.com/in/zscheff/"
+                href={ARTIST_PROFILES.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline underline-offset-2 text-foreground"
@@ -243,7 +244,7 @@ const Contact = () => {
                 </a>{" "}
                 or reach out via{" "}
                 <a
-                  href="https://www.linkedin.com/in/zscheff/"
+                  href={ARTIST_PROFILES.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline underline-offset-2"

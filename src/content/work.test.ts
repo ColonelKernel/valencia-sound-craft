@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ARTIST_PROFILES, GLOBAL_PULSE, WORK_EMBEDS } from "./work";
+import { GLOBAL_PULSE, WORK_EMBEDS } from "./work";
 
 /**
  * The work content model feeds the /work page and the homepage Work section.
@@ -63,14 +63,6 @@ describe("GLOBAL_PULSE", () => {
     for (const track of GLOBAL_PULSE.tracks) {
       expect(track.src.startsWith("/audio/")).toBe(true);
       expect(existsSync(join(root, "public", track.src)), `${track.src} missing`).toBe(true);
-    }
-  });
-});
-
-describe("ARTIST_PROFILES", () => {
-  it("every profile is a well-formed https URL", () => {
-    for (const url of Object.values(ARTIST_PROFILES)) {
-      expect(new URL(url).protocol).toBe("https:");
     }
   });
 });

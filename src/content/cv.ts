@@ -14,7 +14,7 @@
  *      that is stale and must not reappear here.
  */
 
-import { ARTIST_PROFILES } from "./work";
+import { ARTIST_PROFILES } from "./profiles";
 
 /**
  * One filename for both copies of the résumé: the client-generated download on

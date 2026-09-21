@@ -154,13 +154,3 @@ export const GLOBAL_PULSE = {
     },
   ] satisfies WorkTrack[],
 };
-
-/** Public profiles for JSON-LD sameAs and the site footer. */
-export const ARTIST_PROFILES = {
-  spotify: "https://open.spotify.com/artist/3np4vEs0UOE5zFEXmFEc9L",
-  soundcloud: "https://soundcloud.com/streetcarscandal",
-  youtube: "https://www.youtube.com/@ColonelKernel22",
-  instagram: "https://www.instagram.com/streetcarscandal/",
-  linkedin: "https://www.linkedin.com/in/zscheff/",
-  github: "https://github.com/ColonelKernel",
-};

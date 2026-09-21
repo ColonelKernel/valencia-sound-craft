@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ROUTE_META } from "./routeMeta";
 import { CV_JSONLD, ROUTE_JSONLD, WORK_JSONLD } from "./routeStructuredData";
 import { CV_PROFILE } from "../content/cv";
-import { ARTIST_PROFILES } from "../content/work";
+import { ARTIST_PROFILES } from "../content/profiles";
 
 /**
  * ROUTE_JSONLD feeds both the hydrated <RouteHead> and the build-time static
