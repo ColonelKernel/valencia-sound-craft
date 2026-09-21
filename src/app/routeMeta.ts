@@ -20,9 +20,9 @@ export const ROUTE_META = {
     path: "/",
     // Matches the static index.html title exactly, so the pre-hydration and
     // hydrated titles never differ.
-    title: "Zach Scheffler — Transportation Data Scientist & ML Engineer",
+    title: "Zach Scheffler — Public Policy Data Scientist",
     description:
-      "Transportation data scientist and ML engineer in the San Francisco Bay Area, open to remote. A UCLA M.P.P. in transportation policy, the World Transit Atlas across 201 rail systems, and applied data work at the World Bank, NORC and Rios Partners.",
+      "Public policy data scientist in the San Francisco Bay Area, open to remote. A UCLA M.P.P. in Transportation & Urban Development, seven years of applied data work for the World Bank, USAID through NORC and CMS through Rios Partners, and the World Transit Atlas across 201 rail systems.",
   },
   toolsIndex: {
     path: "/tools",
@@ -108,7 +108,7 @@ export const ROUTE_META = {
     path: "/cv",
     title: "CV | Zach Scheffler",
     description:
-      "Curriculum vitae for Zach Scheffler: data science and machine learning across the World Bank, NORC, and Rios Partners, plus audio software and music production.",
+      "Curriculum vitae for Zach Scheffler: seven years of applied data work for the World Bank, USAID through NORC, and the Centers for Medicare & Medicaid Services through Rios Partners \u2014 selected engagements by client, the methods behind them, and the software.",
   },
   notFound: {
     path: "*",

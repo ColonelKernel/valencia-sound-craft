@@ -50,7 +50,7 @@ export const CARD = {
   width: 1200,
   height: 630,
   name: "Zach Scheffler",
-  title: "Transportation Data Scientist & ML Engineer",
+  title: "Public Policy Data Scientist",
   location: "San Francisco Bay Area",
   availability: "Open to new roles",
   credentials: "UCLA M.P.P. · World Bank · NORC at the University of Chicago · Rios Partners",

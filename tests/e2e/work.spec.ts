@@ -1,11 +1,17 @@
 import { test, expect, type Page } from "@playwright/test";
 
-import { GLOBAL_PULSE, HOMEPAGE_EMBEDS, WORK_EMBEDS } from "../../src/content/work";
+import { GLOBAL_PULSE, WORK_EMBEDS } from "../../src/content/work";
 
 /**
- * /work — the dedicated music & video page, plus the homepage Work section
- * that feeds from the same content model. Both must show the real, labeled
- * work (no generic "YouTube"/"Spotify" placeholders, no collapse toggle).
+ * /work — the dedicated music & video page. It must show the real, labeled
+ * work: no generic "YouTube"/"Spotify" placeholders, no collapse toggle, and
+ * no third-party iframe until a facade is clicked.
+ *
+ * The homepage used to render a two-embed teaser of this page. It does not any
+ * more, and the second test here is what holds that: aimed at government,
+ * multilateral and non-profit research, a homepage that plays records invites
+ * "why are you applying here?" before the World Bank line is read. The music
+ * is evidence on its own route, not part of the argument the homepage makes.
  */
 
 function collectOwnOriginErrors(page: Page, appOrigin: string): string[] {
@@ -56,38 +62,25 @@ test("work page shows every labeled embed and the full EP credits", async ({ pag
   expect(errors).toEqual([]);
 });
 
-test("homepage work section is always expanded with real labels and a link to /work", async ({
-  page,
-  baseURL,
-}) => {
-  const appOrigin = new URL(baseURL ?? "http://127.0.0.1:4199").origin;
-  const errors = collectOwnOriginErrors(page, appOrigin);
-
+test("the homepage does not play music", async ({ page }) => {
   await page.goto("/");
 
-  const section = page.locator("#portfolio");
+  // Every section on the homepage is lazy, so an empty result here is only
+  // meaningful once the page has actually finished assembling. Contact is the
+  // last section in the tree; waiting on it means the whole page mounted.
+  await page.locator("#contact").waitFor({ state: "attached", timeout: 15_000 });
 
-  // No collapse toggle: every embed facade is simply present — and no
-  // third-party iframe loads until a facade is clicked (mobile perf contract).
-  // Asserted BEFORE scrolling: the Suspense fallback carries the same
-  // id="portfolio" (so anchor nav works during load), and scrolling the
-  // fallback races its detachment when the real chunk mounts on slow machines.
-  // This auto-retrying expect only passes once the real section is in.
-  // The homepage shows a teaser; /work shows all of them. Asserting the
-  // teaser count rather than WORK_EMBEDS.length is the point — if the
-  // homepage ever silently grows back into a second copy of /work, this
-  // fails.
-  await expect(section.getByRole("button", { name: /^Load .* player$/ })).toHaveCount(
-    HOMEPAGE_EMBEDS,
-    { timeout: 15_000 },
+  // No embed facades, and therefore no path to a third-party player.
+  await expect(page.getByRole("button", { name: /^Load .* player$/ })).toHaveCount(0);
+  await expect(page.locator("main iframe")).toHaveCount(0);
+
+  // The EP is not here either — it had its own AudioPlaylist below the grid.
+  await expect(page.locator("main")).not.toContainText(GLOBAL_PULSE.title);
+
+  // But it is still one click away, and still reachable from this page. This
+  // is a demotion, not a deletion: dropping the link would strand /work.
+  await expect(page.locator("main").getByRole("link", { name: /own page/i })).toHaveAttribute(
+    "href",
+    "/work",
   );
-  expect(HOMEPAGE_EMBEDS).toBeLessThan(WORK_EMBEDS.length);
-  await section.scrollIntoViewIfNeeded();
-  await expect(section.locator("iframe")).toHaveCount(0);
-
-  await section.getByRole("link", { name: /see all/i }).click();
-  await expect(page).toHaveURL(/\/work$/);
-
-  await page.waitForTimeout(500);
-  expect(errors).toEqual([]);
 });

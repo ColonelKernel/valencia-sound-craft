@@ -29,14 +29,6 @@ export interface WorkTrack {
   credits: string;
 }
 
-/**
- * How many of WORK_EMBEDS the homepage teaser renders. /work renders them all.
- *
- * Lives here rather than in Portfolio.tsx so tests/e2e/work.spec.ts can import
- * it without pulling React through Playwright's transform.
- */
-export const HOMEPAGE_EMBEDS = 2;
-
 export const WORK_EMBEDS: WorkEmbed[] = [
   {
     id: "spotify-streetcar-scandal",

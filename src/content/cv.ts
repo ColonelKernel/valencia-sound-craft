@@ -62,21 +62,28 @@ export interface ExperienceEntry {
 export const CV_PROFILE = {
   name: "Zach Scheffler",
   // One canonical identity across the hero, the meta title, the JSON-LD, and
-  // this PDF. The headline names the domain because that is the market being
-  // addressed and the credential is real: the UCLA M.P.P. is in transportation
-  // policy and the atlas is the largest artifact here. "ML Engineer" stays
-  // because mobility and autonomy screen for it; the audio work is the
-  // differentiator and is stated as such, not demoted.
-  headline: "Transportation Data Scientist & Machine Learning Engineer",
+  // this PDF.
+  //
+  // The sector leads because that is where the seven years are — World Bank,
+  // USAID through NORC, CMS through Rios — and because government, multilateral
+  // and non-profit postings screen on "policy" and "public" before they screen
+  // on tooling. The specialism follows it rather than replacing it: the UCLA
+  // M.P.P. is literally titled Transportation & Urban Development, and the
+  // transit atlas is the largest artifact here.
+  //
+  // "ML Engineer" comes out of the headline for this market and stays in the
+  // summary and the skills. It is a claim about tooling, and these readers want
+  // the method and the domain first.
+  headline: "Public Policy Data Scientist — Transportation & Urban Development",
   location: "San Francisco Bay Area",
   summary:
-    "A UCLA M.P.P. built on transportation policy, with a thesis prepared for the World Bank, and applied data work from 2016 to 2023 across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it \u2014 NLP, geospatial, and web-scraping pipelines, and the statistical modeling built on them. The World Transit Atlas is the clearest single sample: 201 rail systems and 22,641 stations assembled from OpenStreetMap and open agency data, and a ridership audit that dismantled my own significant result rather than publishing it. I didn't come up through a computer-science program; I came up through public policy and music production, and I still ship the models myself. Since 2024 the proving ground has been audio: neural models running on-device, and a real-time C++ codebase with an allocation-free audio-thread test.",
+    "Seven years of applied data work for governments, multilaterals and foundations. At the World Bank I managed 14 field teams across metropolitan Lima and the rural Sierra Central and built the project database that reported on them in real time. At NORC I assembled over six million exam records from Tanzania's National Examinations Council to inform USAID's Country Development Cooperation Strategy, and ran NLP over social-media corpora for the Robert Wood Johnson Foundation. At Rios Partners I grew the data strategy work from an informal group into a standing practice and led it, establishing a new enterprise data inventory for the Centers for Medicare and Medicaid Services. My UCLA M.P.P. is in Transportation & Urban Development. The World Transit Atlas is the clearest public sample of how I work: 201 rail systems and 22,641 stations assembled from OpenStreetMap and open agency data, and a ridership audit that dismantled my own significant result rather than publishing it. I build the software as well as the analysis \u2014 pipelines, models and the interfaces over them \u2014 and I did not come up through a computer-science program.",
   /**
    * What I'm looking for. /cv never stated this \u2014 it listed history and left
    * the reader to infer the ask. Rendered on the page and drawn into the PDF.
    */
   target:
-    "Targeting transportation data science and machine-learning engineering \u2014 mobility and autonomy, transit agencies and metropolitan planning organizations, and transportation consulting. San Francisco Bay Area or remote. Also open to senior software engineering work in audio and media.",
+    "Targeting data science and research roles in the public and non-profit sectors \u2014 government agencies at every level, multilateral and international development organizations, foundations and research institutes, and the consultancies that serve them. Transportation and urban development is the specialism; the methods travel. San Francisco Bay Area or remote.",
   /** Where to reach me — the contact form or email, never a phone number. */
   contactPath: "/#contact",
   email: "zachscheffler@gmail.com",
@@ -188,6 +195,128 @@ export const EXPERIENCE: ExperienceEntry[] = [
     highlights: [
       "Assessed difference-in-differences methods and Likert survey instruments against the study's design.",
     ],
+  },
+];
+
+export interface EngagementGroup {
+  sector: string;
+  items: { client: string; via?: string; period: string; work: string }[];
+}
+
+/**
+ * Selected engagements, grouped by who paid for the work.
+ *
+ * EXPERIENCE is grouped by employer, which is the right shape for a résumé and
+ * the wrong one for a public-sector reader: two of the three most relevant
+ * clients — USAID and CMS — never appear as headings, because both were
+ * reached through an intermediary. A screener looking for federal or
+ * multilateral experience scanned the org column and saw a consultancy and a
+ * research institute.
+ *
+ * Nothing here is new. Every line is a restatement of an EXPERIENCE highlight
+ * under the client that commissioned it, and cv.test.ts holds the two to each
+ * other so a change to one has to be a change to both.
+ *
+ * Deliberately absent: the Kyrgyz Republic hospital-financing analysis. It was
+ * a five-person student project for the UCLA M.P.P., and it stays where it
+ * belongs — a line under EDUCATION. Listing it beside paid engagements would
+ * be the one kind of inflation this file exists to prevent.
+ */
+export const ENGAGEMENTS: EngagementGroup[] = [
+  {
+    sector: "Multilateral & international development",
+    items: [
+      {
+        client: "World Bank",
+        period: "2016, 2018\u20132019",
+        work: "Subjective-wellbeing measurement study in Peru. Supervised 14 field teams across metropolitan Lima and the rural Sierra Central, built and automated the project database that reported on them in real time, and reviewed the study\u2019s difference-in-differences design and Likert instruments before it went to field.",
+      },
+      {
+        client: "USAID",
+        via: "NORC at the University of Chicago",
+        period: "2019\u20132022",
+        work: "Assembled over six million exam records from Tanzania\u2019s National Examinations Council into primary-to-secondary retention rates, informing the Country Development Cooperation Strategy for Tanzania. Contributed to three further USAID proposals.",
+      },
+    ],
+  },
+  {
+    sector: "Federal government",
+    items: [
+      {
+        client: "Centers for Medicare & Medicaid Services",
+        via: "Rios Partners",
+        period: "2022\u20132023",
+        work: "Established a new enterprise data inventory, and proposed a dashboard over it for cross-division usage analysis and redundancy reduction.",
+      },
+    ],
+  },
+  {
+    sector: "Foundations & research institutes",
+    items: [
+      {
+        client: "Robert Wood Johnson Foundation",
+        via: "NORC at the University of Chicago",
+        period: "2019\u20132022",
+        work: "NLP over social-media corpora on smokeless-tobacco marketing, in NORC\u2019s Social Data Collaboratory.",
+      },
+      {
+        client: "NSHAP (National Social Life, Health and Aging Project)",
+        via: "NORC at the University of Chicago",
+        period: "2019\u20132022",
+        work: "Accelerometry and biomarker analysis in R.",
+      },
+    ],
+  },
+];
+
+export interface Method {
+  label: string;
+  detail: string;
+}
+
+/**
+ * How the work is actually done.
+ *
+ * A research or evaluation posting screens on method before it screens on
+ * tooling, and SKILLS answers the wrong question for that reader: "Causal
+ * inference" as a chip next to "Clustering" is a word, not a claim. Each entry
+ * below names the engagement it comes from, so the method and its evidence
+ * cannot be read apart.
+ *
+ * The rule for adding one: it has to trace to a specific highlight in
+ * EXPERIENCE or to a published artifact on this site. Methods that were studied
+ * rather than practised do not go here.
+ */
+export const METHODS: Method[] = [
+  {
+    label: "Quasi-experimental design",
+    detail:
+      "Assessed difference-in-differences methods against a World Bank measurement-validity study\u2019s design, at the point where the design could still change.",
+  },
+  {
+    label: "Survey instruments & measurement validity",
+    detail:
+      "Likert instruments for subjective wellbeing, checked against cortisol as an objective comparator by semiparametric regression \u2014 the question being whether the instrument measures what it claims to.",
+  },
+  {
+    label: "Field operations",
+    detail:
+      "14 enumeration teams across two Peruvian provinces, one urban and one rural, with the project database automated in R so fieldwork progress was visible the same day rather than at the end of a round.",
+  },
+  {
+    label: "Administrative data at scale",
+    detail:
+      "Six million national exam records recovered by R scrapers from a government portal that published no bulk extract, and a federal enterprise data inventory built from scratch at CMS.",
+  },
+  {
+    label: "Text analysis",
+    detail:
+      "NLP over social-media corpora for public-health and political-communication research, funded by the Robert Wood Johnson Foundation and by Facebook.",
+  },
+  {
+    label: "Disclosure over headline",
+    detail:
+      "The transit ridership analysis ran four rounds and ended by dismantling its own significant result. The null is published, with the reasoning that got there.",
   },
 ];
 

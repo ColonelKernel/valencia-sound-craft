@@ -4,7 +4,16 @@ import { Link } from "react-router-dom";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { CV_JSONLD } from "@/app/routeStructuredData";
-import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, EXPERIENCE, SKILLS } from "@/content/cv";
+import {
+  CAREER_TIMELINE,
+  CV_PDF_FILENAME,
+  CV_PROFILE,
+  EDUCATION,
+  ENGAGEMENTS,
+  EXPERIENCE,
+  METHODS,
+  SKILLS,
+} from "@/content/cv";
 import { buttonClasses } from "@/components/ui/button";
 import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
@@ -93,6 +102,48 @@ const CVPage = () => {
               </div>
             </div>
 
+            {/* Who commissioned the work, before who employed me to do it.
+                Experience below is grouped by employer, which hides the two
+                clients a public-sector reader is actually scanning for: USAID
+                and CMS were both reached through an intermediary, so neither
+                appears as a heading down there. Same facts, indexed the way
+                this reader indexes them. */}
+            <div id="engagements" className="fade-up mb-12 scroll-mt-24">
+              <h2 className="eyebrow mb-5">Selected engagements</h2>
+              <div className="space-y-4">
+                {ENGAGEMENTS.map((group) => (
+                  <section key={group.sector} className={cardClasses({ padding: "md" })}>
+                    <h3 className="text-xs uppercase tracking-widest text-muted-foreground">
+                      {group.sector}
+                    </h3>
+                    <ul className="mt-4 space-y-5">
+                      {group.items.map((item) => (
+                        <li key={`${group.sector}-${item.client}`}>
+                          <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                            <p className="font-display text-base font-semibold text-foreground">
+                              {item.client}
+                              {item.via ? (
+                                <span className="font-normal text-muted-foreground">
+                                  {" "}
+                                  · via {item.via}
+                                </span>
+                              ) : null}
+                            </p>
+                            <p className="shrink-0 font-mono text-xs text-muted-foreground">
+                              {item.period}
+                            </p>
+                          </div>
+                          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                            {item.work}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            </div>
+
             <div className="fade-up mb-12">
               <h2 className="eyebrow mb-5">Experience</h2>
               <div className="space-y-4">
@@ -127,6 +178,30 @@ const CVPage = () => {
                   </article>
                 ))}
               </div>
+            </div>
+
+            {/* Method, with its evidence attached. The skills chips further
+                down answer "what tools" — a research or evaluation posting
+                screens on "what method, and where did you do it" first, and
+                the chip labelled "Causal inference" answered that with a
+                word. */}
+            <div id="methods" className="fade-up mb-12 scroll-mt-24">
+              <h2 className="eyebrow mb-5">Methods</h2>
+              <dl className={cardClasses({ padding: "none" }, "divide-y divide-border")}>
+                {METHODS.map((method) => (
+                  <div
+                    key={method.label}
+                    className="flex flex-col gap-1 px-5 py-4 sm:flex-row sm:gap-6"
+                  >
+                    <dt className="w-56 shrink-0 font-display text-sm font-semibold text-foreground">
+                      {method.label}
+                    </dt>
+                    <dd className="text-sm leading-relaxed text-muted-foreground">
+                      {method.detail}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
             <div className="fade-up mb-12">

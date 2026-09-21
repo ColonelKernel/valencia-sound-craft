@@ -6,20 +6,34 @@ import { expect, test } from "@playwright/test";
  * pinned tightly while the H1, the location, and the contact form's categories
  * were free to drift back to a framing aimed at a different market.
  *
+ * The target is government, multilateral and non-profit research, plus the
+ * consultancies that serve them, with transportation and urban development as
+ * the specialism rather than the whole claim. Tests that used to pin an
+ * evidence-before-music DOM order are gone because the music is gone from this
+ * page; tests/e2e/work.spec.ts holds that it stayed gone.
+ *
  * These assertions encode decisions, not phrasing. Each one can be satisfied by
  * many wordings; what they forbid is the specific regression.
  */
 
-test("the homepage leads with the data identity and the right location", async ({ page }) => {
+test("the homepage leads with the public-sector identity and the right location", async ({
+  page,
+}) => {
   await page.goto("/");
 
-  // The identity a recruiter reads first. The domain is named because the
-  // target is three transportation hiring pools — mobility and autonomy,
-  // transit agencies and MPOs, transportation consulting — and a generic
-  // "Data Scientist" reads as domain-agnostic to all three. "ML Engineer"
-  // stays because the first of those screens for it.
-  await expect(page.locator("h1").first()).toContainText("Transportation");
-  await expect(page.locator("h1").first()).toContainText("Data Scientist");
+  // The identity a screener reads first. The sector leads because that is
+  // where the seven years are — World Bank, USAID through NORC, CMS through
+  // Rios — and because government, multilateral and non-profit postings screen
+  // on "policy" and "public" before they screen on tooling.
+  const h1 = page.locator("h1").first();
+  await expect(h1).toContainText("Public Policy");
+  await expect(h1).toContainText("Data Scientist");
+
+  // The specialism survives the reframe rather than being replaced by it: the
+  // UCLA M.P.P. is literally titled Transportation & Urban Development, and
+  // the transit atlas is the largest artifact on the site. It sits below the
+  // H1, not inside it.
+  await expect(page.locator("main")).toContainText("Transportation");
 
   // He lives in the Bay Area. Saying Valencia reads as sponsorship and a
   // nine-hour gap to anyone screening on location.
@@ -30,28 +44,15 @@ test("the homepage leads with the data identity and the right location", async (
   await expect(page.locator("body")).not.toContainText("Guitar Lessons");
 });
 
-test("evidence precedes the music on the homepage", async ({ page }) => {
+test("the first screenful names who commissioned the work", async ({ page }) => {
   await page.goto("/");
 
-  // Both sections are lazy, so wait for them to attach before comparing. The
-  // first run of this test failed here rather than in the page, which is the
-  // point: the assertion is about DOM order, not about load timing.
-  const evidence = page.locator("#evidence");
-  const portfolio = page.locator("#portfolio");
-  await evidence.waitFor({ state: "attached" });
-  await portfolio.waitFor({ state: "attached" });
-
-  // A data reader who meets the EP player first has already filed this as a
-  // musician's site. DOM order is the guarantee; CSS order is not.
-  const evidenceIsFirst = await page.evaluate(() => {
-    const a = document.getElementById("evidence");
-    const b = document.getElementById("portfolio");
-    if (!a || !b) return null;
-    // Node.DOCUMENT_POSITION_FOLLOWING === 4: b comes after a.
-    return Boolean(a.compareDocumentPosition(b) & 4);
-  });
-
-  expect(evidenceIsFirst).toBe(true);
+  // A hero that says "Data Scientist" and nothing else is indistinguishable
+  // from every other one. The clients are the differentiator, and they are
+  // verifiable — each maps to an entry in EXPERIENCE.
+  const hero = page.locator("main").locator("section").first();
+  await expect(hero).toContainText("World Bank");
+  await expect(hero).toContainText("USAID");
 });
 
 test("the CV states what he is looking for", async ({ page }) => {
@@ -59,29 +60,54 @@ test("the CV states what he is looking for", async ({ page }) => {
 
   // /cv listed history for a year and never named the ask, leaving the reader
   // to infer it from a hero on a different route.
-  await expect(page.locator("body")).toContainText("Targeting transportation data science");
+  await expect(page.locator("body")).toContainText(
+    "public and non-profit sectors",
+  );
   await expect(page.locator("body")).toContainText("San Francisco Bay Area");
+});
+
+test("the CV indexes the work by client, not only by employer", async ({ page }) => {
+  await page.goto("/cv");
+
+  const body = page.locator("body");
+
+  // Two of the three most relevant clients were reached through an
+  // intermediary, so neither appears as a heading in the employer-grouped
+  // Experience list. A screener scanning for federal or multilateral work saw
+  // a consultancy and a research institute. Both must be findable by name.
+  await expect(body).toContainText("Selected engagements");
+  await expect(body).toContainText("USAID");
+  await expect(body).toContainText("Centers for Medicare & Medicaid Services");
+  await expect(body).toContainText("World Bank");
+
+  // And the method, with its evidence attached — a research or evaluation
+  // posting screens on this before it screens on tooling.
+  await expect(page.getByRole("heading", { name: "Methods", level: 2 })).toBeVisible();
+  await expect(body).toContainText("difference-in-differences");
+});
+
+test("the CV does not promote the student project to paid work", async ({ page }) => {
+  await page.goto("/cv");
+
+  // The Kyrgyz Republic hospital-financing analysis was a five-person Applied
+  // Policy Project for the M.P.P. It is a real line and it stays — under
+  // Education, where its provenance is legible. It must not appear among the
+  // engagements, which are commissioned work.
+  await expect(page.locator("body")).toContainText("Kyrgyz Republic");
+
+  await expect(page.locator("#engagements")).not.toContainText("Kyrgyz");
 });
 
 test("the transportation evidence is on the homepage, not one click away", async ({ page }) => {
   await page.goto("/");
 
   // The atlas used to be reachable from here only through an Evidence card's
-  // CTA. For a page aimed at transportation roles, the largest artifact on
-  // the site has to be visible as work, not just linked as a claim.
+  // CTA. The specialism is transportation, and the largest artifact on the
+  // site has to be visible as work rather than linked as a claim.
   await expect(
     page.locator("main").getByRole("link", { name: /transit atlas|case study/i }).first(),
   ).toBeVisible();
   await expect(page.locator("main")).toContainText("201");
-
-  // The audio work stays a differentiator rather than the headline: it has to
-  // still be here, and still be below the data evidence.
-  const order = await page.evaluate(() => {
-    const a = document.getElementById("evidence");
-    const b = document.getElementById("portfolio");
-    return a && b ? Boolean(a.compareDocumentPosition(b) & 4) : null;
-  });
-  expect(order).toBe(true);
 });
 
 const EVIDENCE_ROUTES = [

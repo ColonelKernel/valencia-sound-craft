@@ -53,10 +53,11 @@ describe("social card", () => {
   it("renders the same positioning the rest of the site claims", () => {
     expect(meta.name).toBe(CV_PROFILE.name);
     expect(meta.location).toBe(CV_PROFILE.location);
-    // The card says "ML Engineer" where the CV says "Machine Learning
-    // Engineer" — deliberate, because the long form is a 42-character unbroken
-    // phrase that wraps badly at card scale. Assert the short form is a
-    // faithful contraction rather than a different claim.
+    // The card carries the sector line only — "Public Policy Data Scientist" —
+    // where the CV headline appends the specialism. Deliberate: the full
+    // headline is 64 characters and wraps to three lines at card scale. The
+    // containment assertion is what keeps the short form a faithful prefix of
+    // the long one rather than a second, drifting claim.
     expect(ROUTE_META.home.title).toContain(meta.title);
     expect(CV_PROFILE.headline).toContain("Data Scientist");
     expect(meta.title).toContain("Data Scientist");

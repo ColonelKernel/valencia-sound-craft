@@ -7,7 +7,6 @@ import { ROUTE_META } from "@/app/routeMeta";
 import { HOME_JSONLD } from "@/app/routeStructuredData";
 
 const Services = lazy(() => import("@/components/Services"));
-const Portfolio = lazy(() => import("@/components/Portfolio"));
 const About = lazy(() => import("@/components/About"));
 const Contact = lazy(() => import("@/components/Contact"));
 
@@ -40,20 +39,21 @@ const Index = () => {
           <Services />
         </Suspense>
 
-        {/* Analytics, Systems and Work read as one band. The wrapper owns the
-            surface and both hairlines so the sections don't each paint their
-            own and leave a seam in the middle.
+        {/* The music no longer renders here.
+            
+            Ordering it below the data evidence was the right answer while the
+            page was aimed at tech hiring — a reader who met the EP player
+            first had already filed this as a musician's site. Aimed at
+            government, multilateral and non-profit research it is not an
+            ordering problem: the most recent credential on the CV is a
+            Berklee M.M., and a homepage that plays records invites "why are
+            you applying here?" before the World Bank line is read.
 
-            Order is deliberate: the data and engineering artifacts come before
-            the music. A reader hiring for data or ML who meets the EP player
-            first has already filed this as a musician's site by the time the
-            analytics platform appears. */}
+            It is not deleted. /work carries every embed and the full EP
+            credits, the navbar links it, and About points at it. It stopped
+            being part of the argument this page makes. */}
         <div className="border-y border-border/60 bg-secondary/50">
           <SystemsPreview />
-
-          <Suspense fallback={<SectionFallback id="portfolio" />}>
-            <Portfolio />
-          </Suspense>
         </div>
 
         <Suspense fallback={<SectionFallback id="about" className="bg-background" />}>

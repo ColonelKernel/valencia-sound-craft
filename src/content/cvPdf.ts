@@ -18,7 +18,15 @@
  *     types, so anything touching window/document fails typecheck.
  */
 
-import { CAREER_TIMELINE, CV_PDF_FILENAME, CV_PROFILE, EDUCATION, EXPERIENCE, SKILLS } from "./cv";
+import {
+  CAREER_TIMELINE,
+  CV_PDF_FILENAME,
+  CV_PROFILE,
+  EDUCATION,
+  EXPERIENCE,
+  METHODS,
+  SKILLS,
+} from "./cv";
 
 export { CV_PDF_FILENAME };
 
@@ -153,6 +161,33 @@ export function drawCvPdf<T extends CvPdfDoc>(doc: T): T {
       });
     }
     y += 3.5;
+  }
+
+  // Methods, with the engagement each one comes from.
+  //
+  // /cv also carries a "Selected engagements" block that re-indexes Experience
+  // by client rather than by employer, because a scrolling reader loses USAID
+  // and CMS inside NORC and Rios. That problem does not exist here: Experience
+  // above is a fixed block a PDF reader takes in at once, so repeating it under
+  // different headings would be duplication rather than navigation. Methods is
+  // the part that is genuinely absent otherwise — SKILLS answers "what tools",
+  // and nothing else answers "what method, and where".
+  sectionHeading("Methods");
+  for (const method of METHODS) {
+    ensureSpace(12);
+    doc.setFontSize(9.5);
+    doc.setTextColor(20);
+    doc.text(method.label, margin, y);
+    y += 4.4;
+
+    doc.setFontSize(9);
+    doc.setTextColor(80);
+    for (const line of doc.splitTextToSize(method.detail, width - 4)) {
+      ensureSpace(5);
+      doc.text(line, margin + 1, y);
+      y += 4.3;
+    }
+    y += 2.5;
   }
 
   sectionHeading("Experience & Education Timeline");

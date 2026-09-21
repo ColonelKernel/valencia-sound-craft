@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { CAREER_TIMELINE, CV_PROFILE, EDUCATION, EXPERIENCE, SKILLS } from "./cv";
+import {
+  CAREER_TIMELINE,
+  CV_PROFILE,
+  EDUCATION,
+  ENGAGEMENTS,
+  EXPERIENCE,
+  METHODS,
+  SKILLS,
+} from "./cv";
 
 /**
  * The CV model backs the /cv page and its generated PDF. Two of these tests are
@@ -14,7 +22,15 @@ import { CAREER_TIMELINE, CV_PROFILE, EDUCATION, EXPERIENCE, SKILLS } from "./cv
  */
 
 /** Everything the CV model would ever render, flattened to one string. */
-const serialized = JSON.stringify({ CV_PROFILE, CAREER_TIMELINE, EDUCATION, EXPERIENCE, SKILLS });
+const serialized = JSON.stringify({
+  CV_PROFILE,
+  CAREER_TIMELINE,
+  EDUCATION,
+  ENGAGEMENTS,
+  EXPERIENCE,
+  METHODS,
+  SKILLS,
+});
 
 describe("CV publishing safeguards", () => {
   it("contains no phone number", () => {
@@ -152,5 +168,84 @@ describe("EXPERIENCE", () => {
       );
       expect(row, `no timeline row starting ${start} for ${entry.org}`).toBeDefined();
     }
+  });
+});
+
+describe("ENGAGEMENTS", () => {
+  const flat = ENGAGEMENTS.flatMap((group) => group.items);
+
+  it("has complete entries under non-empty sectors", () => {
+    expect(ENGAGEMENTS.length).toBeGreaterThan(2);
+    for (const group of ENGAGEMENTS) {
+      expect(group.sector.length).toBeGreaterThan(5);
+      expect(group.items.length).toBeGreaterThan(0);
+    }
+    for (const item of flat) {
+      expect(item.client.length).toBeGreaterThan(3);
+      expect(item.period).toMatch(/\d{4}/);
+      expect(item.work.length).toBeGreaterThan(40);
+    }
+  });
+
+  it("only claims clients that EXPERIENCE already substantiates", () => {
+    // This block is a re-index of work described elsewhere in this file, not a
+    // second inventory of it. Anything here that cannot be traced to an
+    // EXPERIENCE entry — either as the employer or inside a highlight — is an
+    // invented client, which is the exact failure mode this file exists to
+    // prevent.
+    const experienceText = JSON.stringify(EXPERIENCE);
+    const traceable = [
+      "World Bank",
+      "USAID",
+      "Centers for Medicare and Medicaid Services",
+      "Robert Wood Johnson Foundation",
+      "NSHAP",
+    ];
+    for (const needle of traceable) {
+      expect(experienceText, `${needle} is not in EXPERIENCE`).toContain(needle);
+    }
+    // Every engagement's client must be one of those, or the employer itself.
+    for (const item of flat) {
+      const key = item.client.split(" (")[0].replace(" & ", " and ");
+      expect(experienceText, `no EXPERIENCE trace for ${item.client}`).toContain(key);
+    }
+  });
+
+  it("routes every intermediated engagement through a real employer", () => {
+    const employers = new Set(EXPERIENCE.map((entry) => entry.org));
+    for (const item of flat) {
+      if (!item.via) continue;
+      expect(employers.has(item.via), `${item.via} is not an employer`).toBe(true);
+    }
+  });
+
+  it("keeps the student project out of the commissioned work", () => {
+    // The Kyrgyz Republic hospital-financing analysis was a five-person
+    // Applied Policy Project for the M.P.P. It is a real line and it stays —
+    // under EDUCATION, where a reader can see what it was. Promoting it to a
+    // World Bank engagement would read as three years of multilateral
+    // evaluation experience that did not happen.
+    expect(JSON.stringify(ENGAGEMENTS)).not.toMatch(/kyrgyz/i);
+    expect(JSON.stringify(EDUCATION)).toMatch(/Kyrgyz Republic/);
+  });
+});
+
+describe("METHODS", () => {
+  it("states a method and where it was practised", () => {
+    expect(METHODS.length).toBeGreaterThan(3);
+    for (const method of METHODS) {
+      expect(method.label.length).toBeGreaterThan(5);
+      // Long enough to carry its evidence rather than being a second set of
+      // skill chips. SKILLS already answers "what tools"; this answers "what
+      // method, and where did you do it", which is useless as a bare noun.
+      expect(method.detail.length).toBeGreaterThan(60);
+    }
+  });
+
+  it("does not claim a method the rest of the CV never evidences", () => {
+    const body = JSON.stringify({ EXPERIENCE, ENGAGEMENTS });
+    expect(body).toContain("difference-in-differences");
+    expect(body).toMatch(/semiparametric/i);
+    expect(body).toMatch(/exam records/);
   });
 });
