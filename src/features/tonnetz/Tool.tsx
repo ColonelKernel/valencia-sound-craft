@@ -2,17 +2,17 @@ import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import Tonnetz from "@/components/ModeVisualizer/Tonnetz";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
 
-import { tonnetzToolMeta } from "./toolData";
-import { useTool } from "./useTool";
-import TonnetzToolUI from "./ToolUI";
+import { toolMeta } from "@/features/shared/toolMeta";
+import { useHarmonySelection } from "@/features/shared/useHarmonySelection";
+import ToolSection from "@/features/shared/ToolSection";
 
 const TonnetzTool = () => {
   useToolPerformance("tonnetz-route");
-  const tool = useTool();
+  const tool = useHarmonySelection("tonnetz-tool");
 
   return (
     <ToolPageLayout
-      meta={tonnetzToolMeta}
+      meta={toolMeta("tonnetz")}
       eyebrow="Harmony"
       title="Tonnetz"
       description="Navigate harmonic space with the same key, tempo, and playback as the rest of the tools."
@@ -49,18 +49,20 @@ const TonnetzTool = () => {
         </>
       }
     >
-      <TonnetzToolUI
-        tool={
-          <Tonnetz
-            scaleNotes={tool.scaleNotes}
-            root={tool.key}
-            tempo={tool.tempo}
-            playing={tool.playing}
-            onTempoChange={tool.setTempo}
-            onPlayingChange={tool.setPlaying}
-          />
-        }
-      />
+      <ToolSection
+        id="tonnetz-tool-section"
+        heading="Harmonic Space"
+        blurb="Tonnetz moves follow the same key and timing as the rest of the tools, so what you hear here fits what you play everywhere else."
+      >
+        <Tonnetz
+          scaleNotes={tool.scaleNotes}
+          root={tool.key}
+          tempo={tool.tempo}
+          playing={tool.playing}
+          onTempoChange={tool.setTempo}
+          onPlayingChange={tool.setPlaying}
+        />
+      </ToolSection>
     </ToolPageLayout>
   );
 };

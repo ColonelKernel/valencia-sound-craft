@@ -2,17 +2,17 @@ import ModeVisualizer from "@/components/ModeVisualizer";
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
 
-import { harmonyToolMeta } from "./toolData";
-import { useTool } from "./useTool";
-import HarmonyToolUI from "./ToolUI";
+import { toolMeta } from "@/features/shared/toolMeta";
+import { useHarmonySelection } from "@/features/shared/useHarmonySelection";
+import ToolSection from "@/features/shared/ToolSection";
 
 const HarmonyTool = () => {
   useToolPerformance("harmony-route");
-  const tool = useTool();
+  const tool = useHarmonySelection("harmony-tool");
 
   return (
     <ToolPageLayout
-      meta={harmonyToolMeta}
+      meta={toolMeta("harmony")}
       eyebrow="Harmony"
       title="Harmony Lab"
       description="Visualize scales, build chord progressions, and practice — always in time with the rest of the music system."
@@ -48,22 +48,24 @@ const HarmonyTool = () => {
         </>
       }
     >
-      <HarmonyToolUI
-        workspace={
-          <ModeVisualizer
-            root={tool.key}
-            mode={tool.mode}
-            tempo={tool.tempo}
-            playing={tool.playing}
-            onRootChange={tool.setKey}
-            onModeChange={tool.setMode}
-            onTempoChange={tool.setTempo}
-            onPlayingChange={tool.setPlaying}
-            chordProgression={tool.chordProgression}
-            onChordProgressionChange={tool.setChordProgression}
-          />
-        }
-      />
+      <ToolSection
+        id="harmony-tool-section"
+        heading="Shared Harmony Workspace"
+        blurb="Key, mode, tempo, and playback stay in step with the other tools, so the visualizer and progression builder always reflect what you are working on."
+      >
+        <ModeVisualizer
+          root={tool.key}
+          mode={tool.mode}
+          tempo={tool.tempo}
+          playing={tool.playing}
+          onRootChange={tool.setKey}
+          onModeChange={tool.setMode}
+          onTempoChange={tool.setTempo}
+          onPlayingChange={tool.setPlaying}
+          chordProgression={tool.chordProgression}
+          onChordProgressionChange={tool.setChordProgression}
+        />
+      </ToolSection>
     </ToolPageLayout>
   );
 };

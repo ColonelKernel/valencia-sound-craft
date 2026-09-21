@@ -3,7 +3,7 @@ import { lazy, Suspense, useCallback } from "react";
 import ToolPageLayout from "@/components/tools/ToolPageLayout";
 import { useToolPerformance } from "@/hooks/useToolPerformance";
 
-import { rhythmToolMeta } from "./toolData";
+import { toolMeta } from "@/features/shared/toolMeta";
 import { useTool } from "./useTool";
 import RhythmToolUI from "./ToolUI";
 
@@ -35,7 +35,7 @@ const RhythmTool = () => {
 
   return (
     <ToolPageLayout
-      meta={rhythmToolMeta}
+      meta={toolMeta("rhythm")}
       eyebrow="Rhythm"
       title="Rhythm Engine"
       description="A rhythm workspace that keeps the atlas, browser, tempo, and playback in sync."
