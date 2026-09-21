@@ -95,3 +95,14 @@ Fonts: DM Sans and Space Grotesk, self-hosted under the
 [SIL Open Font License](public/fonts/LICENSE.md). Rhythm-tradition entries in
 the Groove Atlas cite published ethnomusicological sources inline. Basemap
 tiles © Esri — Esri, HERE, Garmin, © OpenStreetMap contributors.
+
+## License
+
+The **code** is [MIT](LICENSE) — reuse it freely.
+
+The **written content is not**: the case studies, the CV text and biography,
+the images, and the music and recording credits are © 2026 Zach Scheffler, all
+rights reserved. A personal site is largely a piece of writing about one
+person, and licensing that permissively would be a different act from sharing
+the components that render it. [LICENSE](LICENSE) lists exactly what falls on
+each side, along with the third-party datasets that carry their own terms.
