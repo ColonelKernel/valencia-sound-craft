@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BarChart3, Disc3, Github, Linkedin, Instagram, Menu, Music, Wrench, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
+import { TOOL_NAV_LINKS } from "@/content/tools";
 import { cn } from "@/lib/utils";
 
 // "Research" deliberately lives in the footer, not here: it points at the PhD
@@ -14,13 +15,6 @@ const normalizedHomeLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
-const toolLinks = [
-  { label: "Overview", to: "/tools", end: true },
-  { label: "Rhythm", to: "/tools/rhythm" },
-  { label: "Harmony", to: "/tools/harmony" },
-  { label: "Circle", to: "/tools/circle" },
-  { label: "Tonnetz", to: "/tools/tonnetz" },
-];
 
 const socialLinks = [
   { icon: Github, href: "https://github.com/ColonelKernel", label: "GitHub" },
@@ -192,7 +186,7 @@ const Navbar = () => {
   );
 
   const renderToolLinks = () =>
-    toolLinks.map((link) => (
+    TOOL_NAV_LINKS.map((link) => (
       <NavLink
         key={link.to}
         to={link.to}
@@ -326,7 +320,7 @@ const Navbar = () => {
             {isToolsRoute
               ? (
                   <>
-                    {toolLinks.map((link) => (
+                    {TOOL_NAV_LINKS.map((link) => (
                   <NavLink
                     key={link.to}
                     to={link.to}

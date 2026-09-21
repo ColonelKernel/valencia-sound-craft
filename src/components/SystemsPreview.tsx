@@ -1,4 +1,4 @@
-import { ArrowRight, BarChart3, Globe2, Hexagon, Music2, TrainFront, Waves } from "lucide-react";
+import { ArrowRight, BarChart3, TrainFront } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { buttonClasses } from "@/components/ui/button";
@@ -6,6 +6,8 @@ import { cardClasses } from "@/components/ui/card";
 import { sparklineGeometry } from "@/lib/sparkline";
 import { ANALYTICS_SPARKS } from "@/content/analyticsSparks";
 import { ROUTE_META } from "@/app/routeMeta";
+import { TOOLS } from "@/content/tools";
+import { TOOL_ICONS } from "@/content/toolIcons";
 
 /**
  * One work section where there used to be two.
@@ -80,32 +82,6 @@ const featured = [
   },
 ];
 
-const tools = [
-  {
-    to: ROUTE_META.rhythm.path,
-    icon: Globe2,
-    title: "Rhythm Engine",
-    description: "Atlas-backed sequencing over the world rhythm map.",
-  },
-  {
-    to: ROUTE_META.harmony.path,
-    icon: Music2,
-    title: "Harmony Lab",
-    description: "Modes, chord building, notation and practice in one workspace.",
-  },
-  {
-    to: ROUTE_META.circle.path,
-    icon: Waves,
-    title: "Circle of Fifths",
-    description: "Key relationships, sharing global key and mode state.",
-  },
-  {
-    to: ROUTE_META.tonnetz.path,
-    icon: Hexagon,
-    title: "Tonnetz",
-    description: "Neo-Riemannian motion over a shared transport and tonal center.",
-  },
-];
 
 const SystemsPreview = () => (
   <section id="systems" className="section-padding-tight scroll-mt-24">
@@ -161,20 +137,23 @@ const SystemsPreview = () => (
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {tools.map((tool) => (
-          <article key={tool.to} className={cardClasses()}>
-            <tool.icon className="h-5 w-5 text-primary" />
+        {TOOLS.map((tool) => {
+          const ToolIcon = TOOL_ICONS[tool.key];
+          return (
+          <article key={tool.path} className={cardClasses()}>
+            <ToolIcon className="h-5 w-5 text-primary" />
             <h3 className="mt-3 text-lg font-semibold text-foreground">{tool.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">{tool.description}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{tool.teaser}</p>
             <Link
-              to={tool.to}
+              to={tool.path}
               className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary"
             >
               Open tool
               <ArrowRight className="h-4 w-4" />
             </Link>
           </article>
-        ))}
+          );
+        })}
       </div>
     </div>
   </section>

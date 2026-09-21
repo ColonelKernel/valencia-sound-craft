@@ -1,19 +1,12 @@
 import { NavLink } from "react-router-dom";
 
+import { TOOL_NAV_LINKS } from "@/content/tools";
 import { cn } from "@/lib/utils";
-
-const TOOL_LINKS = [
-  { to: "/tools", label: "Overview", end: true },
-  { to: "/tools/rhythm", label: "Rhythm" },
-  { to: "/tools/harmony", label: "Harmony" },
-  { to: "/tools/circle", label: "Circle" },
-  { to: "/tools/tonnetz", label: "Tonnetz" },
-];
 
 const ToolSubnav = () => (
   <nav aria-label="Tool navigation" className="overflow-x-auto pb-1">
     <div className="flex min-w-max items-center gap-2">
-      {TOOL_LINKS.map((link) => (
+      {TOOL_NAV_LINKS.map((link) => (
         <NavLink
           key={link.to}
           to={link.to}

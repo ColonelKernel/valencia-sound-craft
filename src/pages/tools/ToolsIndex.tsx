@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Compass, Globe2, Hexagon, Music2, Waves } from "lucide-react";
+import { Compass } from "lucide-react";
 
 import { cardClasses } from "@/components/ui/card";
 import { buttonClasses } from "@/components/ui/button";
@@ -7,33 +7,9 @@ import RouteHead from "@/components/seo/RouteHead";
 import ToolSubnav from "@/components/tools/ToolSubnav";
 import { ROUTE_META } from "@/app/routeMeta";
 import { TOOLS_INDEX_JSONLD } from "@/app/routeStructuredData";
+import { TOOLS } from "@/content/tools";
+import { TOOL_ICONS } from "@/content/toolIcons";
 
-const toolCards = [
-  {
-    to: "/tools/rhythm",
-    icon: Globe2,
-    title: "Rhythm Engine",
-    description: "Play, browse, and sequence rhythms from around the world.",
-  },
-  {
-    to: "/tools/harmony",
-    icon: Music2,
-    title: "Harmony Lab",
-    description: "Visualize scales, build progressions, and practice in time with the whole system.",
-  },
-  {
-    to: "/tools/circle",
-    icon: Waves,
-    title: "Circle of Fifths",
-    description: "Explore related keys — your key choice follows you into every other tool.",
-  },
-  {
-    to: "/tools/tonnetz",
-    icon: Hexagon,
-    title: "Tonnetz",
-    description: "Navigate harmonic space with the same key, tempo, and transport as the rest of the app.",
-  },
-];
 
 const ToolsIndex = () => (
   <>
@@ -72,23 +48,26 @@ const ToolsIndex = () => (
 
       <section className="pb-20">
         <div className="container mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {toolCards.map((card) => (
+          {TOOLS.map((card) => {
+            const CardIcon = TOOL_ICONS[card.key];
+            return (
             <article
-              key={card.to}
+              key={card.path}
               className={cardClasses({}, "flex flex-col")}
             >
-              <card.icon className="h-5 w-5 text-primary" />
+              <CardIcon className="h-5 w-5 text-primary" />
               <h2 className="mt-4 text-xl font-semibold text-foreground">{card.title}</h2>
-              <p className="mt-2 mb-5 text-sm leading-6 text-muted-foreground">{card.description}</p>
+              <p className="mt-2 mb-5 text-sm leading-6 text-muted-foreground">{card.blurb}</p>
               <Link
-                to={card.to}
+                to={card.path}
                 className={buttonClasses({ variant: "secondary", size: "sm" }, "mt-auto self-start")}
               >
                 <Compass className="h-4 w-4" />
                 Open tool
               </Link>
             </article>
-          ))}
+            );
+          })}
         </div>
       </section>
 
