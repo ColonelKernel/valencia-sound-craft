@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import CaseStudyFinding from "@/components/CaseStudyFinding";
 import CaseStudyFooter from "@/components/CaseStudyFooter";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
@@ -26,8 +27,6 @@ import { useFadeIn } from "@/hooks/useFadeIn";
  */
 
 const AT_A_GLANCE: { label: string; value: string }[] = [
-  { label: "What it is", value: "A DAW-agnostic representation of a music session, plus the analysis built on it" },
-  { label: "Problem", value: "MIR datasets keep the rendered audio and throw away the session that produced it" },
   { label: "Scope", value: "Four DAW adapters — Ableton Live, REAPER, Logic Pro, Cubase — behind one canonical schema" },
   { label: "Methods", value: "Per-value evidence tagging, a ten-domain observability atlas, explainable cross-DAW alignment, a controlled state→audio intervention" },
   { label: "Stack", value: "Python 3.10+, pydantic, networkx, numpy, pandas; Streamlit for the workbench; librosa and pyloudnorm for offline audio descriptors" },
@@ -92,6 +91,27 @@ const SessionStateCaseStudy = () => {
                 greets you with a wake-up prompt, it takes about a minute to come back.
               </p>
             </div>
+
+            <CaseStudyFinding>
+              <p>
+                MIR datasets keep the rendered audio and throw away the session that produced
+                it. I built the missing half: one canonical schema for a music session, with
+                four DAW adapters behind it, and a role classifier over the tracks.
+              </p>
+              <p>
+                The classifier reaches{" "}
+                <strong>99.3% over 6,467 weighted instances</strong> — and that number is
+                smaller than it looks. Some keywords in the taxonomy were added{" "}
+                <em>because</em> benchmarking exposed them as misses on this same corpus,
+                which makes it in-sample vocabulary coverage, not held-out generalization.
+              </p>
+              <p>
+                It is reported with that sentence attached, here and in the source file&rsquo;s
+                own header. The calibration table is published for the same reason: the 0.20
+                confidence bucket is right 92.5% of the time, which is not low confidence, it
+                is badly calibrated confidence.
+              </p>
+            </CaseStudyFinding>
 
             <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-16 divide-y divide-border")}>
               {AT_A_GLANCE.map((row) => (

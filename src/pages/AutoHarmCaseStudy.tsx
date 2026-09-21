@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import CaseStudyFinding from "@/components/CaseStudyFinding";
 import CaseStudyFooter from "@/components/CaseStudyFooter";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
@@ -17,7 +18,6 @@ import { useFadeIn } from "@/hooks/useFadeIn";
  */
 
 const AT_A_GLANCE: { label: string; value: string }[] = [
-  { label: "What it is", value: "A generative chord instrument that runs in the browser" },
   { label: "Stack", value: "TypeScript, React, Vite, zustand, onnxruntime-web" },
   { label: "Engines", value: "Four-corpus Markov blend, plus JazzNet RNN and LSTM in ONNX" },
   { label: "Output", value: "Live MIDI to a virtual port, plus .mid export of the take" },
@@ -73,6 +73,27 @@ const AutoHarmCaseStudy = () => {
                 </a>
               </div>
             </div>
+
+            <CaseStudyFinding>
+              <p>
+                I took a generative harmony engine that needed Max/MSP, a Python server and
+                two free UDP ports before you heard a note, and made it a URL: a four-corpus
+                Markov blend plus two ONNX models, everything client-side.
+              </p>
+              <p>
+                Keeping <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">src/engine/</code>{" "}
+                free of DOM, React and Web MIDI meant the whole musical brain runs in Node
+                under Vitest, pinned to the original Python by golden fixtures rather than by
+                my ear. That is what caught it: a naive float sum drifted by one unit in the
+                last place — enough to flip two tied probabilities and change which chord you
+                hear.
+              </p>
+              <p>
+                So the blend reimplements CPython&rsquo;s compensated summation in TypeScript.
+                What it still costs: 4/4 only, and MIDI out needs a virtual port you create
+                yourself and a browser that implements Web MIDI, which Safari does not.
+              </p>
+            </CaseStudyFinding>
 
             <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-14 grid max-w-3xl gap-px bg-border/70 sm:grid-cols-2")}>
               {AT_A_GLANCE.map((item) => (

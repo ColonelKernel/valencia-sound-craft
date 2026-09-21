@@ -6,6 +6,7 @@ import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
 import { TRANSIT_ATLAS_JSONLD } from "@/app/routeStructuredData";
 import { buttonClasses } from "@/components/ui/button";
+import CaseStudyFinding from "@/components/CaseStudyFinding";
 import { cardClasses } from "@/components/ui/card";
 import { useFadeIn } from "@/hooks/useFadeIn";
 
@@ -56,13 +57,15 @@ import { useFadeIn } from "@/hooks/useFadeIn";
  * measurement and the decisions behind them.
  */
 
+/**
+ * Four rows, not eight. The finding block above states the result, so the
+ * "Result" row went with it; the lede paragraph already says what the thing
+ * is, and the geometry sources belong beside the counts they describe.
+ */
 const AT_A_GLANCE: { label: string; value: string }[] = [
-  { label: "What it is", value: "An interactive world atlas of urban rail — 201 metro, light-rail and tram systems you can scrub through time" },
-  { label: "Coverage", value: "1,298 lines and 22,641 stations across 7 regions; 142 metro systems, 28 light rail, 18 tram, 13 mixed" },
-  { label: "Geometry", value: "Real alignments from OpenStreetMap via Overpass, citylines.co, and public agency open-data portals — not schematic diagrams" },
+  { label: "Coverage", value: "201 systems across 7 regions — 1,298 lines and 22,641 stations, at their real alignments from OpenStreetMap, citylines.co and agency open-data portals rather than as schematic diagrams" },
   { label: "Ridership", value: "An annual figure for 196 of the 201; a monthly time series for only 33. What each figure counts is now recorded for 187 of them — it was 24" },
   { label: "Stack", value: "Python for fetch and generation, R (tidyverse) as the analysis layer, one self-contained HTML file as the output" },
-  { label: "Result", value: "A regression that looked publishable, and did not survive its own data being checked" },
   { label: "Status", value: "Live on GitHub Pages. Geometry is complete; ridership is not, and the page says which is which." },
 ];
 
@@ -115,6 +118,26 @@ const TransitAtlasCaseStudy = () => {
                 </a>
               </div>
             </div>
+
+            <CaseStudyFinding>
+              <p>
+                I assembled a complete 201-city cross-section — every urban rail network
+                that publishes its geometry — and regressed ridership on city form.
+                Density came back at <strong>+0.53, p=0.0001</strong>.
+              </p>
+              <p>
+                It did not survive verification. Agencies do not count the same thing, and
+                nothing in the data said which convention applied to 177 of the 201 systems.
+                Recovering that provenance, then refitting, removed most of the result in
+                four rounds.
+              </p>
+              <p>
+                What is left at n=196 is smaller and true: ridership scales{" "}
+                <em>sublinearly</em> with population, elasticity +0.39; network age holds at
+                +0.36 once station counts are controlled for; and the counting convention —
+                the variable this was all for — cannot be separated from geography at all.
+              </p>
+            </CaseStudyFinding>
 
             <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-16 divide-y divide-border")}>
               {AT_A_GLANCE.map((row) => (
@@ -386,9 +409,7 @@ const TransitAtlasCaseStudy = () => {
                     The part worth keeping is the mechanism. Before the Chinese labels were
                     fixed, the entries effect was +1.13 at p&lt;0.0001 and looked like the one
                     robust convention finding in the dataset. It was twenty-six mislabelled
-                    systems. Correcting a data error dissolved a significant result — which is
-                    the argument for doing the verification first, made in the only way that is
-                    actually convincing.
+                    systems. Correcting a data error dissolved a significant result.
                   </p>
                 </div>
               </div>
@@ -443,8 +464,7 @@ const TransitAtlasCaseStudy = () => {
                     And the counts here are recomputed from the data files rather than taken from
                     the project&rsquo;s own README, which reported 1,303 lines where the files
                     hold 1,298. That one is now fixed upstream. A number on a résumé should be
-                    one you can reproduce on demand; this is what that check looks like when it
-                    turns something up.
+                    one you can reproduce on demand.
                   </p>
                 </div>
               </div>

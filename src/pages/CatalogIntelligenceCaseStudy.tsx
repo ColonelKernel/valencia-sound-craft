@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import CaseStudyFinding from "@/components/CaseStudyFinding";
 import CaseStudyFooter from "@/components/CaseStudyFooter";
 import RouteHead from "@/components/seo/RouteHead";
 import { ROUTE_META } from "@/app/routeMeta";
@@ -24,11 +25,9 @@ import { useFadeIn } from "@/hooks/useFadeIn";
  */
 
 const AT_A_GLANCE: { label: string; value: string }[] = [
-  { label: "What it is", value: "A catalog analytics dashboard: forecasting, risk scoring, segmentation and side-by-side comparison" },
   { label: "Data", value: "The public 2020 TidyTuesday Spotify sample — 32,833 rows, self-hosted and slimmed to the three columns actually read" },
   { label: "Methods", value: "OLS trend with a prediction band, coefficient of variation, a trailing-median robustness rule, a four-component weighted score" },
-  { label: "Stack", value: "TypeScript, React, Recharts, Papa Parse — all arithmetic client-side" },
-  { label: "Backend", value: "One Supabase edge function, and only for the written memo" },
+  { label: "Stack", value: "TypeScript, React, Recharts, Papa Parse — all arithmetic client-side, with one Supabase edge function and only for the written memo" },
   { label: "Status", value: "Demonstration dataset with modeled proxies. Not live streaming figures, and not investment advice." },
 ];
 
@@ -77,6 +76,31 @@ const CatalogIntelligenceCaseStudy = () => {
                 </a>
               </div>
             </div>
+
+            <CaseStudyFinding>
+              <p>
+                I built a catalog analytics dashboard on the public 2020 Spotify sample — a
+                weighted acquisition score, an OLS revenue forecast, and rolling-variance
+                risk — to value catalogs the way a buyer would.
+              </p>
+              <p>
+                The first version reported that almost every catalog was falling off a cliff.
+                Nothing was: rows bucket by release month, and the newest bucket is a partial
+                month. Separately, the forecast band is drawn as{" "}
+                <code className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs">
+                  1.96 · SE · √(1 + 1/n)
+                </code>
+                , which omits the leverage term — so it is the same width twelve months out
+                as one month out, and too narrow exactly where a reader would lean on it.
+              </p>
+              <p>
+                The collapse became a stated rule rather than a tuned constant. The band is
+                still wrong, and documented as wrong, because a forecast that understates its
+                own uncertainty is worse than one that draws no band. The four score weights
+                are a prior, not a fit — this dataset contains no acquisition outcomes to fit
+                them against.
+              </p>
+            </CaseStudyFinding>
 
             <dl className={cardClasses({ padding: "none", flush: true }, "fade-up mb-16 divide-y divide-border")}>
               {AT_A_GLANCE.map((row) => (
@@ -175,10 +199,9 @@ const CatalogIntelligenceCaseStudy = () => {
                     not a prediction.
                   </p>
                   <p>
-                    That is why the interface shows the four components alongside the score.
-                    A single number invites the reader to trust it; the breakdown invites
-                    them to disagree with a specific weight, which is the argument I would
-                    rather have.
+                    The interface shows the four components alongside the score. A single
+                    number invites the reader to trust it; the breakdown invites them to
+                    disagree with a specific weight.
                   </p>
                 </div>
               </div>
