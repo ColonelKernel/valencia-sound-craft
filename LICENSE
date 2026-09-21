@@ -19,36 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-## What the MIT grant above does and does not cover
-
-The MIT license above applies to the **source code** of this repository: the
-TypeScript, React components, build plugins, test suites and configuration.
-
-It does **not** apply to the written and creative content, which is
-© 2026 Zach Scheffler, all rights reserved:
-
-- Prose and written content — the case studies under `src/pages/*CaseStudy.tsx`,
-  the CV text and biography in `src/content/cv.ts`, and the copy throughout
-  `src/content/` and the page components.
-- The curriculum vitae and its generated PDF (`Zach-Scheffler-CV.pdf`).
-- Images and brand assets, including `public/og-image.png`.
-- Music, audio recordings and the recording credits in `src/content/work.ts`.
-
-Reuse the code freely. Please don't republish the writing, the CV or the music
-as your own.
-
-## Third-party data and assets
-
-This repository includes or refers to material owned by others, under their own
-terms — not under the grant above:
-
-- `public/data/spotify_songs.csv` — the 2020 TidyTuesday Spotify sample.
-- `public/data/egmd.json` — derived from the Expanded Groove MIDI Dataset
-  (E-GMD v1.0.0, Google Magenta).
-- Ethnomusicological citations in `src/content/atlasCitations.ts` — titles and
-  bibliographic references to third-party scholarship, cited but not licensed
-  here.
-- Basemap tiles are served by Esri and are subject to Esri's terms.

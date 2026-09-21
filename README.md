@@ -104,5 +104,5 @@ The **written content is not**: the case studies, the CV text and biography,
 the images, and the music and recording credits are © 2026 Zach Scheffler, all
 rights reserved. A personal site is largely a piece of writing about one
 person, and licensing that permissively would be a different act from sharing
-the components that render it. [LICENSE](LICENSE) lists exactly what falls on
-each side, along with the third-party datasets that carry their own terms.
+the components that render it. [NOTICE.md](NOTICE.md) lists exactly what falls
+on each side, along with the third-party datasets that carry their own terms.
