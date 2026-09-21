@@ -90,8 +90,13 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
 
   const generatePDF = useCallback(async () => {
     if (!selected || !selectedArtist) return;
-    // Loaded on demand so the ~40 KB gzip PDF library isn't in the analytics
-    // page chunk — it only downloads when a visitor actually exports.
+    // Loaded on demand so the PDF library isn't in the analytics page chunk.
+    // Measured on the built output, not estimated: jspdf is 131.8 KB gzip, and
+    // it dynamically imports html2canvas (46.6), canvg (50.3) and dompurify —
+    // none of which load here, because this function only calls doc.text() and
+    // friends, never doc.html(). Verified in the browser: neither a page load
+    // nor mounting this tab fetches any of the four chunks. So the cost is
+    // 131.8 KB gzip, paid once, only by a visitor who clicks Export.
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF();
     const a = selected;
