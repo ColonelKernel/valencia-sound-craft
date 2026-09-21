@@ -81,14 +81,22 @@ const WorkPage = () => {
             </div>
 
             {/* The credits above are only half the work; without this bridge a
-                visitor who came for the music never learns there is software. */}
+                visitor who came for the music never learns there is software.
+                It used to name only the audio tooling, which left a reader who
+                arrived here from a job posting with no route to the data work
+                the rest of the site is about. */}
             <div className={cardClasses({ padding: "md" }, "fade-up mt-12 max-w-2xl")}>
               <p className="text-muted-foreground leading-relaxed">
-                The other half of this work is software. The Ableton Live extensions,
-                generative instruments, and analysis tools I built in and around these
-                sessions live on the{" "}
+                The other half of this work is software, and most of it is not about music:
+                a transit atlas across 201 rail systems, a catalog analytics platform, and
+                the Ableton extensions and generative instruments built in and around these
+                sessions. They are on the{" "}
                 <Link to="/projects" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
                   projects page
+                </Link>
+                , and the path through both is on the{" "}
+                <Link to="/cv" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
+                  CV
                 </Link>
                 .
               </p>

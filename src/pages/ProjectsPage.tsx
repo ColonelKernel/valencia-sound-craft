@@ -65,11 +65,14 @@ const ProjectsPage = () => {
               <p className="eyebrow mb-3">Projects</p>
               <h1 className="type-h1 mb-6">Software I Build</h1>
               <p className="text-muted-foreground leading-relaxed">
-                I build audio software for the browser: Web Audio scheduling engines, Web MIDI
-                instruments that play into any DAW, and extensions that live inside Ableton.
-                These are tools I built because I kept wanting them mid-session — the Groove
-                Atlas, the analytics platform, the music tools. All of them come from the same
-                habit: when the workflow fights you, build the thing that fights back.
+                The first section is the one this page is written for: transit geometry and
+                ridership assembled from OpenStreetMap and open agency data, and a catalog
+                platform built on a public dataset. Everything after it is audio — Web Audio
+                scheduling engines, Web MIDI instruments that play into any DAW, extensions
+                that live inside Ableton. It is here because it is most of what I have
+                shipped, and because real-time audio is where the scheduling discipline came
+                from. All of it comes from one habit: when the workflow fights you, build the
+                thing that fights back.
               </p>
               {/* Employers in this space increasingly screen for AI-assisted
                   workflow experience by name. Stating it plainly — alongside
