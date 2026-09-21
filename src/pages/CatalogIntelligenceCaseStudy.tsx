@@ -92,36 +92,21 @@ const CatalogIntelligenceCaseStudy = () => {
                 <h2 className="type-h2 mb-4">What the data is, and what it is not</h2>
                 <div className="space-y-4 leading-relaxed text-muted-foreground">
                   <p>
-                    The dataset is the public 2020 TidyTuesday Spotify sample. It does not
-                    contain streams. It contains a <em>popularity</em> integer, and the
-                    service multiplies it by one million to get numbers that read like
-                    streams. That is a proxy, and the page says so in two places before a
-                    visitor sees a chart.
+                    The dataset is the public 2020 TidyTuesday Spotify sample, and it contains
+                    no streams. It contains a <em>popularity</em> integer per track, which the
+                    service multiplies by one million so the axes read like streams. Rows are
+                    then bucketed by album release month, so the time axis is a release
+                    timeline, not a listening one — every conclusion here describes how a
+                    catalog's releases are distributed, not how anyone listened.
                   </p>
                   <p>
-                    Rows are bucketed by album release month, which matters more than it
-                    sounds — it means the time axis is not a listening timeline at all. It
-                    is a release timeline. Every conclusion the dashboard draws is a
-                    statement about how a catalog's releases are distributed, not about how
-                    anyone listened.
-                  </p>
-                  <p>
-                    There is also a fallback I would rather disclose than hide: if date
-                    parsing yields nothing usable, the service synthesizes twelve months per
-                    artist and shapes them with a sine factor running 0.55 to 1.15. It
-                    fires only when the real aggregation produces an empty map, and on this
-                    dataset it does not fire. But it exists, and a reader deciding whether
-                    to trust a number should know the code can manufacture a season.
-                  </p>
-                  <p>
-                    This paragraph said 0.85 to 1.15 until writing the tests for it showed
-                    otherwise. 0.85 is the offset, not the floor; the sine reaches −1 at the
-                    tenth month, so the real range is 0.55 to 1.15. The same arithmetic
-                    exposes a second thing worth stating: the twelve sine terms cancel over
-                    a full period, so the factors sum to 10.2 rather than 12 and a
-                    synthesized year carries 85% of the artist's total rather than all of
-                    it. Both figures are now asserted in src/lib/musicDataService.test.ts,
-                    which is the only reason this page can claim them.
+                    One fallback is worth naming because the code can manufacture a season: if
+                    date parsing yields nothing usable, the service synthesizes twelve months
+                    per artist under a sine factor running 0.55 to 1.15. The twelve terms
+                    cancel over a full period, so a synthesized year carries 85% of the
+                    artist's total rather than all of it. It fires only on a completely empty
+                    aggregation, which this dataset never produces. Both figures are asserted
+                    in <code className="text-xs">musicDataService.test.ts</code>.
                   </p>
                   <p>
                     The CSV is self-hosted rather than fetched from a third party at runtime,

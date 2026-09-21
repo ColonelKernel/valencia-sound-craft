@@ -37,10 +37,14 @@ const services: ServiceCard[] = [
   {
     icon: LineChart,
     title: "Applied Data Science",
+    // The first bullet used to be a character-for-character copy of
+    // CV_PROFILE.summary, on a card that already links to /cv — and the hero
+    // fifty pixels above says the same thing a third time. These name
+    // capabilities and evidence instead; the biography has one home.
     points: [
-      "Applied data work from 2016 to 2023 across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it",
-      "World Transit Atlas — 201 metro and light-rail systems assembled from OpenStreetMap and open agency data, with a ridership comparability audit that dismantled my own headline finding",
-      "NLP, geospatial and web-scraping pipelines; statistical modeling and forecasting in Python, R and SQL. UCLA M.P.P. with a thesis prepared for the World Bank; MIT Applied Data Science certificate",
+      "NLP, geospatial and web-scraping pipelines; statistical modeling and forecasting in Python, R and SQL",
+      "World Transit Atlas — 201 systems from OpenStreetMap and open agency data, with a ridership audit that dismantled my own headline finding",
+      "UCLA M.P.P. with a thesis prepared for the World Bank; MIT Applied Data Science certificate",
     ],
     cta: "Open the transit atlas",
     href: "/projects/transit-atlas",
@@ -50,9 +54,9 @@ const services: ServiceCard[] = [
     icon: Brain,
     title: "Models That Ship",
     points: [
-      "AutoHarm — a four-corpus Markov blend alongside JazzNet RNN and LSTM models running on-device in ONNX, playing live MIDI into a DAW",
-      "Music Catalog Intelligence — acquisition scoring, regression forecasting and rolling-variance risk over a public Spotify dataset",
-      "Groove Atlas — k-means clustering over a drum-performance dataset, rendered as a canvas feel-space that holds frame rate at thousands of points",
+      "AutoHarm — a four-corpus Markov blend and two JazzNet ONNX models, on-device, playing live MIDI into a DAW",
+      "Music Catalog Intelligence — acquisition scoring, regression forecasting and rolling-variance risk",
+      "Groove Atlas — k-means over a drum-performance dataset, rendered as a canvas that holds frame rate",
     ],
     cta: "Open the case study",
     href: "/projects/autoharm",
@@ -61,9 +65,9 @@ const services: ServiceCard[] = [
     icon: Code2,
     title: "Systems & Audio Engineering",
     points: [
-      "TypeScript and Web Audio: five routed workspaces sharing one transport, clock and lookahead scheduler",
-      "C++ and CMake in vcv-rack-mcp, with an allocation-free audio-thread test and a fuzz target in its suite",
-      "Every push and pull request passes typecheck, a zero-warning lint, the unit suites, a Playwright run, a 150 KB gzip budget and Lighthouse CI holding accessibility at 1.0 on all sixteen routes",
+      "TypeScript and Web Audio: workspaces sharing one transport, clock and lookahead scheduler",
+      "C++ and CMake in vcv-rack-mcp, with an allocation-free audio-thread test and a fuzz target",
+      "Every push and pull request passes typecheck, a zero-warning lint, the unit and end-to-end suites, a bundle budget, and Lighthouse CI holding accessibility at 1.0",
     ],
     cta: "See the projects",
     href: "/projects",

@@ -1,111 +1,75 @@
-import { cardClasses } from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+
 import { useFadeIn } from "@/hooks/useFadeIn";
+import { ROUTE_META } from "@/app/routeMeta";
 
-// Timeline and education live in the CV model so this section, the /cv page,
-// and the generated PDF can never drift apart.
-import { CAREER_TIMELINE, EDUCATION } from "@/content/cv";
-
+/**
+ * The narrative section, and deliberately only the narrative.
+ *
+ * This used to re-render EDUCATION and CAREER_TIMELINE — the same two arrays
+ * /cv maps — so a reader who saw both pages read the whole résumé twice, and
+ * the homepage carried a second copy of a table that already had a page of
+ * its own. It also restated CV_PROFILE.summary, the Global Pulse description
+ * from work.ts, and the Streetcar Scandal blurb from work.ts, each of which
+ * renders elsewhere on this same page or one click away.
+ *
+ * What is left is the part that exists nowhere else: why the two halves of
+ * this background belong together, and what the through-line actually is.
+ * The tables are one link away, which is where a reader who wants a résumé
+ * was always going to go.
+ */
 const About = () => {
   const ref = useFadeIn();
 
   return (
     <section id="about" className="section-padding bg-background" ref={ref}>
       <div className="container mx-auto">
-        <div className="grid md:grid-cols-2 gap-16 items-start">
+        {/* Single column now. The right-hand card repeated the location and
+            the availability line, both of which the hero states at the top of
+            this same page — the homepage said "Bay Area" four times and "open
+            to roles" three. The hero keeps them; the footer keeps the city. */}
+        <div className="max-w-2xl">
           <div className="fade-up">
             <p className="eyebrow mb-3">About</p>
-            <h2 className="type-h1 mb-8">
-              From Policy Data to Production Systems
-            </h2>
+            <h2 className="type-h1 mb-8">From Policy Data to Production Systems</h2>
 
             <div className="space-y-5 text-muted-foreground leading-relaxed">
               <p>
-                I didn't come up through a conservatory or a computer-science program. I came
-                up through public policy and data, and through music production. A Master of
-                Public Policy at UCLA, field research for the World Bank in Peru,
-                computational social science at NORC, and a data strategy practice I grew from
-                an informal group at Rios Partners — alongside producing since 2013, first in college Latin
-                ensembles and rock bands, then as an audio engineering intern at East West
-                Studios in LA.
+                I came up through public policy and music production rather than a
+                computer-science program — an M.P.P. at UCLA, field research for the World
+                Bank in Peru, computational social science at NORC — while producing records
+                the whole way through.
               </p>
               <p>
-                In 2024 I moved to Valencia for an M.M. in Music Production, Technology &amp;
-                Innovation at Berklee, finishing in 2025. That path is why the two halves
-                stopped being separate: I produce records the way I build software —
-                iteratively, under version control, with the data close at hand — and I
-                build models the way I mix, by listening to what the thing actually does.
-              </p>
-              <p>
-                At Berklee, I completed{" "}
-                <span className="text-foreground font-semibold">Global Pulse</span> — a
-                multi-genre debut EP weaving Neo Soul/R&amp;B, experimental electronic, rock,
-                and 1970s influences into a unified statement. The project integrates field
-                recordings, modular synthesis, creative vocal processing, and modern amp
-                emulations to forge distinctive sonic landscapes.
-              </p>
-              <p>
-                The music software came out of the same habit. This site runs a suite of
-                connected tools — a rhythm engine over a cited world atlas, a harmony lab, a
-                circle of fifths and a Tonnetz — sharing one transport and clock, alongside
-                AutoHarm, which plays live MIDI into a DAW from ONNX models running
-                on-device. They exist because I wanted them while producing, and building
-                them is how I learned to ship real-time systems.
+                In 2024 I moved to Valencia for an M.M. at Berklee. That is where the two
+                halves stopped being separate: I produce records the way I build software,
+                iteratively and under version control, and I build models the way I mix — by
+                listening to what the thing actually does.
               </p>
               <p className="text-foreground font-medium">
-                The through-line is measurement. Whether it is retention rates across six
-                million exam records, ridership across 201 transit systems, or the latency
-                budget of an audio callback, the work is deciding what a number means before
-                trusting it — and saying so when it turns out not to mean that.
-              </p>
-              <p>
-                I also write and produce original music under the name{" "}
-                <span className="text-foreground font-semibold">Streetcar Scandal</span> — a
-                project I've been producing since 2013, blending indie rock, electronic
-                textures, and raw songwriting. It's where I experiment freely and push ideas
-                that don't fit neatly into any single genre.
+                The through-line is measurement. Retention across six million exam records,
+                ridership across 201 transit systems, the latency budget of an audio
+                callback — the work is deciding what a number means before trusting it, and
+                saying so when it turns out not to mean that.
               </p>
             </div>
-          </div>
 
-          <div className="fade-up" style={{ transitionDelay: "150ms" }}>
-            <div className={cardClasses({ padding: "md" }, "space-y-6")}>
-              {EDUCATION.map((entry, index) => (
-                <div
-                  key={entry.institution}
-                  className={index === 0 ? undefined : "border-t border-border pt-6"}
-                >
-                  {index === 0 && (
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Education</p>
-                  )}
-                  <p className="font-display font-semibold">{entry.institution}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {entry.credential} · {entry.location} · {entry.years}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">{entry.detail}</p>
-                </div>
-              ))}
-              <div className="border-t border-border pt-6">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Location</p>
-                <p className="font-display font-semibold">San Francisco Bay Area</p>
-                <p className="text-sm text-muted-foreground">
-                  Open to full-time and contract roles — Bay Area or remote.
-                </p>
-              </div>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+              <Link
+                to={ROUTE_META.cv.path}
+                className="inline-flex items-center gap-1.5 font-medium text-foreground transition-colors hover:text-primary"
+              >
+                The full path and education <ArrowRight size={14} />
+              </Link>
+              <Link
+                to={ROUTE_META.work.path}
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                The music
+              </Link>
             </div>
           </div>
-        </div>
-
-        <div className="fade-up mt-16" style={{ transitionDelay: "250ms" }}>
-          <p className="eyebrow mb-6">The Path</p>
-          <ol className={cardClasses({ padding: "none" }, "divide-y divide-border")}>
-            {CAREER_TIMELINE.map((entry) => (
-              <li key={`${entry.years}-${entry.role}`} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-6 px-5 py-3.5">
-                <span className="text-xs text-muted-foreground font-mono w-28 shrink-0">{entry.years}</span>
-                <span className="font-display font-semibold text-sm">{entry.role}</span>
-                <span className="text-sm text-muted-foreground">{entry.note}</span>
-              </li>
-            ))}
-          </ol>
         </div>
       </div>
     </section>
