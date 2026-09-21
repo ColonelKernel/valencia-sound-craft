@@ -1,6 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { GlobalMusicProvider } from "@/state/globalMusicState";
 
 import Layout from "./app/Layout";
@@ -33,25 +32,23 @@ const ROUTE_KEYS = Object.keys(ROUTE_META) as RouteKey[];
 
 const App = () => (
   <GlobalMusicProvider>
-    <TooltipProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            {/* Legacy path from before the Groove Lab / Rhythm Map merge. */}
-            <Route path="/groove-intelligence" element={<Navigate to="/groove-atlas" replace />} />
-            {/* /tools/map mounted GlobalRhythmEngine with the same props as
-                /tools/rhythm, and the atlas renders inside that engine. Merged.
-                public/_redirects carries the host-level 301 for direct hits;
-                this covers client-side navigation from an old in-app link. */}
-            <Route path="/tools/map" element={<Navigate to="/tools/rhythm" replace />} />
-            {ROUTE_KEYS.map((key) => {
-              const Page = PAGES[key];
-              return <Route key={key} path={ROUTE_META[key].path} element={<Page />} />;
-            })}
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          {/* Legacy path from before the Groove Lab / Rhythm Map merge. */}
+          <Route path="/groove-intelligence" element={<Navigate to="/groove-atlas" replace />} />
+          {/* /tools/map mounted GlobalRhythmEngine with the same props as
+              /tools/rhythm, and the atlas renders inside that engine. Merged.
+              public/_redirects carries the host-level 301 for direct hits;
+              this covers client-side navigation from an old in-app link. */}
+          <Route path="/tools/map" element={<Navigate to="/tools/rhythm" replace />} />
+          {ROUTE_KEYS.map((key) => {
+            const Page = PAGES[key];
+            return <Route key={key} path={ROUTE_META[key].path} element={<Page />} />;
+          })}
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </GlobalMusicProvider>
 );
 
