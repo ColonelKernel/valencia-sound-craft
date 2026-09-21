@@ -6,7 +6,6 @@ const TOOL_LINKS = [
   { to: "/tools", label: "Overview", end: true },
   { to: "/tools/rhythm", label: "Rhythm" },
   { to: "/tools/harmony", label: "Harmony" },
-  { to: "/tools/map", label: "Map" },
   { to: "/tools/circle", label: "Circle" },
   { to: "/tools/tonnetz", label: "Tonnetz" },
 ];

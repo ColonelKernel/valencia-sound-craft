@@ -18,7 +18,6 @@ const toolLinks = [
   { label: "Overview", to: "/tools", end: true },
   { label: "Rhythm", to: "/tools/rhythm" },
   { label: "Harmony", to: "/tools/harmony" },
-  { label: "Map", to: "/tools/map" },
   { label: "Circle", to: "/tools/circle" },
   { label: "Tonnetz", to: "/tools/tonnetz" },
 ];
@@ -253,7 +252,7 @@ const Navbar = () => {
    * On any /tools* or /music-analytics route this bar replaced the whole site
    * nav with the subnav, so CV, Projects, Work and Groove Atlas all vanished —
    * and the five tool pages contain no internal link of their own. Six of
-   * sixteen routes could not reach the CV except through the wordmark, on a
+   * fifteen routes could not reach the CV except through the wordmark, on a
    * site whose own comment calls the CV the conversion target. The subnav
    * stays; it just no longer traps anyone.
    */

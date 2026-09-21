@@ -15,7 +15,6 @@ const ROUTES = [
   "/tools",
   "/tools/rhythm",
   "/tools/harmony",
-  "/tools/map",
   "/tools/circle",
   "/tools/tonnetz",
   "/music-analytics",

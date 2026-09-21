@@ -19,8 +19,8 @@ module.exports = {
         // /groove-atlas (leaflet and the canvas feel-space lens), /work (embed
         // facades), and the two remaining harmony tools. An accessibility floor
         // of 1.0 applied only to the routes least likely to break it is not a
-        // floor. All sixteen real routes are audited now.
-        "http://127.0.0.1:4173/tools/map",
+        // floor. All fifteen real routes are audited now — /tools/map was
+        // merged into /tools/rhythm, which mounts the same atlas.
         "http://127.0.0.1:4173/tools/circle",
         "http://127.0.0.1:4173/tools/tonnetz",
         "http://127.0.0.1:4173/groove-atlas",

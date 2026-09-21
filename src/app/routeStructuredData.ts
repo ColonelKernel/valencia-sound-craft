@@ -58,14 +58,6 @@ export const HARMONY_JSONLD: RouteStructuredData = createToolStructuredData({
   educationalUse: ["music theory", "practice", "composition"],
 });
 
-export const MAP_JSONLD: RouteStructuredData = createToolStructuredData({
-  name: "Rhythm Map",
-  description:
-    "A geographic rhythm browser that links countries, cultural groove structures, and playable sequencer state.",
-  canonicalPath: ROUTE_META.map.path,
-  educationalUse: ["geographic music exploration", "rhythm study"],
-});
-
 export const CIRCLE_JSONLD: RouteStructuredData = createToolStructuredData({
   name: "Circle of Fifths",
   description:
@@ -215,7 +207,6 @@ export const ROUTE_JSONLD: Partial<Record<RouteKey, RouteStructuredData>> = {
   toolsIndex: TOOLS_INDEX_JSONLD,
   rhythm: RHYTHM_JSONLD,
   harmony: HARMONY_JSONLD,
-  map: MAP_JSONLD,
   circle: CIRCLE_JSONLD,
   tonnetz: TONNETZ_JSONLD,
   musicAnalytics: MUSIC_ANALYTICS_JSONLD,

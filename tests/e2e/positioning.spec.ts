@@ -61,7 +61,6 @@ test("the CV states what he is looking for", async ({ page }) => {
 const EVIDENCE_ROUTES = [
   "/tools/rhythm",
   "/tools/harmony",
-  "/tools/map",
   "/tools/circle",
   "/tools/tonnetz",
   "/groove-atlas",

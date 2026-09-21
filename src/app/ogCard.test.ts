@@ -19,7 +19,7 @@ import { CV_PROFILE } from "@/content/cv";
  *
  * This replaced a photograph of Zach busking with a classical guitar, 25% black
  * pillarbox bars, captioned "playing guitar in Valencia, Spain", served as the
- * preview for all sixteen routes including the CV.
+ * preview for all fifteen routes including the CV.
  */
 
 const root = join(__dirname, "..", "..");

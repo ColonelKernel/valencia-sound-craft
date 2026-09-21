@@ -88,17 +88,24 @@ test("tempo set on the rhythm engine propagates to the tonnetz", async ({ page }
   });
 });
 
-test("rhythm selected on the map route is the active rhythm on the rhythm route", async ({
+test("the merged map route redirects, and the atlas it carried is on the rhythm route", async ({
   page,
 }) => {
+  // /tools/map mounted GlobalRhythmEngine with props identical to
+  // /tools/rhythm, and GlobalRhythmMap renders inside that engine — it was
+  // one tool at two URLs. The old URL has to keep working: public/_redirects
+  // carries a host-level 301, and App.tsx carries the client-side <Navigate>
+  // that this preview server exercises.
   await page.goto("/tools/map");
+  await expect(page).toHaveURL(/\/tools\/rhythm$/);
   await expect(page.getByRole("heading", { name: "Global Rhythm Atlas Engine" })).toBeVisible({
     timeout: 20_000,
   });
 
-  // Rhythm Identity Panel heading renders "{name} - {country}". The map
-  // section contains several h4s (the map card title renders first), so
-  // target the identity heading's dedicated test id.
+  // This test used to select a rhythm on /tools/map and assert it survived a
+  // navigation to /tools/rhythm. With one route the cross-page half is gone,
+  // but the store write it proved is not: selecting a region still has to
+  // drive the identity panel and the page prose from one source.
   const identity = page.getByTestId("rhythm-identity").first();
   await expect(identity).toContainText(" - ");
   const initialIdentity = ((await identity.textContent()) ?? "").trim();
@@ -121,11 +128,8 @@ test("rhythm selected on the map route is the active rhythm on the rhythm route"
   expect(rhythmName.length).toBeGreaterThan(0);
   expect(country).toBe("Brazil");
 
-  // The page prose renders the capitalized region label from REGION_LABELS
-  // ("Brazil"), not the lowercase region key used by the filter pills.
-  await expect(page.getByText(/You are exploring/)).toContainText("Brazil");
-
-  await navigateViaToolNav(page, "Rhythm", "/tools/rhythm");
+  // The page prose is rendered by ToolPageLayout from the same store the
+  // engine wrote to, so agreement here is the shared-state assertion.
   await expect(page.getByText("Current rhythm:")).toContainText(
     `Current rhythm: ${rhythmName} from ${country}`,
     { timeout: 20_000 },

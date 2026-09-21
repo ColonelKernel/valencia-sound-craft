@@ -50,7 +50,7 @@ export const PROJECTS: Project[] = [
     kind: "web-app",
     title: "This Site",
     tagline:
-      "zachscheffler.com itself — a React SPA whose five music tools share one Web Audio transport and clock. Every push and pull request has to pass typecheck, zero-warning lint, the unit suites, a production build, a Playwright end-to-end run, a 150KB gzip budget on the initial graph, and Lighthouse CI holding accessibility at 1.0 across all sixteen routes.",
+      "zachscheffler.com itself — a React SPA whose four music tools share one Web Audio transport and clock. Every push and pull request has to pass typecheck, zero-warning lint, the unit suites, a production build, a Playwright end-to-end run, a 150KB gzip budget on the initial graph, and Lighthouse CI holding accessibility at 1.0 across all fifteen routes.",
     stack: ["TypeScript", "React", "Web Audio", "Vitest + Playwright", "GitHub Actions"],
     links: [
       { label: "Source", url: "https://github.com/ColonelKernel/valencia-sound-craft" },

@@ -19,7 +19,7 @@ interface GlobalRhythmMapProps {
   /**
    * Heading level for this panel's title. The component is mounted in two
    * documents with different outlines: under an <h3> inside the rhythm engine
-   * on /tools/map, and directly under the page <h1> on /groove-atlas, where a
+   * on /tools/rhythm, and directly under the page <h1> on /groove-atlas, where a
    * fixed <h4> skipped two levels and failed the accessibility gate. The
    * default preserves the engine's outline.
    */

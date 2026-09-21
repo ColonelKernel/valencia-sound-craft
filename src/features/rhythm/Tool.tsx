@@ -69,6 +69,19 @@ const RhythmTool = () => {
             harmony lab mid-groove stops the groove instead of layering two clocks on top of
             each other. The exclusivity is asserted in the unit suite, not left to convention.
           </p>
+          <p>
+            The atlas is Leaflet, loaded in its own chunk behind a suspense boundary, because a
+            tiling library is dead weight on every route that never draws a map. Markers are
+            placed from a table of 195 country centroids rather than geocoded at runtime, so
+            the page makes no third-party request to render.
+          </p>
+          <p>
+            What it browses is a typed catalog: 50 rhythm records across 10 regions and 12
+            distinct meters — 12/8 bulería, 9/8 čoček, 7/8 lesnoto, 15/8 buchimish — each
+            carrying its instruments, MIDI notes, step pattern, tempo range and a provenance
+            note. The shape of that data is enforced by tests, so a malformed record fails the
+            build instead of rendering an empty country.
+          </p>
         </>
       }
     >

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Compass, Globe2, Hexagon, Music2, RadioTower, Waves } from "lucide-react";
+import { Compass, Globe2, Hexagon, Music2, Waves } from "lucide-react";
 
 import { cardClasses } from "@/components/ui/card";
 import { buttonClasses } from "@/components/ui/button";
@@ -20,12 +20,6 @@ const toolCards = [
     icon: Music2,
     title: "Harmony Lab",
     description: "Visualize scales, build progressions, and practice in time with the whole system.",
-  },
-  {
-    to: "/tools/map",
-    icon: RadioTower,
-    title: "Rhythm Map",
-    description: "Jump straight into the atlas and keep region, rhythm, and playback aligned.",
   },
   {
     to: "/tools/circle",
@@ -56,7 +50,7 @@ const ToolsIndex = () => (
           <p className="eyebrow">Tools</p>
           <div className="max-w-4xl space-y-4">
             <h1 className="type-h1">
-              One Music System, Five Connected Tools
+              One Music System, Four Connected Tools
             </h1>
             <p className="text-base text-muted-foreground md:text-lg">
               Open any tool directly and start playing. Key, rhythm, tempo, and playback stay in sync across all of them, so you can move between tools without losing your place.
@@ -70,14 +64,14 @@ const ToolsIndex = () => (
         <div className="container mx-auto">
           <article className={cardClasses({}, "text-sm leading-7 text-muted-foreground")}>
             <p>
-              Each tool lives on its own page, so you can bookmark it, share a link to it, or jump straight into it. Whatever you set in one tool — key, rhythm, tempo — carries over to the rest, whether you are exploring world rhythms on the map or building progressions in the harmony lab.
+              Each tool lives on its own page, so you can bookmark it, share a link to it, or jump straight into it. Whatever you set in one tool — key, rhythm, tempo — carries over to the rest, whether you are exploring world rhythms in the atlas or building progressions in the harmony lab.
             </p>
           </article>
         </div>
       </section>
 
       <section className="pb-20">
-        <div className="container mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="container mx-auto grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {toolCards.map((card) => (
             <article
               key={card.to}
@@ -106,9 +100,9 @@ const ToolsIndex = () => (
           <article className={cardClasses({ padding: "md" }, "max-w-3xl")}>
             <h2 className="text-xl font-semibold text-foreground">How it&rsquo;s built</h2>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              All five tools share one global transport and a single{" "}
+              All four tools share one global transport and a single{" "}
               <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">AudioContext</code> —
-              set a tempo on the rhythm map and the sequencer is already holding it. They are
+              set a tempo on the atlas and the sequencer is already holding it. They are
               written in TypeScript and React over the Web Audio and Web MIDI APIs, with the
               route table, rhythm catalog, and page content modelled as typed data whose
               invariants are enforced by tests rather than by convention.
@@ -117,7 +111,7 @@ const ToolsIndex = () => (
               Nothing reaches this page without passing the gate: typecheck, a zero-warning
               lint, the unit suites, a production build, an end-to-end Playwright run, a
               150&nbsp;KB gzip budget on the initial graph, and Lighthouse CI holding an
-              accessibility score of 1.0 across all sixteen routes. Every one of those runs in
+              accessibility score of 1.0 across all fifteen routes. Every one of those runs in
               GitHub Actions on each push and pull request —{" "}
               <code className="rounded bg-secondary/60 px-1.5 py-0.5 text-xs">
                 .github/workflows/ci.yml

@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 /**
  * The CV is the conversion target. It has to be reachable from the work.
  *
- * Before this suite, six of sixteen routes could not reach it by any link:
+ * Before this suite, six of the then-sixteen routes could not reach it by any link:
  * the navbar swaps the whole site nav for a subnav on /tools* and
  * /music-analytics, and the five tool pages contain no internal link of their
  * own. Three of the four case studies had their last link in the header, so a

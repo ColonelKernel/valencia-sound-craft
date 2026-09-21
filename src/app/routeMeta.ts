@@ -42,12 +42,6 @@ export const ROUTE_META = {
     description:
       "Visualize modes, build chord progressions, and practice with a metronome and theory references in one connected workspace.",
   },
-  map: {
-    path: "/tools/map",
-    title: "Rhythm Map | Zach Scheffler",
-    description:
-      "Explore a world rhythm atlas by country and tradition, and hear each groove play as you browse.",
-  },
   circle: {
     path: "/tools/circle",
     title: "Circle of Fifths | Zach Scheffler",

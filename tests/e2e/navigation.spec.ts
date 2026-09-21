@@ -114,7 +114,6 @@ test("tool subnav navigates across every tool with manifest titles", async ({ pa
   const stops = [
     { link: "Rhythm", key: "rhythm" },
     { link: "Harmony", key: "harmony" },
-    { link: "Map", key: "map" },
     { link: "Circle", key: "circle" },
     { link: "Tonnetz", key: "tonnetz" },
     { link: "Overview", key: "toolsIndex" },

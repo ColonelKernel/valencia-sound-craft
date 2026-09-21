@@ -13,7 +13,6 @@ const PAGES: Record<RouteKey, LazyExoticComponent<ComponentType>> = {
   toolsIndex: lazy(() => import("./pages/tools/ToolsIndex")),
   rhythm: lazy(() => import("@/features/rhythm/Tool")),
   harmony: lazy(() => import("@/features/harmony/Tool")),
-  map: lazy(() => import("@/features/map/Tool")),
   circle: lazy(() => import("@/features/circle/Tool")),
   tonnetz: lazy(() => import("@/features/tonnetz/Tool")),
   musicAnalytics: lazy(() => import("./pages/MusicAnalyticsPage")),
@@ -40,6 +39,11 @@ const App = () => (
           <Route element={<Layout />}>
             {/* Legacy path from before the Groove Lab / Rhythm Map merge. */}
             <Route path="/groove-intelligence" element={<Navigate to="/groove-atlas" replace />} />
+            {/* /tools/map mounted GlobalRhythmEngine with the same props as
+                /tools/rhythm, and the atlas renders inside that engine. Merged.
+                public/_redirects carries the host-level 301 for direct hits;
+                this covers client-side navigation from an old in-app link. */}
+            <Route path="/tools/map" element={<Navigate to="/tools/rhythm" replace />} />
             {ROUTE_KEYS.map((key) => {
               const Page = PAGES[key];
               return <Route key={key} path={ROUTE_META[key].path} element={<Page />} />;

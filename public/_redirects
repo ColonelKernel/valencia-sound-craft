@@ -10,3 +10,8 @@
 # Legacy path: reached the client-side <Navigate> via the old wildcard; now a
 # host-level 301 so inbound links land on the canonical URL in one hop.
 /groove-intelligence    /groove-atlas    301
+
+# /tools/map mounted GlobalRhythmEngine with the same props as /tools/rhythm,
+# and the atlas renders inside that engine — it was the same tool at two URLs.
+# Merged; the old URL keeps working.
+/tools/map              /tools/rhythm    301
