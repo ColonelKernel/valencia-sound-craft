@@ -62,19 +62,21 @@ export interface ExperienceEntry {
 export const CV_PROFILE = {
   name: "Zach Scheffler",
   // One canonical identity across the hero, the meta title, the JSON-LD, and
-  // this PDF. The headline leads with the data work because that is both the
-  // longest-running thread here (2016-2023) and the market being addressed;
-  // the audio work is the differentiator and is stated as such, not demoted.
-  headline: "Data Scientist & Machine Learning Engineer",
+  // this PDF. The headline names the domain because that is the market being
+  // addressed and the credential is real: the UCLA M.P.P. is in transportation
+  // policy and the atlas is the largest artifact here. "ML Engineer" stays
+  // because mobility and autonomy screen for it; the audio work is the
+  // differentiator and is stated as such, not demoted.
+  headline: "Transportation Data Scientist & Machine Learning Engineer",
   location: "San Francisco Bay Area",
   summary:
-    "Applied data work from 2016 to 2023 across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it \u2014 NLP, geospatial, and web-scraping pipelines, and the statistical modeling built on them. I didn't come up through a computer-science program; I came up through public policy and music production, and I still ship the models myself. Since 2024 the proving ground has been audio: neural models running on-device, and a real-time C++ codebase with an allocation-free audio-thread test.",
+    "A UCLA M.P.P. built on transportation policy, with a thesis prepared for the World Bank, and applied data work from 2016 to 2023 across the World Bank, NORC at the University of Chicago, and Rios Partners, where I grew the data strategy work from an informal group into a standing practice and led it \u2014 NLP, geospatial, and web-scraping pipelines, and the statistical modeling built on them. The World Transit Atlas is the clearest single sample: 201 rail systems and 22,641 stations assembled from OpenStreetMap and open agency data, and a ridership audit that dismantled my own significant result rather than publishing it. I didn't come up through a computer-science program; I came up through public policy and music production, and I still ship the models myself. Since 2024 the proving ground has been audio: neural models running on-device, and a real-time C++ codebase with an allocation-free audio-thread test.",
   /**
    * What I'm looking for. /cv never stated this \u2014 it listed history and left
    * the reader to infer the ask. Rendered on the page and drawn into the PDF.
    */
   target:
-    "Targeting data scientist and machine-learning engineer roles \u2014 San Francisco Bay Area or remote. Also open to senior software engineering work in audio and media.",
+    "Targeting transportation data science and machine-learning engineering \u2014 mobility and autonomy, transit agencies and metropolitan planning organizations, and transportation consulting. San Francisco Bay Area or remote. Also open to senior software engineering work in audio and media.",
   /** Where to reach me — the contact form or email, never a phone number. */
   contactPath: "/#contact",
   email: "zachscheffler@gmail.com",

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 
@@ -27,8 +27,11 @@ const renderSection = () =>
     </MemoryRouter>,
   );
 
-/** Everything the two pre-merge sections linked to. */
+/** Everything the two pre-merge sections linked to, plus the atlas. */
 const REQUIRED_DESTINATIONS = [
+  // The site is aimed at transportation roles; the largest artifact on it
+  // cannot be absent from the homepage's work grid.
+  "/projects/transit-atlas",
   ROUTE_META.musicAnalytics.path,
   ROUTE_META.grooveAtlas.path,
   ROUTE_META.rhythm.path,
@@ -47,12 +50,12 @@ describe("SystemsPreview", () => {
     }
   });
 
-  it("leads with the catalog platform, which is the on-message artifact", () => {
-    renderSection();
-    expect(
-      screen.getByRole("heading", { name: /Music Catalog Intelligence/i }),
-    ).toBeTruthy();
-    expect(screen.getByRole("heading", { name: /Groove Atlas/i })).toBeTruthy();
+  it("leads with the transit atlas, which is what these roles screen on", () => {
+    const { container } = renderSection();
+    const headings = [...container.querySelectorAll("h3")].map((h) => h.textContent ?? "");
+    expect(headings[0]).toMatch(/World Transit Atlas/i);
+    expect(headings.join(" | ")).toMatch(/Music Catalog Intelligence/i);
+    expect(headings.join(" | ")).toMatch(/Groove Atlas/i);
   });
 
   it("plots the derived series, not decoration, and captions what it plots", () => {

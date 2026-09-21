@@ -20,9 +20,9 @@ export const ROUTE_META = {
     path: "/",
     // Matches the static index.html title exactly, so the pre-hydration and
     // hydrated titles never differ.
-    title: "Zach Scheffler — Data Scientist & ML Engineer",
+    title: "Zach Scheffler — Transportation Data Scientist & ML Engineer",
     description:
-      "Data scientist and ML engineer in the San Francisco Bay Area, open to remote. Applied data work across the World Bank, NORC, and Rios Partners, plus production ML and audio software.",
+      "Transportation data scientist and ML engineer in the San Francisco Bay Area, open to remote. A UCLA M.P.P. in transportation policy, the World Transit Atlas across 201 rail systems, and applied data work at the World Bank, NORC and Rios Partners.",
   },
   toolsIndex: {
     path: "/tools",

@@ -1,4 +1,4 @@
-import { ArrowRight, BarChart3, Brain, Globe2, Hexagon, Music2, Waves } from "lucide-react";
+import { ArrowRight, BarChart3, Brain, Globe2, Hexagon, Music2, TrainFront, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { buttonClasses } from "@/components/ui/button";
@@ -17,10 +17,13 @@ import { ROUTE_META } from "@/app/routeMeta";
  * A reader scrolled three card walls to learn what two would have told them.
  *
  * The Intelligence band is folded in here as a featured card rather than
- * deleted: it is the most on-message artifact on the site for the roles this
- * page is written for, so it keeps top billing and its sparkline — just not a
- * full-width band of its own. Every destination that existed before still has
- * a link.
+ * deleted, keeping its sparkline but not a full-width band of its own. Every
+ * destination that existed before still has a link.
+ *
+ * The transit atlas leads the featured row. It is the largest artifact on the
+ * site and the one the roles this page is written for actually screen on, and
+ * it was previously reachable from the homepage only through an Evidence card
+ * CTA — a link, but not a showing.
  */
 
 const SPARK_W = 120;
@@ -54,6 +57,16 @@ const RevenueSpark = () => {
 };
 
 const featured = [
+  {
+    to: "/projects/transit-atlas",
+    icon: TrainFront,
+    tag: "Geospatial · Open Data · Audit",
+    title: "World Transit Atlas",
+    description:
+      "201 rail systems and 22,641 stations from OpenStreetMap and open agency data, drawn at real alignments and scrubbable through time — with the ridership audit that took the headline finding apart.",
+    cta: "Read the case study",
+    spark: false,
+  },
   {
     to: ROUTE_META.musicAnalytics.path,
     icon: BarChart3,
@@ -112,8 +125,9 @@ const SystemsPreview = () => (
           <p className="eyebrow">Systems</p>
           <h2 className="type-h1">Things I Built and Can Show You</h2>
           <p className="text-sm text-muted-foreground md:text-base">
-            Two analytical systems and the interactive tools underneath them — all running
-            in the browser, all sharing one transport and clock.
+            The transit atlas and the catalog platform, the groove atlas that sits between
+            them, and the interactive tools underneath — each one open in the browser, with
+            the data and the method on the page beside it.
           </p>
         </div>
         <Link to={ROUTE_META.projects.path} className={buttonClasses({ variant: "secondary" })}>
@@ -122,7 +136,7 @@ const SystemsPreview = () => (
         </Link>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {featured.map((card) => (
           <article key={card.to} className={cardClasses({}, "flex flex-col")}>
             <div className="flex items-center gap-2">

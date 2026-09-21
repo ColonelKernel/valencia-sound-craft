@@ -32,14 +32,14 @@ const About = () => {
         <div className="max-w-2xl">
           <div className="fade-up">
             <p className="eyebrow mb-3">About</p>
-            <h2 className="type-h1 mb-8">From Policy Data to Production Systems</h2>
+            <h2 className="type-h1 mb-8">From Transportation Policy to Production Systems</h2>
 
             <div className="space-y-5 text-muted-foreground leading-relaxed">
               <p>
                 I came up through public policy and music production rather than a
-                computer-science program — an M.P.P. at UCLA, field research for the World
-                Bank in Peru, computational social science at NORC — while producing records
-                the whole way through.
+                computer-science program — an M.P.P. at UCLA built on transportation, field
+                research for the World Bank in Peru, computational social science at NORC —
+                while producing records the whole way through.
               </p>
               <p>
                 In 2024 I moved to Valencia for an M.M. at Berklee. That is where the two
@@ -48,10 +48,12 @@ const About = () => {
                 listening to what the thing actually does.
               </p>
               <p className="text-foreground font-medium">
-                The through-line is measurement. Retention across six million exam records,
-                ridership across 201 transit systems, the latency budget of an audio
+                The through-line is measurement. Ridership across 201 transit systems,
+                retention across six million exam records, the latency budget of an audio
                 callback — the work is deciding what a number means before trusting it, and
-                saying so when it turns out not to mean that.
+                saying so when it turns out not to mean that. On the transit data that cost
+                me the result I wanted, which is the version of this I would rather be
+                judged on.
               </p>
             </div>
 

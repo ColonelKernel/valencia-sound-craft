@@ -13,7 +13,12 @@ import { expect, test } from "@playwright/test";
 test("the homepage leads with the data identity and the right location", async ({ page }) => {
   await page.goto("/");
 
-  // The identity a recruiter reads first.
+  // The identity a recruiter reads first. The domain is named because the
+  // target is three transportation hiring pools — mobility and autonomy,
+  // transit agencies and MPOs, transportation consulting — and a generic
+  // "Data Scientist" reads as domain-agnostic to all three. "ML Engineer"
+  // stays because the first of those screens for it.
+  await expect(page.locator("h1").first()).toContainText("Transportation");
   await expect(page.locator("h1").first()).toContainText("Data Scientist");
 
   // He lives in the Bay Area. Saying Valencia reads as sponsorship and a
@@ -54,8 +59,29 @@ test("the CV states what he is looking for", async ({ page }) => {
 
   // /cv listed history for a year and never named the ask, leaving the reader
   // to infer it from a hero on a different route.
-  await expect(page.locator("body")).toContainText("Targeting data scientist");
+  await expect(page.locator("body")).toContainText("Targeting transportation data science");
   await expect(page.locator("body")).toContainText("San Francisco Bay Area");
+});
+
+test("the transportation evidence is on the homepage, not one click away", async ({ page }) => {
+  await page.goto("/");
+
+  // The atlas used to be reachable from here only through an Evidence card's
+  // CTA. For a page aimed at transportation roles, the largest artifact on
+  // the site has to be visible as work, not just linked as a claim.
+  await expect(
+    page.locator("main").getByRole("link", { name: /transit atlas|case study/i }).first(),
+  ).toBeVisible();
+  await expect(page.locator("main")).toContainText("201");
+
+  // The audio work stays a differentiator rather than the headline: it has to
+  // still be here, and still be below the data evidence.
+  const order = await page.evaluate(() => {
+    const a = document.getElementById("evidence");
+    const b = document.getElementById("portfolio");
+    return a && b ? Boolean(a.compareDocumentPosition(b) & 4) : null;
+  });
+  expect(order).toBe(true);
 });
 
 const EVIDENCE_ROUTES = [

@@ -22,8 +22,14 @@ interface ServiceCard {
 
 /**
  * The three bodies of work a hiring reader is deciding between, ordered by the
- * market being addressed: applied data first, the ML that ships second, the
- * systems engineering under both third.
+ * market being addressed: transportation data first, the ML that ships second,
+ * the real-time systems engineering under both third.
+ *
+ * The target is three adjacent hiring pools — mobility and autonomy, transit
+ * agencies and MPOs, and transportation consulting — which want overlapping
+ * but not identical things. So the first card carries the domain and the
+ * measurement discipline, the second carries the modeling those pools share,
+ * and the third carries the engineering that makes any of it ship.
  *
  * This section used to be headed "Services" with cards for mixing and live
  * sessions. That is vendor framing, and on the page directly below a hero that
@@ -36,15 +42,15 @@ interface ServiceCard {
 const services: ServiceCard[] = [
   {
     icon: LineChart,
-    title: "Applied Data Science",
+    title: "Transportation Data",
     // The first bullet used to be a character-for-character copy of
     // CV_PROFILE.summary, on a card that already links to /cv — and the hero
     // fifty pixels above says the same thing a third time. These name
     // capabilities and evidence instead; the biography has one home.
     points: [
-      "NLP, geospatial and web-scraping pipelines; statistical modeling and forecasting in Python, R and SQL",
-      "World Transit Atlas — 201 systems from OpenStreetMap and open agency data, with a ridership audit that dismantled my own headline finding",
-      "UCLA M.P.P. with a thesis prepared for the World Bank; MIT Applied Data Science certificate",
+      "World Transit Atlas — 201 rail systems and 22,641 stations assembled from OpenStreetMap, citylines.co and open agency data, at real alignments rather than schematics",
+      "A ridership audit that dismantled my own significant result: agencies count boardings, linked journeys and faregate entries differently, and the convention was unrecorded for 177 of 201 systems",
+      "UCLA M.P.P. in transportation policy, thesis prepared for the World Bank; geospatial, NLP and web-scraping pipelines in Python, R and SQL",
     ],
     cta: "Open the transit atlas",
     href: "/projects/transit-atlas",
@@ -63,9 +69,9 @@ const services: ServiceCard[] = [
   },
   {
     icon: Code2,
-    title: "Systems & Audio Engineering",
+    title: "Real-Time Systems Engineering",
     points: [
-      "TypeScript and Web Audio: workspaces sharing one transport, clock and lookahead scheduler",
+      "TypeScript and Web Audio: workspaces sharing one transport, clock and lookahead scheduler — a late buffer is audible, so the deadline is enforced rather than hoped for",
       "C++ and CMake in vcv-rack-mcp, with an allocation-free audio-thread test and a fuzz target",
       "Every push and pull request passes typecheck, a zero-warning lint, the unit and end-to-end suites, a bundle budget, and Lighthouse CI holding accessibility at 1.0",
     ],
@@ -82,7 +88,7 @@ const Services = () => {
       <div className="container mx-auto">
         <div className="fade-up mb-16">
           <p className="eyebrow mb-3">Evidence</p>
-          <h2 className="type-h1">Pipelines, Models, and Shipped Systems</h2>
+          <h2 className="type-h1">Transit Data, Models, and Shipped Systems</h2>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

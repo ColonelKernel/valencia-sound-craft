@@ -50,10 +50,10 @@ export const CARD = {
   width: 1200,
   height: 630,
   name: "Zach Scheffler",
-  title: "Data Scientist & ML Engineer",
+  title: "Transportation Data Scientist & ML Engineer",
   location: "San Francisco Bay Area",
   availability: "Open to new roles",
-  credentials: "World Bank · NORC at the University of Chicago · Rios Partners",
+  credentials: "UCLA M.P.P. · World Bank · NORC at the University of Chicago · Rios Partners",
 };
 
 // Straight from src/index.css :root — kept in sync by ogCard.test.ts.

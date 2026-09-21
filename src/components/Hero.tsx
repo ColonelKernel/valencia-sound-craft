@@ -49,29 +49,42 @@ const Hero = () => {
           <div className="space-y-5">
             {/* "ML" rather than "Machine Learning": the postings title the role
                 that way, and the long form is a 42-character unbroken phrase at
-                text-5xl, which mobile-layout.spec.ts guards against at 375px. */}
-            <h1 className="text-5xl font-bold leading-[1.05] text-white md:text-6xl lg:text-7xl [text-shadow:_0_2px_20px_rgba(0,0,0,0.6)]">
-              Data Scientist &amp; ML Engineer
+                text-5xl, which mobile-layout.spec.ts guards against at 375px.
+                "Transportation" is the longest single word here at 14 characters,
+                so the mobile step starts below text-5xl and the measured width
+                at 375px is checked rather than assumed. */}
+            <h1 className="text-[2.6rem] font-bold leading-[1.05] text-white sm:text-5xl md:text-6xl lg:text-[4rem] [text-shadow:_0_2px_20px_rgba(0,0,0,0.6)]">
+              Transportation Data Scientist &amp; ML Engineer
             </h1>
 
             <p className="max-w-xl text-base leading-relaxed text-white/75 md:text-lg">
-              Applied data work from 2016 to 2023 — the World Bank, NORC, and the data
-              strategy practice I grew from an informal group at Rios Partners — and a
-              decade in audio. I take models from experiment to production, and audio is
-              where that gets tested hardest: a late buffer is audible, so the deadline is
-              not negotiable.
+              A UCLA master&rsquo;s in transportation policy, and applied data work from
+              2016 to 2023 — the World Bank, NORC, and the data strategy practice I grew
+              from an informal group at Rios Partners. I built the World Transit Atlas: 201
+              rail systems assembled from OpenStreetMap and open agency data, and a
+              ridership audit that took apart my own headline finding instead of
+              publishing it.
             </p>
           </div>
 
           <p className="max-w-xl text-sm leading-relaxed text-white/55">
-            UCLA M.P.P. → World Bank → NORC at the University of Chicago → Rios Partners
-            data strategy → MIT Applied Data Science → Berklee M.M., Music Production,
-            Technology &amp; Innovation.
+            UCLA M.P.P., transportation policy → World Bank → NORC at the University of
+            Chicago → Rios Partners data strategy → MIT Applied Data Science → Berklee
+            M.M., Music Production, Technology &amp; Innovation.
+          </p>
+
+          {/* The audio decade stays on the page and stays subordinate: it is
+              the reason the real-time engineering claims are credible, not the
+              role being applied for. A late buffer is audible, which makes it
+              the least forgiving place to have learned production deadlines. */}
+          <p className="max-w-xl text-sm leading-relaxed text-white/55">
+            A decade in audio underneath all of it — where a missed deadline is not a
+            slow response, it is a click you can hear.
           </p>
 
           <p className="max-w-xl text-sm leading-relaxed text-white/75">
-            Currently open to full-time and contract roles in data science and machine
-            learning engineering, Bay Area or remote —{" "}
+            Open to full-time and contract roles across mobility and autonomy, transit
+            agencies, and transportation consulting. Bay Area or remote —{" "}
             <Link to="/cv" className="font-medium text-white underline underline-offset-4 hover:text-white/80">
               see my CV
             </Link>{" "}
