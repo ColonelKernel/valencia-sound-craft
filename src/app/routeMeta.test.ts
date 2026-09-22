@@ -61,3 +61,61 @@ describe("static shell metadata stays in sync with ROUTE_META", () => {
     expect(redirects).not.toMatch(/^\/\*\s/m);
   });
 });
+
+describe("the route count the site claims out loud", () => {
+  /**
+   * Three pieces of visible copy assert how many routes Lighthouse audits —
+   * /projects, /tools and a Navbar comment all say "fourteen routes". It is a
+   * credibility claim on a site whose argument is that its claims are checked,
+   * and nothing checked it: /tools/map and /groove-atlas were retired in this
+   * repo's history, and the only thing that stopped those sentences becoming
+   * false was someone remembering to edit them.
+   *
+   * This pins the sentence to ROUTE_META and to lighthouserc.cjs together, so
+   * adding or removing a route fails here instead of shipping a wrong number.
+   */
+  const NUMBER_WORDS = [
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+    "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+    "sixteen", "seventeen", "eighteen", "nineteen", "twenty",
+  ];
+
+  // notFound is a 404 shell, not an audited route.
+  const realRoutes = Object.entries(ROUTE_META).filter(([key]) => key !== "notFound");
+
+  const lighthouserc = readFileSync(join(root, "lighthouserc.cjs"), "utf8");
+  const auditedUrls = lighthouserc.match(/"http:\/\/127\.0\.0\.1:4173[^"]*"/g) ?? [];
+
+  const claimFiles = {
+    "src/content/projects.ts": readFileSync(join(root, "src", "content", "projects.ts"), "utf8"),
+    "src/pages/tools/ToolsIndex.tsx": readFileSync(
+      join(root, "src", "pages", "tools", "ToolsIndex.tsx"),
+      "utf8",
+    ),
+    "src/components/Navbar.tsx": readFileSync(join(root, "src", "components", "Navbar.tsx"), "utf8"),
+  };
+
+  it("audits every real route, and only real routes", () => {
+    const audited = auditedUrls
+      .map((u) => u.replace(/"/g, "").replace("http://127.0.0.1:4173", ""))
+      .map((p) => (p === "" ? "/" : p))
+      .sort();
+    const expected = realRoutes.map(([, meta]) => meta.path).sort();
+    expect(audited).toEqual(expected);
+  });
+
+  it("says the number it actually audits", () => {
+    const word = NUMBER_WORDS[realRoutes.length];
+    expect(word, `no word for ${realRoutes.length} routes`).toBeDefined();
+
+    for (const [file, body] of Object.entries(claimFiles)) {
+      const claims = body.match(/\b([a-z]+) routes\b/g) ?? [];
+      expect(claims.length, `${file} no longer states a route count`).toBeGreaterThan(0);
+      for (const claim of claims) {
+        expect(claim, `${file} claims "${claim}" but there are ${realRoutes.length}`).toBe(
+          `${word} routes`,
+        );
+      }
+    }
+  });
+});
