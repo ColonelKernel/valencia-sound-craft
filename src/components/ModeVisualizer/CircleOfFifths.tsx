@@ -135,7 +135,19 @@ const MINOR_KEY_SIGNATURES: Record<string, string> = {
 
 const HARMONIC_COLORS = {
   tonic: "hsl(208 90% 62%)",
-  tonicText: "hsl(215 100% 98%)",
+  // Ink for the saturated segments.
+  //
+  // These wedges are painted through SVG glow filters, so what reaches the
+  // screen is much brighter than the declared fill — sampled off a real
+  // screenshot, the tonic wedge is rgb(119,233,254) and the relative-minor one
+  // rgb(255,137,255). Near-white text on those measured 1.03:1 to 1.71:1. Dark
+  // ink on the same pixels is 10:1 to 16:1.
+  //
+  // This was invisible to every colour check that reads CSS, including the
+  // first version of tests/e2e/contrast.spec.ts: getComputedStyle reports the
+  // pre-filter fill, and a filter can move the painted colour arbitrarily far
+  // from it. The probe now samples pixels for SVG text instead.
+  segmentInk: "hsl(220 30% 8%)",
   dominant: "hsl(24 95% 60%)",
   subdominant: "hsl(152 52% 48%)",
   // 58%, not 57%. At 57% this lands on 4.45:1 against --card, which is under
@@ -749,12 +761,15 @@ const CircleOfFifths = ({
 
       if (showRelated && majorRelated?.dominant === key) {
         fill = HARMONIC_COLORS.dominant;
+        textFill = HARMONIC_COLORS.segmentInk;
         filter = "url(#dominant-glow)";
       } else if (showRelated && majorRelated?.subdominant === key) {
         fill = HARMONIC_COLORS.subdominant;
+        textFill = HARMONIC_COLORS.segmentInk;
         filter = "url(#subdominant-glow)";
       } else if (showRelated && minorRelated?.relativeMajor === key) {
         fill = HARMONIC_COLORS.relativeMajor;
+        textFill = HARMONIC_COLORS.segmentInk;
         filter = "url(#relative-glow)";
       }
 
@@ -765,6 +780,7 @@ const CircleOfFifths = ({
 
       if (hovered && !active) {
         fill = HARMONIC_COLORS.accent;
+        textFill = HARMONIC_COLORS.segmentInk;
       }
 
       if (inTrail && !active) {
@@ -774,7 +790,7 @@ const CircleOfFifths = ({
 
       if (active) {
         fill = HARMONIC_COLORS.tonic;
-        textFill = HARMONIC_COLORS.tonicText;
+        textFill = HARMONIC_COLORS.segmentInk;
         filter = "url(#tonic-glow)";
         scale = hovered ? 1.18 : 1.1;
       }
@@ -797,12 +813,15 @@ const CircleOfFifths = ({
 
       if (showRelated && majorRelated?.relative === key) {
         fill = HARMONIC_COLORS.relativeMinor;
+        textFill = HARMONIC_COLORS.segmentInk;
         filter = "url(#relative-glow)";
       } else if (showRelated && minorRelated?.dominant === key) {
         fill = HARMONIC_COLORS.dominant;
+        textFill = HARMONIC_COLORS.segmentInk;
         filter = "url(#dominant-glow)";
       } else if (showRelated && minorRelated?.subdominant === key) {
         fill = HARMONIC_COLORS.subdominant;
+        textFill = HARMONIC_COLORS.segmentInk;
         filter = "url(#subdominant-glow)";
       }
 
@@ -813,6 +832,7 @@ const CircleOfFifths = ({
 
       if (hovered && !active) {
         fill = HARMONIC_COLORS.accent;
+        textFill = HARMONIC_COLORS.segmentInk;
       }
 
       if (inTrail && !active) {
@@ -822,7 +842,7 @@ const CircleOfFifths = ({
 
       if (active) {
         fill = HARMONIC_COLORS.tonic;
-        textFill = HARMONIC_COLORS.tonicText;
+        textFill = HARMONIC_COLORS.segmentInk;
         filter = "url(#tonic-glow)";
         scale = hovered ? 1.16 : 1.09;
       }
@@ -1232,12 +1252,18 @@ const CircleOfFifths = ({
                         dominantBaseline="middle"
                         alignmentBaseline="middle"
                         fontSize={keySigFontSize}
-                        fill={active ? "hsl(215 100% 94% / 0.92)" : HARMONIC_COLORS.mutedForeground}
+                        // Follows the segment's own ink rather than setting its
+                        // own: on a glowing wedge the near-white it used to take
+                        // measured 1.20:1 off a screenshot. The 0.78 opacity
+                        // that used to sit here went with it — on a saturated
+                        // fill it cost about a third of the remaining contrast
+                        // for a label that is already the smallest text on the
+                        // page.
+                        fill={nodeStyle.textFill}
                         stroke={LABEL_TEXT_STROKE}
                         strokeWidth={1.6}
                         strokeLinejoin="round"
                         paintOrder="stroke"
-                        opacity={0.78}
                         className="pointer-events-none select-none"
                       >
                         {KEY_SIGNATURES[node.key]}

@@ -86,7 +86,12 @@ function getDeviationLabel(dev: Deviation, degreeNum: number): string | null {
 
 const getNoteClass = (note: string, isRoot: boolean, deviation: Deviation) => {
   if (isRoot) return "bg-amber-500 text-black font-bold";
-  if (deviation === 'flat') return "bg-sky-500/80 text-white ring-2 ring-sky-400/40";
+  // sky-600, not sky-500. White on sky-500/80 over --card is 3.91:1, which
+  // fails AA on these 10px chips; sky-600/80 is 5.51:1 and reads as the same
+  // blue. Its rose sibling below already clears it at 500 (5.07:1), which is
+  // why only this one was wrong. Found by tests/e2e/contrastInteractive.spec.ts
+  // — the panel is behind a tab, so nothing had ever rendered it under a check.
+  if (deviation === 'flat') return "bg-sky-600/80 text-white ring-2 ring-sky-400/40";
   if (deviation === 'sharp') return "bg-rose-500/80 text-white ring-2 ring-rose-400/40";
   return "bg-stone-500/80 text-white";
 };
