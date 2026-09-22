@@ -215,3 +215,34 @@
     box-shadow: 0 36px 90px -34px rgba(0, 0, 0, 0.85);
   }
 }
+
+/* Deliberately unlayered.
+
+   This first shipped inside `@layer utilities` and Tailwind purged it: a
+   layered rule is a utility candidate, and `.leaflet-control-attribution` never
+   appears in the scanned source because Leaflet creates the element at runtime.
+   The build dropped it silently and the contrast failure stayed live — which is
+   also why the e2e probe seemed to pass intermittently, since the map only
+   mounts when it scrolls into view.
+
+   Unlayered also means it outranks Leaflet's own stylesheet without relying on
+   import order between a lazy chunk's CSS and the main bundle. */
+/* Leaflet's attribution control ships its own light-theme styling: a white
+   80% background, with the text colour left to inherit. On this dark site it
+   inherited --foreground (92% grey) onto near-white and rendered at 3.31:1,
+   which is both a WCAG AA failure and a problem for a control that exists to
+   satisfy Esri's terms and OSM's ODbL — attribution nobody can read is not
+   attribution. Neither the Tailwind source scan nor Lighthouse caught it;
+   tests/e2e/contrast.spec.ts did, because it reads the computed colour.
+
+   Restyled to the site's own surface: --muted-foreground on --card is
+   6.95:1, and links at --foreground are 14.62:1. */
+.leaflet-control-attribution {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.leaflet-control-attribution a {
+  color: hsl(var(--foreground)) !important;
+  text-decoration: underline;
+}

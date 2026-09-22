@@ -45,7 +45,17 @@ configuration → Environment variables (scope: All; they are public values,
 shipped verbatim in the JS bundle):
 
 - `VITE_SUPABASE_URL` = `https://uqcjivqzilisngdwtdzl.supabase.co`
-- `VITE_SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_k8udo0mt3Rem4VtHagQpsg_rHG6s1qV`
+- `VITE_SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_hzOztH5IFInSeS1yIJnCNA_8LpEsKTD`
+
+> This file previously listed `sb_publishable_k8udo0mt3Rem4VtHagQpsg_rHG6s1qV`,
+> which disagreed with `.github/workflows/ci.yml` and
+> `.github/workflows/supabase-keepalive.yml`. Resolved on 2026-09-21 by
+> measuring rather than choosing: the key above is the one crawled out of the
+> live production bundle (`/assets/client-*.js`), and a read-only REST ping
+> returns `200` for it and `401 Unregistered API key` for the old one. The old
+> value was not a stale-but-valid key — it is not registered to this project at
+> all. `scripts/check-supabase-key.mjs` and `deployConfig.test.ts` now hold this
+> file and both workflows to one string so they cannot diverge again.
 
 Without them the contact form compiles out and the site ships a "reach out
 directly" panel instead (see `BACKEND_CONFIGURED` in

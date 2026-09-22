@@ -49,6 +49,10 @@ const EmbedFacade = ({ embed }: { embed: WorkEmbed }) => {
 
   return (
     <button
+      // Read by tests/e2e/contrast.spec.ts: the label below sits on a YouTube
+      // poster frame, so its contrast cannot be computed from CSS. Naming the
+      // zone is what keeps that exemption narrow.
+      data-zone="embed-facade"
       type="button"
       onClick={() => setLoaded(true)}
       aria-label={`Load ${embed.title} player`}

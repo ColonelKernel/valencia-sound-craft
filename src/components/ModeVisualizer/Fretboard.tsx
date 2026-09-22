@@ -143,6 +143,10 @@ const Fretboard = ({
 
         <div
           className="relative rounded-lg border border-stone-700 overflow-hidden"
+          // Read by tests/e2e/contrast.spec.ts. The string labels sit on this
+          // gradient, which the probe cannot evaluate; computed by hand they
+          // are 6.49:1 at the light end and 6.91:1 at the dark end.
+          data-zone="fretboard"
           style={{ background: "linear-gradient(180deg, hsl(30 20% 12%) 0%, hsl(25 25% 10%) 100%)" }}
         >
           {strings.map((stringTuning, displayIdx) => {

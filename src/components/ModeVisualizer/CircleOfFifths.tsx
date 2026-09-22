@@ -138,7 +138,10 @@ const HARMONIC_COLORS = {
   tonicText: "hsl(215 100% 98%)",
   dominant: "hsl(24 95% 60%)",
   subdominant: "hsl(152 52% 48%)",
-  relativeMinor: "hsl(330 68% 57%)",
+  // 58%, not 57%. At 57% this lands on 4.45:1 against --card, which is under
+  // WCAG AA for the related-key buttons that render it as 12px text. One
+  // percentage point of lightness is imperceptible and buys 4.54:1.
+  relativeMinor: "hsl(330 68% 58%)",
   relativeMajor: "hsl(281 67% 62%)",
   neutral: "hsl(var(--card))",
   secondary: "hsl(var(--secondary))",
