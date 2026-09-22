@@ -344,7 +344,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
                   <div key={comp.label}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-muted-foreground">
-                        {comp.label} <span className="text-muted-foreground/50">({comp.weight})</span>
+                        {comp.label} <span className="text-muted-foreground">({comp.weight})</span>
                       </span>
                       <span className="text-xs font-medium text-foreground">{comp.value}%</span>
                     </div>
@@ -367,7 +367,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
               </div>
             )}
             {lastfmError && (
-              <p className="text-xs text-muted-foreground/60">{lastfmError}</p>
+              <p className="text-xs text-muted-foreground">{lastfmError}</p>
             )}
             {lastfm && (
               <div className="space-y-4">
@@ -404,7 +404,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
                   </div>
                 )}
                 {lastfm.bio && (
-                  <p className="text-xs text-muted-foreground/70 leading-relaxed">{lastfm.bio}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{lastfm.bio}</p>
                 )}
               </div>
             )}
@@ -462,7 +462,7 @@ export default function AcquisitionScorecard({ data, artists, mode }: Props) {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <p className="text-[10px] text-muted-foreground/50 mt-2">
+              <p className="text-[10px] text-muted-foreground mt-2">
                 Catalog depth analysis — top albums ranked by all-time playcount. Wider distribution indicates healthier back-catalog performance.
               </p>
             </div>

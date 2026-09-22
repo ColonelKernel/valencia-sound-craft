@@ -186,12 +186,21 @@ const Contact = () => {
                 onChange={(e) => setProjectType(e.target.value)}
                 className="w-full border border-border bg-background px-4 py-3 text-sm rounded-control focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-shadow appearance-none"
               >
+                {/* These are the first thing a visitor has to classify
+                    themselves as, so the list has to contain the reason they
+                    actually came. It used to spend two of its five substantive
+                    slots on music and offer nothing a research or evaluation
+                    lead could pick, on a site aimed at government,
+                    multilateral and non-profit hiring. The music collapses to
+                    one option; "Data science / ML project" stays verbatim
+                    because Contact.test.tsx and contact.spec.ts select it by
+                    name. */}
                 <option value="">Select one</option>
                 <option>Full-time role</option>
                 <option>Contract / consulting</option>
+                <option>Research or evaluation engagement</option>
                 <option>Data science / ML project</option>
-                <option>Audio software / engineering</option>
-                <option>Production or session work</option>
+                <option>Audio software or production</option>
                 <option>Other</option>
               </select>
             </div>

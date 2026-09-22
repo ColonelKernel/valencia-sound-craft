@@ -120,11 +120,12 @@ const SystemsPreview = () => (
                 {/* The chart is aria-hidden, so this caption is the only thing
                     that says what it plots — and it plots real data.
 
-                    No opacity modifier on the colour. This shipped as
-                    text-muted-foreground/70, which blends --muted-foreground
-                    (64%) over --card (10%) to an effective 4.07:1 — under the
-                    4.5:1 WCAG AA needs for normal text, and the only thing
-                    keeping the homepage off a perfect accessibility score.
+                    No opacity modifier on the colour. This shipped at 70%
+                    alpha, which blends --muted-foreground (64%) over --card
+                    (10%) to an effective 4.07:1 — under the 4.5:1 WCAG AA
+                    needs for normal text, and the only thing keeping the
+                    homepage off a perfect accessibility score. contrast.test.ts
+                    now forbids the whole class of it.
                     Full muted-foreground is 6.95:1. */}
                 <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
                   {card.caption}

@@ -311,7 +311,7 @@ const CVPage = () => {
               </div>
 
               <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
-                <span className="text-xs uppercase tracking-widest text-muted-foreground/70">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">
                   Catalog
                 </span>
                 {MUSIC_LINKS.map((link) => (

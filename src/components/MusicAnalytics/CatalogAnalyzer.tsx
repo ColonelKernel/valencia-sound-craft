@@ -216,7 +216,7 @@ export default function CatalogAnalyzer({ artists, data }: Props) {
             ))}
           </div>
 
-          <p className="text-[11px] text-muted-foreground/70">
+          <p className="text-[11px] text-muted-foreground">
             AI-generated educational demonstration based on modeled data — not investment advice.
           </p>
         </m.div>

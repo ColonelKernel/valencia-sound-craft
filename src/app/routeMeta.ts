@@ -64,7 +64,7 @@ export const ROUTE_META = {
     path: "/projects",
     title: "Projects | Zach Scheffler",
     description:
-      "Software by Zach Scheffler: the AutoHarm chord instrument, Ableton Live extensions, in-browser music systems, and music-tech research.",
+      "Software by Zach Scheffler: the World Transit Atlas across 201 rail systems, a catalog analytics platform, the AutoHarm chord instrument, Ableton Live extensions, and in-browser music systems \u2014 all built in a test-gated workflow with a public source tree.",
   },
   // Key order here is load-bearing: build/stampRouteHeadsPlugin.ts zips it
   // against the lazy-import order in src/App.tsx, so this entry and the PAGES

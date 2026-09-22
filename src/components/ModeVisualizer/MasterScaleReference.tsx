@@ -258,7 +258,7 @@ const MasterScaleReference = () => {
                 </td>
                 <td className="px-2 py-2.5">
                   {row.devSummary === 'no deviations' ? (
-                    <span className="text-[10px] text-muted-foreground/60 italic">natural</span>
+                    <span className="text-[10px] text-muted-foreground italic">natural</span>
                   ) : (
                     <span className="flex flex-wrap gap-0.5">
                       {row.deviations.map((d, i) => {

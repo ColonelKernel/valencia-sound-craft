@@ -646,7 +646,7 @@ const Metronome = ({
           {playing ? <Pause size={18} /> : <Play size={18} />}
           {playing ? 'Stop' : 'Start'}
         </button>
-        <span className={`text-[10px] ${isPerformance ? 'text-white/30' : 'text-muted-foreground/50'}`}>
+        <span className={`text-[10px] ${isPerformance ? 'text-white/30' : 'text-muted-foreground'}`}>
           or press Space
         </span>
       </div>
@@ -844,7 +844,7 @@ const Metronome = ({
                 )}
               </div>
               {dropout && (
-                <p className="text-[10px] text-muted-foreground/60 mt-1">
+                <p className="text-[10px] text-muted-foreground mt-1">
                   Randomly mutes {dropoutChance}% of beats to train internal timing
                 </p>
               )}
@@ -853,7 +853,7 @@ const Metronome = ({
             {/* Timing Analysis */}
             <div>
               <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Timing Feedback</label>
-              <p className="text-[10px] text-muted-foreground/60 mt-1">
+              <p className="text-[10px] text-muted-foreground mt-1">
                 Tap the beat circles while playing to get timing analysis
               </p>
               {timingHistory.length > 3 && (
@@ -996,7 +996,7 @@ const Metronome = ({
 
       {/* Subdivision hint for swing */}
       {subdivision === 1 && swing > 50 && !isFlow && (
-        <p className="text-center text-[10px] text-muted-foreground/60 italic">
+        <p className="text-center text-[10px] text-muted-foreground italic">
           Swing is audible with subdivisions (♫ or ♬)
         </p>
       )}

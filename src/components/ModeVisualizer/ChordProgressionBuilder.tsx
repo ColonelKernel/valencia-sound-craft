@@ -495,7 +495,7 @@ const ChordProgressionBuilder = ({
                       </div>
                       <span className="text-[8px] text-muted-foreground leading-tight">{getSubLabel(pc)}</span>
                       {showNoteSpelling && (
-                        <span className="text-[7px] text-muted-foreground/70 font-mono">
+                        <span className="text-[7px] text-muted-foreground font-mono">
                           {pc.chord.notes.map((n, ni) => (
                             <span key={ni}>
                               {ni > 0 && '–'}
@@ -507,7 +507,7 @@ const ChordProgressionBuilder = ({
                           ))}
                         </span>
                       )}
-                      {pc.source !== 'diatonic' && <span className="text-[7px] text-muted-foreground/50 italic">{pc.sourceLabel}</span>}
+                      {pc.source !== 'diatonic' && <span className="text-[7px] text-muted-foreground italic">{pc.sourceLabel}</span>}
                     </div>
                   );
                 })
@@ -586,7 +586,7 @@ const ChordProgressionBuilder = ({
                     <button key={i} onClick={() => addChord({ chord, source: 'diatonic', function: func })}
                       disabled={lockProgression}
                       className={`flex flex-col items-center px-2 py-1 rounded border transition-colors text-xs ${sourceColors['diatonic']} ${lockProgression ? 'opacity-40 cursor-not-allowed' : ''}`}>
-                      <span className="text-[8px] text-muted-foreground/60">{getRomanNumeral(chord, i)}</span>
+                      <span className="text-[8px] text-muted-foreground">{getRomanNumeral(chord, i)}</span>
                       <span className="font-bold text-[11px]">{chord.symbol}</span>
                     </button>
                   );
@@ -732,7 +732,7 @@ const ChordProgressionBuilder = ({
                       )}
                     </div>
                   )}
-                  {!has7Notes && <p className="text-[10px] text-muted-foreground/60 italic">Use 7-note scales for harmonic tools.</p>}
+                  {!has7Notes && <p className="text-[10px] text-muted-foreground italic">Use 7-note scales for harmonic tools.</p>}
                 </>
               )}
 
@@ -740,7 +740,7 @@ const ChordProgressionBuilder = ({
               {rightTab === 'transform' && (
                 <>
                   {progression.length === 0 ? (
-                    <p className="text-[10px] text-muted-foreground/60 italic">Add chords first.</p>
+                    <p className="text-[10px] text-muted-foreground italic">Add chords first.</p>
                   ) : (
                     <div className="grid grid-cols-3 gap-1">
                       {[
@@ -789,7 +789,7 @@ const ChordProgressionBuilder = ({
               {rightTab === 'suggest' && (
                 <>
                   {progression.length === 0 ? (
-                    <p className="text-[10px] text-muted-foreground/60 italic">Add chords for suggestions.</p>
+                    <p className="text-[10px] text-muted-foreground italic">Add chords for suggestions.</p>
                   ) : (
                     <div className="space-y-2">
                       {(['safe', 'colorful', 'experimental'] as const).map(cat => {
@@ -805,7 +805,7 @@ const ChordProgressionBuilder = ({
                                 <button key={i} onClick={() => addChord(s.chord)} disabled={lockProgression}
                                   className={`flex flex-col items-center px-2 py-1 rounded border ${sourceColors[s.chord.source]} text-[10px] ${lockProgression ? 'opacity-40' : ''}`}>
                                   <span className="font-bold">{s.chord.chord.symbol}</span>
-                                  <span className="text-[7px] text-muted-foreground/60">{s.reason}</span>
+                                  <span className="text-[7px] text-muted-foreground">{s.reason}</span>
                                 </button>
                               ))}
                             </div>

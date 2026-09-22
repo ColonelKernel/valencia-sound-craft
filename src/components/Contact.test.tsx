@@ -38,6 +38,34 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("reason for reaching out", () => {
+  // These options are the first thing a visitor has to classify themselves as,
+  // so the list is the site's own statement of who it expects to hear from.
+  // It spent two of its five substantive slots on music and offered nothing a
+  // research or evaluation lead could pick, on a site aimed at government,
+  // multilateral and non-profit hiring.
+  //
+  // This lives in the unit suite rather than in Playwright because the form
+  // only renders when VITE_SUPABASE_* are present; a local or CI preview build
+  // without them renders the "reach out directly" fallback instead, which is
+  // why tests/e2e/contact.spec.ts skips itself. beforeAll above stubs the env,
+  // so the real form is mounted here.
+  it("offers the reason this audience is writing, and one music option", () => {
+    render(<Contact />);
+    const select = screen.getByLabelText("Reason for reaching out") as HTMLSelectElement;
+    const options = [...select.options].map((option) => option.text);
+
+    expect(options).toContain("Research or evaluation engagement");
+    expect(options).toContain("Full-time role");
+    expect(options).toContain("Contract / consulting");
+    // Selected by name in fillAndSubmit and in tests/e2e/contact.spec.ts, so
+    // renaming it silently breaks two suites.
+    expect(options).toContain("Data science / ML project");
+
+    expect(options.filter((option) => /audio|production|session/i.test(option))).toHaveLength(1);
+  });
+});
+
 const fillAndSubmit = (overrides?: { company?: string }) => {
   fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Ada Lovelace" } });
   fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ada@example.com" } });
